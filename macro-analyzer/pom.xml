@@ -102,7 +102,23 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- jOOQ code generation configuration goes here -->
+                    <jdbc>
+                        <driver>org.postgresql.Driver</driver>
+                        <url>jdbc:postgresql://localhost:15432/macroanalyzer</url>
+                        <user>macrouser</user>
+                        <password>macropassword</password>
+                    </jdbc>
+                    <generator>
+                        <database>
+                            <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                            <includes>.*</includes>
+                            <inputSchema>public</inputSchema>
+                        </database>
+                        <target>
+                            <packageName>com.kg.macroanalyzer.jooq.generated</packageName>
+                            <directory>src/main/java</directory>
+                        </target>
+                    </generator>
                 </configuration>
             </plugin>
         </plugins>
