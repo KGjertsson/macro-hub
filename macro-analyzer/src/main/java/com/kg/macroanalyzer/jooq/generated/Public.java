@@ -4,7 +4,6 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
-import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
 
 import java.util.Arrays;
@@ -29,11 +28,6 @@ public class Public extends SchemaImpl {
     public static final Public PUBLIC = new Public();
 
     /**
-     * The table <code>public.flyway_schema_history</code>.
-     */
-    public final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
-
-    /**
      * The table <code>public.policy_rate_sweden</code>.
      */
     public final PolicyRateSweden POLICY_RATE_SWEDEN = PolicyRateSweden.POLICY_RATE_SWEDEN;
@@ -54,7 +48,6 @@ public class Public extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.asList(
-            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
             PolicyRateSweden.POLICY_RATE_SWEDEN
         );
     }

@@ -13,12 +13,12 @@ import static com.kg.macroanalyzer.jooq.generated.Tables.POLICY_RATE_SWEDEN;
 public class PolicyRateItem {
 
     Double policyRate;
-    LocalDateTime date;
+    LocalDateTime dateTime;
 
     public static PolicyRateItem of(Record r) {
         return PolicyRateItem.builder()
                 .policyRate(r.getValue(POLICY_RATE_SWEDEN.POLICY_RATE))
-//                .date(r.getValue(POLICY_RATE_SWEDEN.))
+                .dateTime(r.getValue(POLICY_RATE_SWEDEN.POLICY_RATE_DATE))
                 .build();
     }
 }

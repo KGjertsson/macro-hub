@@ -4,9 +4,7 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
-import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
-import com.kg.macroanalyzer.jooq.generated.tables.records.FlywaySchemaHistoryRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.PolicyRateSwedenRecord;
 
 import org.jooq.TableField;
@@ -26,6 +24,5 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, DSL.name("flyway_schema_history_pk"), new TableField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK }, true);
     public static final UniqueKey<PolicyRateSwedenRecord> POLICY_RATE_SWEDEN_PKEY = Internal.createUniqueKey(PolicyRateSweden.POLICY_RATE_SWEDEN, DSL.name("policy_rate_sweden_pkey"), new TableField[] { PolicyRateSweden.POLICY_RATE_SWEDEN.ID }, true);
 }

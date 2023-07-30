@@ -4,7 +4,6 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
-import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
 
 
@@ -13,11 +12,6 @@ import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
-
-    /**
-     * The table <code>public.flyway_schema_history</code>.
-     */
-    public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
 
     /**
      * The table <code>public.policy_rate_sweden</code>.
