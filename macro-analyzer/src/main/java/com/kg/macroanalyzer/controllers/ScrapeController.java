@@ -1,21 +1,19 @@
 package com.kg.macroanalyzer.controllers;
 
-import com.kg.macroanalyzer.models.PolicyRateItem;
-import com.kg.macroanalyzer.models.PolicyRateSweden;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.kg.macroanalyzer.models.exchangerate.ExchangeRateItem;
+import com.kg.macroanalyzer.models.policyrate.PolicyRateItem;
 import com.kg.macroanalyzer.repositories.PolicyRateRepository;
+import com.kg.macroanalyzer.utils.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
 import java.util.List;
 
 @RestController
@@ -44,36 +42,40 @@ public class ScrapeController {
     }
 
     private List<PolicyRateItem> scrapePolicyRateSweden(String countryFormatted) {
+
+//            String endpointUrl = "https://api-test.riksbank.se/swea/v1/Series/SECBREPOEFF?en";
+
+        String endpointUrl = "https://api-test.riksbank.se/swea/v1/Observations/SECBREPOEFF/1994-06-01";
+
+        try {
+            final var response = WebUtils.getHTTP(endpointUrl);
+            final var objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            final var scrapedPolicyRateItems = objectMapper.readValue(response, new TypeReference<List<PolicyRateItem>>(){});
             final var persistedPolicyRateItems = policyRateRepository.getPolicyRateSweden();
 
-            String endpointUrl = "https://api-test.riksbank.se/swea/v1/Series/SECBREPOEFF?en";
+            final var foo = 1;
 
-            try {
-                URL url = new URL(endpointUrl);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-                // Read the response
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder responseBuilder = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseBuilder.append(line);
-                }
-                reader.close();
+        return List.of();
+    }
 
-                // Get the response as a string
-                String response = responseBuilder.toString();
-                System.out.println("Response: " + response);
-
-                // Close the connection
-                connection.disconnect();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+    @PostMapping("/exchange-rate/usd-sek")
+    public List<ExchangeRateItem> scrapeExchangeRateUsdSek() {
+        try {
+            final var usd = "SEKUSDPMI";
+            final var CNY = "SEKCNYPMI";
+            final var from = "1994-03-01";
+            final var endpointUrl = "https://api-test.riksbank.se/swea/v1/CrossRates/%s/%s/%s".formatted(usd, CNY, from);
+            final var response = WebUtils.getHTTP(endpointUrl);
             return List.of();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return List.of();
+        }
     }
 
 }

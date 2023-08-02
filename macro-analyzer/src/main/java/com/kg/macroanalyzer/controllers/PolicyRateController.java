@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.controllers;
 
-import com.kg.macroanalyzer.models.PolicyRateItem;
+import com.kg.macroanalyzer.models.policyrate.PolicyRateItem;
 import com.kg.macroanalyzer.repositories.PolicyRateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

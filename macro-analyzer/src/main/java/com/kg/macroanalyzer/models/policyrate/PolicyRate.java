@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.models;
+package com.kg.macroanalyzer.models.policyrate;
 
 import java.util.List;
 
