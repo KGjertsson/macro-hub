@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.controllers;
 
-import com.kg.macroanalyzer.models.policyrate.PolicyRateItem;
+import com.kg.macroanalyzer.models.policyrate.PolicyRateItemSweden;
 import com.kg.macroanalyzer.repositories.PolicyRateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,16 +22,16 @@ public class PolicyRateController {
     }
 
     @GetMapping("/{country}")
-    public List<PolicyRateItem> getPolicyRate(@PathVariable("country") String country) {
+    public List<PolicyRateItemSweden> getPolicyRate(@PathVariable("country") String country) {
         final var countryFormatted = country.toLowerCase().trim();
         final var e = "Unexpected country value, expected one of ['sweden'], but found: %s".formatted(countryFormatted);
 
-        switch (countryFormatted) {
-            case "sweden":
-                return policyRateRepository.getPolicyRateSweden();
-            default:
-                throw new IllegalArgumentException(e);
-        }
+        return switch (countryFormatted) {
+            case "sweden" -> policyRateRepository.getPolicyRateSweden();
+            case "usa" -> throw new IllegalArgumentException("usa not implemented, feature is on it's way");
+            case "eu" -> throw new IllegalArgumentException("eu not implemented, feature is on it's way");
+            default -> throw new IllegalArgumentException(e);
+        };
 
     }
 
