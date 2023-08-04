@@ -1,9 +1,9 @@
 package com.kg.macroanalyzer.controllers;
 
-import com.kg.macroanalyzer.models.exchangerate.ExchangeRateItem;
+import com.kg.macroanalyzer.models.exchangerate.ExchangeRateUsdSek;
 import com.kg.macroanalyzer.models.policyrate.PolicyRateItemSweden;
 import com.kg.macroanalyzer.services.ScrapeService;
-import com.kg.macroanalyzer.utils.WebUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/scrape/")
 public class ScrapeController {
@@ -27,6 +28,7 @@ public class ScrapeController {
     @PostMapping("/policy-rate/{country}")
     public List<PolicyRateItemSweden> scrapePolicyRateItem(@PathVariable("country") String country) throws IOException {
         final var countryFormatted = country.toLowerCase().trim();
+        log.info("Scraping policy rate for country: %s".formatted(countryFormatted));
         final var e = "Unexpected country value, expected one of ['sweden'], but found: %s".formatted(countryFormatted);
 
         return switch (countryFormatted) {
@@ -39,18 +41,9 @@ public class ScrapeController {
     }
 
     @PostMapping("/exchange-rate/usd-sek")
-    public List<ExchangeRateItem> scrapeExchangeRateUsdSek() {
-        try {
-            final var usd = "SEKUSDPMI";
-            final var CNY = "SEKCNYPMI";
-            final var from = "1994-03-01";
-            final var endpointUrl = "https://api-test.riksbank.se/swea/v1/CrossRates/%s/%s/%s".formatted(usd, CNY, from);
-            final var response = WebUtils.getHTTP(endpointUrl);
-            return List.of();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return List.of();
-        }
+    public List<ExchangeRateUsdSek> scrapeExchangeRateUsdSek() throws IOException {
+        log.info("Scraping exchange rate for usd-sek");
+        return scrapeService.scrapeExchangeRateUsdSek();
     }
 
 }

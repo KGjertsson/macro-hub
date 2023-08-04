@@ -8,6 +8,7 @@ import com.kg.macroanalyzer.jooq.generated.Keys;
 import com.kg.macroanalyzer.jooq.generated.Public;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ExchangeUsdSekRecord;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.function.Function;
@@ -70,7 +71,7 @@ public class ExchangeUsdSek extends TableImpl<ExchangeUsdSekRecord> {
     /**
      * The column <code>public.exchange_usd_sek.usd_sek_date</code>.
      */
-    public final TableField<ExchangeUsdSekRecord, LocalDateTime> USD_SEK_DATE = createField(DSL.name("usd_sek_date"), SQLDataType.LOCALDATETIME(6).nullable(false), this, "");
+    public final TableField<ExchangeUsdSekRecord, LocalDate> USD_SEK_DATE = createField(DSL.name("usd_sek_date"), SQLDataType.LOCALDATE.nullable(false), this, "");
 
     /**
      * The column <code>public.exchange_usd_sek.created</code>.
@@ -174,14 +175,14 @@ public class ExchangeUsdSek extends TableImpl<ExchangeUsdSekRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Integer, UUID, Double, LocalDateTime, LocalDateTime, LocalDateTime> fieldsRow() {
+    public Row6<Integer, UUID, Double, LocalDate, LocalDateTime, LocalDateTime> fieldsRow() {
         return (Row6) super.fieldsRow();
     }
 
     /**
      * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
      */
-    public <U> SelectField<U> mapping(Function6<? super Integer, ? super UUID, ? super Double, ? super LocalDateTime, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
+    public <U> SelectField<U> mapping(Function6<? super Integer, ? super UUID, ? super Double, ? super LocalDate, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
         return convertFrom(Records.mapping(from));
     }
 
@@ -189,7 +190,7 @@ public class ExchangeUsdSek extends TableImpl<ExchangeUsdSekRecord> {
      * Convenience mapping calling {@link SelectField#convertFrom(Class,
      * Function)}.
      */
-    public <U> SelectField<U> mapping(Class<U> toType, Function6<? super Integer, ? super UUID, ? super Double, ? super LocalDateTime, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
+    public <U> SelectField<U> mapping(Class<U> toType, Function6<? super Integer, ? super UUID, ? super Double, ? super LocalDate, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
         return convertFrom(toType, Records.mapping(from));
     }
 }
