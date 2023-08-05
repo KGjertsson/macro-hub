@@ -4,9 +4,8 @@ import ky from 'ky';
 
 import ChartComponent from '@/components/ChartComponent';
 
-const hardCodedLabels =
-  "['Monday', 'Tuesday' , 'Wednesday' , 'Thursday' , 'Friday' , 'Saturday' , 'Sunday']";
-const hardCodedValues = '[2112, 2343, 2545, 3423, 2365, 1985, 987]';
+const hardCodedLabels = "['a', 'b', 'c']";
+const hardCodedValues = '[1, 2, 1.2]';
 
 const ChartSwedenPolicyRate = () => {
   const [labels, setLabels] = useState(hardCodedLabels);
@@ -20,12 +19,12 @@ const ChartSwedenPolicyRate = () => {
       const valuesRaw = body
         .map((o) => o['value'])
         .slice(0, 5)
-        .join(',');
+        .join(', ');
       const values = '[' + valuesRaw + ']';
       const labelsRaw = body
-        .map((o) => o['date'].join('-'))
+        .map((o) => '"' + o['date'].join('-') + '"')
         .slice(0, 5)
-        .join(',');
+        .join(', ');
       const labels = '[' + labelsRaw + ']';
 
       setValues(values);
