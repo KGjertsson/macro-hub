@@ -1,8 +1,11 @@
 import dynamic from 'next/dynamic';
 
-const DynamicMyChart = dynamic(() => import('@/components/mychart'), {
-  ssr: false,
-});
+const DynamicMyChart = dynamic(
+  () => import('@/components/ChartSwedenPolicyRate'),
+  {
+    ssr: false,
+  }
+);
 
 export default function Home() {
   return (
