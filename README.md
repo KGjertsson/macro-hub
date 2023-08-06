@@ -36,7 +36,6 @@ curl.exe -X POST localhost:8080/scrape/government-bills/sweden
 Riskbanken REST
 API: https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/hamta-rantor-och-valutakurser-via-api/  
 Riskbanken series: https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/oppet-api/serier-for-webbservices/
----
 
 ## macro-frontend
 
