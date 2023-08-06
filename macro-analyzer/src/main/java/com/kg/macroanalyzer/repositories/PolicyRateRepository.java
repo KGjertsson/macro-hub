@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.repositories;
 
-import com.kg.macroanalyzer.models.policyrate.PolicyRateItemSweden;
+import com.kg.macroanalyzer.models.policyrate.PolicyRateItem;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +22,16 @@ public class PolicyRateRepository {
         this.dslContext = dslContext;
     }
 
-    public List<PolicyRateItemSweden> getPolicyRateSweden() {
+    public List<PolicyRateItem> getPolicyRateSweden() {
         return dslContext.select()
                 .from(POLICY_RATE_SWEDEN)
                 .fetch()
-                .map(PolicyRateItemSweden::of);
+                .map(PolicyRateItem::ofSweden);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertPolicyRateItemsSweden(List<PolicyRateItemSweden> policyRateItemSwedenList) {
-        if (!policyRateItemSwedenList.isEmpty()) {
+    public void insertPolicyRateItemsSweden(List<PolicyRateItem> policyRateItemList) {
+        if (!policyRateItemList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(
                             POLICY_RATE_SWEDEN,
@@ -40,7 +40,7 @@ public class PolicyRateRepository {
                             POLICY_RATE_SWEDEN.POLICY_RATE_DATE
                     ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
             );
-            policyRateItemSwedenList.forEach(policyRateItemSweden -> insertQuery.bind(
+            policyRateItemList.forEach(policyRateItemSweden -> insertQuery.bind(
                     UUID.randomUUID(),
                     policyRateItemSweden.value(),
                     policyRateItemSweden.date()

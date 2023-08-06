@@ -28,10 +28,20 @@ ALTER USER macrouser WITH SUPERUSER;
 ```
 curl.exe -X POST localhost:8080/scrape/policy-rate/sweden
 curl.exe -X POST localhost:8080/scrape/exchange-rate/usd-sek
+curl.exe -X POST localhost:8080/scrape/government-bills/sweden
 ```
 
+### sources
+
+Riskbanken REST
+API: https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/hamta-rantor-och-valutakurser-via-api/  
+Riskbanken series: https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/oppet-api/serier-for-webbservices/
 ---
 
 ## macro-frontend
+
+NextJS + react-chartjs-2
+
+### Sources
 
 react-chartjs-2 documentation: https://react-chartjs-2.js.org/components/line

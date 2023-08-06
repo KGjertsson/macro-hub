@@ -8,10 +8,10 @@ import java.time.LocalDate;
 import static com.kg.macroanalyzer.jooq.generated.Tables.POLICY_RATE_SWEDEN;
 
 @Builder
-public record PolicyRateItemSweden(Double value, LocalDate date) {
+public record PolicyRateItem(Double value, LocalDate date) {
 
-    public static PolicyRateItemSweden of(Record r) {
-        return PolicyRateItemSweden.builder()
+    public static PolicyRateItem ofSweden(Record r) {
+        return PolicyRateItem.builder()
                 .value(r.getValue(POLICY_RATE_SWEDEN.POLICY_RATE))
                 .date(r.getValue(POLICY_RATE_SWEDEN.POLICY_RATE_DATE))
                 .build();

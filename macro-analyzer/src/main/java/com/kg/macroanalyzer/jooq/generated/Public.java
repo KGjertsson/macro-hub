@@ -7,6 +7,10 @@ package com.kg.macroanalyzer.jooq.generated;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_6Month;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +49,26 @@ public class Public extends SchemaImpl {
     public final PolicyRateSweden POLICY_RATE_SWEDEN = PolicyRateSweden.POLICY_RATE_SWEDEN;
 
     /**
+     * The table <code>public.swedish_government_bill_12_month</code>.
+     */
+    public final SwedishGovernmentBill_12Month SWEDISH_GOVERNMENT_BILL_12_MONTH = SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH;
+
+    /**
+     * The table <code>public.swedish_government_bill_1_month</code>.
+     */
+    public final SwedishGovernmentBill_1Month SWEDISH_GOVERNMENT_BILL_1_MONTH = SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH;
+
+    /**
+     * The table <code>public.swedish_government_bill_3_month</code>.
+     */
+    public final SwedishGovernmentBill_3Month SWEDISH_GOVERNMENT_BILL_3_MONTH = SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH;
+
+    /**
+     * The table <code>public.swedish_government_bill_6_month</code>.
+     */
+    public final SwedishGovernmentBill_6Month SWEDISH_GOVERNMENT_BILL_6_MONTH = SwedishGovernmentBill_6Month.SWEDISH_GOVERNMENT_BILL_6_MONTH;
+
+    /**
      * No further instances allowed
      */
     private Public() {
@@ -62,7 +86,11 @@ public class Public extends SchemaImpl {
         return Arrays.asList(
             ExchangeUsdSek.EXCHANGE_USD_SEK,
             FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
-            PolicyRateSweden.POLICY_RATE_SWEDEN
+            PolicyRateSweden.POLICY_RATE_SWEDEN,
+            SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH,
+            SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH,
+            SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH,
+            SwedishGovernmentBill_6Month.SWEDISH_GOVERNMENT_BILL_6_MONTH
         );
     }
 }
