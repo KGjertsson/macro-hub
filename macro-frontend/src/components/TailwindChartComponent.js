@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const ChartComponent = ({ values, labels }) => {
+const TailwindChartComponent = ({ values, labels }) => {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -31,4 +31,4 @@ const ChartComponent = ({ values, labels }) => {
   );
 };
 
-export default ChartComponent;
+export default TailwindChartComponent;

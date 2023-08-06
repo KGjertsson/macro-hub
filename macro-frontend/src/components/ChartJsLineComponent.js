@@ -21,33 +21,38 @@ ChartJS.register(
   Legend
 );
 
-const options = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'top',
-    },
-    title: {
-      display: true,
-      text: 'Policy Rate Sweden',
-    },
-  },
-};
-
-const ChartJsComponent = ({ values, labels }) => {
+const ChartJsComponent = ({
+  values,
+  labels,
+  label,
+  borderColor,
+  backgroundColor,
+  title,
+}) => {
   return (
     <Line
       className="mx-auto w-3/5 overflow-hidden"
       style={{ width: '1000px', height: '1000px' }}
-      options={options}
+      options={{
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: title,
+          },
+        },
+      }}
       data={{
         labels,
         datasets: [
           {
-            label: 'Policy Rate',
+            label: label,
             data: values,
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgb(75, 192, 192, 0.1)',
+            borderColor: borderColor,
+            backgroundColor: backgroundColor,
           },
         ],
       }}
