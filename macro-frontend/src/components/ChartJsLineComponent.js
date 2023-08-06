@@ -53,6 +53,7 @@ const ChartJsComponent = ({
             data: values,
             borderColor: borderColor,
             backgroundColor: backgroundColor,
+            pointRadius: 1,
           },
         ],
       }}
