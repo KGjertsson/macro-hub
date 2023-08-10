@@ -25,10 +25,10 @@ const ChartSwedenPolicyRate = () => {
     <ChartJsComponent
       values={values}
       labels={labels}
-      label={'Policy Rate Sweden'}
+      label={'Styrränta'}
       borderColor={'rgb(75, 192, 192)'}
       backgroundColor={'rgb(75, 192, 192, 0.1)'}
-      title={'Policy Rate Sweden'}
+      title={'Sveriges styrränta'}
     />
   );
 };

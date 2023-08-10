@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import ScrapeAllButton from '@/components/ScrapeAllButton';
 
 const ChartSwedenPolicyRate = dynamic(
   () => import('@/components/ChartSwedenPolicyRate'),
@@ -21,7 +22,12 @@ const ChartGovernmentBillsSweden = dynamic(
   }
 );
 
-import ScrapeAllButton from '@/components/ScrapeAllButton';
+const ChartGovernmentBondsSweden = dynamic(
+  () => import('@/components/ChartGovernmentBondsSweden'),
+  {
+    ssr: false,
+  }
+);
 
 export default function Home() {
   return (
@@ -30,6 +36,7 @@ export default function Home() {
       <ChartSwedenPolicyRate />
       <ChartUsdSekExchangeRate />
       <ChartGovernmentBillsSweden />
+      <ChartGovernmentBondsSweden />
     </main>
   );
 }

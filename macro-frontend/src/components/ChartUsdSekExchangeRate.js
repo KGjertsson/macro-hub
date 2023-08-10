@@ -26,10 +26,10 @@ const ChartUsdSekExchangeRate = () => {
     <ChartJsComponent
       values={values}
       labels={labels}
-      label={'USD to SEK Exchange Rate'}
+      label={'USD till SEK växelkurs'}
       borderColor={'rgb(75, 192, 192)'}
       backgroundColor={'rgb(75, 192, 192, 0.1)'}
-      title={'USD to SEK Exhange Rate'}
+      title={'USD till SEK växelkurs'}
     />
   );
 };

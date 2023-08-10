@@ -78,7 +78,7 @@ const ChartGovernmentBillsSweden = () => {
         },
       ]}
       labels={labels1Month}
-      title={'Government Bills Sweden'}
+      title={'Svenska statsskuldväxlar'}
     />
   );
 };
