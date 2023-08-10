@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.models.policyrate;
+package com.kg.macroanalyzer.models;
 
 import lombok.Builder;
 import org.jooq.Record;

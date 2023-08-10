@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.controllers;
 
-import com.kg.macroanalyzer.models.policyrate.PolicyRateItem;
+import com.kg.macroanalyzer.models.PolicyRateItem;
 import com.kg.macroanalyzer.repositories.PolicyRateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

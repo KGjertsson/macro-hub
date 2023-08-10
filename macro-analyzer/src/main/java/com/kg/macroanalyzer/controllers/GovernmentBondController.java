@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.controllers;
 
-import com.kg.macroanalyzer.models.governmentbonds.GovernmentBondItem;
+import com.kg.macroanalyzer.models.GovernmentBondItem;
 import com.kg.macroanalyzer.repositories.GovernmentBondsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

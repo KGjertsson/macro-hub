@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.controllers;
 
-import com.kg.macroanalyzer.models.exchangerate.ExchangeRateUsdSek;
+import com.kg.macroanalyzer.models.ExchangeRateUsdSek;
 import com.kg.macroanalyzer.repositories.ExchangeRateRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

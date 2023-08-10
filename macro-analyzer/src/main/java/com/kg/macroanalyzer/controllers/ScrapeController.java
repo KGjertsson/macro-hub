@@ -27,11 +27,12 @@ public class ScrapeController {
 
         return switch (countryFormatted) {
             case "sweden" -> scrapeService.scrapePolicyRateSweden();
-            case "eu" -> throw new IllegalArgumentException("eu not implemented, feature is on it's way");
-            case "usa" -> throw new IllegalArgumentException("usa not implemented, feature is on it's way");
+            case "eu" ->
+                    throw new IllegalArgumentException("eu not implemented, feature is on it's way");
+            case "usa" ->
+                    throw new IllegalArgumentException("usa not implemented, feature is on it's way");
             default -> throw new IllegalArgumentException(e);
         };
-
     }
 
     @PostMapping("/exchange-rate/usd-sek")
@@ -50,9 +51,20 @@ public class ScrapeController {
 
     @PostMapping("government-bonds/sweden")
     public Integer scrapeSwedishGovernmentBonds(@RequestParam("period") String period) throws IOException {
-        log.info("Scraping government bonds for sweden");
+        log.info("Scraping government bonds for sweden with period=%s".formatted(period));
 
         return scrapeService.scrapeGovernmentBondsSweden(period);
+    }
+
+    @PostMapping("euro-market-rate")
+    public Integer scrapeEuroMarketRate(
+            @RequestParam("period") String period,
+            @RequestParam("country") String country
+    ) throws IOException {
+        final var periodCountry = period.toLowerCase() + '-' + country.toLowerCase();
+        log.info(("Scraping euro market rate with periodCountry=%s").formatted(periodCountry));
+
+        return scrapeService.scrapeEuroMarketRate(periodCountry);
     }
 
 }

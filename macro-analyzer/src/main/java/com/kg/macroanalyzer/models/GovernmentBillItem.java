@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.models.governmentbills;
+package com.kg.macroanalyzer.models;
 
 import lombok.Builder;
 import org.jooq.Record;

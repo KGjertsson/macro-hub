@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.repositories;
 
-import com.kg.macroanalyzer.models.governmentbills.GovernmentBillItem;
+import com.kg.macroanalyzer.models.GovernmentBillItem;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;

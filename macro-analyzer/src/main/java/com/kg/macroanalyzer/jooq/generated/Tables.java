@@ -4,6 +4,34 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearDenmark;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearEur;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearFinland;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearFrance;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearGb;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearGermany;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearJapan;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearNetherlands;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearNorway;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthDenmark;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthEur;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthGb;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthJapan;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthNorway;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearDenmark;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearEur;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearGb;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearJapan;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearNorway;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthDenmark;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthEur;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthGb;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthJapan;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthNorway;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
@@ -22,6 +50,146 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Month;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
+
+    /**
+     * The table <code>public.euro_market_10_year_denmark</code>.
+     */
+    public static final EuroMarket_10YearDenmark EURO_MARKET_10_YEAR_DENMARK = EuroMarket_10YearDenmark.EURO_MARKET_10_YEAR_DENMARK;
+
+    /**
+     * The table <code>public.euro_market_10_year_eur</code>.
+     */
+    public static final EuroMarket_10YearEur EURO_MARKET_10_YEAR_EUR = EuroMarket_10YearEur.EURO_MARKET_10_YEAR_EUR;
+
+    /**
+     * The table <code>public.euro_market_10_year_finland</code>.
+     */
+    public static final EuroMarket_10YearFinland EURO_MARKET_10_YEAR_FINLAND = EuroMarket_10YearFinland.EURO_MARKET_10_YEAR_FINLAND;
+
+    /**
+     * The table <code>public.euro_market_10_year_france</code>.
+     */
+    public static final EuroMarket_10YearFrance EURO_MARKET_10_YEAR_FRANCE = EuroMarket_10YearFrance.EURO_MARKET_10_YEAR_FRANCE;
+
+    /**
+     * The table <code>public.euro_market_10_year_gb</code>.
+     */
+    public static final EuroMarket_10YearGb EURO_MARKET_10_YEAR_GB = EuroMarket_10YearGb.EURO_MARKET_10_YEAR_GB;
+
+    /**
+     * The table <code>public.euro_market_10_year_germany</code>.
+     */
+    public static final EuroMarket_10YearGermany EURO_MARKET_10_YEAR_GERMANY = EuroMarket_10YearGermany.EURO_MARKET_10_YEAR_GERMANY;
+
+    /**
+     * The table <code>public.euro_market_10_year_japan</code>.
+     */
+    public static final EuroMarket_10YearJapan EURO_MARKET_10_YEAR_JAPAN = EuroMarket_10YearJapan.EURO_MARKET_10_YEAR_JAPAN;
+
+    /**
+     * The table <code>public.euro_market_10_year_netherlands</code>.
+     */
+    public static final EuroMarket_10YearNetherlands EURO_MARKET_10_YEAR_NETHERLANDS = EuroMarket_10YearNetherlands.EURO_MARKET_10_YEAR_NETHERLANDS;
+
+    /**
+     * The table <code>public.euro_market_10_year_norway</code>.
+     */
+    public static final EuroMarket_10YearNorway EURO_MARKET_10_YEAR_NORWAY = EuroMarket_10YearNorway.EURO_MARKET_10_YEAR_NORWAY;
+
+    /**
+     * The table <code>public.euro_market_10_year_usa</code>.
+     */
+    public static final EuroMarket_10YearUsa EURO_MARKET_10_YEAR_USA = EuroMarket_10YearUsa.EURO_MARKET_10_YEAR_USA;
+
+    /**
+     * The table <code>public.euro_market_3_month_denmark</code>.
+     */
+    public static final EuroMarket_3MonthDenmark EURO_MARKET_3_MONTH_DENMARK = EuroMarket_3MonthDenmark.EURO_MARKET_3_MONTH_DENMARK;
+
+    /**
+     * The table <code>public.euro_market_3_month_eur</code>.
+     */
+    public static final EuroMarket_3MonthEur EURO_MARKET_3_MONTH_EUR = EuroMarket_3MonthEur.EURO_MARKET_3_MONTH_EUR;
+
+    /**
+     * The table <code>public.euro_market_3_month_gb</code>.
+     */
+    public static final EuroMarket_3MonthGb EURO_MARKET_3_MONTH_GB = EuroMarket_3MonthGb.EURO_MARKET_3_MONTH_GB;
+
+    /**
+     * The table <code>public.euro_market_3_month_japan</code>.
+     */
+    public static final EuroMarket_3MonthJapan EURO_MARKET_3_MONTH_JAPAN = EuroMarket_3MonthJapan.EURO_MARKET_3_MONTH_JAPAN;
+
+    /**
+     * The table <code>public.euro_market_3_month_norway</code>.
+     */
+    public static final EuroMarket_3MonthNorway EURO_MARKET_3_MONTH_NORWAY = EuroMarket_3MonthNorway.EURO_MARKET_3_MONTH_NORWAY;
+
+    /**
+     * The table <code>public.euro_market_3_month_usa</code>.
+     */
+    public static final EuroMarket_3MonthUsa EURO_MARKET_3_MONTH_USA = EuroMarket_3MonthUsa.EURO_MARKET_3_MONTH_USA;
+
+    /**
+     * The table <code>public.euro_market_5_year_denmark</code>.
+     */
+    public static final EuroMarket_5YearDenmark EURO_MARKET_5_YEAR_DENMARK = EuroMarket_5YearDenmark.EURO_MARKET_5_YEAR_DENMARK;
+
+    /**
+     * The table <code>public.euro_market_5_year_eur</code>.
+     */
+    public static final EuroMarket_5YearEur EURO_MARKET_5_YEAR_EUR = EuroMarket_5YearEur.EURO_MARKET_5_YEAR_EUR;
+
+    /**
+     * The table <code>public.euro_market_5_year_gb</code>.
+     */
+    public static final EuroMarket_5YearGb EURO_MARKET_5_YEAR_GB = EuroMarket_5YearGb.EURO_MARKET_5_YEAR_GB;
+
+    /**
+     * The table <code>public.euro_market_5_year_japan</code>.
+     */
+    public static final EuroMarket_5YearJapan EURO_MARKET_5_YEAR_JAPAN = EuroMarket_5YearJapan.EURO_MARKET_5_YEAR_JAPAN;
+
+    /**
+     * The table <code>public.euro_market_5_year_norway</code>.
+     */
+    public static final EuroMarket_5YearNorway EURO_MARKET_5_YEAR_NORWAY = EuroMarket_5YearNorway.EURO_MARKET_5_YEAR_NORWAY;
+
+    /**
+     * The table <code>public.euro_market_5_year_usa</code>.
+     */
+    public static final EuroMarket_5YearUsa EURO_MARKET_5_YEAR_USA = EuroMarket_5YearUsa.EURO_MARKET_5_YEAR_USA;
+
+    /**
+     * The table <code>public.euro_market_6_month_denmark</code>.
+     */
+    public static final EuroMarket_6MonthDenmark EURO_MARKET_6_MONTH_DENMARK = EuroMarket_6MonthDenmark.EURO_MARKET_6_MONTH_DENMARK;
+
+    /**
+     * The table <code>public.euro_market_6_month_eur</code>.
+     */
+    public static final EuroMarket_6MonthEur EURO_MARKET_6_MONTH_EUR = EuroMarket_6MonthEur.EURO_MARKET_6_MONTH_EUR;
+
+    /**
+     * The table <code>public.euro_market_6_month_gb</code>.
+     */
+    public static final EuroMarket_6MonthGb EURO_MARKET_6_MONTH_GB = EuroMarket_6MonthGb.EURO_MARKET_6_MONTH_GB;
+
+    /**
+     * The table <code>public.euro_market_6_month_japan</code>.
+     */
+    public static final EuroMarket_6MonthJapan EURO_MARKET_6_MONTH_JAPAN = EuroMarket_6MonthJapan.EURO_MARKET_6_MONTH_JAPAN;
+
+    /**
+     * The table <code>public.euro_market_6_month_norway</code>.
+     */
+    public static final EuroMarket_6MonthNorway EURO_MARKET_6_MONTH_NORWAY = EuroMarket_6MonthNorway.EURO_MARKET_6_MONTH_NORWAY;
+
+    /**
+     * The table <code>public.euro_market_6_month_usa</code>.
+     */
+    public static final EuroMarket_6MonthUsa EURO_MARKET_6_MONTH_USA = EuroMarket_6MonthUsa.EURO_MARKET_6_MONTH_USA;
 
     /**
      * The table <code>public.exchange_usd_sek</code>.

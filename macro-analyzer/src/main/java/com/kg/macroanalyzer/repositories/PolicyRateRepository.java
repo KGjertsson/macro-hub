@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.repositories;
 
-import com.kg.macroanalyzer.models.policyrate.PolicyRateItem;
+import com.kg.macroanalyzer.models.PolicyRateItem;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.repositories;
 
-import com.kg.macroanalyzer.models.governmentbonds.GovernmentBondItem;
+import com.kg.macroanalyzer.models.GovernmentBondItem;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;

@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.repositories;
 
-import com.kg.macroanalyzer.models.exchangerate.ExchangeRateUsdSek;
+import com.kg.macroanalyzer.models.ExchangeRateUsdSek;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
