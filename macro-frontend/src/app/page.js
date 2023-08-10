@@ -21,9 +21,12 @@ const ChartGovernmentBillsSweden = dynamic(
   }
 );
 
+import ScrapeAllButton from '@/components/ScrapeAllButton';
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <ScrapeAllButton />
       <ChartSwedenPolicyRate />
       <ChartUsdSekExchangeRate />
       <ChartGovernmentBillsSweden />
