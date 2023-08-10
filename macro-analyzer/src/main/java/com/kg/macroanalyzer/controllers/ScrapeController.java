@@ -1,18 +1,11 @@
 package com.kg.macroanalyzer.controllers;
 
-import com.kg.macroanalyzer.models.exchangerate.ExchangeRateUsdSek;
-import com.kg.macroanalyzer.models.governmentbills.GovernmentBillItem;
-import com.kg.macroanalyzer.models.policyrate.PolicyRateItem;
 import com.kg.macroanalyzer.services.ScrapeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -27,7 +20,7 @@ public class ScrapeController {
     }
 
     @PostMapping("/policy-rate/{country}")
-    public List<PolicyRateItem> scrapePolicyRateItem(@PathVariable("country") String country) throws IOException {
+    public Integer scrapePolicyRateItem(@PathVariable("country") String country) throws IOException {
         final var countryFormatted = country.toLowerCase().trim();
         log.info("Scraping policy rate for country: %s".formatted(countryFormatted));
         final var e = "Unexpected country value, expected one of ['sweden'], but found: %s".formatted(countryFormatted);
@@ -42,17 +35,24 @@ public class ScrapeController {
     }
 
     @PostMapping("/exchange-rate/usd-sek")
-    public List<ExchangeRateUsdSek> scrapeExchangeRateUsdSek() throws IOException {
+    public Integer scrapeExchangeRateUsdSek() throws IOException {
         log.info("Scraping exchange rate for usd-sek");
 
         return scrapeService.scrapeExchangeRateUsdSek();
     }
 
     @PostMapping("government-bills/sweden")
-    public List<GovernmentBillItem> scrapeSwedishGovernmentBills() throws IOException {
+    public Integer scrapeSwedishGovernmentBills(@RequestParam("period") String period) throws IOException {
         log.info("Scraping government bills for sweden");
 
-        return scrapeService.scrapeGovernmentBillsSweden();
+        return scrapeService.scrapeGovernmentBillsSweden(period);
+    }
+
+    @PostMapping("government-bonds/sweden")
+    public Integer scrapeSwedishGovernmentBonds(@RequestParam("period") String period) throws IOException {
+        log.info("Scraping government bonds for sweden");
+
+        return scrapeService.scrapeGovernmentBondsSweden(period);
     }
 
 }

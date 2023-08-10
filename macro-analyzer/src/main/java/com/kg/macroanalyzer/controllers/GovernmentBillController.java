@@ -24,11 +24,11 @@ public class GovernmentBillController {
     }
 
     @GetMapping("/sweden")
-    public List<GovernmentBillItem> getSwedishGovernmentBillItems1Month(@RequestParam("period") String period) {
-        log.info("Received request for /policy-rate/sweden with period = %s".formatted(period));
-
-        final var e = ("Expected required query param period to be one of ['1', '3', '6', '12'] " +
+    public List<GovernmentBillItem> getSwedishGovernmentBillItems(@RequestParam("period") String period) {
+        log.info("Received request for /government-bills/sweden with period = %s".formatted(period));
+        final var e = ("Expected required query param 'period' to be one of ['1', '3', '6', '12'] " +
                 "but found: %s").formatted(period);
+
         return switch (period) {
             case "1" -> governmentBillRepository.getSwedishGovernmentBills1Month();
             case "3" -> governmentBillRepository.getSwedishGovernmentBills3Month();

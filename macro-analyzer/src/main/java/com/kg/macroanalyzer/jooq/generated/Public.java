@@ -11,6 +11,10 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_6Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_10Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_2Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_5Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Month;
 
 import java.util.Arrays;
 import java.util.List;
@@ -69,6 +73,26 @@ public class Public extends SchemaImpl {
     public final SwedishGovernmentBill_6Month SWEDISH_GOVERNMENT_BILL_6_MONTH = SwedishGovernmentBill_6Month.SWEDISH_GOVERNMENT_BILL_6_MONTH;
 
     /**
+     * The table <code>public.swedish_government_bonds_10_month</code>.
+     */
+    public final SwedishGovernmentBonds_10Month SWEDISH_GOVERNMENT_BONDS_10_MONTH = SwedishGovernmentBonds_10Month.SWEDISH_GOVERNMENT_BONDS_10_MONTH;
+
+    /**
+     * The table <code>public.swedish_government_bonds_2_month</code>.
+     */
+    public final SwedishGovernmentBonds_2Month SWEDISH_GOVERNMENT_BONDS_2_MONTH = SwedishGovernmentBonds_2Month.SWEDISH_GOVERNMENT_BONDS_2_MONTH;
+
+    /**
+     * The table <code>public.swedish_government_bonds_5_month</code>.
+     */
+    public final SwedishGovernmentBonds_5Month SWEDISH_GOVERNMENT_BONDS_5_MONTH = SwedishGovernmentBonds_5Month.SWEDISH_GOVERNMENT_BONDS_5_MONTH;
+
+    /**
+     * The table <code>public.swedish_government_bonds_7_month</code>.
+     */
+    public final SwedishGovernmentBonds_7Month SWEDISH_GOVERNMENT_BONDS_7_MONTH = SwedishGovernmentBonds_7Month.SWEDISH_GOVERNMENT_BONDS_7_MONTH;
+
+    /**
      * No further instances allowed
      */
     private Public() {
@@ -90,7 +114,11 @@ public class Public extends SchemaImpl {
             SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH,
             SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH,
             SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH,
-            SwedishGovernmentBill_6Month.SWEDISH_GOVERNMENT_BILL_6_MONTH
+            SwedishGovernmentBill_6Month.SWEDISH_GOVERNMENT_BILL_6_MONTH,
+            SwedishGovernmentBonds_10Month.SWEDISH_GOVERNMENT_BONDS_10_MONTH,
+            SwedishGovernmentBonds_2Month.SWEDISH_GOVERNMENT_BONDS_2_MONTH,
+            SwedishGovernmentBonds_5Month.SWEDISH_GOVERNMENT_BONDS_5_MONTH,
+            SwedishGovernmentBonds_7Month.SWEDISH_GOVERNMENT_BONDS_7_MONTH
         );
     }
 }

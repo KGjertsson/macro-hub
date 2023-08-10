@@ -28,7 +28,15 @@ ALTER USER macrouser WITH SUPERUSER;
 ```
 curl.exe -X POST localhost:8080/scrape/policy-rate/sweden
 curl.exe -X POST localhost:8080/scrape/exchange-rate/usd-sek
-curl.exe -X POST localhost:8080/scrape/government-bills/sweden
+curl.exe -X POST localhost:8080/scrape/government-bills/sweden?period=1
+curl.exe -X POST localhost:8080/scrape/government-bills/sweden?period=3
+curl.exe -X POST localhost:8080/scrape/government-bills/sweden?period=6
+curl.exe -X POST localhost:8080/scrape/government-bills/sweden?period=12
+curl.exe -X POST localhost:8080/scrape/government-bonds/sweden?period=2
+curl.exe -X POST localhost:8080/scrape/government-bonds/sweden?period=5
+curl.exe -X POST localhost:8080/scrape/government-bonds/sweden?period=7
+curl.exe -X POST localhost:8080/scrape/government-bonds/sweden?period=10
+
 ```
 
 ### sources

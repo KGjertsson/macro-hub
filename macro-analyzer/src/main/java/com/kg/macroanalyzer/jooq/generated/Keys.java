@@ -11,6 +11,10 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_6Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_10Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_2Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_5Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Month;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ExchangeUsdSekRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.FlywaySchemaHistoryRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.PolicyRateSwedenRecord;
@@ -18,6 +22,10 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBill_
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBill_1MonthRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBill_3MonthRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBill_6MonthRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_10MonthRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_2MonthRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_5MonthRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_7MonthRecord;
 
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
@@ -43,4 +51,8 @@ public class Keys {
     public static final UniqueKey<SwedishGovernmentBill_1MonthRecord> SWEDISH_GOVERNMENT_BILL_1_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH, DSL.name("swedish_government_bill_1_month_pkey"), new TableField[] { SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH.ID }, true);
     public static final UniqueKey<SwedishGovernmentBill_3MonthRecord> SWEDISH_GOVERNMENT_BILL_3_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH, DSL.name("swedish_government_bill_3_month_pkey"), new TableField[] { SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH.ID }, true);
     public static final UniqueKey<SwedishGovernmentBill_6MonthRecord> SWEDISH_GOVERNMENT_BILL_6_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBill_6Month.SWEDISH_GOVERNMENT_BILL_6_MONTH, DSL.name("swedish_government_bill_6_month_pkey"), new TableField[] { SwedishGovernmentBill_6Month.SWEDISH_GOVERNMENT_BILL_6_MONTH.ID }, true);
+    public static final UniqueKey<SwedishGovernmentBonds_10MonthRecord> SWEDISH_GOVERNMENT_BONDS_10_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_10Month.SWEDISH_GOVERNMENT_BONDS_10_MONTH, DSL.name("swedish_government_bonds_10_month_pkey"), new TableField[] { SwedishGovernmentBonds_10Month.SWEDISH_GOVERNMENT_BONDS_10_MONTH.ID }, true);
+    public static final UniqueKey<SwedishGovernmentBonds_2MonthRecord> SWEDISH_GOVERNMENT_BONDS_2_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_2Month.SWEDISH_GOVERNMENT_BONDS_2_MONTH, DSL.name("swedish_government_bonds_2_month_pkey"), new TableField[] { SwedishGovernmentBonds_2Month.SWEDISH_GOVERNMENT_BONDS_2_MONTH.ID }, true);
+    public static final UniqueKey<SwedishGovernmentBonds_5MonthRecord> SWEDISH_GOVERNMENT_BONDS_5_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_5Month.SWEDISH_GOVERNMENT_BONDS_5_MONTH, DSL.name("swedish_government_bonds_5_month_pkey"), new TableField[] { SwedishGovernmentBonds_5Month.SWEDISH_GOVERNMENT_BONDS_5_MONTH.ID }, true);
+    public static final UniqueKey<SwedishGovernmentBonds_7MonthRecord> SWEDISH_GOVERNMENT_BONDS_7_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_7Month.SWEDISH_GOVERNMENT_BONDS_7_MONTH, DSL.name("swedish_government_bonds_7_month_pkey"), new TableField[] { SwedishGovernmentBonds_7Month.SWEDISH_GOVERNMENT_BONDS_7_MONTH.ID }, true);
 }
