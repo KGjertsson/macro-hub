@@ -96,13 +96,6 @@ public record EuroMarketRateItem(Double value, LocalDate date) {
                 .build();
     }
 
-    public static EuroMarketRateItem ofEuroMarketRate5YearDenmark(Record record) {
-        return EuroMarketRateItem.builder()
-                .value(record.getValue(EURO_MARKET_5_YEAR_DENMARK.VALUE))
-                .date(record.getValue(EURO_MARKET_5_YEAR_DENMARK.DATE))
-                .build();
-    }
-
     public static EuroMarketRateItem ofEuroMarketRate5YearEur(Record record) {
         return EuroMarketRateItem.builder()
                 .value(record.getValue(EURO_MARKET_5_YEAR_EUR.VALUE))
@@ -124,17 +117,31 @@ public record EuroMarketRateItem(Double value, LocalDate date) {
                 .build();
     }
 
-    public static EuroMarketRateItem ofEuroMarketRate5YearNorway(Record record) {
-        return EuroMarketRateItem.builder()
-                .value(record.getValue(EURO_MARKET_5_YEAR_NORWAY.VALUE))
-                .date(record.getValue(EURO_MARKET_5_YEAR_NORWAY.DATE))
-                .build();
-    }
-
     public static EuroMarketRateItem ofEuroMarketRate5YearUsa(Record record) {
         return EuroMarketRateItem.builder()
                 .value(record.getValue(EURO_MARKET_5_YEAR_USA.VALUE))
                 .date(record.getValue(EURO_MARKET_5_YEAR_USA.DATE))
+                .build();
+    }
+
+    public static EuroMarketRateItem ofEuroMarketRate5YearFrance(Record record) {
+        return EuroMarketRateItem.builder()
+                .value(record.getValue(EURO_MARKET_5_YEAR_FRANCE.VALUE))
+                .date(record.getValue(EURO_MARKET_5_YEAR_FRANCE.DATE))
+                .build();
+    }
+
+    public static EuroMarketRateItem ofEuroMarketRate5YearGermany(Record record) {
+        return EuroMarketRateItem.builder()
+                .value(record.getValue(EURO_MARKET_5_YEAR_GERMANY.VALUE))
+                .date(record.getValue(EURO_MARKET_5_YEAR_GERMANY.DATE))
+                .build();
+    }
+
+    public static EuroMarketRateItem ofEuroMarketRate5YearNetherlands(Record record) {
+        return EuroMarketRateItem.builder()
+                .value(record.getValue(EURO_MARKET_5_YEAR_NETHERLANDS.VALUE))
+                .date(record.getValue(EURO_MARKET_5_YEAR_NETHERLANDS.DATE))
                 .build();
     }
 

@@ -36,14 +36,43 @@ curl.exe -X POST localhost:8080/scrape/government-bonds/sweden?period=2
 curl.exe -X POST localhost:8080/scrape/government-bonds/sweden?period=5
 curl.exe -X POST localhost:8080/scrape/government-bonds/sweden?period=7
 curl.exe -X POST localhost:8080/scrape/government-bonds/sweden?period=10
-
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=3month&country=denmark
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=3month&country=eur
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=3month&country=gb
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=3month&country=japan
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=3month&country=norway
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=3month&country=usa
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=6month&country=denmark
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=6month&country=eur
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=6month&country=gb
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=6month&country=japan
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=6month&country=norway
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=6month&country=usa
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=5year&country=eur
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=5year&country=gb
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=5year&country=japan
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=5year&country=france
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=5year&country=germany
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=5year&country=netherlands
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=5year&country=usa
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=denmark
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=eur
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=finland
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=france
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=gb
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=germany
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=japan
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=netherlands
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=norway
+curl.exe -X POST localhost:8080/scrape/euro-market-rate/?period=10year&country=usa
 ```
 
 ### sources
 
 Riskbanken REST
 API: https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/hamta-rantor-och-valutakurser-via-api/  
-Riskbanken series: https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/oppet-api/serier-for-webbservices/
+Riskbanken
+series: https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/oppet-api/serier-for-webbservices/
 
 ## macro-frontend
 

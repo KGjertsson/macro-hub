@@ -45,12 +45,13 @@ public class EuroMarketRateController {
             case "6month-japan" -> euroMarketRateRepository.getEuroMarketRate6MonthJapan();
             case "6month-norway" -> euroMarketRateRepository.getEuroMarketRate6MonthNorway();
             case "6month-usa" -> euroMarketRateRepository.getEuroMarketRate6MonthUsa();
-            case "5year-denmark" -> euroMarketRateRepository.getEuroMarketRate5YearDenmark();
             case "5year-eur" -> euroMarketRateRepository.getEuroMarketRate5YearEur();
             case "5year-gb" -> euroMarketRateRepository.getEuroMarketRate5YearGB();
             case "5year-japan" -> euroMarketRateRepository.getEuroMarketRate5YearJapan();
-            case "5year-norway" -> euroMarketRateRepository.getEuroMarketRate5YearNorway();
             case "5year-usa" -> euroMarketRateRepository.getEuroMarketRate5YearUsa();
+            case "5year-france" -> euroMarketRateRepository.getEuroMarketRate5YearFrance();
+            case "5year-germany" -> euroMarketRateRepository.getEuroMarketRate5YearGermany();
+            case "5year-netherlands" -> euroMarketRateRepository.getEuroMarketRate5YearHolland();
             case "10year-denmark" -> euroMarketRateRepository.getEuroMarketRate10YearDenmark();
             case "10year-eur" -> euroMarketRateRepository.getEuroMarketRate10YearEur();
             case "10year-finland" -> euroMarketRateRepository.getEuroMarketRate10YearFinland();

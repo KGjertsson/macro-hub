@@ -20,11 +20,12 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthGb;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthNorway;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthUsa;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearEur;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearFrance;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearGb;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearGermany;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearJapan;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearNorway;
+import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearNetherlands;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthEur;
@@ -132,14 +133,14 @@ public class Tables {
     public static final EuroMarket_3MonthUsa EURO_MARKET_3_MONTH_USA = EuroMarket_3MonthUsa.EURO_MARKET_3_MONTH_USA;
 
     /**
-     * The table <code>public.euro_market_5_year_denmark</code>.
-     */
-    public static final EuroMarket_5YearDenmark EURO_MARKET_5_YEAR_DENMARK = EuroMarket_5YearDenmark.EURO_MARKET_5_YEAR_DENMARK;
-
-    /**
      * The table <code>public.euro_market_5_year_eur</code>.
      */
     public static final EuroMarket_5YearEur EURO_MARKET_5_YEAR_EUR = EuroMarket_5YearEur.EURO_MARKET_5_YEAR_EUR;
+
+    /**
+     * The table <code>public.euro_market_5_year_france</code>.
+     */
+    public static final EuroMarket_5YearFrance EURO_MARKET_5_YEAR_FRANCE = EuroMarket_5YearFrance.EURO_MARKET_5_YEAR_FRANCE;
 
     /**
      * The table <code>public.euro_market_5_year_gb</code>.
@@ -147,14 +148,19 @@ public class Tables {
     public static final EuroMarket_5YearGb EURO_MARKET_5_YEAR_GB = EuroMarket_5YearGb.EURO_MARKET_5_YEAR_GB;
 
     /**
+     * The table <code>public.euro_market_5_year_germany</code>.
+     */
+    public static final EuroMarket_5YearGermany EURO_MARKET_5_YEAR_GERMANY = EuroMarket_5YearGermany.EURO_MARKET_5_YEAR_GERMANY;
+
+    /**
      * The table <code>public.euro_market_5_year_japan</code>.
      */
     public static final EuroMarket_5YearJapan EURO_MARKET_5_YEAR_JAPAN = EuroMarket_5YearJapan.EURO_MARKET_5_YEAR_JAPAN;
 
     /**
-     * The table <code>public.euro_market_5_year_norway</code>.
+     * The table <code>public.euro_market_5_year_netherlands</code>.
      */
-    public static final EuroMarket_5YearNorway EURO_MARKET_5_YEAR_NORWAY = EuroMarket_5YearNorway.EURO_MARKET_5_YEAR_NORWAY;
+    public static final EuroMarket_5YearNetherlands EURO_MARKET_5_YEAR_NETHERLANDS = EuroMarket_5YearNetherlands.EURO_MARKET_5_YEAR_NETHERLANDS;
 
     /**
      * The table <code>public.euro_market_5_year_usa</code>.
