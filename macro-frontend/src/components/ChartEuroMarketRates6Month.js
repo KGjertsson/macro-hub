@@ -15,13 +15,13 @@ const ChartEuroMarketRates6Month = () => {
 
   useEffect(() => {
     const init = async () => {
-      const base3MonthUrl = 'http://localhost:8080/euro-market-rate';
-      const url6MonthDenmark = base3MonthUrl + '?period=6month&country=denmark';
-      const url6MonthEur = base3MonthUrl + '?period=6month&country=eur';
-      const url6MonthGB = base3MonthUrl + '?period=6month&country=gb';
-      const url6MonthJapan = base3MonthUrl + '?period=6month&country=japan';
-      const url6MonthNorway = base3MonthUrl + '?period=6month&country=norway';
-      const url6MonthUsa = base3MonthUrl + '?period=6month&country=usa';
+      const baseUrl = 'http://localhost:8080/euro-market-rate';
+      const url6MonthDenmark = baseUrl + '?period=6month&country=denmark';
+      const url6MonthEur = baseUrl + '?period=6month&country=eur';
+      const url6MonthGB = baseUrl + '?period=6month&country=gb';
+      const url6MonthJapan = baseUrl + '?period=6month&country=japan';
+      const url6MonthNorway = baseUrl + '?period=6month&country=norway';
+      const url6MonthUsa = baseUrl + '?period=6month&country=usa';
 
       const response6MonthDenmark = await ky.get(url6MonthDenmark);
       const response6MonthEur = await ky.get(url6MonthEur);

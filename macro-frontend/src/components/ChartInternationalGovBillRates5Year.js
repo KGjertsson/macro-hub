@@ -17,15 +17,15 @@ const ChartInternationalGovernmentBillRates5Year = () => {
   useEffect(() => {
     const init = async () => {
       const nlArgs = '?period=5year&country=netherlands';
-      const base5YearUrl = 'http://localhost:8080/euro-market-rate';
+      const baseUrl = 'http://localhost:8080/government-bonds/international';
 
-      const url5YearEur = base5YearUrl + '?period=5year&country=eur';
-      const url5YearFrance = base5YearUrl + '?period=5year&country=france';
-      const url5YearGB = base5YearUrl + '?period=5year&country=gb';
-      const url5YearGermany = base5YearUrl + '?period=5year&country=germany';
-      const url5YearJapan = base5YearUrl + '?period=5year&country=japan';
-      const url5YearNetherlands = base5YearUrl + nlArgs;
-      const url5YearUsa = base5YearUrl + '?period=5year&country=usa';
+      const url5YearEur = baseUrl + '?period=5year&country=eur';
+      const url5YearFrance = baseUrl + '?period=5year&country=france';
+      const url5YearGB = baseUrl + '?period=5year&country=gb';
+      const url5YearGermany = baseUrl + '?period=5year&country=germany';
+      const url5YearJapan = baseUrl + '?period=5year&country=japan';
+      const url5YearNetherlands = baseUrl + nlArgs;
+      const url5YearUsa = baseUrl + '?period=5year&country=usa';
 
       const response5YearEur = await ky.get(url5YearEur);
       const response5YearFrance = await ky.get(url5YearFrance);

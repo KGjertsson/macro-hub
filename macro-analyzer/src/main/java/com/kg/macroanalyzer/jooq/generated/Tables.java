@@ -4,29 +4,12 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearDenmark;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearEur;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearFinland;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearFrance;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearGb;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearGermany;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearJapan;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearNetherlands;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearNorway;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_10YearUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthEur;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthGb;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthNorway;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthUsa;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearEur;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearFrance;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearGb;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearGermany;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearJapan;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearNetherlands;
-import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_5YearUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthEur;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthGb;
@@ -35,6 +18,23 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthNorway;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearDenmark;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearEur;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearFinland;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearFrance;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearGb;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearGermany;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearJapan;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearNetherlands;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearNorway;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearEur;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearFrance;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearGb;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearGermany;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearJapan;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearNetherlands;
+import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
@@ -51,56 +51,6 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Month;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
-
-    /**
-     * The table <code>public.euro_market_10_year_denmark</code>.
-     */
-    public static final EuroMarket_10YearDenmark EURO_MARKET_10_YEAR_DENMARK = EuroMarket_10YearDenmark.EURO_MARKET_10_YEAR_DENMARK;
-
-    /**
-     * The table <code>public.euro_market_10_year_eur</code>.
-     */
-    public static final EuroMarket_10YearEur EURO_MARKET_10_YEAR_EUR = EuroMarket_10YearEur.EURO_MARKET_10_YEAR_EUR;
-
-    /**
-     * The table <code>public.euro_market_10_year_finland</code>.
-     */
-    public static final EuroMarket_10YearFinland EURO_MARKET_10_YEAR_FINLAND = EuroMarket_10YearFinland.EURO_MARKET_10_YEAR_FINLAND;
-
-    /**
-     * The table <code>public.euro_market_10_year_france</code>.
-     */
-    public static final EuroMarket_10YearFrance EURO_MARKET_10_YEAR_FRANCE = EuroMarket_10YearFrance.EURO_MARKET_10_YEAR_FRANCE;
-
-    /**
-     * The table <code>public.euro_market_10_year_gb</code>.
-     */
-    public static final EuroMarket_10YearGb EURO_MARKET_10_YEAR_GB = EuroMarket_10YearGb.EURO_MARKET_10_YEAR_GB;
-
-    /**
-     * The table <code>public.euro_market_10_year_germany</code>.
-     */
-    public static final EuroMarket_10YearGermany EURO_MARKET_10_YEAR_GERMANY = EuroMarket_10YearGermany.EURO_MARKET_10_YEAR_GERMANY;
-
-    /**
-     * The table <code>public.euro_market_10_year_japan</code>.
-     */
-    public static final EuroMarket_10YearJapan EURO_MARKET_10_YEAR_JAPAN = EuroMarket_10YearJapan.EURO_MARKET_10_YEAR_JAPAN;
-
-    /**
-     * The table <code>public.euro_market_10_year_netherlands</code>.
-     */
-    public static final EuroMarket_10YearNetherlands EURO_MARKET_10_YEAR_NETHERLANDS = EuroMarket_10YearNetherlands.EURO_MARKET_10_YEAR_NETHERLANDS;
-
-    /**
-     * The table <code>public.euro_market_10_year_norway</code>.
-     */
-    public static final EuroMarket_10YearNorway EURO_MARKET_10_YEAR_NORWAY = EuroMarket_10YearNorway.EURO_MARKET_10_YEAR_NORWAY;
-
-    /**
-     * The table <code>public.euro_market_10_year_usa</code>.
-     */
-    public static final EuroMarket_10YearUsa EURO_MARKET_10_YEAR_USA = EuroMarket_10YearUsa.EURO_MARKET_10_YEAR_USA;
 
     /**
      * The table <code>public.euro_market_3_month_denmark</code>.
@@ -131,41 +81,6 @@ public class Tables {
      * The table <code>public.euro_market_3_month_usa</code>.
      */
     public static final EuroMarket_3MonthUsa EURO_MARKET_3_MONTH_USA = EuroMarket_3MonthUsa.EURO_MARKET_3_MONTH_USA;
-
-    /**
-     * The table <code>public.euro_market_5_year_eur</code>.
-     */
-    public static final EuroMarket_5YearEur EURO_MARKET_5_YEAR_EUR = EuroMarket_5YearEur.EURO_MARKET_5_YEAR_EUR;
-
-    /**
-     * The table <code>public.euro_market_5_year_france</code>.
-     */
-    public static final EuroMarket_5YearFrance EURO_MARKET_5_YEAR_FRANCE = EuroMarket_5YearFrance.EURO_MARKET_5_YEAR_FRANCE;
-
-    /**
-     * The table <code>public.euro_market_5_year_gb</code>.
-     */
-    public static final EuroMarket_5YearGb EURO_MARKET_5_YEAR_GB = EuroMarket_5YearGb.EURO_MARKET_5_YEAR_GB;
-
-    /**
-     * The table <code>public.euro_market_5_year_germany</code>.
-     */
-    public static final EuroMarket_5YearGermany EURO_MARKET_5_YEAR_GERMANY = EuroMarket_5YearGermany.EURO_MARKET_5_YEAR_GERMANY;
-
-    /**
-     * The table <code>public.euro_market_5_year_japan</code>.
-     */
-    public static final EuroMarket_5YearJapan EURO_MARKET_5_YEAR_JAPAN = EuroMarket_5YearJapan.EURO_MARKET_5_YEAR_JAPAN;
-
-    /**
-     * The table <code>public.euro_market_5_year_netherlands</code>.
-     */
-    public static final EuroMarket_5YearNetherlands EURO_MARKET_5_YEAR_NETHERLANDS = EuroMarket_5YearNetherlands.EURO_MARKET_5_YEAR_NETHERLANDS;
-
-    /**
-     * The table <code>public.euro_market_5_year_usa</code>.
-     */
-    public static final EuroMarket_5YearUsa EURO_MARKET_5_YEAR_USA = EuroMarket_5YearUsa.EURO_MARKET_5_YEAR_USA;
 
     /**
      * The table <code>public.euro_market_6_month_denmark</code>.
@@ -206,6 +121,91 @@ public class Tables {
      * The table <code>public.flyway_schema_history</code>.
      */
     public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_denmark</code>.
+     */
+    public static final IntGovBond_10YearDenmark INT_GOV_BOND_10_YEAR_DENMARK = IntGovBond_10YearDenmark.INT_GOV_BOND_10_YEAR_DENMARK;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_eur</code>.
+     */
+    public static final IntGovBond_10YearEur INT_GOV_BOND_10_YEAR_EUR = IntGovBond_10YearEur.INT_GOV_BOND_10_YEAR_EUR;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_finland</code>.
+     */
+    public static final IntGovBond_10YearFinland INT_GOV_BOND_10_YEAR_FINLAND = IntGovBond_10YearFinland.INT_GOV_BOND_10_YEAR_FINLAND;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_france</code>.
+     */
+    public static final IntGovBond_10YearFrance INT_GOV_BOND_10_YEAR_FRANCE = IntGovBond_10YearFrance.INT_GOV_BOND_10_YEAR_FRANCE;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_gb</code>.
+     */
+    public static final IntGovBond_10YearGb INT_GOV_BOND_10_YEAR_GB = IntGovBond_10YearGb.INT_GOV_BOND_10_YEAR_GB;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_germany</code>.
+     */
+    public static final IntGovBond_10YearGermany INT_GOV_BOND_10_YEAR_GERMANY = IntGovBond_10YearGermany.INT_GOV_BOND_10_YEAR_GERMANY;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_japan</code>.
+     */
+    public static final IntGovBond_10YearJapan INT_GOV_BOND_10_YEAR_JAPAN = IntGovBond_10YearJapan.INT_GOV_BOND_10_YEAR_JAPAN;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_netherlands</code>.
+     */
+    public static final IntGovBond_10YearNetherlands INT_GOV_BOND_10_YEAR_NETHERLANDS = IntGovBond_10YearNetherlands.INT_GOV_BOND_10_YEAR_NETHERLANDS;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_norway</code>.
+     */
+    public static final IntGovBond_10YearNorway INT_GOV_BOND_10_YEAR_NORWAY = IntGovBond_10YearNorway.INT_GOV_BOND_10_YEAR_NORWAY;
+
+    /**
+     * The table <code>public.int_gov_bond_10_year_usa</code>.
+     */
+    public static final IntGovBond_10YearUsa INT_GOV_BOND_10_YEAR_USA = IntGovBond_10YearUsa.INT_GOV_BOND_10_YEAR_USA;
+
+    /**
+     * The table <code>public.int_gov_bond_5_year_eur</code>.
+     */
+    public static final IntGovBond_5YearEur INT_GOV_BOND_5_YEAR_EUR = IntGovBond_5YearEur.INT_GOV_BOND_5_YEAR_EUR;
+
+    /**
+     * The table <code>public.int_gov_bond_5_year_france</code>.
+     */
+    public static final IntGovBond_5YearFrance INT_GOV_BOND_5_YEAR_FRANCE = IntGovBond_5YearFrance.INT_GOV_BOND_5_YEAR_FRANCE;
+
+    /**
+     * The table <code>public.int_gov_bond_5_year_gb</code>.
+     */
+    public static final IntGovBond_5YearGb INT_GOV_BOND_5_YEAR_GB = IntGovBond_5YearGb.INT_GOV_BOND_5_YEAR_GB;
+
+    /**
+     * The table <code>public.int_gov_bond_5_year_germany</code>.
+     */
+    public static final IntGovBond_5YearGermany INT_GOV_BOND_5_YEAR_GERMANY = IntGovBond_5YearGermany.INT_GOV_BOND_5_YEAR_GERMANY;
+
+    /**
+     * The table <code>public.int_gov_bond_5_year_japan</code>.
+     */
+    public static final IntGovBond_5YearJapan INT_GOV_BOND_5_YEAR_JAPAN = IntGovBond_5YearJapan.INT_GOV_BOND_5_YEAR_JAPAN;
+
+    /**
+     * The table <code>public.int_gov_bond_5_year_netherlands</code>.
+     */
+    public static final IntGovBond_5YearNetherlands INT_GOV_BOND_5_YEAR_NETHERLANDS = IntGovBond_5YearNetherlands.INT_GOV_BOND_5_YEAR_NETHERLANDS;
+
+    /**
+     * The table <code>public.int_gov_bond_5_year_usa</code>.
+     */
+    public static final IntGovBond_5YearUsa INT_GOV_BOND_5_YEAR_USA = IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA;
 
     /**
      * The table <code>public.policy_rate_sweden</code>.

@@ -20,18 +20,18 @@ const ChartInternationalGovernmentBillRates10Year = () => {
   useEffect(() => {
     const init = async () => {
       const nlArgs = '?period=10year&country=netherlands';
-      const base10YearUrl = 'http://localhost:8080/euro-market-rate';
+      const baseUrl = 'http://localhost:8080/government-bonds/international';
 
-      const url10YearDenmark = base10YearUrl + '?period=10year&country=denmark';
-      const url10YearEur = base10YearUrl + '?period=10year&country=eur';
-      const url10YearFinland = base10YearUrl + '?period=10year&country=france';
-      const url10YearFrance = base10YearUrl + '?period=10year&country=france';
-      const url10YearGB = base10YearUrl + '?period=10year&country=gb';
-      const url10YearGermany = base10YearUrl + '?period=10year&country=germany';
-      const url10YearJapan = base10YearUrl + '?period=10year&country=japan';
-      const url10YearNetherlands = base10YearUrl + nlArgs;
-      const url10YearNorway = base10YearUrl + '?period=10year&country=norway';
-      const url10YearUsa = base10YearUrl + '?period=10year&country=usa';
+      const url10YearDenmark = baseUrl + '?period=10year&country=denmark';
+      const url10YearEur = baseUrl + '?period=10year&country=eur';
+      const url10YearFinland = baseUrl + '?period=10year&country=france';
+      const url10YearFrance = baseUrl + '?period=10year&country=france';
+      const url10YearGB = baseUrl + '?period=10year&country=gb';
+      const url10YearGermany = baseUrl + '?period=10year&country=germany';
+      const url10YearJapan = baseUrl + '?period=10year&country=japan';
+      const url10YearNetherlands = baseUrl + nlArgs;
+      const url10YearNorway = baseUrl + '?period=10year&country=norway';
+      const url10YearUsa = baseUrl + '?period=10year&country=usa';
 
       const response10YearDenmark = await ky.get(url10YearDenmark);
       const response10YearEur = await ky.get(url10YearEur);

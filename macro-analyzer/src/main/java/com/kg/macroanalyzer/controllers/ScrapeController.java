@@ -50,10 +50,24 @@ public class ScrapeController {
     }
 
     @PostMapping("government-bonds/sweden")
-    public Integer scrapeSwedishGovernmentBonds(@RequestParam("period") String period) throws IOException {
+    public Integer scrapeSwedishGovernmentBonds(
+            @RequestParam("period") String period
+    ) throws IOException {
         log.info("Scraping government bonds for sweden with period=%s".formatted(period));
 
         return scrapeService.scrapeGovernmentBondsSweden(period);
+    }
+
+    @PostMapping("government-bonds/international")
+    public Integer scrapeIntGovBonds(
+            @RequestParam("period") String period,
+            @RequestParam("country") String country
+    ) throws IOException {
+        final var periodCountry = period.toLowerCase() + '-' + country.toLowerCase();
+        log.info(("Scraping international government bonds with periodCountry=%s")
+                .formatted(periodCountry));
+
+        return scrapeService.scrapeIntGovBonds(periodCountry);
     }
 
     @PostMapping("euro-market-rate")

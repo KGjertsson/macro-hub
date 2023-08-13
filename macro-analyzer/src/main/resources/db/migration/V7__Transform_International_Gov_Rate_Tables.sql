@@ -1,0 +1,33 @@
+ALTER TABLE euro_market_5_year_eur
+    RENAME TO int_gov_bond_5_year_eur;
+ALTER TABLE euro_market_5_year_france
+    RENAME TO int_gov_bond_5_year_france;
+ALTER TABLE euro_market_5_year_gb
+    RENAME TO int_gov_bond_5_year_gb;
+ALTER TABLE euro_market_5_year_japan
+    RENAME TO int_gov_bond_5_year_japan;
+ALTER TABLE euro_market_5_year_netherlands
+    RENAME TO int_gov_bond_5_year_netherlands;
+ALTER TABLE euro_market_5_year_usa
+    RENAME TO int_gov_bond_5_year_usa;
+
+ALTER TABLE euro_market_10_year_denmark
+    RENAME TO int_gov_bond_10_year_denmark;
+ALTER TABLE euro_market_10_year_eur
+    RENAME TO int_gov_bond_10_year_eur;
+ALTER TABLE euro_market_10_year_finland
+    RENAME TO int_gov_bond_10_year_finland;
+ALTER TABLE euro_market_10_year_france
+    RENAME TO int_gov_bond_10_year_france;
+ALTER TABLE euro_market_10_year_gb
+    RENAME TO int_gov_bond_10_year_gb;
+ALTER TABLE euro_market_10_year_germany
+    RENAME TO int_gov_bond_10_year_germany;
+ALTER TABLE euro_market_10_year_japan
+    RENAME TO int_gov_bond_10_year_japan;
+ALTER TABLE euro_market_10_year_netherlands
+    RENAME TO int_gov_bond_10_year_netherlands;
+ALTER TABLE euro_market_10_year_norway
+    RENAME TO int_gov_bond_10_year_norway;
+ALTER TABLE euro_market_10_year_usa
+    RENAME TO int_gov_bond_10_year_usa;

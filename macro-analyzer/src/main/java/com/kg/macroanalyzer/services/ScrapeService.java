@@ -173,23 +173,6 @@ public class ScrapeService {
             case "6month-japan" -> scrapeEuroMarketRate6MonthJapan();
             case "6month-norway" -> scrapeEuroMarketRate6MonthNorway();
             case "6month-usa" -> scrapeEuroMarketRate6MonthUsa();
-            case "5year-eur" -> scrapeEuroMarketRate5yearEur();
-            case "5year-gb" -> scrapeEuroMarketRate5yearGB();
-            case "5year-japan" -> scrapeEuroMarketRate5yearJapan();
-            case "5year-france" -> scrapeEuroMarketRate5yearFrance();
-            case "5year-germany" -> scrapeEuroMarketRate5yearGermany();
-            case "5year-netherlands" -> scrapeEuroMarketRate5yearNetherlands();
-            case "5year-usa" -> scrapeEuroMarketRate5yearUsa();
-            case "10year-denmark" -> scrapeEuroMarketRate10yearDenmark();
-            case "10year-eur" -> scrapeEuroMarketRate10yearEur();
-            case "10year-finland" -> scrapeEuroMarketRate10yearFinland();
-            case "10year-france" -> scrapeEuroMarketRate10yearFrance();
-            case "10year-gb" -> scrapeEuroMarketRate10yearGB();
-            case "10year-germany" -> scrapeEuroMarketRate10yearGermany();
-            case "10year-japan" -> scrapeEuroMarketRate10yearJapan();
-            case "10year-netherlands" -> scrapeEuroMarketRate10yearNetherlands();
-            case "10year-norway" -> scrapeEuroMarketRate10yearNorway();
-            case "10year-usa" -> scrapeEuroMarketRate10yearUsa();
             default -> throw new IllegalArgumentException(e);
         };
     }
@@ -314,172 +297,197 @@ public class ScrapeService {
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate5yearGermany() throws IOException {
+    public Integer scrapeIntGovBonds(String periodCountry) throws IOException {
+        final var e = "Found unexpected combination of query parameters country and period.";
+
+        return switch (periodCountry) {
+            case "5year-eur" -> scrapeIntGovBond5yearEur();
+            case "5year-gb" -> scrapeIntGovBond5yearGB();
+            case "5year-japan" -> scrapeIntGovBond5yearJapan();
+            case "5year-france" -> scrapeIntGovBond5yearFrance();
+            case "5year-germany" -> scrapeIntGovBond5yearGermany();
+            case "5year-netherlands" -> scrapeIntGovBond5yearNetherlands();
+            case "5year-usa" -> scrapeIntGovBond5yearUsa();
+            case "10year-denmark" -> scrapeIntGovBond10yearDenmark();
+            case "10year-eur" -> scrapeIntGovBond10yearEur();
+            case "10year-finland" -> scrapeIntGovBond10yearFinland();
+            case "10year-france" -> scrapeIntGovBond10yearFrance();
+            case "10year-gb" -> scrapeIntGovBond10yearGB();
+            case "10year-germany" -> scrapeIntGovBond10yearGermany();
+            case "10year-japan" -> scrapeIntGovBond10yearJapan();
+            case "10year-netherlands" -> scrapeIntGovBond10yearNetherlands();
+            case "10year-norway" -> scrapeIntGovBond10yearNorway();
+            case "10year-usa" -> scrapeIntGovBond10yearUsa();
+            default -> throw new IllegalArgumentException(e);
+        };
+    }
+
+    private Integer scrapeIntGovBond5yearGermany() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/DEGVB5Y/1987-02-09";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate5YearGermany();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond5YearGermany();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate5YearGermany(scraped);
+        governmentBondsRepository.insertIntGovBond5YearGermany(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate5yearFrance() throws IOException {
+    private Integer scrapeIntGovBond5yearFrance() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/FRGVB5Y/1988-02-08";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate5YearFrance();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond5YearFrance();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate5YearFrance(scraped);
+        governmentBondsRepository.insertIntGovBond5YearFrance(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate5yearNetherlands() throws IOException {
+    private Integer scrapeIntGovBond5yearNetherlands() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/NLGVB5Y/1987-02-09";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate5YearHolland();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond5YearHolland();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate5YearHolland(scraped);
+        governmentBondsRepository.insertIntGovBond5YearHolland(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate5yearEur() throws IOException {
+    private Integer scrapeIntGovBond5yearEur() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EMGVB5Y/1999-01-04";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate5YearEur();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond5YearEur();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate5YearEur(scraped);
+        governmentBondsRepository.insertIntGovBond5YearEur(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate5yearGB() throws IOException {
+    private Integer scrapeIntGovBond5yearGB() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/GBGVB5Y/1987-01-02";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate6MonthGB();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond5YearGB();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate5YearGB(scraped);
+        governmentBondsRepository.insertIntGovBond5YearGB(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate5yearJapan() throws IOException {
+    private Integer scrapeIntGovBond5yearJapan() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/JPGVB5Y/1987-03-23";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate3MonthJapan();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond5YearJapan();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate5YearJapan(scraped);
+        governmentBondsRepository.insertIntGovBond5YearJapan(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate5yearUsa() throws IOException {
+    private Integer scrapeIntGovBond5yearUsa() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/USGVB5Y/1987-02-02";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate5YearUsa();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond5YearUsa();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate5YearUsa(scraped);
+        governmentBondsRepository.insertIntGovBond5YearUsa(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearUsa() throws IOException {
+    private Integer scrapeIntGovBond10yearUsa() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/USGVB10Y/1991-01-02";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearUsa();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearUsa();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearUsa(scraped);
+        governmentBondsRepository.insertIntGovBond10YearUsa(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearNorway() throws IOException {
+    private Integer scrapeIntGovBond10yearNorway() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/NOGVB10Y/1990-05-31";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearNorway();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearNorway();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearNorway(scraped);
+        governmentBondsRepository.insertIntGovBond10YearNorway(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearNetherlands() throws IOException {
+    private Integer scrapeIntGovBond10yearNetherlands() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/NLGVB10Y/1987-02-09";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearHolland();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearHolland();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearHolland(scraped);
+        governmentBondsRepository.insertIntGovBond10YearHolland(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearJapan() throws IOException {
+    private Integer scrapeIntGovBond10yearJapan() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/JPGVB10Y/1987-01-05";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearJapan();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearJapan();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearJapan(scraped);
+        governmentBondsRepository.insertIntGovBond10YearJapan(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearGermany() throws IOException {
+    private Integer scrapeIntGovBond10yearGermany() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/DEGVB10Y/1987-02-09";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearGermany();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearGermany();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearGermany(scraped);
+        governmentBondsRepository.insertIntGovBond10YearGermany(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearGB() throws IOException {
+    private Integer scrapeIntGovBond10yearGB() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/GBGVB10Y/1987-01-02";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearGB();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearGB();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearGB(scraped);
+        governmentBondsRepository.insertIntGovBond10YearGB(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearFrance() throws IOException {
+    private Integer scrapeIntGovBond10yearFrance() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/FRGVB10Y/1988-02-08";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearFrance();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearFrance();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearFrance(scraped);
+        governmentBondsRepository.insertIntGovBond10YearFrance(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearFinland() throws IOException {
+    private Integer scrapeIntGovBond10yearFinland() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/FIGVB10Y/1990-04-02";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearFinland();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearFinland();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearFinland(scraped);
+        governmentBondsRepository.insertIntGovBond10YearFinland(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearEur() throws IOException {
+    private Integer scrapeIntGovBond10yearEur() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EMGVB10Y/1999-01-04";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearEur();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearEur();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearEur(scraped);
+        governmentBondsRepository.insertIntGovBond10YearEur(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeEuroMarketRate10yearDenmark() throws IOException {
+    private Integer scrapeIntGovBond10yearDenmark() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/DKGVB10Y/1982-01-04";
-        final var persisted = euroMarketRateRepository.getEuroMarketRate10YearDenmark();
-        final var scraped = scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var persisted = governmentBondsRepository.getIntGovBond10YearDenmark();
+        final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-        euroMarketRateRepository.insertEuroMarketRate10YearDenmark(scraped);
+        governmentBondsRepository.insertIntGovBond10YearDenmark(scraped);
 
         return scraped.size();
     }
