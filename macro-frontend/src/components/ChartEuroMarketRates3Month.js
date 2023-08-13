@@ -44,7 +44,7 @@ const ChartEuroMarketRates3Month = () => {
       const values3MonthNorway = body3MonthNorway.map((o) => o['value']);
       const values3MonthUsa = body3MonthUsa.map((o) => o['value']);
 
-      const labelsRaw = body3MonthDenmark.map((o) => o['date'].join('-'));
+      const labelsRaw = body3MonthUsa.map((o) => o['date'].join('-'));
 
       setValuesDenmark(values3MonthDenmark);
       setValuesEur(values3MonthEur);

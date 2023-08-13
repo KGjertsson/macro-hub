@@ -51,7 +51,7 @@ const ChartInternationalGovernmentBillRates5Year = () => {
       const values5YearNetherlands = body5YeasNL.map((o) => o['value']);
       const values5YearUsa = body5YearUsa.map((o) => o['value']);
 
-      const labelsRaw = body5YearEur.map((o) => o['date'].join('-'));
+      const labelsRaw = body5YearGB.map((o) => o['date'].join('-'));
 
       setValuesEur(values5YearEur);
       setValuesFrance(values5YearFrance);

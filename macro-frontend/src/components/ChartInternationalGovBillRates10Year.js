@@ -66,7 +66,7 @@ const ChartInternationalGovernmentBillRates10Year = () => {
       const values10YearNorway = body10YeasNorway.map((o) => o['value']);
       const values10YearUsa = body10YearUsa.map((o) => o['value']);
 
-      const labelsRaw = body10YearEur.map((o) => o['date'].join('-'));
+      const labelsRaw = body10YearDenmark.map((o) => o['date'].join('-'));
 
       setValuesDenmark(values10YearDenmark);
       setValuesEur(values10YearEur);
