@@ -5,8 +5,10 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     './node_modules/tw-elements/dist/js/**/*.js',
+    './node_modules/flowbite/**/*.js',
+    './node_modules/flowbite-react/**/*.js',
   ],
   theme: {},
-  plugins: [require('tw-elements/dist/plugin.cjs')],
+  plugins: [require('tw-elements/dist/plugin.cjs'), require('flowbite/plugin')],
   // darkMode: 'class'
 };

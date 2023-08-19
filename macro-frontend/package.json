@@ -10,10 +10,13 @@
   },
   "dependencies": {
     "@kurkle/color": "^0.3.2",
+    "@popperjs/core": "2.4.4",
     "chart.js": "^4.3.3",
     "eslint": "8.46.0",
     "eslint-config-next": "13.4.12",
     "faker": "^5.5.3",
+    "flowbite": "^1.8.1",
+    "flowbite-react": "^0.5.0",
     "ky": "^0.33.3",
     "luxon": "^3.3.0",
     "next": "13.4.12",
