@@ -1,25 +1,28 @@
 'use client';
-import { useEffect, useState } from 'react';
-import ky from 'ky';
-
+import { useQuery } from 'react-query';
 import ChartJsComponent from '@/components/ChartJsLineComponent';
 
+async function fetchPolicyRate() {
+  const response = await fetch('http://localhost:8080/policy-rate/sweden');
+  return response.json();
+}
+
 const ChartSwedenPolicyRate = () => {
-  const [labels, setLabels] = useState([]);
-  const [values, setValues] = useState([]);
+  const { data, isLoading, isError } = useQuery(
+    'swedenPolicyRate',
+    fetchPolicyRate
+  );
 
-  useEffect(() => {
-    const init = async () => {
-      const response = await ky.get('http://localhost:8080/policy-rate/sweden');
-      const body = await response.json();
-      const valuesRaw = body.map((o) => o['value']);
-      const labelsRaw = body.map((o) => o['date'].join('-'));
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
 
-      setValues(valuesRaw);
-      setLabels(labelsRaw);
-    };
-    init();
-  }, []);
+  if (isError) {
+    return <p>Error fetching data</p>;
+  }
+
+  const values = data.map((o) => o['value']);
+  const labels = data.map((o) => o['date'].join('-'));
 
   return (
     <ChartJsComponent
@@ -29,6 +32,7 @@ const ChartSwedenPolicyRate = () => {
       borderColor={'rgb(75, 192, 192)'}
       backgroundColor={'rgb(75, 192, 192, 0.1)'}
       title={'Sveriges styrränta'}
+      style={{ margin: '10000px' }}
     />
   );
 };
