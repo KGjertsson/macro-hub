@@ -43,14 +43,22 @@ const ChartInternationalGovernmentBillRates5Year = () => {
       const body5YeasNL = await response5YearNetherlands.json();
       const body5YearUsa = await response5YearUsa.json();
 
+      // @ts-ignore
       const values5YearEur = body5YearEur.map((o) => o['value']);
+      // @ts-ignore
       const values5YearFrance = body5YearFrance.map((o) => o['value']);
+      // @ts-ignore
       const values5YearGB = body5YearGB.map((o) => o['value']);
+      // @ts-ignore
       const values5YearGermany = body5YearGermany.map((o) => o['value']);
+      // @ts-ignore
       const values5YearJapan = body5YearJapan.map((o) => o['value']);
+      // @ts-ignore
       const values5YearNetherlands = body5YeasNL.map((o) => o['value']);
+      // @ts-ignore
       const values5YearUsa = body5YearUsa.map((o) => o['value']);
 
+      // @ts-ignore
       const labelsRaw = body5YearGB.map((o) => o['date'].join('-'));
 
       setValuesEur(values5YearEur);

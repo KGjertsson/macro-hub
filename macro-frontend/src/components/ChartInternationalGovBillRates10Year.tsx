@@ -55,17 +55,28 @@ const ChartInternationalGovernmentBillRates10Year = () => {
       const body10YeasNorway = await response10YearNorway.json();
       const body10YearUsa = await response10YearUsa.json();
 
+      // @ts-ignore
       const values10YearDenmark = body10YearDenmark.map((o) => o['value']);
+      // @ts-ignore
       const values10YearEur = body10YearEur.map((o) => o['value']);
+      // @ts-ignore
       const values10YearFrance = body10YearFrance.map((o) => o['value']);
+      // @ts-ignore
       const values10YearFinland = body10YearFinland.map((o) => o['value']);
+      // @ts-ignore
       const values10YearGB = body10YearGB.map((o) => o['value']);
+      // @ts-ignore
       const values10YearGermany = body10YearGermany.map((o) => o['value']);
+      // @ts-ignore
       const values10YearJapan = body10YearJapan.map((o) => o['value']);
+      // @ts-ignore
       const values10YearNetherlands = body10YeasNL.map((o) => o['value']);
+      // @ts-ignore
       const values10YearNorway = body10YeasNorway.map((o) => o['value']);
+      // @ts-ignore
       const values10YearUsa = body10YearUsa.map((o) => o['value']);
 
+      // @ts-ignore
       const labelsRaw = body10YearDenmark.map((o) => o['date'].join('-'));
 
       setValuesDenmark(values10YearDenmark);

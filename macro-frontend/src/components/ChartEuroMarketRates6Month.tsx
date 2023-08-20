@@ -37,13 +37,20 @@ const ChartEuroMarketRates6Month = () => {
       const body6MonthNorway = await response6MonthNorway.json();
       const body6MonthUsa = await response6MonthUsa.json();
 
+      // @ts-ignore
       const values6MonthDenmark = body6MonthDenmark.map((o) => o['value']);
+      // @ts-ignore
       const values6MonthEur = body6MonthEur.map((o) => o['value']);
+      // @ts-ignore
       const values6MonthGB = body6MonthGB.map((o) => o['value']);
+      // @ts-ignore
       const values6MonthJapan = body6MonthJapan.map((o) => o['value']);
+      // @ts-ignore
       const values6MonthNorway = body6MonthNorway.map((o) => o['value']);
+      // @ts-ignore
       const values6MonthUsa = body6MonthUsa.map((o) => o['value']);
 
+      // @ts-ignore
       const labelsRaw = body6MonthUsa.map((o) => o['date'].join('-'));
 
       setValuesDenmark(values6MonthDenmark);

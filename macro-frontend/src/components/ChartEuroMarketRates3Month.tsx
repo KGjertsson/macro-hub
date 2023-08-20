@@ -37,13 +37,20 @@ const ChartEuroMarketRates3Month = () => {
       const body3MonthNorway = await response3MonthNorway.json();
       const body3MonthUsa = await response3MonthUsa.json();
 
+      // @ts-ignore
       const values3MonthDenmark = body3MonthDenmark.map((o) => o['value']);
+      // @ts-ignore
       const values3MonthEur = body3MonthEur.map((o) => o['value']);
+      // @ts-ignore
       const values3MonthGB = body3MonthGB.map((o) => o['value']);
+      // @ts-ignore
       const values3MonthJapan = body3MonthJapan.map((o) => o['value']);
+      // @ts-ignore
       const values3MonthNorway = body3MonthNorway.map((o) => o['value']);
+      // @ts-ignore
       const values3MonthUsa = body3MonthUsa.map((o) => o['value']);
 
+      // @ts-ignore
       const labelsRaw = body3MonthUsa.map((o) => o['date'].join('-'));
 
       setValuesDenmark(values3MonthDenmark);

@@ -21,7 +21,9 @@ const ChartSwedenPolicyRate = () => {
     return <p>Error fetching data</p>;
   }
 
+  // @ts-ignore
   const values = data.map((o) => o['value']);
+  // @ts-ignore
   const labels = data.map((o) => o['date'].join('-'));
 
   return (
@@ -32,7 +34,6 @@ const ChartSwedenPolicyRate = () => {
       borderColor={'rgb(75, 192, 192)'}
       backgroundColor={'rgb(75, 192, 192, 0.1)'}
       title={'Sveriges styrränta'}
-      style={{ margin: '10000px' }}
     />
   );
 };

@@ -21,7 +21,23 @@ ChartJS.register(
   Legend
 );
 
-const MultiLineChartJsComponent = ({ datasets, labels, title }) => {
+interface ChartJsComponentProps {
+  values: number[]; // Assuming values is an array of numbers
+  labels: string[]; // Assuming labels is an array of strings
+  label: string;
+  borderColor: string;
+  backgroundColor: string;
+  title: string;
+}
+
+const ChartJsComponent = ({
+  values,
+  labels,
+  label,
+  borderColor,
+  backgroundColor,
+  title,
+}: ChartJsComponentProps) => {
   return (
     <Line
       className="mx-auto w-3/5 overflow-hidden"
@@ -40,10 +56,18 @@ const MultiLineChartJsComponent = ({ datasets, labels, title }) => {
       }}
       data={{
         labels,
-        datasets: datasets,
+        datasets: [
+          {
+            label: label,
+            data: values,
+            borderColor: borderColor,
+            backgroundColor: backgroundColor,
+            pointRadius: 1,
+          },
+        ],
       }}
     />
   );
 };
 
-export default MultiLineChartJsComponent;
+export default ChartJsComponent;

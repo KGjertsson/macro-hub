@@ -28,11 +28,16 @@ const ChartGovernmentBondsSweden = () => {
       const body7M = await response7Month.json();
       const body10M = await response10Month.json();
 
+      // @ts-ignore
       const valuesRaw2M = body2M.map((o) => o['value']);
+      // @ts-ignore
       const valuesRaw5M = body5M.map((o) => o['value']);
+      // @ts-ignore
       const valuesRaw7M = body7M.map((o) => o['value']);
+      // @ts-ignore
       const valuesRaw10M = body10M.map((o) => o['value']);
 
+      // @ts-ignore
       const labelsRaw2M = body2M.map((o) => o['date'].join('-'));
 
       setValues2Month(valuesRaw2M);

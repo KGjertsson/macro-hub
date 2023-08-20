@@ -13,7 +13,9 @@ const ChartUsdSekExchangeRate = () => {
       const url = 'http://localhost:8080/exchange-rate/usd-sek';
       const response = await ky.get(url);
       const body = await response.json();
+      // @ts-ignore
       const valuesRaw = body.map((o) => o['value']);
+      // @ts-ignore
       const labelsRaw = body.map((o) => o['date'].join('-'));
 
       setValues(valuesRaw);
