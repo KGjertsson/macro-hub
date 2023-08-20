@@ -126,6 +126,7 @@ const DynamicChartComponent = ({ selectedItems }: Props) => {
           .map((dataset) => {
             return {
               data: dataset.data,
+              options: dataset,
             };
           }),
       }}
