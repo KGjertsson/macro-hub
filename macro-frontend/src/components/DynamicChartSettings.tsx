@@ -50,7 +50,7 @@ const DynamicChartSettings = () => {
         </select>
         <label data-te-select-label-ref>Example label</label>
       </div>
-      <DynamicChartComponent graphConfigItems={configItems} />
+      <DynamicChartComponent selectedItems={configItems} />
     </div>
   );
 };
