@@ -22,11 +22,13 @@ const DynamicDataCache = ({ selectedItems }: Props) => {
     return { ...dataset, selected: false };
   };
 
-  const loadDataset = async (
+  const selectDataset = async (
     dataset: Dataset,
     selectedItems: DATASET_NAMES[]
   ) => {
     const isSelected = selectedItems.includes(dataset.name);
+    console.log('selectedItems:');
+    console.log(selectedItems);
 
     if (shouldFetchData(dataset, isSelected)) {
       console.log('fetching data for ' + dataset.name);
@@ -42,9 +44,10 @@ const DynamicDataCache = ({ selectedItems }: Props) => {
     } else {
       if (isSelected) {
         console.log('already cached selected series: ' + dataset.name);
+        return { ...dataset, selected: true };
       }
 
-      return { ...dataset, selected: true };
+      return dataset;
     }
   };
 
@@ -53,7 +56,7 @@ const DynamicDataCache = ({ selectedItems }: Props) => {
       const updatedCache = await Promise.all(
         cache
           .map((dataset) => deselect(dataset))
-          .map(async (dataset) => loadDataset(dataset, selectedItems))
+          .map(async (dataset) => selectDataset(dataset, selectedItems))
       );
       const newSelection = updatedCache.filter((d) => d.selected);
 

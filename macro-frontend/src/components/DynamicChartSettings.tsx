@@ -39,7 +39,7 @@ const DynamicChartSettings = () => {
             </option>
           ))}
         </select>
-        <label data-te-select-label-ref>Example label</label>
+        <label data-te-select-label-ref>Super bra label</label>
       </div>
       <DynamicDataCache selectedItems={selectedItems} />
     </div>
