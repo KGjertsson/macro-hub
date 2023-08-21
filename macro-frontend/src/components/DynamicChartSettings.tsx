@@ -1,14 +1,9 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import DynamicChartComponent from '@/components/DynamicChartComponent';
-import GraphConfigItem from '@/models/GraphConfigItem';
-
-const graphs = [
-  new GraphConfigItem('SwedenPolicyRate', '/policy-rate/sweden'),
-  new GraphConfigItem('UsdSekExchangeRate', '/exchange-rate/usd-sek'),
-];
+import { allDatasetNames, DATASET_NAMES } from '@/models/Constants';
 
 const DynamicChartSettings = () => {
-  const [configItems, setConfigItems] = useState<GraphConfigItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<DATASET_NAMES[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -23,13 +18,9 @@ const DynamicChartSettings = () => {
     const selectedOptions = Array.from(
       e.target.selectedOptions,
       (option) => option.value
-    );
+    ).map((selected) => DATASET_NAMES[selected as keyof typeof DATASET_NAMES]);
 
-    const selectedGraphs = graphs.filter((g) =>
-      selectedOptions.includes(g.name)
-    );
-
-    setConfigItems(selectedGraphs);
+    setSelectedItems(selectedOptions);
   };
 
   return (
@@ -42,15 +33,15 @@ const DynamicChartSettings = () => {
           Select an option
         </label>
         <select data-te-select-init multiple onChange={filterSelectedGraphs}>
-          {graphs.map((graph) => (
-            <option key={graph.name} value={graph.name}>
-              {graph.name}
+          {allDatasetNames.map((name) => (
+            <option key={name} value={name}>
+              {name}
             </option>
           ))}
         </select>
         <label data-te-select-label-ref>Example label</label>
       </div>
-      <DynamicChartComponent selectedItems={configItems} />
+      <DynamicChartComponent selectedItems={selectedItems} />
     </div>
   );
 };

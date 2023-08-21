@@ -12,10 +12,8 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import ky from 'ky';
-import DataSeries from '@/models/DataSeries';
-import { rootUrl } from '@/models/Constants';
+import { DATASET_NAMES, rootUrl } from '@/models/Constants';
 import { DataResponseItem } from '@/models/DataResponseItem';
-import { GraphSelectionItem } from '@/models/GraphSelectionItem';
 import { shouldFetchData } from '@/utils/ObjectUtils';
 import { Dataset, defaultDataset } from '@/models/Dataset';
 
@@ -29,46 +27,25 @@ ChartJS.register(
   Legend
 );
 
-type Action =
-  | { type: 'LOAD_NEW'; updatedName: string; updatedSeries: DataSeries }
-  | { type: 'RESET' };
-
-const reducer = (state: Dataset, action: Action) => {
-  switch (action.type) {
-    case 'LOAD_NEW':
-      // const key: string = action.updatedName;
-      // return { ...state, [key]: action.updatedSeries };
-      return state;
-    case 'RESET':
-      return state;
-  }
-};
-
-// const emptyCache: DatasetCache = {
-//   SwedenPolicyRate: { selected: false },
-//   UsdSekExchangeRate: { selected: false },
-// };
-
 const emptyCache: Array<Dataset> = defaultDataset;
 
 interface Props {
-  selectedItems: GraphSelectionItem[];
+  selectedItems: DATASET_NAMES[];
 }
 
 const DynamicChartComponent = ({ selectedItems }: Props) => {
-  // const [cache, cacheDispatch] = useReducer(reducer, emptyCache);
   const [cache, setCache] = useState(emptyCache);
+  const [labels, setLabels] = useState<string[]>([]);
 
   const deselect = (dataset: Dataset): Dataset => {
     return { ...dataset, selected: false };
   };
 
-  const loadDataset = async (dataset: Dataset) => {
-    const isSelected = selectedItems.map((i) => i.name).includes(dataset.name);
-
-    console.log(dataset);
-    console.log(isSelected);
-    console.log('---');
+  const loadDataset = async (
+    dataset: Dataset,
+    selectedItems: DATASET_NAMES[]
+  ) => {
+    const isSelected = selectedItems.includes(dataset.name);
 
     if (shouldFetchData(dataset, isSelected)) {
       console.log('fetching data for ' + dataset.name);
@@ -78,6 +55,7 @@ const DynamicChartComponent = ({ selectedItems }: Props) => {
 
       const values = responseData.map((r) => r.value);
       const labels = responseData.map((r) => r.date.join('-'));
+      setLabels(labels);
 
       return { ...dataset, data: values, selected: true };
     } else {
@@ -94,7 +72,7 @@ const DynamicChartComponent = ({ selectedItems }: Props) => {
       const updatedCache = await Promise.all(
         cache
           .map((dataset) => deselect(dataset))
-          .map(async (dataset) => loadDataset(dataset))
+          .map(async (dataset) => loadDataset(dataset, selectedItems))
       );
 
       setCache(updatedCache);
@@ -120,26 +98,21 @@ const DynamicChartComponent = ({ selectedItems }: Props) => {
         },
       }}
       data={{
-        labels: [],
+        labels: labels,
         datasets: cache
           .filter((dataset) => dataset.selected)
           .map((dataset) => {
             return {
               data: dataset.data,
-              options: dataset,
+              label: dataset.lineConfig.label,
+              borderColor: dataset.lineConfig.borderColor,
+              backgroundColor: dataset.lineConfig.backgroundColor,
+              pointRadius: dataset.lineConfig.pointRadius,
             };
           }),
       }}
     />
   );
 };
-
-// {
-//   label: 'Internationella statsobligationer 5-års löptid: Eur',
-//     data: valuesEur,
-//   borderColor: 'rgb(255, 99, 71)',
-//   backgroundColor: 'rgba(255, 99, 71, 0.1)',
-//   pointRadius: 1,
-// },
 
 export default DynamicChartComponent;
