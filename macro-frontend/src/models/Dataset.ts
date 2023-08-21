@@ -9,6 +9,7 @@ export type LineConfig = {
 
 export type Dataset = {
   data?: number[];
+  labels?: string[]
   lineConfig: LineConfig;
   selected: boolean;
   name: DATASET_NAMES;
@@ -20,11 +21,11 @@ const policyRateSweden: Dataset = {
     label: 'Sveriges styrränta',
     borderColor: 'rgb(75, 192, 192)',
     backgroundColor: 'rgb(75, 192, 192, 0.1)',
-    pointRadius: 1,
+    pointRadius: 1
   },
   selected: false,
   name: DATASET_NAMES.SwedenPolicyRate,
-  url: '/policy-rate/sweden',
+  url: '/policy-rate/sweden'
 };
 
 const usdSekExchange: Dataset = {
@@ -32,11 +33,11 @@ const usdSekExchange: Dataset = {
     label: 'USD till SEK växelkurs',
     borderColor: 'rgb(75, 192, 192)',
     backgroundColor: 'rgb(75, 192, 192, 0.1)',
-    pointRadius: 1,
+    pointRadius: 1
   },
   selected: false,
   name: DATASET_NAMES.UsdSekExchangeRate,
-  url: '/exchange-rate/usd-sek',
+  url: '/exchange-rate/usd-sek'
 };
 
 export const defaultDataset = [policyRateSweden, usdSekExchange];
