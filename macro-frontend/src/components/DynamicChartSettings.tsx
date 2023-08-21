@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from 'react';
-import DynamicChartComponent from '@/components/DynamicChartComponent';
+import DynamicDataCache from '@/components/DynamicDataCache';
 import { allDatasetNames, DATASET_NAMES } from '@/models/Constants';
 
 const DynamicChartSettings = () => {
@@ -41,7 +41,7 @@ const DynamicChartSettings = () => {
         </select>
         <label data-te-select-label-ref>Example label</label>
       </div>
-      <DynamicChartComponent selectedItems={selectedItems} />
+      <DynamicDataCache selectedItems={selectedItems} />
     </div>
   );
 };
