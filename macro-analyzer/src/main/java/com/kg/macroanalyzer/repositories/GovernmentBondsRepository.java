@@ -22,28 +22,28 @@ public class GovernmentBondsRepository {
         this.dslContext = dslContext;
     }
 
-    public List<GovernmentBondItem> getSwedishGovernmentBonds2Month() {
+    public List<GovernmentBondItem> getSwedishGovernmentBonds2Year() {
         return dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_2_YEAR)
                 .fetch()
                 .map(GovernmentBondItem::ofSwedish2Month);
     }
 
-    public List<GovernmentBondItem> getSwedishGovernmentBonds5Month() {
+    public List<GovernmentBondItem> getSwedishGovernmentBonds5Year() {
         return dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_5_YEAR)
                 .fetch()
                 .map(GovernmentBondItem::ofSwedish5Month);
     }
 
-    public List<GovernmentBondItem> getSwedishGovernmentBonds7Month() {
+    public List<GovernmentBondItem> getSwedishGovernmentBonds7Year() {
         return dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_7_YEAR)
                 .fetch()
                 .map(GovernmentBondItem::ofSwedish7Month);
     }
 
-    public List<GovernmentBondItem> getSwedishGovernmentBonds10Month() {
+    public List<GovernmentBondItem> getSwedishGovernmentBonds10Year() {
         return dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_10_YEAR)
                 .fetch()
@@ -51,7 +51,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertSwedishGovernmentBonds2Month(List<GovernmentBondItem> governmentBondItemList) {
+    public void insertSwedishGovernmentBonds2Year(List<GovernmentBondItem> governmentBondItemList) {
         if (!governmentBondItemList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(
@@ -72,7 +72,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertSwedishGovernmentBonds5Month(List<GovernmentBondItem> governmentBondItemList) {
+    public void insertSwedishGovernmentBonds5Year(List<GovernmentBondItem> governmentBondItemList) {
         if (!governmentBondItemList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(
@@ -93,7 +93,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertSwedishGovernmentBonds7Month(List<GovernmentBondItem> governmentBondItemList) {
+    public void insertSwedishGovernmentBonds7Year(List<GovernmentBondItem> governmentBondItemList) {
         if (!governmentBondItemList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(
@@ -114,7 +114,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertSwedishGovernmentBonds10Month(List<GovernmentBondItem> governmentBondItemList) {
+    public void insertSwedishGovernmentBonds10Year(List<GovernmentBondItem> governmentBondItemList) {
         if (!governmentBondItemList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(

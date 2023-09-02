@@ -7,6 +7,10 @@ export enum DATASET_NAMES {
   GovernmentBondSweden5Year,
   GovernmentBondSweden7Year,
   GovernmentBondSweden10Year,
+  GovernmentBillSweden1Month,
+  GovernmentBillSweden3Month,
+  GovernmentBillSweden6Month,
+  GovernmentBillSweden12Month,
 }
 
 export const allDatasetNames = [
@@ -16,4 +20,8 @@ export const allDatasetNames = [
   DATASET_NAMES[DATASET_NAMES.GovernmentBondSweden5Year],
   DATASET_NAMES[DATASET_NAMES.GovernmentBondSweden7Year],
   DATASET_NAMES[DATASET_NAMES.GovernmentBondSweden10Year],
+  DATASET_NAMES[DATASET_NAMES.GovernmentBillSweden1Month],
+  DATASET_NAMES[DATASET_NAMES.GovernmentBillSweden3Month],
+  DATASET_NAMES[DATASET_NAMES.GovernmentBillSweden6Month],
+  DATASET_NAMES[DATASET_NAMES.GovernmentBillSweden12Month],
 ];

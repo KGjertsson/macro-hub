@@ -88,6 +88,54 @@ const governmentBondSweden10Year: Dataset = {
   url: '/government-bonds/sweden?period=2',
 };
 
+const governmentBillsSweden1Month: Dataset = {
+  lineConfig: {
+    label: 'Svensk statsskuldväxel 1-månads löptid',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.GovernmentBillSweden1Month,
+  url: '/government-bills/sweden?period=1',
+};
+
+const governmentBillsSweden3Month: Dataset = {
+  lineConfig: {
+    label: 'Svensk statsskuldväxel 3-månads löptid',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.GovernmentBillSweden3Month,
+  url: '/government-bills/sweden?period=3',
+};
+
+const governmentBillsSweden6Month: Dataset = {
+  lineConfig: {
+    label: 'Svensk statsskuldväxel 6-månads löptid',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.GovernmentBillSweden6Month,
+  url: '/government-bills/sweden?period=6',
+};
+
+const governmentBillsSweden12Month: Dataset = {
+  lineConfig: {
+    label: 'Svensk statsskuldväxel 12-månads löptid',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.GovernmentBillSweden12Month,
+  url: '/government-bills/sweden?period=12',
+};
+
 export const defaultDataset = [
   policyRateSweden,
   usdSekExchange,
@@ -95,4 +143,8 @@ export const defaultDataset = [
   governmentBondSweden5Year,
   governmentBondSweden7Year,
   governmentBondSweden10Year,
+  governmentBillsSweden1Month,
+  governmentBillsSweden3Month,
+  governmentBillsSweden6Month,
+  governmentBillsSweden12Month,
 ];

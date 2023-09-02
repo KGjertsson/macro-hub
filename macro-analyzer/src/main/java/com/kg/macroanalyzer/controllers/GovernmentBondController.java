@@ -30,10 +30,10 @@ public class GovernmentBondController {
                 "but found: %s").formatted(period);
 
         return switch (period) {
-            case "2" -> governmentBondsRepository.getSwedishGovernmentBonds2Month();
-            case "5" -> governmentBondsRepository.getSwedishGovernmentBonds5Month();
-            case "7" -> governmentBondsRepository.getSwedishGovernmentBonds7Month();
-            case "10" -> governmentBondsRepository.getSwedishGovernmentBonds10Month();
+            case "2" -> governmentBondsRepository.getSwedishGovernmentBonds2Year();
+            case "5" -> governmentBondsRepository.getSwedishGovernmentBonds5Year();
+            case "7" -> governmentBondsRepository.getSwedishGovernmentBonds7Year();
+            case "10" -> governmentBondsRepository.getSwedishGovernmentBonds10Year();
             default -> throw new IllegalArgumentException(e);
         };
     }

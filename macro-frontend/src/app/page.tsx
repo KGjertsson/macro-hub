@@ -3,27 +3,6 @@ import dynamic from 'next/dynamic';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import DynamicChartSettings from '@/components/DynamicChartSettings';
 
-const ChartSwedenPolicyRate = dynamic(
-  () => import('@/components/ChartSwedenPolicyRate'),
-  {
-    ssr: false,
-  }
-);
-
-const ChartUsdSekExchangeRate = dynamic(
-  () => import('@/components/ChartUsdSekExchangeRate'),
-  {
-    ssr: false,
-  }
-);
-
-const ChartGovernmentBillsSweden = dynamic(
-  () => import('@/components/ChartGovernmentBillsSweden'),
-  {
-    ssr: false,
-  }
-);
-
 const ChartEuroMarketRates3Month = dynamic(
   () => import('@/components/ChartEuroMarketRates3Month'),
   {
@@ -59,10 +38,6 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <QueryClientProvider client={queryClient}>
         <DynamicChartSettings />
-        {/*<ScrapeAllButton />*/}
-        {/*<ChartSwedenPolicyRate />*/}
-        {/*<ChartUsdSekExchangeRate />*/}
-        {/*<ChartGovernmentBillsSweden />*/}
         {/*<ChartEuroMarketRates3Month />*/}
         {/*<ChartEuroMarketRates6Month />*/}
         {/*<ChartInternationalGovBillRates5Year />*/}

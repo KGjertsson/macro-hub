@@ -109,50 +109,50 @@ public class ScrapeService {
         final var e = ("Expected request parameter period to have one of the values [2, 5, 7, 10] " + "but found %s").formatted(period);
 
         return switch (period) {
-            case "2" -> scrapeSwedishGovernmentBonds2Month();
-            case "5" -> scrapeSwedishGovernmentBonds5Month();
-            case "7" -> scrapeSwedishGovernmentBonds7Month();
-            case "10" -> scrapeSwedishGovernmentBonds10Month();
+            case "2" -> scrapeSwedishGovernmentBonds2Year();
+            case "5" -> scrapeSwedishGovernmentBonds5Year();
+            case "7" -> scrapeSwedishGovernmentBonds7Year();
+            case "10" -> scrapeSwedishGovernmentBonds10Year();
             default -> throw new IllegalArgumentException(e);
         };
     }
 
-    private Integer scrapeSwedishGovernmentBonds2Month() throws IOException {
+    private Integer scrapeSwedishGovernmentBonds2Year() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/SEGVB2YC/1987-01-07";
-        final var persisted = governmentBondsRepository.getSwedishGovernmentBonds2Month();
+        final var persisted = governmentBondsRepository.getSwedishGovernmentBonds2Year();
         final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info(("Found %s new 2 month items from scraping, persisting do " + "db...").formatted(scraped.size()));
-        governmentBondsRepository.insertSwedishGovernmentBonds2Month(scraped);
+        governmentBondsRepository.insertSwedishGovernmentBonds2Year(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeSwedishGovernmentBonds5Month() throws IOException {
+    private Integer scrapeSwedishGovernmentBonds5Year() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/SEGVB5YC/1985-01-02";
-        final var persisted = governmentBondsRepository.getSwedishGovernmentBonds5Month();
+        final var persisted = governmentBondsRepository.getSwedishGovernmentBonds5Year();
         final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info(("Found %s new 5 month items from scraping, persisting do " + "db...").formatted(scraped.size()));
-        governmentBondsRepository.insertSwedishGovernmentBonds5Month(scraped);
+        governmentBondsRepository.insertSwedishGovernmentBonds5Year(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeSwedishGovernmentBonds7Month() throws IOException {
+    private Integer scrapeSwedishGovernmentBonds7Year() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/SEGVB7YC/1987-01-02 ";
-        final var persisted = governmentBondsRepository.getSwedishGovernmentBonds7Month();
+        final var persisted = governmentBondsRepository.getSwedishGovernmentBonds7Year();
         final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info(("Found %s new 7 month items from scraping, persisting do " + "db...").formatted(scraped.size()));
-        governmentBondsRepository.insertSwedishGovernmentBonds7Month(scraped);
+        governmentBondsRepository.insertSwedishGovernmentBonds7Year(scraped);
 
         return scraped.size();
     }
 
-    private Integer scrapeSwedishGovernmentBonds10Month() throws IOException {
+    private Integer scrapeSwedishGovernmentBonds10Year() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/SEGVB10YC/1987-01-02";
-        final var persisted = governmentBondsRepository.getSwedishGovernmentBonds10Month();
+        final var persisted = governmentBondsRepository.getSwedishGovernmentBonds10Year();
         final var scraped = scrapeNovelItems(url, persisted, GovernmentBondItem.class);
         log.info(("Found %s new 10 month items from scraping, persisting do " + "db...").formatted(scraped.size()));
-        governmentBondsRepository.insertSwedishGovernmentBonds10Month(scraped);
+        governmentBondsRepository.insertSwedishGovernmentBonds10Year(scraped);
 
         return scraped.size();
     }
