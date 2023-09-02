@@ -280,6 +280,90 @@ const euroMarketRateUsa6Month: Dataset = {
   url: '/euro-market-rate?period=6month&country=usa',
 };
 
+const internationalGovernmentBondEur5Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 5-års löptid: Eur',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsEur5Year,
+  url: '/government-bonds/international?period=5year&country=eur',
+};
+
+const internationalGovernmentBondFrance5Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 5-års löptid: Frankrike',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsFrance5Year,
+  url: '/government-bonds/international?period=5year&country=france',
+};
+
+const internationalGovernmentBondGB5Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 5-års löptid: GB',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsGB5Year,
+  url: '/government-bonds/international?period=5year&country=gb',
+};
+
+const internationalGovernmentBondGermany5Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 5-års löptid: Tyskland',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsGermany5Year,
+  url: '/government-bonds/international?period=5year&country=germany',
+};
+
+const internationalGovernmentBondJapan5Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 5-års löptid: Japan',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsJapan5Year,
+  url: '/government-bonds/international?period=5year&country=japan',
+};
+
+const internationalGovernmentBondNetherlands5Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 5-års löptid: Nederländerna',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsNetherlands5Year,
+  url: '/government-bonds/international?period=5year&country=netherlands',
+};
+
+const internationalGovernmentUsa5Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 5-års löptid: USA',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsUsa5Year,
+  url: '/government-bonds/international?period=5year&country=usa',
+};
+
 export const defaultDataset = [
   policyRateSweden,
   usdSekExchange,
@@ -303,4 +387,11 @@ export const defaultDataset = [
   euroMarketRateJapan6Month,
   euroMarketRateNorway6Month,
   euroMarketRateUsa6Month,
+  internationalGovernmentBondEur5Year,
+  internationalGovernmentBondFrance5Year,
+  internationalGovernmentBondGB5Year,
+  internationalGovernmentBondGermany5Year,
+  internationalGovernmentBondJapan5Year,
+  internationalGovernmentBondNetherlands5Year,
+  internationalGovernmentUsa5Year,
 ];

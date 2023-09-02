@@ -23,6 +23,13 @@ export enum DATASET_NAMES {
   EuroMarketRateJapan6Month,
   EuroMarketRateNorway6Month,
   EuroMarketRateUsa6Month,
+  InternationalGovernmentBondsEur5Year,
+  InternationalGovernmentBondsFrance5Year,
+  InternationalGovernmentBondsGB5Year,
+  InternationalGovernmentBondsGermany5Year,
+  InternationalGovernmentBondsJapan5Year,
+  InternationalGovernmentBondsNetherlands5Year,
+  InternationalGovernmentBondsUsa5Year,
 }
 
 export const allDatasetNames = [
@@ -48,4 +55,11 @@ export const allDatasetNames = [
   DATASET_NAMES[DATASET_NAMES.EuroMarketRateJapan6Month],
   DATASET_NAMES[DATASET_NAMES.EuroMarketRateNorway6Month],
   DATASET_NAMES[DATASET_NAMES.EuroMarketRateUsa6Month],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsEur5Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsFrance5Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsGB5Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsGermany5Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsJapan5Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsNetherlands5Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsUsa5Year],
 ];
