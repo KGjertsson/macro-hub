@@ -208,6 +208,78 @@ const euroMarketRateUsa3Month: Dataset = {
   url: '/euro-market-rate?period=3month&country=usa',
 };
 
+const euroMarketRateDenmark6Month: Dataset = {
+  lineConfig: {
+    label: 'Euromarknadsräntor 6-månaders löptid: Danmark',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.EuroMarketRateDenmark6Month,
+  url: '/euro-market-rate?period=6month&country=denmark',
+};
+
+const euroMarketRateEur6Month: Dataset = {
+  lineConfig: {
+    label: 'Euromarknadsräntor 6-månaders löptid: Eur',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.EuroMarketRateEur6Month,
+  url: '/euro-market-rate?period=6month&country=eur',
+};
+
+const euroMarketRateGB6Month: Dataset = {
+  lineConfig: {
+    label: 'Euromarknadsräntor 6-månaders löptid: GB',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.EuroMarketRateGB6Month,
+  url: '/euro-market-rate?period=6month&country=gb',
+};
+
+const euroMarketRateJapan6Month: Dataset = {
+  lineConfig: {
+    label: 'Euromarknadsräntor 6-månaders löptid: Japan',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.EuroMarketRateJapan6Month,
+  url: '/euro-market-rate?period=6month&country=japan',
+};
+
+const euroMarketRateNorway6Month: Dataset = {
+  lineConfig: {
+    label: 'Euromarknadsräntor 6-månaders löptid: Norge',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.EuroMarketRateNorway6Month,
+  url: '/euro-market-rate?period=6month&country=norway',
+};
+
+const euroMarketRateUsa6Month: Dataset = {
+  lineConfig: {
+    label: 'Euromarknadsräntor 6-månaders löptid: USA',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.EuroMarketRateUsa6Month,
+  url: '/euro-market-rate?period=6month&country=usa',
+};
+
 export const defaultDataset = [
   policyRateSweden,
   usdSekExchange,
@@ -225,4 +297,10 @@ export const defaultDataset = [
   euroMarketRateJapan3Month,
   euroMarketRateNorway3Month,
   euroMarketRateUsa3Month,
+  euroMarketRateDenmark6Month,
+  euroMarketRateEur6Month,
+  euroMarketRateGB6Month,
+  euroMarketRateJapan6Month,
+  euroMarketRateNorway6Month,
+  euroMarketRateUsa6Month,
 ];

@@ -17,6 +17,12 @@ export enum DATASET_NAMES {
   EuroMarketRateJapan3Month,
   EuroMarketRateNorway3Month,
   EuroMarketRateUsa3Month,
+  EuroMarketRateDenmark6Month,
+  EuroMarketRateEur6Month,
+  EuroMarketRateGB6Month,
+  EuroMarketRateJapan6Month,
+  EuroMarketRateNorway6Month,
+  EuroMarketRateUsa6Month,
 }
 
 export const allDatasetNames = [
@@ -36,4 +42,10 @@ export const allDatasetNames = [
   DATASET_NAMES[DATASET_NAMES.EuroMarketRateJapan3Month],
   DATASET_NAMES[DATASET_NAMES.EuroMarketRateNorway3Month],
   DATASET_NAMES[DATASET_NAMES.EuroMarketRateUsa3Month],
+  DATASET_NAMES[DATASET_NAMES.EuroMarketRateDenmark6Month],
+  DATASET_NAMES[DATASET_NAMES.EuroMarketRateEur6Month],
+  DATASET_NAMES[DATASET_NAMES.EuroMarketRateGB6Month],
+  DATASET_NAMES[DATASET_NAMES.EuroMarketRateJapan6Month],
+  DATASET_NAMES[DATASET_NAMES.EuroMarketRateNorway6Month],
+  DATASET_NAMES[DATASET_NAMES.EuroMarketRateUsa6Month],
 ];
