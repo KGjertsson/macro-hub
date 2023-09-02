@@ -24,13 +24,6 @@ const ChartGovernmentBillsSweden = dynamic(
   }
 );
 
-const ChartGovernmentBondsSweden = dynamic(
-  () => import('@/components/ChartGovernmentBondsSweden'),
-  {
-    ssr: false,
-  }
-);
-
 const ChartEuroMarketRates3Month = dynamic(
   () => import('@/components/ChartEuroMarketRates3Month'),
   {
@@ -70,7 +63,6 @@ export default function Home() {
         {/*<ChartSwedenPolicyRate />*/}
         {/*<ChartUsdSekExchangeRate />*/}
         {/*<ChartGovernmentBillsSweden />*/}
-        {/*<ChartGovernmentBondsSweden />*/}
         {/*<ChartEuroMarketRates3Month />*/}
         {/*<ChartEuroMarketRates6Month />*/}
         {/*<ChartInternationalGovBillRates5Year />*/}

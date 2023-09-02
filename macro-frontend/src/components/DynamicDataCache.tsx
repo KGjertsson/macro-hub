@@ -40,7 +40,9 @@ const DynamicDataCache = ({ selectedItems }: Props) => {
       return { ...dataset, data: values, labels: labels, selected: true };
     } else {
       if (isSelected) {
-        console.log('already cached selected series: ' + dataset.name);
+        console.log(
+          'already cached selected series: ' + DATASET_NAMES[dataset.name]
+        );
         return { ...dataset, selected: true };
       }
 

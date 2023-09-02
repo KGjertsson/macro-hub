@@ -40,10 +40,10 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_6Month;
-import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_10Month;
-import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_2Month;
-import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_5Month;
-import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Month;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_10Year;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_2Year;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_5Year;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Year;
 
 
 /**
@@ -233,22 +233,22 @@ public class Tables {
     public static final SwedishGovernmentBill_6Month SWEDISH_GOVERNMENT_BILL_6_MONTH = SwedishGovernmentBill_6Month.SWEDISH_GOVERNMENT_BILL_6_MONTH;
 
     /**
-     * The table <code>public.swedish_government_bonds_10_month</code>.
+     * The table <code>public.swedish_government_bonds_10_year</code>.
      */
-    public static final SwedishGovernmentBonds_10Month SWEDISH_GOVERNMENT_BONDS_10_MONTH = SwedishGovernmentBonds_10Month.SWEDISH_GOVERNMENT_BONDS_10_MONTH;
+    public static final SwedishGovernmentBonds_10Year SWEDISH_GOVERNMENT_BONDS_10_YEAR = SwedishGovernmentBonds_10Year.SWEDISH_GOVERNMENT_BONDS_10_YEAR;
 
     /**
-     * The table <code>public.swedish_government_bonds_2_month</code>.
+     * The table <code>public.swedish_government_bonds_2_year</code>.
      */
-    public static final SwedishGovernmentBonds_2Month SWEDISH_GOVERNMENT_BONDS_2_MONTH = SwedishGovernmentBonds_2Month.SWEDISH_GOVERNMENT_BONDS_2_MONTH;
+    public static final SwedishGovernmentBonds_2Year SWEDISH_GOVERNMENT_BONDS_2_YEAR = SwedishGovernmentBonds_2Year.SWEDISH_GOVERNMENT_BONDS_2_YEAR;
 
     /**
-     * The table <code>public.swedish_government_bonds_5_month</code>.
+     * The table <code>public.swedish_government_bonds_5_year</code>.
      */
-    public static final SwedishGovernmentBonds_5Month SWEDISH_GOVERNMENT_BONDS_5_MONTH = SwedishGovernmentBonds_5Month.SWEDISH_GOVERNMENT_BONDS_5_MONTH;
+    public static final SwedishGovernmentBonds_5Year SWEDISH_GOVERNMENT_BONDS_5_YEAR = SwedishGovernmentBonds_5Year.SWEDISH_GOVERNMENT_BONDS_5_YEAR;
 
     /**
-     * The table <code>public.swedish_government_bonds_7_month</code>.
+     * The table <code>public.swedish_government_bonds_7_year</code>.
      */
-    public static final SwedishGovernmentBonds_7Month SWEDISH_GOVERNMENT_BONDS_7_MONTH = SwedishGovernmentBonds_7Month.SWEDISH_GOVERNMENT_BONDS_7_MONTH;
+    public static final SwedishGovernmentBonds_7Year SWEDISH_GOVERNMENT_BONDS_7_YEAR = SwedishGovernmentBonds_7Year.SWEDISH_GOVERNMENT_BONDS_7_YEAR;
 }

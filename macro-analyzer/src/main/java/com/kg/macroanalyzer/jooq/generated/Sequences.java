@@ -99,4 +99,24 @@ public class Sequences {
      * The sequence <code>public.euro_market_5_year_usa_id_seq</code>
      */
     public static final Sequence<Integer> EURO_MARKET_5_YEAR_USA_ID_SEQ = Internal.createSequence("euro_market_5_year_usa_id_seq", Public.PUBLIC, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
+
+    /**
+     * The sequence <code>public.swedish_government_bonds_10_month_id_seq</code>
+     */
+    public static final Sequence<Integer> SWEDISH_GOVERNMENT_BONDS_10_MONTH_ID_SEQ = Internal.createSequence("swedish_government_bonds_10_month_id_seq", Public.PUBLIC, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
+
+    /**
+     * The sequence <code>public.swedish_government_bonds_2_month_id_seq</code>
+     */
+    public static final Sequence<Integer> SWEDISH_GOVERNMENT_BONDS_2_MONTH_ID_SEQ = Internal.createSequence("swedish_government_bonds_2_month_id_seq", Public.PUBLIC, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
+
+    /**
+     * The sequence <code>public.swedish_government_bonds_5_month_id_seq</code>
+     */
+    public static final Sequence<Integer> SWEDISH_GOVERNMENT_BONDS_5_MONTH_ID_SEQ = Internal.createSequence("swedish_government_bonds_5_month_id_seq", Public.PUBLIC, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
+
+    /**
+     * The sequence <code>public.swedish_government_bonds_7_month_id_seq</code>
+     */
+    public static final Sequence<Integer> SWEDISH_GOVERNMENT_BONDS_7_MONTH_ID_SEQ = Internal.createSequence("swedish_government_bonds_7_month_id_seq", Public.PUBLIC, SQLDataType.INTEGER.nullable(false), null, null, null, null, false, null);
 }
