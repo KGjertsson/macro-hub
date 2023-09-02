@@ -30,6 +30,16 @@ export enum DATASET_NAMES {
   InternationalGovernmentBondsJapan5Year,
   InternationalGovernmentBondsNetherlands5Year,
   InternationalGovernmentBondsUsa5Year,
+  InternationalGovernmentBondsDenmark10Year,
+  InternationalGovernmentBondsEur10Year,
+  InternationalGovernmentBondsFinland10Year,
+  InternationalGovernmentBondsFrance10Year,
+  InternationalGovernmentBondsGB10Year,
+  InternationalGovernmentBondsGermany10Year,
+  InternationalGovernmentBondsJapan10Year,
+  InternationalGovernmentBondsNetherlands10Year,
+  InternationalGovernmentBondsNorway10Year,
+  InternationalGovernmentBondsUsa10Year,
 }
 
 export const allDatasetNames = [
@@ -62,4 +72,14 @@ export const allDatasetNames = [
   DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsJapan5Year],
   DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsNetherlands5Year],
   DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsUsa5Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsDenmark10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsEur10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsFinland10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsFrance10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsGB10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsGermany10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsJapan10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsNetherlands10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsNorway10Year],
+  DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsUsa10Year],
 ];

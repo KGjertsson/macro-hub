@@ -1,24 +1,17 @@
 'use client';
-import dynamic from 'next/dynamic';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import DynamicChartSettings from '@/components/DynamicChartSettings';
 
-const ChartInternationalGovBillRates10Year = dynamic(
-  () => import('@/components/ChartInternationalGovBillRates10Year'),
-  {
-    ssr: false,
-  }
-);
-
 const queryClient = new QueryClient();
 
-export default function Home() {
+const Home = () => {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <QueryClientProvider client={queryClient}>
         <DynamicChartSettings />
-        {/*<ChartInternationalGovBillRates10Year />*/}
       </QueryClientProvider>
     </main>
   );
-}
+};
+
+export default Home;

@@ -352,7 +352,7 @@ const internationalGovernmentBondNetherlands5Year: Dataset = {
   url: '/government-bonds/international?period=5year&country=netherlands',
 };
 
-const internationalGovernmentUsa5Year: Dataset = {
+const internationalGovernmentBondUsa5Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 5-års löptid: USA',
     borderColor: 'rgb(75, 192, 192)',
@@ -362,6 +362,126 @@ const internationalGovernmentUsa5Year: Dataset = {
   selected: false,
   name: DATASET_NAMES.InternationalGovernmentBondsUsa5Year,
   url: '/government-bonds/international?period=5year&country=usa',
+};
+
+const internationalGovernmentBondDenmark10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: Danmark',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsDenmark10Year,
+  url: '/government-bonds/international?period=10year&country=denmark',
+};
+
+const internationalGovernmentBondEur10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: Eur',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsEur10Year,
+  url: '/government-bonds/international?period=10year&country=eur',
+};
+
+const internationalGovernmentBondFinland10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: Finland',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsFinland10Year,
+  url: '/government-bonds/international?period=10year&country=finland',
+};
+
+const internationalGovernmentBondFrance10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: Frankrike',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsFrance10Year,
+  url: '/government-bonds/international?period=10year&country=france',
+};
+
+const internationalGovernmentBondGB10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: GB',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsGB10Year,
+  url: '/government-bonds/international?period=10year&country=gb',
+};
+
+const internationalGovernmentBondGermany10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: Germany',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsGermany10Year,
+  url: '/government-bonds/international?period=10year&country=germany',
+};
+
+const internationalGovernmentBondJapan10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: Japan',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsJapan10Year,
+  url: '/government-bonds/international?period=10year&country=japan',
+};
+
+const internationalGovernmentBondNetherlands10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: Nederländerna',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsNetherlands10Year,
+  url: '/government-bonds/international?period=10year&country=netherlands',
+};
+
+const internationalGovernmentBondNorway10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: Norge',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsNorway10Year,
+  url: '/government-bonds/international?period=10year&country=norway',
+};
+
+const internationalGovernmentBondUsa10Year: Dataset = {
+  lineConfig: {
+    label: 'Internationella statsobligationer 10-års löptid: USA',
+    borderColor: 'rgb(75, 192, 192)',
+    backgroundColor: 'rgb(75, 192, 192, 0.1)',
+    pointRadius: 1,
+  },
+  selected: false,
+  name: DATASET_NAMES.InternationalGovernmentBondsUsa10Year,
+  url: '/government-bonds/international?period=10year&country=usa',
 };
 
 export const defaultDataset = [
@@ -393,5 +513,15 @@ export const defaultDataset = [
   internationalGovernmentBondGermany5Year,
   internationalGovernmentBondJapan5Year,
   internationalGovernmentBondNetherlands5Year,
-  internationalGovernmentUsa5Year,
+  internationalGovernmentBondUsa5Year,
+  internationalGovernmentBondDenmark10Year,
+  internationalGovernmentBondEur10Year,
+  internationalGovernmentBondFinland10Year,
+  internationalGovernmentBondFrance10Year,
+  internationalGovernmentBondGB10Year,
+  internationalGovernmentBondGermany10Year,
+  internationalGovernmentBondJapan10Year,
+  internationalGovernmentBondNetherlands10Year,
+  internationalGovernmentBondNorway10Year,
+  internationalGovernmentBondUsa10Year,
 ];
