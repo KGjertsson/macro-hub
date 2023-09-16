@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { Dataset } from '@/models/Dataset';
+import { DatasetCache } from '@/models/DatasetCache';
 
 ChartJS.register(
   CategoryScale,
@@ -24,11 +24,10 @@ ChartJS.register(
 );
 
 interface Props {
-  labels: string[];
-  selected: Dataset[];
+  sampled: DatasetCache;
 }
 
-const DynamicChartComponent = ({ labels, selected }: Props) => {
+const DynamicChartComponent = ({ sampled }: Props) => {
   return (
     <Line
       className="mx-auto w-3/5 overflow-hidden"
@@ -46,8 +45,8 @@ const DynamicChartComponent = ({ labels, selected }: Props) => {
         },
       }}
       data={{
-        labels: labels,
-        datasets: selected.map((dataset) => {
+        labels: sampled.labels,
+        datasets: sampled.datasets.map((dataset) => {
           return {
             data: dataset.data,
             label: dataset.lineConfig.label,

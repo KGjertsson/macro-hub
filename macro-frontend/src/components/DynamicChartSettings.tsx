@@ -1,9 +1,15 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import DynamicDataCache from '@/components/DynamicDataCache';
-import { allDatasetNames, DATASET_NAMES } from '@/models/Constants';
+import {
+  allDatasetNames,
+  allSamples,
+  DATASET_NAMES,
+  SAMPLE_SIZE,
+} from '@/models/Constants';
 
 const DynamicChartSettings = () => {
   const [selectedItems, setSelectedItems] = useState<DATASET_NAMES[]>([]);
+  const [sample, setSample] = useState<SAMPLE_SIZE>(SAMPLE_SIZE.Day);
 
   useEffect(() => {
     const init = async () => {
@@ -15,12 +21,25 @@ const DynamicChartSettings = () => {
   }, []);
 
   const filterSelectedGraphs = (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value
-    ).map((selected) => DATASET_NAMES[selected as keyof typeof DATASET_NAMES]);
+    const selectedOptions = parseOptionFromElement(e).map(
+      (selected) => DATASET_NAMES[selected as keyof typeof DATASET_NAMES]
+    );
 
     setSelectedItems(selectedOptions);
+  };
+
+  const setSampleFromEvent = (e: ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = parseOptionFromElement(e).map(
+      (selected) => SAMPLE_SIZE[selected as keyof typeof SAMPLE_SIZE]
+    )[0];
+
+    setSample(selectedOption);
+  };
+
+  const parseOptionFromElement = (
+    e: ChangeEvent<HTMLSelectElement>
+  ): string[] => {
+    return Array.from(e.target.selectedOptions, (option) => option.value);
   };
 
   return (
@@ -39,9 +58,19 @@ const DynamicChartSettings = () => {
             </option>
           ))}
         </select>
+        <select data-te-select-init onChange={setSampleFromEvent}>
+          {allSamples.map((sample) => (
+            <option key={sample} value={sample}>
+              {sample}
+            </option>
+          ))}
+        </select>
         <label data-te-select-label-ref>Super bra label</label>
       </div>
-      <DynamicDataCache selectedItems={selectedItems} />
+      <DynamicDataCache
+        selectedItemNames={selectedItems}
+        selectedSample={sample}
+      />
     </div>
   );
 };

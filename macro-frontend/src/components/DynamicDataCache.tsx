@@ -1,61 +1,68 @@
-import React, { useEffect, useState } from 'react';
-import ky from 'ky';
-import { DATASET_NAMES, rootUrl } from '@/models/Constants';
-import { DataResponseItem } from '@/models/DataResponseItem';
-import { shouldFetchData } from '@/utils/ObjectUtils';
-import { Dataset, defaultDataset } from '@/models/Dataset';
+import React, { useEffect, useReducer } from 'react';
+import { DATASET_NAMES, SAMPLE_SIZE } from '@/models/Constants';
+import { Dataset } from '@/models/Dataset';
 import DynamicChartComponent from '@/components/DynamicChartComponent';
+import {
+  DatasetCache,
+  deselect,
+  emptyCache,
+  loadDataset,
+  sample,
+} from '@/models/DatasetCache';
 
-const emptyCache: Dataset[] = defaultDataset;
 const emptySelected: Dataset[] = [];
 
 interface Props {
-  selectedItems: DATASET_NAMES[];
+  selectedItemNames: DATASET_NAMES[];
+  selectedSample: SAMPLE_SIZE;
 }
 
-const DynamicDataCache = ({ selectedItems }: Props) => {
-  const [cache, setCache] = useState(emptyCache);
-  const [selected, setSelected] = useState(emptySelected);
-  const [labels, setLabels] = useState<string[]>([]);
+enum CacheActionTypes {
+  SET_LABELS,
+  SET_CACHE,
+}
 
-  const deselect = (dataset: Dataset): Dataset => {
-    return { ...dataset, selected: false };
-  };
+type CacheAction = {
+  type: CacheActionTypes;
+  payload: DatasetCache;
+};
 
-  const selectDataset = async (
-    dataset: Dataset,
-    selectedItems: DATASET_NAMES[]
-  ) => {
-    const isSelected = selectedItems.includes(dataset.name);
-    if (shouldFetchData(dataset, isSelected)) {
-      console.log('fetching data for ' + DATASET_NAMES[dataset.name]);
+const cacheReducer = (
+  state: DatasetCache,
+  action: CacheAction
+): DatasetCache => {
+  console.log('executing cacheReducer with:');
+  console.log(state);
+  console.log(action);
+  switch (action.type) {
+    case CacheActionTypes.SET_LABELS:
+      return { ...state, labels: action.payload.labels };
+    case CacheActionTypes.SET_CACHE:
+      return {
+        labels: action.payload.labels,
+        datasets: action.payload.datasets,
+      };
+    default:
+      throw new Error('Unexpected action type in cacheReducer: ' + action.type);
+  }
+};
 
-      const responseRaw = await ky.get(rootUrl + dataset.url);
-      const responseData: DataResponseItem[] = await responseRaw.json();
+const defaultSampled: DatasetCache = { labels: [], datasets: [] };
 
-      const values = responseData.map((r) => r.value);
-      const labels = responseData.map((r) => r.date.join('-'));
-      setLabels(labels);
+const DynamicDataCache = ({ selectedItemNames, selectedSample }: Props) => {
+  const [cache, cacheDispatch] = useReducer(cacheReducer, emptyCache);
+  const [sampled, sampledDispatch] = useReducer(cacheReducer, defaultSampled);
 
-      return { ...dataset, data: values, labels: labels, selected: true };
-    } else {
-      if (isSelected) {
-        console.log(
-          'already cached selected series: ' + DATASET_NAMES[dataset.name]
-        );
-        return { ...dataset, selected: true };
-      }
-
-      return dataset;
-    }
-  };
+  // const [selected, setSelected] = useState(emptySelected);
+  // const [labels, setLabels] = useState<string[]>([]);
+  // const [sampledBundle, setSampledBundle] = useState<Bundle>();
 
   useEffect(() => {
     const init = async () => {
       const updatedCache = await Promise.all(
-        cache
+        cache.datasets
           .map((dataset) => deselect(dataset))
-          .map(async (dataset) => selectDataset(dataset, selectedItems))
+          .map(async (dataset) => loadDataset(dataset, selectedItemNames))
       );
       const newSelection = updatedCache.filter((d) => d.selected);
 
@@ -74,17 +81,27 @@ const DynamicDataCache = ({ selectedItems }: Props) => {
 
       if (maxIndex !== -1) {
         const latestLabels = newSelection[maxIndex].labels!;
-        setLabels(latestLabels);
-      }
+        cacheDispatch({
+          type: CacheActionTypes.SET_CACHE,
+          payload: { labels: latestLabels, datasets: updatedCache },
+        });
 
-      setCache(updatedCache);
-      setSelected(newSelection);
+        const sampled = sample(latestLabels, newSelection, selectedSample);
+        sampledDispatch({
+          type: CacheActionTypes.SET_CACHE,
+          payload: sampled,
+        });
+      }
     };
 
-    init();
-  }, [selectedItems]);
+    init().then(() => console.log('init DynamicDataCache'));
+  }, [selectedItemNames, selectedSample]);
 
-  return <DynamicChartComponent labels={labels} selected={selected} />;
+  // useEffect(() => {
+  //
+  // }, [selectedSample])
+
+  return <DynamicChartComponent sampled={sampled} />;
 };
 
 export default DynamicDataCache;
