@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { DatasetCache } from '@/models/DatasetCache';
+import { DatasetCache } from '@/models/DatasetCache/DatasetCache';
 
 ChartJS.register(
   CategoryScale,

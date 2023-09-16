@@ -1,16 +1,13 @@
 import React, { useEffect, useReducer } from 'react';
 import { DATASET_NAMES, SAMPLE_SIZE } from '@/models/Constants';
-import { Dataset } from '@/models/Dataset';
 import DynamicChartComponent from '@/components/DynamicChartComponent';
 import {
   DatasetCache,
   deselect,
   emptyCache,
-  loadDataset,
-  sample,
-} from '@/models/DatasetCache';
-
-const emptySelected: Dataset[] = [];
+} from '@/models/DatasetCache/DatasetCache';
+import { sample } from '@/models/DatasetCache/Sampling';
+import { loadDataset } from '@/models/DatasetCache/CacheIO';
 
 interface Props {
   selectedItemNames: DATASET_NAMES[];
@@ -31,9 +28,6 @@ const cacheReducer = (
   state: DatasetCache,
   action: CacheAction
 ): DatasetCache => {
-  console.log('executing cacheReducer with:');
-  console.log(state);
-  console.log(action);
   switch (action.type) {
     case CacheActionTypes.SET_LABELS:
       return { ...state, labels: action.payload.labels };
@@ -52,10 +46,6 @@ const defaultSampled: DatasetCache = { labels: [], datasets: [] };
 const DynamicDataCache = ({ selectedItemNames, selectedSample }: Props) => {
   const [cache, cacheDispatch] = useReducer(cacheReducer, emptyCache);
   const [sampled, sampledDispatch] = useReducer(cacheReducer, defaultSampled);
-
-  // const [selected, setSelected] = useState(emptySelected);
-  // const [labels, setLabels] = useState<string[]>([]);
-  // const [sampledBundle, setSampledBundle] = useState<Bundle>();
 
   useEffect(() => {
     const init = async () => {

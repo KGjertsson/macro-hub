@@ -1,14 +1,12 @@
 export const rootUrl: string = 'http://localhost:8080';
 
 export enum SAMPLE_SIZE {
-  Full,
   Day,
   Month,
   Year,
 }
 
 export const allSamples = [
-  SAMPLE_SIZE[SAMPLE_SIZE.Full],
   SAMPLE_SIZE[SAMPLE_SIZE.Day],
   SAMPLE_SIZE[SAMPLE_SIZE.Month],
   SAMPLE_SIZE[SAMPLE_SIZE.Year],
@@ -17,7 +15,6 @@ export const allSamples = [
 export const NO_FILTER = 'no_filter';
 
 export const sampleToFilter = {
-  [SAMPLE_SIZE.Full]: NO_FILTER,
   [SAMPLE_SIZE.Day]: NO_FILTER,
   [SAMPLE_SIZE.Month]: new RegExp(/^(\d{4}-\d{1,2})/),
   [SAMPLE_SIZE.Year]: new RegExp(/^(\d{4})/),

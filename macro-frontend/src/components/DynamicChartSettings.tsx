@@ -9,7 +9,7 @@ import {
 
 const DynamicChartSettings = () => {
   const [selectedItems, setSelectedItems] = useState<DATASET_NAMES[]>([]);
-  const [sample, setSample] = useState<SAMPLE_SIZE>(SAMPLE_SIZE.Day);
+  const [sample, setSample] = useState<SAMPLE_SIZE>(SAMPLE_SIZE.Month);
 
   useEffect(() => {
     const init = async () => {
@@ -58,7 +58,11 @@ const DynamicChartSettings = () => {
             </option>
           ))}
         </select>
-        <select data-te-select-init onChange={setSampleFromEvent}>
+        <select
+          data-te-select-init
+          onChange={setSampleFromEvent}
+          defaultValue={SAMPLE_SIZE[SAMPLE_SIZE.Month]}
+        >
           {allSamples.map((sample) => (
             <option key={sample} value={sample}>
               {sample}
