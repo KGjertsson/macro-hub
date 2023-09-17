@@ -2,7 +2,6 @@ import { Dataset, defaultDataset } from '@/models/Dataset';
 
 export type DatasetCache = {
   datasets: Dataset[];
-
   labels: string[];
 };
 
