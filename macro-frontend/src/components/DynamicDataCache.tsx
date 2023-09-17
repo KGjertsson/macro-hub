@@ -9,6 +9,7 @@ import {
 import { sample } from '@/models/DatasetCache/Sampling';
 import { loadDataset } from '@/models/DatasetCache/CacheIO';
 import { generateLabels } from '@/models/DatasetCache/Labels';
+import { Dataset } from '@/models/Dataset';
 
 interface Props {
   selectedItemNames: DATASET_NAMES[];
@@ -50,11 +51,7 @@ const DynamicDataCache = ({ selectedItemNames, selectedSample }: Props) => {
 
   useEffect(() => {
     const init = async () => {
-      const updatedCache = await Promise.all(
-        cache.datasets
-          .map((dataset) => deselect(dataset))
-          .map(async (dataset) => loadDataset(dataset, selectedItemNames))
-      );
+      const updatedCache = await updateCache(selectedItemNames);
       const newSelection = updatedCache.filter((d) => d.selected);
 
       const generatedLabels = generateLabels(newSelection);
@@ -73,9 +70,15 @@ const DynamicDataCache = ({ selectedItemNames, selectedSample }: Props) => {
     init().then(() => console.log('init DynamicDataCache'));
   }, [selectedItemNames, selectedSample]);
 
-  // useEffect(() => {
-  //
-  // }, [selectedSample])
+  const updateCache = async (
+    selectedItemNames: DATASET_NAMES[]
+  ): Promise<Dataset[]> => {
+    return Promise.all(
+      cache.datasets
+        .map((dataset) => deselect(dataset))
+        .map(async (dataset) => loadDataset(dataset, selectedItemNames))
+    );
+  };
 
   return <DynamicChartComponent sampled={sampled} />;
 };
