@@ -8,6 +8,7 @@ import {
 } from '@/models/DatasetCache/DatasetCache';
 import { sample } from '@/models/DatasetCache/Sampling';
 import { loadDataset } from '@/models/DatasetCache/CacheIO';
+import { generateLabels } from '@/models/DatasetCache/Labels';
 
 interface Props {
   selectedItemNames: DATASET_NAMES[];
@@ -56,32 +57,17 @@ const DynamicDataCache = ({ selectedItemNames, selectedSample }: Props) => {
       );
       const newSelection = updatedCache.filter((d) => d.selected);
 
-      let maxDate = Date.parse('1900');
-      let maxIndex = -1;
-
-      newSelection.forEach((dataset, index) => {
-        const latestLabelString = dataset.labels![dataset.labels!.length - 1];
-        const latestLabelDate = Date.parse(latestLabelString);
-
-        if (latestLabelDate > maxDate) {
-          maxDate = latestLabelDate;
-          maxIndex = index;
-        }
+      const generatedLabels = generateLabels(newSelection);
+      cacheDispatch({
+        type: CacheActionTypes.SET_CACHE,
+        payload: { labels: generatedLabels, datasets: updatedCache },
       });
 
-      if (maxIndex !== -1) {
-        const latestLabels = newSelection[maxIndex].labels!;
-        cacheDispatch({
-          type: CacheActionTypes.SET_CACHE,
-          payload: { labels: latestLabels, datasets: updatedCache },
-        });
-
-        const sampled = sample(latestLabels, newSelection, selectedSample);
-        sampledDispatch({
-          type: CacheActionTypes.SET_CACHE,
-          payload: sampled,
-        });
-      }
+      const sampled = sample(generatedLabels, newSelection, selectedSample);
+      sampledDispatch({
+        type: CacheActionTypes.SET_CACHE,
+        payload: sampled,
+      });
     };
 
     init().then(() => console.log('init DynamicDataCache'));
