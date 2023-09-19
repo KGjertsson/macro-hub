@@ -1,6 +1,7 @@
 import { Dataset } from '@/models/Dataset';
 import { NO_FILTER, SAMPLE_SIZE, sampleToFilter } from '@/models/Constants';
 import { DatasetCache } from '@/models/DatasetCache/DatasetCache';
+import { unionLabels } from '@/models/DatasetCache/Labels';
 
 export const sample = (
   labels: string[],
@@ -16,32 +17,23 @@ export const sample = (
   } else {
     const regexpFilter = filter as RegExp;
 
-    return runSampling(labels, datasets, regexpFilter);
+    return runSampling(labels, datasets, regexpFilter, selectedSample);
   }
 };
 
 const runSampling = (
   labels: string[],
   datasets: Dataset[],
-  filter: RegExp
+  filter: RegExp,
+  selectedSample: SAMPLE_SIZE
 ): DatasetCache => {
   console.log('Running sampling with filter = ' + filter);
   const sampledDatasets = datasets.map((d) => sampleDataset(d, filter));
-  const sampledLabels = extractLatestLabels(sampledDatasets);
+  const sampledLabels = unionLabels(sampledDatasets, selectedSample);
+  console.log(sampledDatasets);
+  console.log(sampledLabels);
 
   return { labels: sampledLabels, datasets: sampledDatasets };
-};
-
-const extractLatestLabels = (datasets: Dataset[]): string[] => {
-  return datasets.reduce((result: string[], current: Dataset) => {
-    if (result.length === 0) {
-      return current.labels!;
-    }
-    const resultEnd = Date.parse(result[result.length - 1]);
-    const currentEnd = Date.parse(current.labels![current.labels!.length - 1]);
-
-    return currentEnd > resultEnd ? current.labels! : result;
-  }, []);
 };
 
 const sampleDataset = (dataset: Dataset, filter: RegExp): Dataset => {
