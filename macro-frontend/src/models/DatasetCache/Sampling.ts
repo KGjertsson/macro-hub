@@ -30,10 +30,32 @@ const runSampling = (
   console.log('Running sampling with filter = ' + filter);
   const sampledDatasets = datasets.map((d) => sampleDataset(d, filter));
   const sampledLabels = unionLabels(sampledDatasets, selectedSample);
+  const sampledDatasetsFull = sampledDatasets.map((d) => {
+    const firstLabel = Date.parse(d.labels![0]);
+    const lastLabel = Date.parse(d.labels![d.labels!.length - 1]);
+    let offset = -1;
+
+    const extendedData = sampledLabels.map((label, index) => {
+      const currentLabel = Date.parse(label);
+
+      if (currentLabel === firstLabel) {
+        offset = index;
+      }
+
+      if (currentLabel < firstLabel || currentLabel > lastLabel) {
+        return 0;
+      } else {
+        return d.data![index - offset];
+      }
+    });
+
+    return { ...d, labels: sampledLabels, data: extendedData };
+  });
+
   console.log(sampledDatasets);
   console.log(sampledLabels);
 
-  return { labels: sampledLabels, datasets: sampledDatasets };
+  return { labels: sampledLabels, datasets: sampledDatasetsFull };
 };
 
 const sampleDataset = (dataset: Dataset, filter: RegExp): Dataset => {

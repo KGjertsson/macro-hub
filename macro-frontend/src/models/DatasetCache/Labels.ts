@@ -12,13 +12,63 @@ export const generateLabels = (datasets: Dataset[]): string[] => {
 export const unionLabels = (
   datasets: Dataset[],
   selectedSample: SAMPLE_SIZE
-): string[] => {
-  const labelList = datasets
-    .map((d) => d.labels!.map((l) => Date.parse(l)))
-    .flat();
-  const labelSet = new Set(labelList);
+): string[] =>
+  datasets
+    .map(labelsToUnixTime)
+    .reduce(concatLabels, [])
+    .reduce(sortUnion, [])
+    .map((l) => buildDateString(l, selectedSample));
 
-  return Array.from(labelSet).map((l) => buildDateString(l, selectedSample));
+const labelsToUnixTime = (dataset: Dataset): number[] =>
+  dataset.labels!.map(Date.parse);
+
+const concatLabels = (result: number[], currentValue: number[]) =>
+  result.concat(currentValue);
+
+const sortUnion = (result: number[], currentValue: number): number[] => {
+  if (result.length === 0) {
+    console.log(
+      'adding first value ' + buildDateString(currentValue, SAMPLE_SIZE.Month)
+    );
+    return [currentValue];
+  } else if (result.includes(currentValue)) {
+    console.log(
+      'removed duplicate ' + buildDateString(currentValue, SAMPLE_SIZE.Month)
+    );
+    return result;
+  } else if (currentValue < result[0]) {
+    console.log(
+      'prepending ' + buildDateString(currentValue, SAMPLE_SIZE.Month)
+    );
+    return [currentValue].concat(result);
+  } else {
+    result.forEach((d, index) => {
+      if (currentValue < d) {
+        // console.log(
+        //   buildDateString(currentValue, SAMPLE_SIZE.Year) +
+        //   ' < ' +
+        //   buildDateString(d, SAMPLE_SIZE.Year) +
+        //   ' at index: ' +
+        //   index
+        // );
+        console.log(
+          'inserting new value ' +
+            buildDateString(currentValue, SAMPLE_SIZE.Month) +
+            ' between ' +
+            buildDateString(d, SAMPLE_SIZE.Month) +
+            ' and ' +
+            buildDateString(result[index + 1], SAMPLE_SIZE.Month)
+        );
+        return [result.slice(0, index), currentValue, result.slice(index)];
+      }
+    });
+
+    console.log(
+      'appending ' + buildDateString(currentValue, SAMPLE_SIZE.Month)
+    );
+    result.push(currentValue);
+    return result;
+  }
 };
 
 const buildDateString = (
@@ -34,18 +84,6 @@ const buildDateString = (
     dateBuilder = dateBuilder + '-' + fullDate.getUTCDay();
   }
   return dateBuilder;
-};
-
-export const extractLatestLabels = (datasets: Dataset[]): string[] => {
-  return datasets.reduce((result: string[], current: Dataset) => {
-    if (result.length === 0) {
-      return current.labels!;
-    }
-    const resultEnd = Date.parse(result[result.length - 1]);
-    const currentEnd = Date.parse(current.labels![current.labels!.length - 1]);
-
-    return currentEnd > resultEnd ? current.labels! : result;
-  }, []);
 };
 
 const findEdgeDates = (result: Date[], current: Date[]) => {
