@@ -14,58 +14,59 @@ export const unionLabels = (
   selectedSample: SAMPLE_SIZE
 ): string[] =>
   datasets
-    .map(labelsToUnixTime)
+    .map(stringToDate)
     .reduce(concatLabels, [])
-    .reduce(sortUnion, [])
-    .map((l) => buildDateString(l, selectedSample));
+    .sort(dateCompare)
+    .map(dateToString);
 
-const labelsToUnixTime = (dataset: Dataset): number[] =>
-  dataset.labels!.map(Date.parse);
+const dateCompare = (first: Date, second: Date) =>
+  first.getTime() - second.getTime();
 
-const concatLabels = (result: number[], currentValue: number[]) =>
+const stringToDate = (dataset: Dataset): Date[] =>
+  dataset.labels!.map((l) => new Date(l));
+
+const concatLabels = (result: Date[], currentValue: Date[]) =>
   result.concat(currentValue);
 
-const sortUnion = (result: number[], currentValue: number): number[] => {
+const dateToString = (d: Date) => {
+  // Extract year, month, and day components
+  const year = d.getFullYear(); // Get the 4-digit year
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Get the month (add 1 because months are zero-based) and pad with '0' if necessary
+  const day = String(d.getDate()).padStart(2, '0'); // Get the day of the month and pad with '0' if necessary
+
+  // Create the formatted string
+  return `${year}-${month}-${day}`;
+};
+
+const sortUnion = (result: Date[], currentValue: Date): Date[] => {
+  console.log('calling sort with result.length = ' + result.length);
   if (result.length === 0) {
-    console.log(
-      'adding first value ' + buildDateString(currentValue, SAMPLE_SIZE.Month)
-    );
+    console.log('adding first value ' + dateToString(currentValue));
     return [currentValue];
   } else if (result.includes(currentValue)) {
-    console.log(
-      'removed duplicate ' + buildDateString(currentValue, SAMPLE_SIZE.Month)
-    );
     return result;
   } else if (currentValue < result[0]) {
-    console.log(
-      'prepending ' + buildDateString(currentValue, SAMPLE_SIZE.Month)
-    );
+    console.log('prepending ' + dateToString(currentValue));
     return [currentValue].concat(result);
   } else {
+    let newResult = [];
+
     result.forEach((d, index) => {
       if (currentValue < d) {
-        // console.log(
-        //   buildDateString(currentValue, SAMPLE_SIZE.Year) +
-        //   ' < ' +
-        //   buildDateString(d, SAMPLE_SIZE.Year) +
-        //   ' at index: ' +
-        //   index
-        // );
         console.log(
           'inserting new value ' +
-            buildDateString(currentValue, SAMPLE_SIZE.Month) +
+            dateToString(currentValue) +
             ' between ' +
-            buildDateString(d, SAMPLE_SIZE.Month) +
+            dateToString(result[index - 1]) +
             ' and ' +
-            buildDateString(result[index + 1], SAMPLE_SIZE.Month)
+            dateToString(d)
         );
+        console.log('---');
         return [result.slice(0, index), currentValue, result.slice(index)];
       }
     });
 
-    console.log(
-      'appending ' + buildDateString(currentValue, SAMPLE_SIZE.Month)
-    );
+    console.log('appending ' + dateToString(currentValue));
     result.push(currentValue);
     return result;
   }
@@ -77,12 +78,16 @@ const buildDateString = (
 ): string => {
   const fullDate = new Date(unixTimeNumber);
   let dateBuilder = fullDate.getUTCFullYear().toString();
+
   if ([SAMPLE_SIZE.Month, SAMPLE_SIZE.Day].includes(selectedSample)) {
-    dateBuilder = dateBuilder + '-' + fullDate.getUTCMonth();
+    const month = fullDate.getUTCMonth() + 1;
+    dateBuilder = dateBuilder + '-' + month;
   }
   if (selectedSample === SAMPLE_SIZE.Day) {
-    dateBuilder = dateBuilder + '-' + fullDate.getUTCDay();
+    const day = fullDate.getUTCDay() + 1;
+    dateBuilder = dateBuilder + '-' + day;
   }
+
   return dateBuilder;
 };
 

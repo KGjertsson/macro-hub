@@ -30,6 +30,7 @@ const runSampling = (
   console.log('Running sampling with filter = ' + filter);
   const sampledDatasets = datasets.map((d) => sampleDataset(d, filter));
   const sampledLabels = unionLabels(sampledDatasets, selectedSample);
+  console.log(sampledLabels);
   const sampledDatasetsFull = sampledDatasets.map((d) => {
     const firstLabel = Date.parse(d.labels![0]);
     const lastLabel = Date.parse(d.labels![d.labels!.length - 1]);
@@ -51,9 +52,6 @@ const runSampling = (
 
     return { ...d, labels: sampledLabels, data: extendedData };
   });
-
-  console.log(sampledDatasets);
-  console.log(sampledLabels);
 
   return { labels: sampledLabels, datasets: sampledDatasetsFull };
 };
