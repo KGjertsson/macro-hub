@@ -17,26 +17,25 @@ export const sample = (
   } else {
     const regexpFilter = filter as RegExp;
 
-    return runSampling(labels, datasets, regexpFilter, selectedSample);
+    return runSampling(labels, datasets, regexpFilter);
   }
 };
 
 const runSampling = (
   labels: string[],
   datasets: Dataset[],
-  filter: RegExp,
-  selectedSample: SAMPLE_SIZE
+  filter: RegExp
 ): DatasetCache => {
   console.log('Running sampling with filter = ' + filter);
   const sampledDatasets = datasets.map((d) => sampleDataset(d, filter));
-  const sampledLabels = unionLabels(sampledDatasets, selectedSample);
-  console.log(sampledLabels);
+  const unionOfLabels = unionLabels(sampledDatasets);
+  console.log(unionOfLabels);
   const sampledDatasetsFull = sampledDatasets.map((d) => {
     const firstLabel = Date.parse(d.labels![0]);
     const lastLabel = Date.parse(d.labels![d.labels!.length - 1]);
     let offset = -1;
 
-    const extendedData = sampledLabels.map((label, index) => {
+    const extendedData = unionOfLabels.map((label, index) => {
       const currentLabel = Date.parse(label);
 
       if (currentLabel === firstLabel) {
@@ -50,10 +49,10 @@ const runSampling = (
       }
     });
 
-    return { ...d, labels: sampledLabels, data: extendedData };
+    return { ...d, labels: unionOfLabels, data: extendedData };
   });
 
-  return { labels: sampledLabels, datasets: sampledDatasetsFull };
+  return { labels: unionOfLabels, datasets: sampledDatasetsFull };
 };
 
 const sampleDataset = (dataset: Dataset, filter: RegExp): Dataset => {

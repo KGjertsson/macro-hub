@@ -1,5 +1,4 @@
 import { Dataset } from '@/models/Dataset';
-import { SAMPLE_SIZE } from '@/models/Constants';
 
 export const generateLabels = (datasets: Dataset[]): string[] => {
   const [minDate, maxDate] = datasets
@@ -9,21 +8,30 @@ export const generateLabels = (datasets: Dataset[]): string[] => {
   return generateDatesBetween(minDate, maxDate).map((d) => d.toDateString());
 };
 
-export const unionLabels = (
-  datasets: Dataset[],
-  selectedSample: SAMPLE_SIZE
-): string[] =>
+export const unionLabels = (datasets: Dataset[]): string[] =>
   datasets
     .map(stringToDate)
     .reduce(concatLabels, [])
     .sort(dateCompare)
-    .map(dateToString);
+    .map(dateToString)
+    .reduce(distinct, []);
+
+const stringToDate = (dataset: Dataset): Date[] =>
+  dataset.labels!.map((l) => new Date(l));
 
 const dateCompare = (first: Date, second: Date) =>
   first.getTime() - second.getTime();
 
-const stringToDate = (dataset: Dataset): Date[] =>
-  dataset.labels!.map((l) => new Date(l));
+const distinct = (result: string[], current: string): string[] => {
+  if (result.length === 0) {
+    return [current];
+  }
+  if (result.includes(current)) {
+    return result;
+  }
+
+  return result.concat(current);
+};
 
 const concatLabels = (result: Date[], currentValue: Date[]) =>
   result.concat(currentValue);
@@ -36,59 +44,6 @@ const dateToString = (d: Date) => {
 
   // Create the formatted string
   return `${year}-${month}-${day}`;
-};
-
-const sortUnion = (result: Date[], currentValue: Date): Date[] => {
-  console.log('calling sort with result.length = ' + result.length);
-  if (result.length === 0) {
-    console.log('adding first value ' + dateToString(currentValue));
-    return [currentValue];
-  } else if (result.includes(currentValue)) {
-    return result;
-  } else if (currentValue < result[0]) {
-    console.log('prepending ' + dateToString(currentValue));
-    return [currentValue].concat(result);
-  } else {
-    let newResult = [];
-
-    result.forEach((d, index) => {
-      if (currentValue < d) {
-        console.log(
-          'inserting new value ' +
-            dateToString(currentValue) +
-            ' between ' +
-            dateToString(result[index - 1]) +
-            ' and ' +
-            dateToString(d)
-        );
-        console.log('---');
-        return [result.slice(0, index), currentValue, result.slice(index)];
-      }
-    });
-
-    console.log('appending ' + dateToString(currentValue));
-    result.push(currentValue);
-    return result;
-  }
-};
-
-const buildDateString = (
-  unixTimeNumber: number,
-  selectedSample: SAMPLE_SIZE
-): string => {
-  const fullDate = new Date(unixTimeNumber);
-  let dateBuilder = fullDate.getUTCFullYear().toString();
-
-  if ([SAMPLE_SIZE.Month, SAMPLE_SIZE.Day].includes(selectedSample)) {
-    const month = fullDate.getUTCMonth() + 1;
-    dateBuilder = dateBuilder + '-' + month;
-  }
-  if (selectedSample === SAMPLE_SIZE.Day) {
-    const day = fullDate.getUTCDay() + 1;
-    dateBuilder = dateBuilder + '-' + day;
-  }
-
-  return dateBuilder;
 };
 
 const findEdgeDates = (result: Date[], current: Date[]) => {
