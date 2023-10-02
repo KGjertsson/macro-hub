@@ -36,6 +36,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearNetherlands;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
+import com.kg.macroanalyzer.jooq.generated.tables.ScrapeActionQueue;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
@@ -76,6 +77,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearJapanR
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearNetherlandsRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearUsaRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.PolicyRateSwedenRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.ScrapeActionQueueRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBill_12MonthRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBill_1MonthRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBill_3MonthRecord;
@@ -134,6 +136,7 @@ public class Keys {
     public static final UniqueKey<IntGovBond_5YearNetherlandsRecord> EURO_MARKET_5_YEAR_NETHERLANDS_PKEY = Internal.createUniqueKey(IntGovBond_5YearNetherlands.INT_GOV_BOND_5_YEAR_NETHERLANDS, DSL.name("euro_market_5_year_netherlands_pkey"), new TableField[] { IntGovBond_5YearNetherlands.INT_GOV_BOND_5_YEAR_NETHERLANDS.ID }, true);
     public static final UniqueKey<IntGovBond_5YearUsaRecord> EURO_MARKET_5_YEAR_USA_PKEY = Internal.createUniqueKey(IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA, DSL.name("euro_market_5_year_usa_pkey"), new TableField[] { IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA.ID }, true);
     public static final UniqueKey<PolicyRateSwedenRecord> POLICY_RATE_SWEDEN_PKEY = Internal.createUniqueKey(PolicyRateSweden.POLICY_RATE_SWEDEN, DSL.name("policy_rate_sweden_pkey"), new TableField[] { PolicyRateSweden.POLICY_RATE_SWEDEN.ID }, true);
+    public static final UniqueKey<ScrapeActionQueueRecord> SCRAPE_ACTION_QUEUE_PKEY = Internal.createUniqueKey(ScrapeActionQueue.SCRAPE_ACTION_QUEUE, DSL.name("scrape_action_queue_pkey"), new TableField[] { ScrapeActionQueue.SCRAPE_ACTION_QUEUE.ID }, true);
     public static final UniqueKey<SwedishGovernmentBill_12MonthRecord> SWEDISH_GOVERNMENT_BILL_12_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH, DSL.name("swedish_government_bill_12_month_pkey"), new TableField[] { SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH.ID }, true);
     public static final UniqueKey<SwedishGovernmentBill_1MonthRecord> SWEDISH_GOVERNMENT_BILL_1_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH, DSL.name("swedish_government_bill_1_month_pkey"), new TableField[] { SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH.ID }, true);
     public static final UniqueKey<SwedishGovernmentBill_3MonthRecord> SWEDISH_GOVERNMENT_BILL_3_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH, DSL.name("swedish_government_bill_3_month_pkey"), new TableField[] { SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH.ID }, true);

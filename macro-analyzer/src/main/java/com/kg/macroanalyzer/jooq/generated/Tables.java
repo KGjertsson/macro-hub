@@ -36,6 +36,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearNetherlands;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
+import com.kg.macroanalyzer.jooq.generated.tables.ScrapeActionQueue;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
@@ -211,6 +212,11 @@ public class Tables {
      * The table <code>public.policy_rate_sweden</code>.
      */
     public static final PolicyRateSweden POLICY_RATE_SWEDEN = PolicyRateSweden.POLICY_RATE_SWEDEN;
+
+    /**
+     * The table <code>public.scrape_action_queue</code>.
+     */
+    public static final ScrapeActionQueue SCRAPE_ACTION_QUEUE = ScrapeActionQueue.SCRAPE_ACTION_QUEUE;
 
     /**
      * The table <code>public.swedish_government_bill_12_month</code>.
