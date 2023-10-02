@@ -1,5 +1,10 @@
 import { Dataset } from '@/models/Dataset';
-import { NO_FILTER, SAMPLE_SIZE, sampleToFilter } from '@/models/Constants';
+import {
+  DATASET_NAMES,
+  NO_FILTER,
+  SAMPLE_SIZE,
+  sampleToFilter,
+} from '@/models/Constants';
 import { DatasetCache } from '@/models/DatasetCache/DatasetCache';
 import { unionLabels } from '@/models/DatasetCache/Labels';
 
@@ -63,11 +68,10 @@ const extendDatasetToFullLabels = (
   unionOfLabels: string[]
 ): Dataset => {
   {
-    console.log('extending dataset: ' + dataset.name);
+    console.log('extending dataset: ' + DATASET_NAMES[dataset.name]);
     const datasetLabels = dataset.labels!;
 
     const firstLabel = new Date(datasetLabels[0]);
-    const lastLabel = new Date(datasetLabels[datasetLabels.length - 1]);
     let offset = -1;
 
     const extendedData = unionOfLabels.map((label, index) => {
@@ -78,8 +82,6 @@ const extendDatasetToFullLabels = (
       }
 
       if (currentLabel.getTime() < firstLabel.getTime()) {
-        return 0;
-      } else if (currentLabel.getTime() > lastLabel.getTime()) {
         return 0;
       } else {
         return dataset.data![index - offset];

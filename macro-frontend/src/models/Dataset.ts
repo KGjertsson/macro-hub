@@ -2,8 +2,6 @@ import { DATASET_NAMES } from '@/models/Constants';
 
 export type LineConfig = {
   label: string;
-  borderColor: string;
-  backgroundColor: string;
   pointRadius: number;
 };
 
@@ -19,8 +17,6 @@ export type Dataset = {
 const policyRateSweden: Dataset = {
   lineConfig: {
     label: 'Sveriges styrränta',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -31,8 +27,6 @@ const policyRateSweden: Dataset = {
 const usdSekExchange: Dataset = {
   lineConfig: {
     label: 'USD till SEK växelkurs',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -43,8 +37,6 @@ const usdSekExchange: Dataset = {
 const governmentBondSweden2Year: Dataset = {
   lineConfig: {
     label: 'Svenska Statsobligationer 2 års löptid',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -55,8 +47,6 @@ const governmentBondSweden2Year: Dataset = {
 const governmentBondSweden5Year: Dataset = {
   lineConfig: {
     label: 'Svenska Statsobligationer 5 års löptid',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -67,8 +57,6 @@ const governmentBondSweden5Year: Dataset = {
 const governmentBondSweden7Year: Dataset = {
   lineConfig: {
     label: 'Svenska Statsobligationer 7 års löptid',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -79,8 +67,6 @@ const governmentBondSweden7Year: Dataset = {
 const governmentBondSweden10Year: Dataset = {
   lineConfig: {
     label: 'Svenska Statsobligationer 10 års löptid',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -91,8 +77,6 @@ const governmentBondSweden10Year: Dataset = {
 const governmentBillsSweden1Month: Dataset = {
   lineConfig: {
     label: 'Svensk statsskuldväxel 1-månads löptid',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -103,8 +87,6 @@ const governmentBillsSweden1Month: Dataset = {
 const governmentBillsSweden3Month: Dataset = {
   lineConfig: {
     label: 'Svensk statsskuldväxel 3-månads löptid',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -115,8 +97,6 @@ const governmentBillsSweden3Month: Dataset = {
 const governmentBillsSweden6Month: Dataset = {
   lineConfig: {
     label: 'Svensk statsskuldväxel 6-månads löptid',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -127,8 +107,6 @@ const governmentBillsSweden6Month: Dataset = {
 const governmentBillsSweden12Month: Dataset = {
   lineConfig: {
     label: 'Svensk statsskuldväxel 12-månads löptid',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -139,8 +117,6 @@ const governmentBillsSweden12Month: Dataset = {
 const euroMarketRateDenmark3Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 3-månaders löptid: Danmark',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -151,8 +127,6 @@ const euroMarketRateDenmark3Month: Dataset = {
 const euroMarketRateEur3Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 3-månaders löptid: Eur',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -163,8 +137,6 @@ const euroMarketRateEur3Month: Dataset = {
 const euroMarketRateGB3Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 3-månaders löptid: GB',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -175,8 +147,6 @@ const euroMarketRateGB3Month: Dataset = {
 const euroMarketRateJapan3Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 3-månaders löptid: Japan',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -187,8 +157,6 @@ const euroMarketRateJapan3Month: Dataset = {
 const euroMarketRateNorway3Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 3-månaders löptid: Norge',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -199,8 +167,6 @@ const euroMarketRateNorway3Month: Dataset = {
 const euroMarketRateUsa3Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 3-månaders löptid: USA',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -211,8 +177,6 @@ const euroMarketRateUsa3Month: Dataset = {
 const euroMarketRateDenmark6Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 6-månaders löptid: Danmark',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -223,8 +187,6 @@ const euroMarketRateDenmark6Month: Dataset = {
 const euroMarketRateEur6Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 6-månaders löptid: Eur',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -235,8 +197,6 @@ const euroMarketRateEur6Month: Dataset = {
 const euroMarketRateGB6Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 6-månaders löptid: GB',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -247,8 +207,6 @@ const euroMarketRateGB6Month: Dataset = {
 const euroMarketRateJapan6Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 6-månaders löptid: Japan',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -259,8 +217,6 @@ const euroMarketRateJapan6Month: Dataset = {
 const euroMarketRateNorway6Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 6-månaders löptid: Norge',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -271,8 +227,6 @@ const euroMarketRateNorway6Month: Dataset = {
 const euroMarketRateUsa6Month: Dataset = {
   lineConfig: {
     label: 'Euromarknadsräntor 6-månaders löptid: USA',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -283,8 +237,6 @@ const euroMarketRateUsa6Month: Dataset = {
 const internationalGovernmentBondEur5Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 5-års löptid: Eur',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -295,8 +247,6 @@ const internationalGovernmentBondEur5Year: Dataset = {
 const internationalGovernmentBondFrance5Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 5-års löptid: Frankrike',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -307,8 +257,6 @@ const internationalGovernmentBondFrance5Year: Dataset = {
 const internationalGovernmentBondGB5Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 5-års löptid: GB',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -319,8 +267,6 @@ const internationalGovernmentBondGB5Year: Dataset = {
 const internationalGovernmentBondGermany5Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 5-års löptid: Tyskland',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -331,8 +277,6 @@ const internationalGovernmentBondGermany5Year: Dataset = {
 const internationalGovernmentBondJapan5Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 5-års löptid: Japan',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -343,8 +287,6 @@ const internationalGovernmentBondJapan5Year: Dataset = {
 const internationalGovernmentBondNetherlands5Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 5-års löptid: Nederländerna',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -355,8 +297,6 @@ const internationalGovernmentBondNetherlands5Year: Dataset = {
 const internationalGovernmentBondUsa5Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 5-års löptid: USA',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -367,8 +307,6 @@ const internationalGovernmentBondUsa5Year: Dataset = {
 const internationalGovernmentBondDenmark10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: Danmark',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -379,8 +317,6 @@ const internationalGovernmentBondDenmark10Year: Dataset = {
 const internationalGovernmentBondEur10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: Eur',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -391,8 +327,6 @@ const internationalGovernmentBondEur10Year: Dataset = {
 const internationalGovernmentBondFinland10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: Finland',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -403,8 +337,6 @@ const internationalGovernmentBondFinland10Year: Dataset = {
 const internationalGovernmentBondFrance10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: Frankrike',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -415,8 +347,6 @@ const internationalGovernmentBondFrance10Year: Dataset = {
 const internationalGovernmentBondGB10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: GB',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -427,8 +357,6 @@ const internationalGovernmentBondGB10Year: Dataset = {
 const internationalGovernmentBondGermany10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: Germany',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -439,8 +367,6 @@ const internationalGovernmentBondGermany10Year: Dataset = {
 const internationalGovernmentBondJapan10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: Japan',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -451,8 +377,6 @@ const internationalGovernmentBondJapan10Year: Dataset = {
 const internationalGovernmentBondNetherlands10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: Nederländerna',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -463,8 +387,6 @@ const internationalGovernmentBondNetherlands10Year: Dataset = {
 const internationalGovernmentBondNorway10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: Norge',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,
@@ -475,8 +397,6 @@ const internationalGovernmentBondNorway10Year: Dataset = {
 const internationalGovernmentBondUsa10Year: Dataset = {
   lineConfig: {
     label: 'Internationella statsobligationer 10-års löptid: USA',
-    borderColor: 'rgb(75, 192, 192)',
-    backgroundColor: 'rgb(75, 192, 192, 0.1)',
     pointRadius: 2,
   },
   selected: false,

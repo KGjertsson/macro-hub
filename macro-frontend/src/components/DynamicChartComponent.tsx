@@ -12,6 +12,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { DatasetCache } from '@/models/DatasetCache/DatasetCache';
+import { displayColors } from '@/models/Constants';
 
 ChartJS.register(
   CategoryScale,
@@ -46,12 +47,12 @@ const DynamicChartComponent = ({ sampled }: Props) => {
       }}
       data={{
         labels: sampled.labels,
-        datasets: sampled.datasets.map((dataset) => {
+        datasets: sampled.datasets.map((dataset, index) => {
           return {
             data: dataset.data,
             label: dataset.lineConfig.label,
-            borderColor: dataset.lineConfig.borderColor,
-            backgroundColor: dataset.lineConfig.backgroundColor,
+            borderColor: displayColors[index % displayColors.length],
+            backgroundColor: displayColors[index % displayColors.length],
             pointRadius: dataset.lineConfig.pointRadius,
           };
         }),

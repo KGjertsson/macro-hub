@@ -103,3 +103,11 @@ export const allDatasetNames = [
   DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsNorway10Year],
   DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsUsa10Year],
 ];
+
+export const displayColors = [
+  'rgb(207,82,48)',
+  'rgb(245,154,68)',
+  'rgb(227,197,152)',
+  'rgb(110,97,47)',
+  'rgb(110,53,44)',
+];
