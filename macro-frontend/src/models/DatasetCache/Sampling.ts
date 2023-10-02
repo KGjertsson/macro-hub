@@ -29,28 +29,9 @@ const runSampling = (
   console.log('Running sampling with filter = ' + filter);
   const sampledDatasets = datasets.map((d) => sampleDataset(d, filter));
   const unionOfLabels = unionLabels(sampledDatasets);
-  console.log(unionOfLabels);
-  const sampledDatasetsFull = sampledDatasets.map((d) => {
-    const firstLabel = Date.parse(d.labels![0]);
-    const lastLabel = Date.parse(d.labels![d.labels!.length - 1]);
-    let offset = -1;
-
-    const extendedData = unionOfLabels.map((label, index) => {
-      const currentLabel = Date.parse(label);
-
-      if (currentLabel === firstLabel) {
-        offset = index;
-      }
-
-      if (currentLabel < firstLabel || currentLabel > lastLabel) {
-        return 0;
-      } else {
-        return d.data![index - offset];
-      }
-    });
-
-    return { ...d, labels: unionOfLabels, data: extendedData };
-  });
+  const sampledDatasetsFull = sampledDatasets.map((dataset) =>
+    extendDatasetToFullLabels(dataset, unionOfLabels)
+  );
 
   return { labels: unionOfLabels, datasets: sampledDatasetsFull };
 };
@@ -75,4 +56,36 @@ const sampleDataset = (dataset: Dataset, filter: RegExp): Dataset => {
   });
 
   return { ...dataset, data: sampledData, labels: sampledLabels };
+};
+
+const extendDatasetToFullLabels = (
+  dataset: Dataset,
+  unionOfLabels: string[]
+): Dataset => {
+  {
+    console.log('extending dataset: ' + dataset.name);
+    const datasetLabels = dataset.labels!;
+
+    const firstLabel = new Date(datasetLabels[0]);
+    const lastLabel = new Date(datasetLabels[datasetLabels.length - 1]);
+    let offset = -1;
+
+    const extendedData = unionOfLabels.map((label, index) => {
+      const currentLabel = new Date(label);
+
+      if (currentLabel.getTime() === firstLabel.getTime()) {
+        offset = index;
+      }
+
+      if (currentLabel.getTime() < firstLabel.getTime()) {
+        return 0;
+      } else if (currentLabel.getTime() > lastLabel.getTime()) {
+        return 0;
+      } else {
+        return dataset.data![index - offset];
+      }
+    });
+
+    return { ...dataset, labels: unionOfLabels, data: extendedData };
+  }
 };

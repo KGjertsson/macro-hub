@@ -29,7 +29,9 @@ const fetchData = async (dataset: Dataset) => {
   const responseRaw = await ky.get(rootUrl + dataset.url);
   const responseData: DataResponseItem[] = await responseRaw.json();
   const values = responseData.map((r) => r.value);
-  const labels = responseData.map((r) => r.date.join('-'));
+  const labels = responseData.map((r) =>
+    r.date.map((d) => String(d).padStart(2, '0')).join('-')
+  );
 
   return { ...dataset, data: values, labels: labels, selected: true };
 };
