@@ -5,7 +5,9 @@ import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.time.ZoneId;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
 
 import static com.kg.macroanalyzer.jooq.generated.Tables.SCRAPE_ACTION_QUEUE;
 
@@ -20,10 +22,18 @@ public class ScrapeRepository {
         this.dslContext = dslContext;
     }
 
+    public List<ScrapeQueueItem> getItemsToScrape(LocalDateTime now) {
+        return dslContext.select(SCRAPE_ACTION_QUEUE)
+                .where(SCRAPE_ACTION_QUEUE.SCRAPE_DATE.lessThan(now))
+                .and(SCRAPE_ACTION_QUEUE.STATUS.eq(0))
+                .fetch()
+                .map(ScrapeQueueItem::of);
+    }
+
     public Integer addScrapeQueueItem(ScrapeQueueItem scrapeQueueItem) {
         final var name = scrapeQueueItem.name();
         final var time = scrapeQueueItem.scrapeDate()
-                .atZone(ZoneId.of("UTC"))
+                .atZone(ZoneOffset.UTC)
                 .toLocalDateTime();
 
         return dslContext.insertInto(

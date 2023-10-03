@@ -2,8 +2,12 @@ package com.kg.macroanalyzer.models;
 
 import lombok.Builder;
 import lombok.NonNull;
+import org.jooq.Record;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
+
+import static com.kg.macroanalyzer.jooq.generated.Tables.SCRAPE_ACTION_QUEUE;
 
 @Builder
 public record ScrapeQueueItem(@NonNull String name, @NonNull Instant scrapeDate) {
@@ -15,4 +19,10 @@ public record ScrapeQueueItem(@NonNull String name, @NonNull Instant scrapeDate)
                 .build();
     }
 
+    public static ScrapeQueueItem of(Record r) {
+        return ScrapeQueueItem.builder()
+                .name(r.getValue(SCRAPE_ACTION_QUEUE.DATASET_NAME))
+                .scrapeDate(r.getValue(SCRAPE_ACTION_QUEUE.SCRAPE_DATE).toInstant(ZoneOffset.UTC))
+                .build();
+    }
 }
