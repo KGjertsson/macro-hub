@@ -2,6 +2,17 @@
 
 Visualizing macro-economic trends and parameters.
 
+### Set Up Guide
+
+1. Start the docker database container
+2. Create the database in the container
+3. Run the backend application in IntelliJ
+4. Install the frontend repo
+5. Run the frontend repo
+6. Run individual scrape queries below to populate the database
+
+More details on the individual steps can be found below.
+
 ---
 
 ## marco-analyzer
