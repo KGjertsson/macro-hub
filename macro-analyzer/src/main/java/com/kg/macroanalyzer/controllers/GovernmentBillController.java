@@ -30,10 +30,10 @@ public class GovernmentBillController {
                 "but found: %s").formatted(period);
 
         return switch (period) {
-            case "1" -> governmentBillRepository.getSwedishGovernmentBills1Month();
-            case "3" -> governmentBillRepository.getSwedishGovernmentBills3Month();
-            case "6" -> governmentBillRepository.getSwedishGovernmentBills6Month();
-            case "12" -> governmentBillRepository.getSwedishGovernmentBills12Month();
+            case "1" -> governmentBillRepository.swedishGovBills1MonthReader();
+            case "3" -> governmentBillRepository.swedishGovBills3MonthReader();
+            case "6" -> governmentBillRepository.swedishGovBills6MonthReader();
+            case "12" -> governmentBillRepository.swedishGovBills12MonthReader();
             default -> throw new IllegalArgumentException(e);
         };
 

@@ -18,13 +18,17 @@ public class ScrapeUtils {
         this.objectMapper = objectMapper;
     }
 
-    public <E> List<E> scrapeNovelItems(String url, List<E> persistedItems, Class<E> itemType) throws IOException {
+    public <E> List<E> scrapeNovelItems(
+            String url,
+            List<E> persistedItems,
+            Class<E> itemType
+    ) throws IOException {
         final var response = WebUtils.getHTTP(url);
-        JavaType collectionType = objectMapper.getTypeFactory().constructCollectionType(List.class, itemType);
+        JavaType collectionType = objectMapper.getTypeFactory()
+                .constructCollectionType(List.class, itemType);
         List<E> resultList = objectMapper.readValue(response, collectionType);
 
         return resultList.stream().filter(i -> !persistedItems.contains(i)).toList();
     }
-
 
 }
