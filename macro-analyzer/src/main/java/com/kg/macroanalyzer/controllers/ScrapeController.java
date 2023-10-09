@@ -73,21 +73,22 @@ public class ScrapeController {
     @PostMapping("government-bonds/sweden")
     public Integer scrapeSwedishGovernmentBonds(
             @RequestParam("period") String period
-    ) throws IOException {
+    ) {
         log.info("Scraping government bonds for sweden with period=%s".formatted(period));
+        final var periodCountry = "%syear-swe".formatted(period);
 
-        return governmentBondScrapeService.scrapeGovernmentBondsSweden(period);
+        return governmentBondScrapeService.scrapeGovBonds(periodCountry);
     }
 
     @PostMapping("government-bonds/international")
     public Integer scrapeIntGovBonds(
             @RequestParam("period") String period,
             @RequestParam("country") String country
-    ) throws IOException {
+    ) {
         final var periodCountry = period.toLowerCase() + '-' + country.toLowerCase();
         log.info(("Scraping international government bonds with periodCountry=%s").formatted(periodCountry));
 
-        return governmentBondScrapeService.scrapeIntGovBonds(periodCountry);
+        return governmentBondScrapeService.scrapeGovBonds(periodCountry);
     }
 
     @PostMapping("euro-market-rate")

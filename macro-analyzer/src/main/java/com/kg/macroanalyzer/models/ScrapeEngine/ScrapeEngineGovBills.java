@@ -11,14 +11,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public class ScrapeEngineGovBill implements ScrapeEngine {
+public class ScrapeEngineGovBills implements ScrapeEngine {
 
     private final ScrapeUtils scrapeUtils;
     private final String url;
     private final Supplier<List<GovernmentBillItem>> govBillReadSupplier;
     private final Function<List<GovernmentBillItem>, Integer> govBillWriteSupplier;
 
-    public ScrapeEngineGovBill(
+    public ScrapeEngineGovBills(
             GovernmentBillRepository govBillRepository,
             ScrapeUtils scrapeUtils,
             String period
@@ -61,7 +61,7 @@ public class ScrapeEngineGovBill implements ScrapeEngine {
                     GovernmentBillItem.class
             );
             final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
-            final var msgFormatted = msgRaw.formatted(url, scraped.size());
+            final var msgFormatted = msgRaw.formatted(scraped.size(), url);
             log.info(msgFormatted);
 
             return govBillWriteSupplier.apply(scraped);

@@ -56,30 +56,39 @@ public class GovernmentBondController {
             @RequestParam("period") String period,
             @RequestParam("country") String country
     ) {
-        final var msg = ("Received request for /government-bonds/international with " +
-                "query parameters country=%s, period=%s").formatted(country, period);
-        log.info(msg);
-        final var e = "Found unexpected combination of query parameters country and period.";
+        final var msgRaw = "GET int gov bonds with query parameters country=%s, period=%s";
+        final var msgFormatted = msgRaw.formatted(country, period);
+        log.info(msgFormatted);
         final var periodCountry = period.toLowerCase() + '-' + country.toLowerCase();
 
+        return Stream.ofNullable(periodCountry)
+                .map(this::getIntGovBondReader)
+                .map(Supplier::get)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    private Supplier<List<GovernmentBondItem>> getIntGovBondReader(String periodCountry) {
+        final var e = "Found unexpected combination of query parameters country and period.";
+
         return switch (periodCountry) {
-            case "5year-eur" -> governmentBondsRepository.getIntGovBond5YearEur();
-            case "5year-gb" -> governmentBondsRepository.getIntGovBond5YearGB();
-            case "5year-japan" -> governmentBondsRepository.getIntGovBond5YearJapan();
-            case "5year-usa" -> governmentBondsRepository.getIntGovBond5YearUsa();
-            case "5year-france" -> governmentBondsRepository.getIntGovBond5YearFrance();
-            case "5year-germany" -> governmentBondsRepository.getIntGovBond5YearGermany();
-            case "5year-netherlands" -> governmentBondsRepository.getIntGovBond5YearHolland();
-            case "10year-denmark" -> governmentBondsRepository.getIntGovBond10YearDenmark();
-            case "10year-eur" -> governmentBondsRepository.getIntGovBond10YearEur();
-            case "10year-finland" -> governmentBondsRepository.getIntGovBond10YearFinland();
-            case "10year-france" -> governmentBondsRepository.getIntGovBond10YearFrance();
-            case "10year-gb" -> governmentBondsRepository.getIntGovBond10YearGB();
-            case "10year-germany" -> governmentBondsRepository.getIntGovBond10YearGermany();
-            case "10year-japan" -> governmentBondsRepository.getIntGovBond10YearJapan();
-            case "10year-netherlands" -> governmentBondsRepository.getIntGovBond10YearHolland();
-            case "10year-norway" -> governmentBondsRepository.getIntGovBond10YearNorway();
-            case "10year-usa" -> governmentBondsRepository.getIntGovBond10YearUsa();
+            case "5year-eur" -> governmentBondsRepository.intGovBond5YearReaderEur();
+            case "5year-gb" -> governmentBondsRepository.intGovBond5YearReaderGB();
+            case "5year-japan" -> governmentBondsRepository.intGovBond5YearReaderJapan();
+            case "5year-usa" -> governmentBondsRepository.intGovBond5YearReaderUSA();
+            case "5year-france" -> governmentBondsRepository.intGovBond5YearReaderFrance();
+            case "5year-germany" -> governmentBondsRepository.intGovBond5YearReaderGermany();
+            case "5year-netherlands" -> governmentBondsRepository.intGovBond5YearReaderHolland();
+            case "10year-denmark" -> governmentBondsRepository.intGovBond10YearReaderDenmark();
+            case "10year-eur" -> governmentBondsRepository.intGovBond10YearReaderEur();
+            case "10year-finland" -> governmentBondsRepository.intGovBond10YearReaderFinland();
+            case "10year-france" -> governmentBondsRepository.intGovBond10YearReaderFrance();
+            case "10year-gb" -> governmentBondsRepository.intGovBond10YearReaderGB();
+            case "10year-germany" -> governmentBondsRepository.intGovBond10YearReaderGermany();
+            case "10year-japan" -> governmentBondsRepository.intGovBond10YearReaderJapan();
+            case "10year-netherlands" -> governmentBondsRepository.intGovBond10YearReaderHolland();
+            case "10year-norway" -> governmentBondsRepository.intGovBond10YearReaderNorway();
+            case "10year-usa" -> governmentBondsRepository.intGovBond10YearReaderUSA();
             default -> throw new IllegalArgumentException(e);
         };
     }

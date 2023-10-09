@@ -30,26 +30,66 @@ public class ScrapeEngineFactory {
     }
 
     public ScrapeEngine createScrapeEngine(ScrapeQueueItem scrapeQueueItem) {
-        return switch (scrapeQueueItem.name()) {
+        final var name = scrapeQueueItem.name().trim();
+
+        return switch (name) {
             case "policy-rate/sweden" ->
                     new ScrapeEnginePolicyRate(policyRateRepository, scrapeUtils);
             case "government-bills/sweden?period=1" ->
-                    new ScrapeEngineGovBill(govBillRepository, scrapeUtils, "1");
+                    new ScrapeEngineGovBills(govBillRepository, scrapeUtils, "1");
             case "government-bills/sweden?period=3" ->
-                    new ScrapeEngineGovBill(govBillRepository, scrapeUtils, "3");
+                    new ScrapeEngineGovBills(govBillRepository, scrapeUtils, "3");
             case "government-bills/sweden?period=6" ->
-                    new ScrapeEngineGovBill(govBillRepository, scrapeUtils, "6");
+                    new ScrapeEngineGovBills(govBillRepository, scrapeUtils, "6");
             case "government-bills/sweden?period=12" ->
-                    new ScrapeEngineGovBill(govBillRepository, scrapeUtils, "12");
+                    new ScrapeEngineGovBills(govBillRepository, scrapeUtils, "12");
             case "government-bonds/sweden?period=2" ->
-                    new ScrapeEngineGovBondsSweden(govBondRepository, scrapeUtils, "2");
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "2year-swe");
             case "government-bonds/sweden?period=5" ->
-                    new ScrapeEngineGovBondsSweden(govBondRepository, scrapeUtils, "5");
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "5year-swe");
             case "government-bonds/sweden?period=7" ->
-                    new ScrapeEngineGovBondsSweden(govBondRepository, scrapeUtils, "7");
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "7year-swe");
             case "government-bonds/sweden?period=10" ->
-                    new ScrapeEngineGovBondsSweden(govBondRepository, scrapeUtils, "10");
-            default -> throw new IllegalArgumentException();
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-swe");
+            case "government-bonds/international?period=5year&country=eur" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "5year-eur");
+            case "government-bonds/international?period=5year&country=gb" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "5year-gb");
+            case "government-bonds/international?period=5year&country=japan" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "5year-japan");
+            case "government-bonds/international?period=5year&country=france" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "5year-france");
+            case "government-bonds/international?period=5year&country=germany" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "5year-germany");
+            case "government-bonds/international?period=5year&country=netherlands" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "5year-netherlands");
+            case "government-bonds/international?period=5year&country=usa" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "5year-usa");
+            case "government-bonds/international?period=10year&country=denmark" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-denmark");
+            case "government-bonds/international?period=10year&country=eur" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-eur");
+            case "government-bonds/international?period=10year&country=finland" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-finland");
+            case "government-bonds/international?period=10year&country=france" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-france");
+            case "government-bonds/international?period=10year&country=gb" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-gb");
+            case "government-bonds/international?period=10year&country=germany" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-germany");
+            case "government-bonds/international?period=10year&country=japan" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-japan");
+            case "government-bonds/international?period=10year&country=netherlands" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-netherlands");
+            case "government-bonds/international?period=10year&country=norway" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-norway");
+            case "government-bonds/international?period=10year&country=usa" ->
+                    new ScrapeEngineGovBonds(govBondRepository, scrapeUtils, "10year-usa");
+            default -> {
+                final var msg = "Found unexpected argument [%s]".formatted(name);
+
+                throw new IllegalArgumentException(msg);
+            }
         };
     }
 
