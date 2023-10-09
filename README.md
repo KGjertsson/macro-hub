@@ -36,6 +36,14 @@ ALTER USER macrouser WITH SUPERUSER;
 
 ### scrape data
 
+#### Queue all data to be scraped
+
+```
+curl.exe -X POST "localhost:8080/scrape/schedule-all?interval=minute&multiplier=5"
+```
+
+#### Scrape individual datasets
+
 ```
 curl.exe -X POST "localhost:8080/scrape/policy-rate/sweden"
 curl.exe -X POST "localhost:8080/scrape/exchange-rate/usd-sek"
