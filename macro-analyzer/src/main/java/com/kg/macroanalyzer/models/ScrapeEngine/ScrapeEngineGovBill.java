@@ -74,5 +74,4 @@ public class ScrapeEngineGovBill implements ScrapeEngine {
         }
     }
 
-
 }

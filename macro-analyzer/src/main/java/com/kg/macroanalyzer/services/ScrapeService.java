@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 
-@Service
 @Slf4j
+@Service
 public class ScrapeService {
 
     private final ScrapeRepository scrapeRepository;

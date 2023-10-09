@@ -13,7 +13,6 @@ import java.util.Objects;
 @Service
 public class CronScrapeJob {
 
-    private final Integer SCRAPE_DELAY = 300000;
     private final ScrapeRepository scrapeRepository;
     private final ScrapeEngineFactory scrapeEngineFactory;
 
