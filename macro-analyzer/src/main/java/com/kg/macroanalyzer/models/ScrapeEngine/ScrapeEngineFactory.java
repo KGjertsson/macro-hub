@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.models.ScrapeEngine;
 
 import com.kg.macroanalyzer.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.repositories.GovernmentBillRepository;
+import com.kg.macroanalyzer.repositories.GovernmentBondsRepository;
 import com.kg.macroanalyzer.repositories.PolicyRateRepository;
 import com.kg.macroanalyzer.utils.ScrapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,16 +13,19 @@ public class ScrapeEngineFactory {
 
     private final PolicyRateRepository policyRateRepository;
     private final GovernmentBillRepository govBillRepository;
+    private final GovernmentBondsRepository govBondRepository;
     private final ScrapeUtils scrapeUtils;
 
     @Autowired
     public ScrapeEngineFactory(
             PolicyRateRepository policyRateRepository,
             GovernmentBillRepository govBillRepository,
+            GovernmentBondsRepository govBondRepository,
             ScrapeUtils scrapeUtils
     ) {
         this.policyRateRepository = policyRateRepository;
         this.govBillRepository = govBillRepository;
+        this.govBondRepository = govBondRepository;
         this.scrapeUtils = scrapeUtils;
     }
 
@@ -30,13 +34,21 @@ public class ScrapeEngineFactory {
             case "policy-rate/sweden" ->
                     new ScrapeEnginePolicyRate(policyRateRepository, scrapeUtils);
             case "government-bills/sweden?period=1" ->
-                    new ScrapeEngineGovernmentBill(govBillRepository, scrapeUtils, "1");
+                    new ScrapeEngineGovBill(govBillRepository, scrapeUtils, "1");
             case "government-bills/sweden?period=3" ->
-                    new ScrapeEngineGovernmentBill(govBillRepository, scrapeUtils, "3");
+                    new ScrapeEngineGovBill(govBillRepository, scrapeUtils, "3");
             case "government-bills/sweden?period=6" ->
-                    new ScrapeEngineGovernmentBill(govBillRepository, scrapeUtils, "6");
+                    new ScrapeEngineGovBill(govBillRepository, scrapeUtils, "6");
             case "government-bills/sweden?period=12" ->
-                    new ScrapeEngineGovernmentBill(govBillRepository, scrapeUtils, "12");
+                    new ScrapeEngineGovBill(govBillRepository, scrapeUtils, "12");
+            case "government-bonds/sweden?period=2" ->
+                    new ScrapeEngineGovBondsSweden(govBondRepository, scrapeUtils, "2");
+            case "government-bonds/sweden?period=5" ->
+                    new ScrapeEngineGovBondsSweden(govBondRepository, scrapeUtils, "5");
+            case "government-bonds/sweden?period=7" ->
+                    new ScrapeEngineGovBondsSweden(govBondRepository, scrapeUtils, "7");
+            case "government-bonds/sweden?period=10" ->
+                    new ScrapeEngineGovBondsSweden(govBondRepository, scrapeUtils, "10");
             default -> throw new IllegalArgumentException();
         };
     }

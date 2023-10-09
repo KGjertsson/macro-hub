@@ -25,7 +25,7 @@ public class CronScrapeJob {
         this.scrapeEngineFactory = scrapeEngineFactory;
     }
 
-    @Scheduled(fixedDelay = SCRAPE_DELAY)
+    @Scheduled(fixedDelay = 300000)
     public void scrape() {
         final var now = LocalDateTime.now();
 

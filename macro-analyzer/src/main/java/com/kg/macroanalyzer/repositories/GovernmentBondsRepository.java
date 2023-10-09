@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.kg.macroanalyzer.jooq.generated.Tables.*;
 
@@ -22,116 +24,136 @@ public class GovernmentBondsRepository {
         this.dslContext = dslContext;
     }
 
-    public List<GovernmentBondItem> getSwedishGovernmentBonds2Year() {
-        return dslContext.select()
+    public Supplier<List<GovernmentBondItem>> swedishGovBond2YearReader() {
+        return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_2_YEAR)
                 .fetch()
                 .map(GovernmentBondItem::ofSwedish2Month);
     }
 
-    public List<GovernmentBondItem> getSwedishGovernmentBonds5Year() {
-        return dslContext.select()
+    public Supplier<List<GovernmentBondItem>> swedishGovBond5YearReader() {
+        return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_5_YEAR)
                 .fetch()
                 .map(GovernmentBondItem::ofSwedish5Month);
     }
 
-    public List<GovernmentBondItem> getSwedishGovernmentBonds7Year() {
-        return dslContext.select()
+    public Supplier<List<GovernmentBondItem>> swedishGovBond7YearReader() {
+        return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_7_YEAR)
                 .fetch()
                 .map(GovernmentBondItem::ofSwedish7Month);
     }
 
-    public List<GovernmentBondItem> getSwedishGovernmentBonds10Year() {
-        return dslContext.select()
+    public Supplier<List<GovernmentBondItem>> swedishGovBond10YearReader() {
+        return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_10_YEAR)
                 .fetch()
                 .map(GovernmentBondItem::ofSwedish10Month);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertSwedishGovernmentBonds2Year(List<GovernmentBondItem> governmentBondItemList) {
-        if (!governmentBondItemList.isEmpty()) {
-            final var insertQuery = dslContext.batch(
-                    dslContext.insertInto(
-                            SWEDISH_GOVERNMENT_BONDS_2_YEAR,
-                            SWEDISH_GOVERNMENT_BONDS_2_YEAR.GLOBAL_ID,
-                            SWEDISH_GOVERNMENT_BONDS_2_YEAR.VALUE,
-                            SWEDISH_GOVERNMENT_BONDS_2_YEAR.DATE
-                    ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-            );
-            governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
-                    UUID.randomUUID(),
-                    governmentBillItem.value(),
-                    governmentBillItem.date()
-            ));
+    public Function<List<GovernmentBondItem>, Integer> swedishGovBond2YearWriter() {
+        return governmentBondItemList -> {
+            if (!governmentBondItemList.isEmpty()) {
+                final var insertQuery = dslContext.batch(
+                        dslContext.insertInto(
+                                SWEDISH_GOVERNMENT_BONDS_2_YEAR,
+                                SWEDISH_GOVERNMENT_BONDS_2_YEAR.GLOBAL_ID,
+                                SWEDISH_GOVERNMENT_BONDS_2_YEAR.VALUE,
+                                SWEDISH_GOVERNMENT_BONDS_2_YEAR.DATE
+                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
+                );
+                governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
+                        UUID.randomUUID(),
+                        governmentBillItem.value(),
+                        governmentBillItem.date()
+                ));
+                final var result = insertQuery.execute();
 
-            insertQuery.execute();
-        }
+                return result.length;
+            }
+
+            return 0;
+        };
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertSwedishGovernmentBonds5Year(List<GovernmentBondItem> governmentBondItemList) {
-        if (!governmentBondItemList.isEmpty()) {
-            final var insertQuery = dslContext.batch(
-                    dslContext.insertInto(
-                            SWEDISH_GOVERNMENT_BONDS_5_YEAR,
-                            SWEDISH_GOVERNMENT_BONDS_5_YEAR.GLOBAL_ID,
-                            SWEDISH_GOVERNMENT_BONDS_5_YEAR.VALUE,
-                            SWEDISH_GOVERNMENT_BONDS_5_YEAR.DATE
-                    ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-            );
-            governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
-                    UUID.randomUUID(),
-                    governmentBillItem.value(),
-                    governmentBillItem.date()
-            ));
+    public Function<List<GovernmentBondItem>, Integer> swedishGovBond5YearWriter() {
+        return governmentBondItemList -> {
+            if (!governmentBondItemList.isEmpty()) {
+                final var insertQuery = dslContext.batch(
+                        dslContext.insertInto(
+                                SWEDISH_GOVERNMENT_BONDS_5_YEAR,
+                                SWEDISH_GOVERNMENT_BONDS_5_YEAR.GLOBAL_ID,
+                                SWEDISH_GOVERNMENT_BONDS_5_YEAR.VALUE,
+                                SWEDISH_GOVERNMENT_BONDS_5_YEAR.DATE
+                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
+                );
+                governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
+                        UUID.randomUUID(),
+                        governmentBillItem.value(),
+                        governmentBillItem.date()
+                ));
+                final var result = insertQuery.execute();
 
-            insertQuery.execute();
-        }
+                return result.length;
+            }
+
+            return 0;
+        };
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertSwedishGovernmentBonds7Year(List<GovernmentBondItem> governmentBondItemList) {
-        if (!governmentBondItemList.isEmpty()) {
-            final var insertQuery = dslContext.batch(
-                    dslContext.insertInto(
-                            SWEDISH_GOVERNMENT_BONDS_7_YEAR,
-                            SWEDISH_GOVERNMENT_BONDS_7_YEAR.GLOBAL_ID,
-                            SWEDISH_GOVERNMENT_BONDS_7_YEAR.VALUE,
-                            SWEDISH_GOVERNMENT_BONDS_7_YEAR.DATE
-                    ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-            );
-            governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
-                    UUID.randomUUID(),
-                    governmentBillItem.value(),
-                    governmentBillItem.date()
-            ));
+    public Function<List<GovernmentBondItem>, Integer> swedishGovBond7YearWriter() {
+        return governmentBondItemList -> {
+            if (!governmentBondItemList.isEmpty()) {
+                final var insertQuery = dslContext.batch(
+                        dslContext.insertInto(
+                                SWEDISH_GOVERNMENT_BONDS_7_YEAR,
+                                SWEDISH_GOVERNMENT_BONDS_7_YEAR.GLOBAL_ID,
+                                SWEDISH_GOVERNMENT_BONDS_7_YEAR.VALUE,
+                                SWEDISH_GOVERNMENT_BONDS_7_YEAR.DATE
+                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
+                );
+                governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
+                        UUID.randomUUID(),
+                        governmentBillItem.value(),
+                        governmentBillItem.date()
+                ));
+                final var result = insertQuery.execute();
 
-            insertQuery.execute();
-        }
+                return result.length;
+            }
+
+            return 0;
+        };
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertSwedishGovernmentBonds10Year(List<GovernmentBondItem> governmentBondItemList) {
-        if (!governmentBondItemList.isEmpty()) {
-            final var insertQuery = dslContext.batch(
-                    dslContext.insertInto(
-                            SWEDISH_GOVERNMENT_BONDS_10_YEAR,
-                            SWEDISH_GOVERNMENT_BONDS_10_YEAR.GLOBAL_ID,
-                            SWEDISH_GOVERNMENT_BONDS_10_YEAR.VALUE,
-                            SWEDISH_GOVERNMENT_BONDS_10_YEAR.DATE
-                    ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-            );
-            governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
-                    UUID.randomUUID(),
-                    governmentBillItem.value(),
-                    governmentBillItem.date()
-            ));
+    public Function<List<GovernmentBondItem>, Integer> swedishGovBond10YearWriter() {
+        return governmentBondItemList -> {
+            if (!governmentBondItemList.isEmpty()) {
+                final var insertQuery = dslContext.batch(
+                        dslContext.insertInto(
+                                SWEDISH_GOVERNMENT_BONDS_10_YEAR,
+                                SWEDISH_GOVERNMENT_BONDS_10_YEAR.GLOBAL_ID,
+                                SWEDISH_GOVERNMENT_BONDS_10_YEAR.VALUE,
+                                SWEDISH_GOVERNMENT_BONDS_10_YEAR.DATE
+                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
+                );
+                governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
+                        UUID.randomUUID(),
+                        governmentBillItem.value(),
+                        governmentBillItem.date()
+                ));
+                final var result = insertQuery.execute();
 
-            insertQuery.execute();
-        }
+                return result.length;
+            }
+
+            return 0;
+        };
     }
 
     public List<GovernmentBondItem> getIntGovBond5YearEur() {

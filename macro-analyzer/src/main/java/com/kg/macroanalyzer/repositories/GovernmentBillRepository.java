@@ -52,6 +52,7 @@ public class GovernmentBillRepository {
                 .map(GovernmentBillItem::ofSwedish12Month);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<GovernmentBillItem>, Integer> swedishGovBill1MonthWriter() {
         return governmentBillItemList -> {
             if (!governmentBillItemList.isEmpty()) {
@@ -77,6 +78,7 @@ public class GovernmentBillRepository {
         };
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<GovernmentBillItem>, Integer> swedishGovBill3MonthWriter() {
         return governmentBillItemList -> {
             if (!governmentBillItemList.isEmpty()) {
@@ -103,6 +105,7 @@ public class GovernmentBillRepository {
         };
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<GovernmentBillItem>, Integer> swedishGovBill6MonthWriter() {
         return governmentBillItemList -> {
             if (!governmentBillItemList.isEmpty()) {
@@ -128,6 +131,7 @@ public class GovernmentBillRepository {
         };
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<GovernmentBillItem>, Integer> swedishGovBill12MonthWriter() {
         return governmentBillItemList -> {
             if (!governmentBillItemList.isEmpty()) {

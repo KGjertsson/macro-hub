@@ -23,7 +23,8 @@ public class ScrapeRepository {
     }
 
     public List<ScrapeQueueItem> getItemsToScrape(LocalDateTime now) {
-        return dslContext.select(SCRAPE_ACTION_QUEUE)
+        return dslContext.select()
+                .from(SCRAPE_ACTION_QUEUE)
                 .where(SCRAPE_ACTION_QUEUE.SCRAPE_DATE.lessThan(now))
                 .and(SCRAPE_ACTION_QUEUE.STATUS.eq(0))
                 .fetch()

@@ -64,7 +64,7 @@ public class ScrapeController {
     @PostMapping("government-bills/sweden")
     public Integer scrapeSwedishGovernmentBills(
             @RequestParam("period") String period
-    ) throws IOException {
+    ) {
         log.info("Scraping government bills for sweden");
 
         return governmentBillScrapeService.scrapeGovernmentBillsSweden(period);

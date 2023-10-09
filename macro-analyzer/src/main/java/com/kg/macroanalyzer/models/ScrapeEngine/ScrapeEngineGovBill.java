@@ -11,14 +11,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public class ScrapeEngineGovernmentBill implements ScrapeEngine {
+public class ScrapeEngineGovBill implements ScrapeEngine {
 
     private final ScrapeUtils scrapeUtils;
     private final String url;
     private final Supplier<List<GovernmentBillItem>> govBillReadSupplier;
     private final Function<List<GovernmentBillItem>, Integer> govBillWriteSupplier;
 
-    public ScrapeEngineGovernmentBill(
+    public ScrapeEngineGovBill(
             GovernmentBillRepository govBillRepository,
             ScrapeUtils scrapeUtils,
             String period
@@ -60,13 +60,13 @@ public class ScrapeEngineGovernmentBill implements ScrapeEngine {
                     existingGovBillItems,
                     GovernmentBillItem.class
             );
-            final var msgRaw = "Found %s new 1 month items from scraping, persisting do db...";
-            final var msgFormatted = msgRaw.formatted(scraped.size());
+            final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
+            final var msgFormatted = msgRaw.formatted(url, scraped.size());
             log.info(msgFormatted);
 
             return govBillWriteSupplier.apply(scraped);
         } catch (IOException ioException) {
-            final var msgRaw = "Received IOException while scraping sweden policy rate: %s";
+            final var msgRaw = "Received IOException while scraping gov bill items: %s";
             final var msgFormatted = msgRaw.formatted(ioException.getMessage());
             log.error(msgFormatted);
 

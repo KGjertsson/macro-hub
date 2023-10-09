@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.services;
 
-import com.kg.macroanalyzer.models.ScrapeEngine.ScrapeEngineGovernmentBill;
+import com.kg.macroanalyzer.models.ScrapeEngine.ScrapeEngineGovBill;
 import com.kg.macroanalyzer.repositories.GovernmentBillRepository;
 import com.kg.macroanalyzer.utils.ScrapeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class GovernmentBillScrapeService {
             throw new IllegalArgumentException(errorFormatted);
         }
 
-        return new ScrapeEngineGovernmentBill(govBillRepository, scrapeUtils, period).scrape();
+        return new ScrapeEngineGovBill(govBillRepository, scrapeUtils, period).scrape();
 
     }
 

@@ -9,7 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @RestController
@@ -26,15 +30,24 @@ public class GovernmentBondController {
     @GetMapping("/sweden")
     public List<GovernmentBondItem> getSwedishGovernmentBondItems(@RequestParam("period") String period) {
         log.info("Received request for /government-bonds/sweden with period = %s".formatted(period));
-        final var e = ("Expected required query param 'period' to be one of ['2', '5', '7', '10'] " +
-                "but found: %s").formatted(period);
+
+        return Stream.ofNullable(period)
+                .map(this::getGovBondReader)
+                .map(Supplier::get)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    private Supplier<List<GovernmentBondItem>> getGovBondReader(String period) {
+        final var errorRaw = "Expected param 'period' to be one of [2, 5, 7, 10] but found: %s";
+        final var errorFormatted = errorRaw.formatted(period);
 
         return switch (period) {
-            case "2" -> governmentBondsRepository.getSwedishGovernmentBonds2Year();
-            case "5" -> governmentBondsRepository.getSwedishGovernmentBonds5Year();
-            case "7" -> governmentBondsRepository.getSwedishGovernmentBonds7Year();
-            case "10" -> governmentBondsRepository.getSwedishGovernmentBonds10Year();
-            default -> throw new IllegalArgumentException(e);
+            case "2" -> governmentBondsRepository.swedishGovBond2YearReader();
+            case "5" -> governmentBondsRepository.swedishGovBond5YearReader();
+            case "7" -> governmentBondsRepository.swedishGovBond7YearReader();
+            case "10" -> governmentBondsRepository.swedishGovBond10YearReader();
+            default -> throw new IllegalArgumentException(errorFormatted);
         };
     }
 
