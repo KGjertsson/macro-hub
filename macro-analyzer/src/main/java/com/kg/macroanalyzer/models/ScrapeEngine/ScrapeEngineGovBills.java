@@ -1,7 +1,9 @@
 package com.kg.macroanalyzer.models.ScrapeEngine;
 
 import com.kg.macroanalyzer.models.GovernmentBillItem;
+import com.kg.macroanalyzer.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.repositories.GovernmentBillRepository;
+import com.kg.macroanalyzer.repositories.ScrapeRepository;
 import com.kg.macroanalyzer.utils.ScrapeUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,7 +13,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public class ScrapeEngineGovBills implements ScrapeEngine {
+public class ScrapeEngineGovBills extends AbstractScrapeEngine {
 
     private final ScrapeUtils scrapeUtils;
     private final String url;
@@ -19,10 +21,13 @@ public class ScrapeEngineGovBills implements ScrapeEngine {
     private final Function<List<GovernmentBillItem>, Integer> govBillWriteSupplier;
 
     public ScrapeEngineGovBills(
+            ScrapeQueueItem scrapeQueueItem,
             GovernmentBillRepository govBillRepository,
+            ScrapeRepository scrapeRepository,
             ScrapeUtils scrapeUtils,
             String period
     ) {
+        super(scrapeRepository, scrapeQueueItem);
         this.scrapeUtils = scrapeUtils;
         final var baseUrl = "https://api-test.riksbank.se/swea/v1/Observations";
 
@@ -54,17 +59,11 @@ public class ScrapeEngineGovBills implements ScrapeEngine {
     @Override
     public Integer scrape() {
         try {
-            final var existingGovBillItems = govBillReadSupplier.get();
-            final var scraped = scrapeUtils.scrapeNovelItems(
-                    url,
-                    existingGovBillItems,
-                    GovernmentBillItem.class
-            );
-            final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
-            final var msgFormatted = msgRaw.formatted(scraped.size(), url);
-            log.info(msgFormatted);
+            final var scraped = scrapeItems();
+            final var inserted = insertScrapedItems(scraped);
+            this.markAsDone();
 
-            return govBillWriteSupplier.apply(scraped);
+            return inserted;
         } catch (IOException ioException) {
             final var msgRaw = "Received IOException while scraping gov bill items: %s";
             final var msgFormatted = msgRaw.formatted(ioException.getMessage());
@@ -72,6 +71,23 @@ public class ScrapeEngineGovBills implements ScrapeEngine {
 
             return 0;
         }
+    }
+
+    final List<GovernmentBillItem> scrapeItems() throws IOException {
+        final var existingGovBillItems = govBillReadSupplier.get();
+        return scrapeUtils.scrapeNovelItems(
+                url,
+                existingGovBillItems,
+                GovernmentBillItem.class
+        );
+    }
+
+    private Integer insertScrapedItems(List<GovernmentBillItem> scraped) {
+        final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
+        final var msgFormatted = msgRaw.formatted(scraped.size(), url);
+        log.info(msgFormatted);
+
+        return govBillWriteSupplier.apply(scraped);
     }
 
 }

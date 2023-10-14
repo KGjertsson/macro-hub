@@ -10,7 +10,11 @@ import java.time.ZoneOffset;
 import static com.kg.macroanalyzer.jooq.generated.Tables.SCRAPE_ACTION_QUEUE;
 
 @Builder
-public record ScrapeQueueItem(@NonNull String name, @NonNull Instant scrapeDate) {
+public record ScrapeQueueItem(
+        Integer id,
+        @NonNull String name,
+        @NonNull Instant scrapeDate
+) {
 
     public static ScrapeQueueItem of(String name, Instant scrapeDate) {
         return ScrapeQueueItem.builder()
@@ -21,8 +25,10 @@ public record ScrapeQueueItem(@NonNull String name, @NonNull Instant scrapeDate)
 
     public static ScrapeQueueItem of(Record r) {
         return ScrapeQueueItem.builder()
+                .id(r.getValue(SCRAPE_ACTION_QUEUE.ID))
                 .name(r.getValue(SCRAPE_ACTION_QUEUE.DATASET_NAME))
                 .scrapeDate(r.getValue(SCRAPE_ACTION_QUEUE.SCRAPE_DATE).toInstant(ZoneOffset.UTC))
                 .build();
     }
+
 }

@@ -45,4 +45,11 @@ public class ScrapeRepository {
                 .execute();
     }
 
+    public void markAsDone(Integer id) {
+        dslContext.update(SCRAPE_ACTION_QUEUE)
+                .set(SCRAPE_ACTION_QUEUE.STATUS, 1)
+                .where(SCRAPE_ACTION_QUEUE.ID.eq(id))
+                .execute();
+    }
+
 }

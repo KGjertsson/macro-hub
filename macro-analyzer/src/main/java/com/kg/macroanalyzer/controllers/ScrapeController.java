@@ -3,10 +3,13 @@ package com.kg.macroanalyzer.controllers;
 import com.kg.macroanalyzer.services.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.temporal.ChronoUnit;
+import java.util.stream.Stream;
 
 @Slf4j
 @RestController
@@ -38,20 +41,15 @@ public class ScrapeController {
     }
 
     @PostMapping("/policy-rate/{country}")
-    public Integer scrapePolicyRateItem(
-            @PathVariable("country") String country
-    ) throws IOException {
-        final var countryFormatted = country.toLowerCase().trim();
-        log.info("Scraping policy rate for country: %s".formatted(countryFormatted));
-        final var e = ("Unexpected country value, expected one of ['sweden'], " +
-                "but found: %s").formatted(countryFormatted);
-
-        return switch (countryFormatted) {
-            case "sweden" -> policyRateScrapeService.scrapePolicyRateSweden();
-            case "eu" -> throw new IllegalArgumentException("eu not implemented");
-            case "usa" -> throw new IllegalArgumentException("usa not implemented");
-            default -> throw new IllegalArgumentException(e);
-        };
+    public ResponseEntity<Void> scrapePolicyRateItem(@PathVariable("country") String country) {
+        return Stream.ofNullable(country)
+                .map(String::toLowerCase)
+                .map(String::trim)
+                .peek(c -> log.info("Scraping policy rate for country: %s".formatted(c)))
+                .map(this::enqueuePolicyRateSweden)
+                .map(this::toResponseEntity)
+                .toList()
+                .getFirst();
     }
 
     @PostMapping("/exchange-rate/usd-sek")
@@ -62,12 +60,13 @@ public class ScrapeController {
     }
 
     @PostMapping("government-bills/sweden")
-    public Integer scrapeSwedishGovernmentBills(
-            @RequestParam("period") String period
-    ) {
-        log.info("Scraping government bills for sweden");
-
-        return governmentBillScrapeService.scrapeGovernmentBillsSweden(period);
+    public ResponseEntity<Void> scrapeSwedishGovBills(@RequestParam("period") String period) {
+        return Stream.ofNullable(period)
+                .peek(p -> log.info("Scraping government bills for sweden"))
+                .map(governmentBillScrapeService::scrapeGovernmentBillsSweden)
+                .map(this::toResponseEntity)
+                .toList()
+                .getFirst();
     }
 
     @PostMapping("government-bonds/sweden")
@@ -110,6 +109,26 @@ public class ScrapeController {
         final var chronoInterval = stringToChronoUnit(interval);
 
         return scrapeService.scheduleAll(chronoInterval, multiplier);
+    }
+
+    private Integer enqueuePolicyRateSweden(String countryFormatted) {
+        final var msgRaw = "Unexpected country value, expected one of ['sweden'], but found: %s";
+        final var msgFormatted = msgRaw.formatted(countryFormatted);
+
+        return switch (countryFormatted) {
+            case "sweden" -> policyRateScrapeService.scrapePolicyRateSweden();
+            case "eu" -> throw new IllegalArgumentException("eu not implemented");
+            case "usa" -> throw new IllegalArgumentException("usa not implemented");
+            default -> throw new IllegalArgumentException(msgFormatted);
+        };
+    }
+
+    private ResponseEntity<Void> toResponseEntity(Integer result) {
+        if (result != null && result == 1) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     private ChronoUnit stringToChronoUnit(String interval) {

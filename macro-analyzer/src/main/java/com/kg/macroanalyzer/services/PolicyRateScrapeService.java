@@ -1,30 +1,39 @@
 package com.kg.macroanalyzer.services;
 
-import com.kg.macroanalyzer.models.ScrapeEngine.ScrapeEnginePolicyRate;
-import com.kg.macroanalyzer.repositories.PolicyRateRepository;
-import com.kg.macroanalyzer.utils.ScrapeUtils;
+import com.kg.macroanalyzer.models.ScrapeQueueItem;
+import com.kg.macroanalyzer.repositories.ScrapeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
 public class PolicyRateScrapeService {
 
-    private final PolicyRateRepository policyRateRepository;
-    private final ScrapeUtils scrapeUtils;
+    private final ScrapeRepository scrapeRepository;
+
+    @Value("${scrape.data.name.policy.rate.sweden}")
+    private String policyRateSwedenName;
 
     @Autowired
-    public PolicyRateScrapeService(
-            PolicyRateRepository policyRateRepository,
-            ScrapeUtils scrapeUtils
-    ) {
-        this.policyRateRepository = policyRateRepository;
-        this.scrapeUtils = scrapeUtils;
+    public PolicyRateScrapeService(ScrapeRepository scrapeRepository) {
+        this.scrapeRepository = scrapeRepository;
     }
 
     public Integer scrapePolicyRateSweden() {
-        return new ScrapeEnginePolicyRate(policyRateRepository, scrapeUtils).scrape();
+        return Stream.of(policyRateSwedenName)
+                .map(this::toScrapeQueueItem)
+                .map(scrapeRepository::addScrapeQueueItem)
+                .toList()
+                .getFirst();
+    }
+
+    private ScrapeQueueItem toScrapeQueueItem(String name) {
+        return ScrapeQueueItem.of(name, Instant.now());
     }
 
 }
