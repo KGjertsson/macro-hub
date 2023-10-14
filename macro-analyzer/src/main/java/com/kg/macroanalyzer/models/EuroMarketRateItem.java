@@ -11,7 +11,6 @@ import static com.kg.macroanalyzer.jooq.generated.Tables.*;
 @Builder
 public record EuroMarketRateItem(Double value, LocalDate date) {
 
-
     public static EuroMarketRateItem ofEuroMarketRate3MonthDenmark(Record record) {
         return EuroMarketRateItem.builder()
                 .value(record.getValue(EURO_MARKET_3_MONTH_DENMARK.VALUE))

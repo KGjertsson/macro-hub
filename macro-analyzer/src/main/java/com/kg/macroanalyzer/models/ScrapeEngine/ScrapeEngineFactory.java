@@ -1,10 +1,7 @@
 package com.kg.macroanalyzer.models.ScrapeEngine;
 
 import com.kg.macroanalyzer.models.ScrapeQueueItem;
-import com.kg.macroanalyzer.repositories.GovernmentBillRepository;
-import com.kg.macroanalyzer.repositories.GovernmentBondsRepository;
-import com.kg.macroanalyzer.repositories.PolicyRateRepository;
-import com.kg.macroanalyzer.repositories.ScrapeRepository;
+import com.kg.macroanalyzer.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +11,7 @@ public class ScrapeEngineFactory {
     private final PolicyRateRepository policyRateRepository;
     private final GovernmentBillRepository govBillRepository;
     private final GovernmentBondsRepository govBondsRepository;
+    private final ExchangeRateRepository exchangeRateRepository;
     private final ScrapeRepository scrapeRepository;
 
     @Autowired
@@ -21,11 +19,13 @@ public class ScrapeEngineFactory {
             PolicyRateRepository policyRateRepository,
             GovernmentBillRepository govBillRepository,
             GovernmentBondsRepository govBondsRepository,
+            ExchangeRateRepository exchangeRateRepository,
             ScrapeRepository scrapeRepository
     ) {
         this.policyRateRepository = policyRateRepository;
         this.govBillRepository = govBillRepository;
         this.govBondsRepository = govBondsRepository;
+        this.exchangeRateRepository = exchangeRateRepository;
         this.scrapeRepository = scrapeRepository;
     }
 
@@ -227,6 +227,11 @@ public class ScrapeEngineFactory {
                             govBondsRepository.intGovBond10YearReaderUSA(),
                             govBondsRepository.intGovBond10YearWriterUSA()
                     );
+            case "exchange-rate/usd-sek" -> new ScrapeEngineExchangeRate(
+                    scrapeQueueItem,
+                    scrapeRepository,
+                    exchangeRateRepository
+            );
             default -> {
                 final var msg = "Found unexpected argument [%s]".formatted(name);
 

@@ -58,7 +58,7 @@ public class ScrapeEngineGovBonds extends AbstractScrapeEngine {
 
     private Integer insertScrapedItems(List<GovernmentBondItem> scraped) {
         final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
-        final var msgFormatted = msgRaw.formatted(url, scraped.size());
+        final var msgFormatted = msgRaw.formatted(scraped.size(), url);
         log.info(msgFormatted);
 
         return govBondWriteSupplier.apply(scraped);

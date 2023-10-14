@@ -1,33 +1,34 @@
 package com.kg.macroanalyzer.services;
 
-import com.kg.macroanalyzer.models.ExchangeRateUsdSek;
-import com.kg.macroanalyzer.repositories.ExchangeRateRepository;
-import com.kg.macroanalyzer.utils.ScrapeUtils;
+import com.kg.macroanalyzer.models.ScrapeQueueItem;
+import com.kg.macroanalyzer.repositories.ScrapeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
 public class ExchangeRateScrapeService {
 
-    private final ExchangeRateRepository exchangeRateRepository;
+    private final ScrapeRepository scrapeRepository;
+
+    @Value("${scrape.data.name.exchange.rate.usd-sek}")
+    private String exchangeRateUsdSek;
 
     @Autowired
-    public ExchangeRateScrapeService(ExchangeRateRepository exchangeRateRepository) {
-        this.exchangeRateRepository = exchangeRateRepository;
+    public ExchangeRateScrapeService(ScrapeRepository scrapeRepository) {
+        this.scrapeRepository = scrapeRepository;
     }
 
-    public Integer scrapeExchangeRateUsdSek() throws IOException {
-        final var url = "https://api-test.riksbank.se/swea/v1/Observations/SEKUSDPMI/1993-01-04";
-        final var persisted = exchangeRateRepository.getExchangeRateUsdSek();
-        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, ExchangeRateUsdSek.class);
-        exchangeRateRepository.insertExchangeRateUsdSek(scraped);
-        log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
-
-        return scraped.size();
+    public Integer scrapeExchangeRateUsdSek() {
+        return Stream.ofNullable(exchangeRateUsdSek)
+                .map(ScrapeQueueItem::of)
+                .map(scrapeRepository::addScrapeQueueItem)
+                .toList()
+                .getFirst();
     }
 
 }

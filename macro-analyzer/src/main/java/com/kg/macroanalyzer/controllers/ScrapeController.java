@@ -53,10 +53,13 @@ public class ScrapeController {
     }
 
     @PostMapping("/exchange-rate/usd-sek")
-    public Integer scrapeExchangeRateUsdSek() throws IOException {
+    public ResponseEntity<Void> scrapeExchangeRateUsdSek() {
         log.info("Scraping exchange rate for usd-sek");
 
-        return exchangeRateScrapeService.scrapeExchangeRateUsdSek();
+        return Stream.ofNullable(exchangeRateScrapeService.scrapeExchangeRateUsdSek())
+                .map(this::toResponseEntity)
+                .toList()
+                .getFirst();
     }
 
     @PostMapping("government-bills/sweden")
