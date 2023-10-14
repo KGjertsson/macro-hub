@@ -111,9 +111,9 @@ public class ScrapeController {
             @RequestParam("interval") String interval,
             @RequestParam(name = "multiplier", defaultValue = "1") Integer multiplier
     ) {
-        final var chronoInterval = stringToChronoUnit(interval);
+        final var cronInterval = stringToChronoUnit(interval);
 
-        return scrapeService.scheduleAll(chronoInterval, multiplier);
+        return scrapeService.scheduleAll(cronInterval, multiplier);
     }
 
     private Integer enqueuePolicyRateSweden(String countryFormatted) {

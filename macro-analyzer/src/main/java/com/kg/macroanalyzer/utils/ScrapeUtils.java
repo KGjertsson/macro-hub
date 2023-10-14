@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 public class ScrapeUtils {
 
-    ObjectMapper objectMapper;
+    final ObjectMapper objectMapper;
 
     @Autowired
     public ScrapeUtils(ObjectMapper objectMapper) {
