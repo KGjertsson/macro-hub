@@ -5,7 +5,6 @@ import com.kg.macroanalyzer.repositories.GovernmentBillRepository;
 import com.kg.macroanalyzer.repositories.GovernmentBondsRepository;
 import com.kg.macroanalyzer.repositories.PolicyRateRepository;
 import com.kg.macroanalyzer.repositories.ScrapeRepository;
-import com.kg.macroanalyzer.utils.ScrapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,21 +15,18 @@ public class ScrapeEngineFactory {
     private final GovernmentBillRepository govBillRepository;
     private final GovernmentBondsRepository govBondsRepository;
     private final ScrapeRepository scrapeRepository;
-    private final ScrapeUtils scrapeUtils;
 
     @Autowired
     public ScrapeEngineFactory(
             PolicyRateRepository policyRateRepository,
             GovernmentBillRepository govBillRepository,
             GovernmentBondsRepository govBondsRepository,
-            ScrapeRepository scrapeRepository,
-            ScrapeUtils scrapeUtils
+            ScrapeRepository scrapeRepository
     ) {
         this.policyRateRepository = policyRateRepository;
         this.govBillRepository = govBillRepository;
         this.govBondsRepository = govBondsRepository;
         this.scrapeRepository = scrapeRepository;
-        this.scrapeUtils = scrapeUtils;
     }
 
     public ScrapeEngine createScrapeEngine(ScrapeQueueItem scrapeQueueItem) {
@@ -40,41 +36,35 @@ public class ScrapeEngineFactory {
             case "policy-rate/sweden" -> new ScrapeEnginePolicyRate(
                     scrapeQueueItem,
                     policyRateRepository,
-                    scrapeRepository,
-                    scrapeUtils
+                    scrapeRepository
             );
             case "government-bills/sweden?period=1" -> new ScrapeEngineGovBills(
                     scrapeQueueItem,
                     govBillRepository,
                     scrapeRepository,
-                    scrapeUtils,
                     "1"
             );
             case "government-bills/sweden?period=3" -> new ScrapeEngineGovBills(
                     scrapeQueueItem,
                     govBillRepository,
                     scrapeRepository,
-                    scrapeUtils,
                     "3"
             );
             case "government-bills/sweden?period=6" -> new ScrapeEngineGovBills(
                     scrapeQueueItem,
                     govBillRepository,
                     scrapeRepository,
-                    scrapeUtils,
                     "6"
             );
             case "government-bills/sweden?period=12" -> new ScrapeEngineGovBills(
                     scrapeQueueItem,
                     govBillRepository,
                     scrapeRepository,
-                    scrapeUtils,
                     "12"
             );
             case "government-bonds/sweden?period=2" -> new ScrapeEngineGovBonds(
                     scrapeQueueItem,
                     scrapeRepository,
-                    scrapeUtils,
                     "/SEGVB2YC/1987-01-07",
                     govBondsRepository.swedishGovBond2YearReader(),
                     govBondsRepository.swedishGovBond2YearWriter()
@@ -83,7 +73,6 @@ public class ScrapeEngineFactory {
             case "government-bonds/sweden?period=5" -> new ScrapeEngineGovBonds(
                     scrapeQueueItem,
                     scrapeRepository,
-                    scrapeUtils,
                     "/SEGVB5YC/1985-01-02",
                     govBondsRepository.swedishGovBond5YearReader(),
                     govBondsRepository.swedishGovBond5YearWriter()
@@ -91,7 +80,6 @@ public class ScrapeEngineFactory {
             case "government-bonds/sweden?period=7" -> new ScrapeEngineGovBonds(
                     scrapeQueueItem,
                     scrapeRepository,
-                    scrapeUtils,
                     "/SEGVB7YC/1987-01-02",
                     govBondsRepository.swedishGovBond7YearReader(),
                     govBondsRepository.swedishGovBond7YearWriter()
@@ -99,7 +87,6 @@ public class ScrapeEngineFactory {
             case "government-bonds/sweden?period=10" -> new ScrapeEngineGovBonds(
                     scrapeQueueItem,
                     scrapeRepository,
-                    scrapeUtils,
                     "/SEGVB10YC/1987-01-02",
                     govBondsRepository.swedishGovBond10YearReader(),
                     govBondsRepository.swedishGovBond10YearWriter()
@@ -108,7 +95,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/EMGVB5Y/1999-01-04",
                             govBondsRepository.intGovBond5YearReaderEur(),
                             govBondsRepository.intGovBond5YearWriterEur()
@@ -117,7 +103,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/GBGVB5Y/1987-01-02",
                             govBondsRepository.intGovBond5YearReaderGB(),
                             govBondsRepository.intGovBond5YearWriterGB()
@@ -126,7 +111,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/JPGVB5Y/1987-03-23",
                             govBondsRepository.intGovBond5YearReaderJapan(),
                             govBondsRepository.intGovBond5YearWriterJapan()
@@ -135,7 +119,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/FRGVB5Y/1988-02-08",
                             govBondsRepository.intGovBond5YearReaderFrance(),
                             govBondsRepository.intGovBond5YearWriterFrance()
@@ -144,7 +127,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/DEGVB5Y/1987-02-09",
                             govBondsRepository.intGovBond5YearReaderGermany(),
                             govBondsRepository.intGovBond5YearWriterGermany()
@@ -153,7 +135,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/NLGVB5Y/1987-02-09",
                             govBondsRepository.intGovBond5YearReaderHolland(),
                             govBondsRepository.intGovBond5YearWriterHolland()
@@ -162,7 +143,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/USGVB5Y/1987-02-02",
                             govBondsRepository.intGovBond5YearReaderUSA(),
                             govBondsRepository.intGovBond5YearWriterUSA()
@@ -171,7 +151,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/DKGVB10Y/1982-01-04",
                             govBondsRepository.intGovBond10YearReaderDenmark(),
                             govBondsRepository.intGovBond10YearWriterDenmark()
@@ -180,7 +159,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/EMGVB10Y/1999-01-04",
                             govBondsRepository.intGovBond10YearReaderEur(),
                             govBondsRepository.intGovBond10YearWriterEur()
@@ -189,7 +167,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/FIGVB10Y/1990-04-02",
                             govBondsRepository.intGovBond10YearReaderFinland(),
                             govBondsRepository.intGovBond10YearWriterFinland()
@@ -198,7 +175,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/FRGVB10Y/1988-02-08",
                             govBondsRepository.intGovBond10YearReaderFrance(),
                             govBondsRepository.intGovBond10YearWriterFrance()
@@ -207,7 +183,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/GBGVB10Y/1987-01-02",
                             govBondsRepository.intGovBond10YearReaderGB(),
                             govBondsRepository.intGovBond10YearWriterGB()
@@ -216,7 +191,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/DEGVB10Y/1987-02-09",
                             govBondsRepository.intGovBond10YearReaderGermany(),
                             govBondsRepository.intGovBond10YearWriterGermany()
@@ -225,7 +199,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/JPGVB10Y/1987-01-05",
                             govBondsRepository.intGovBond10YearReaderJapan(),
                             govBondsRepository.intGovBond10YearWriterJapan()
@@ -234,7 +207,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/NLGVB10Y/1987-02-09",
                             govBondsRepository.intGovBond10YearReaderHolland(),
                             govBondsRepository.intGovBond10YearWriterHolland()
@@ -243,7 +215,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/NOGVB10Y/1990-05-31",
                             govBondsRepository.intGovBond10YearReaderNorway(),
                             govBondsRepository.intGovBond10YearWriterNorway()
@@ -252,7 +223,6 @@ public class ScrapeEngineFactory {
                     new ScrapeEngineGovBonds(
                             scrapeQueueItem,
                             scrapeRepository,
-                            scrapeUtils,
                             "/USGVB10Y/1991-01-02",
                             govBondsRepository.intGovBond10YearReaderUSA(),
                             govBondsRepository.intGovBond10YearWriterUSA()

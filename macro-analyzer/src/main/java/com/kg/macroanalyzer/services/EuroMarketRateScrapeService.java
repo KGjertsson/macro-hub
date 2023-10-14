@@ -13,14 +13,9 @@ import java.io.IOException;
 public class EuroMarketRateScrapeService {
 
     private final EuroMarketRateRepository euroMarketRateRepository;
-    private final ScrapeUtils scrapeUtils;
 
-    public EuroMarketRateScrapeService(
-            EuroMarketRateRepository euroMarketRateRepository,
-            ScrapeUtils scrapeUtils
-    ) {
+    public EuroMarketRateScrapeService(EuroMarketRateRepository euroMarketRateRepository) {
         this.euroMarketRateRepository = euroMarketRateRepository;
-        this.scrapeUtils = scrapeUtils;
     }
 
     public Integer scrapeEuroMarketRate(String periodCountry) throws IOException {
@@ -46,7 +41,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate3MonthDenmark() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP3MDKK/1981-11-12";
         final var persisted = euroMarketRateRepository.getEuroMarketRate3MonthDenmark();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate3MonthDenmark(scraped);
 
@@ -56,7 +51,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate3MonthEur() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP3MEUR/1999-01-04";
         final var persisted = euroMarketRateRepository.getEuroMarketRate3MonthEur();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate3MonthEur(scraped);
 
@@ -66,7 +61,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate3MonthGB() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP3MGBP/1979-12-19";
         final var persisted = euroMarketRateRepository.getEuroMarketRate3MonthGB();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate3MonthGB(scraped);
 
@@ -76,7 +71,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate3MonthJapan() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP3MJPY/1979-11-29";
         final var persisted = euroMarketRateRepository.getEuroMarketRate3MonthJapan();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate3MonthJapan(scraped);
 
@@ -86,7 +81,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate3MonthNorway() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP3MNOK/1981-11-12";
         final var persisted = euroMarketRateRepository.getEuroMarketRate3MonthNorway();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate3MonthNorway(scraped);
 
@@ -96,7 +91,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate3MonthUsa() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP3MUSD/1979-11-28";
         final var persisted = euroMarketRateRepository.getEuroMarketRate3MonthUsa();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate3MonthUsa(scraped);
 
@@ -106,7 +101,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate6MonthDenmark() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP6MDKK/1981-11-12";
         final var persisted = euroMarketRateRepository.getEuroMarketRate6MonthDenmark();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate6MonthDenmark(scraped);
 
@@ -116,7 +111,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate6MonthEur() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP6MEUR/1999-01-04";
         final var persisted = euroMarketRateRepository.getEuroMarketRate6MonthEur();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate6MonthEur(scraped);
 
@@ -126,7 +121,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate6MonthGB() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP6MGBP/1979-11-28";
         final var persisted = euroMarketRateRepository.getEuroMarketRate6MonthGB();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate6MonthGB(scraped);
 
@@ -136,7 +131,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate6MonthJapan() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP3MJPY/1979-11-29";
         final var persisted = euroMarketRateRepository.getEuroMarketRate3MonthJapan();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate6MonthJapan(scraped);
 
@@ -146,7 +141,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate6MonthNorway() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP6MNOK/1981-11-12";
         final var persisted = euroMarketRateRepository.getEuroMarketRate6MonthNorway();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate6MonthNorway(scraped);
 
@@ -156,7 +151,7 @@ public class EuroMarketRateScrapeService {
     private Integer scrapeEuroMarketRate6MonthUsa() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/EUDP6MUSD/1979-11-28";
         final var persisted = euroMarketRateRepository.getEuroMarketRate6MonthUsa();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, EuroMarketRateItem.class);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
         euroMarketRateRepository.insertEuroMarketRate6MonthUsa(scraped);
 

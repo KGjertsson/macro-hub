@@ -14,7 +14,6 @@ import java.util.function.Supplier;
 @Slf4j
 public class ScrapeEngineGovBonds extends AbstractScrapeEngine {
 
-    private final ScrapeUtils scrapeUtils;
     private final String url;
     private final Supplier<List<GovernmentBondItem>> govBondReadSupplier;
     private final Function<List<GovernmentBondItem>, Integer> govBondWriteSupplier;
@@ -22,13 +21,11 @@ public class ScrapeEngineGovBonds extends AbstractScrapeEngine {
     public ScrapeEngineGovBonds(
             ScrapeQueueItem scrapeQueueItem,
             ScrapeRepository scrapeRepository,
-            ScrapeUtils scrapeUtils,
             String url,
             Supplier<List<GovernmentBondItem>> govBondReadSupplier,
             Function<List<GovernmentBondItem>, Integer> govBondWriteSupplier
     ) {
         super(scrapeRepository, scrapeQueueItem);
-        this.scrapeUtils = scrapeUtils;
         final var baseUrl = "https://api-test.riksbank.se/swea/v1/Observations";
 
         this.url = baseUrl + url;
@@ -52,7 +49,7 @@ public class ScrapeEngineGovBonds extends AbstractScrapeEngine {
 
     private List<GovernmentBondItem> scrapeItems() throws IOException {
         final var existingGovBondItems = govBondReadSupplier.get();
-        return scrapeUtils.scrapeNovelItems(
+        return ScrapeUtils.scrapeNovelItems(
                 url,
                 existingGovBondItems,
                 GovernmentBondItem.class

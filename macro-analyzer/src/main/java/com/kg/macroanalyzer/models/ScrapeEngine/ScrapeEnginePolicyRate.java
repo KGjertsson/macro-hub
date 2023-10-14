@@ -14,17 +14,14 @@ import java.util.List;
 public class ScrapeEnginePolicyRate extends AbstractScrapeEngine {
 
     private final PolicyRateRepository policyRateRepository;
-    private final ScrapeUtils scrapeUtils;
 
     public ScrapeEnginePolicyRate(
             ScrapeQueueItem scrapeQueueItem,
             PolicyRateRepository policyRateRepository,
-            ScrapeRepository scrapeRepository,
-            ScrapeUtils scrapeUtils
+            ScrapeRepository scrapeRepository
     ) {
         super(scrapeRepository, scrapeQueueItem);
         this.policyRateRepository = policyRateRepository;
-        this.scrapeUtils = scrapeUtils;
     }
 
     @Override
@@ -47,7 +44,8 @@ public class ScrapeEnginePolicyRate extends AbstractScrapeEngine {
     private List<PolicyRateItem> scrapeItems() throws IOException {
         String url = "https://api-test.riksbank.se/swea/v1/Observations/SECBREPOEFF/1994-06-01";
         final var items = policyRateRepository.getPolicyRateSweden();
-        return scrapeUtils.scrapeNovelItems(
+
+        return ScrapeUtils.scrapeNovelItems(
                 url,
                 items,
                 PolicyRateItem.class

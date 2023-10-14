@@ -14,21 +14,16 @@ import java.io.IOException;
 public class ExchangeRateScrapeService {
 
     private final ExchangeRateRepository exchangeRateRepository;
-    private final ScrapeUtils scrapeUtils;
 
     @Autowired
-    public ExchangeRateScrapeService(
-            ExchangeRateRepository exchangeRateRepository,
-            ScrapeUtils scrapeUtils
-    ) {
+    public ExchangeRateScrapeService(ExchangeRateRepository exchangeRateRepository) {
         this.exchangeRateRepository = exchangeRateRepository;
-        this.scrapeUtils = scrapeUtils;
     }
 
     public Integer scrapeExchangeRateUsdSek() throws IOException {
         final var url = "https://api-test.riksbank.se/swea/v1/Observations/SEKUSDPMI/1993-01-04";
         final var persisted = exchangeRateRepository.getExchangeRateUsdSek();
-        final var scraped = scrapeUtils.scrapeNovelItems(url, persisted, ExchangeRateUsdSek.class);
+        final var scraped = ScrapeUtils.scrapeNovelItems(url, persisted, ExchangeRateUsdSek.class);
         exchangeRateRepository.insertExchangeRateUsdSek(scraped);
         log.info("Found %s new items from scraping, persisting do db...".formatted(scraped.size()));
 
