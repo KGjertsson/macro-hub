@@ -70,24 +70,29 @@ public class ScrapeController {
     }
 
     @PostMapping("government-bonds/sweden")
-    public Integer scrapeSwedishGovernmentBonds(
-            @RequestParam("period") String period
-    ) {
-        log.info("Scraping government bonds for sweden with period=%s".formatted(period));
-        final var periodCountry = "%syear-swe".formatted(period);
-
-        return governmentBondScrapeService.scrapeGovBonds(periodCountry);
+    public ResponseEntity<Void> scrapeSwedishGovBonds(@RequestParam("period") String period) {
+        return Stream.ofNullable(period)
+                .map("%syear-swe"::formatted)
+                .peek(pc -> log.info("Scraping swedish gov bonds with period=%s".formatted(pc)))
+                .map(governmentBondScrapeService::scrapeGovBonds)
+                .map(this::toResponseEntity)
+                .toList()
+                .getFirst();
     }
 
     @PostMapping("government-bonds/international")
-    public Integer scrapeIntGovBonds(
+    public ResponseEntity<Void> scrapeIntGovBonds(
             @RequestParam("period") String period,
             @RequestParam("country") String country
     ) {
         final var periodCountry = period.toLowerCase() + '-' + country.toLowerCase();
-        log.info(("Scraping international government bonds with periodCountry=%s").formatted(periodCountry));
 
-        return governmentBondScrapeService.scrapeGovBonds(periodCountry);
+        return Stream.ofNullable(periodCountry)
+                .peek(pc -> log.info(("Scraping int gov bonds with pc=%s").formatted(pc)))
+                .map(governmentBondScrapeService::scrapeGovBonds)
+                .map(this::toResponseEntity)
+                .toList()
+                .getFirst();
     }
 
     @PostMapping("euro-market-rate")

@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -26,14 +25,10 @@ public class PolicyRateScrapeService {
 
     public Integer scrapePolicyRateSweden() {
         return Stream.of(policyRateSwedenName)
-                .map(this::toScrapeQueueItem)
+                .map(ScrapeQueueItem::of)
                 .map(scrapeRepository::addScrapeQueueItem)
                 .toList()
                 .getFirst();
-    }
-
-    private ScrapeQueueItem toScrapeQueueItem(String name) {
-        return ScrapeQueueItem.of(name, Instant.now());
     }
 
 }

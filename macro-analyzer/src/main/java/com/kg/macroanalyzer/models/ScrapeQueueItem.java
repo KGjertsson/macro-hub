@@ -16,6 +16,10 @@ public record ScrapeQueueItem(
         @NonNull Instant scrapeDate
 ) {
 
+    public static ScrapeQueueItem of(String name) {
+        return ScrapeQueueItem.of(name, Instant.now());
+    }
+
     public static ScrapeQueueItem of(String name, Instant scrapeDate) {
         return ScrapeQueueItem.builder()
                 .name(name)

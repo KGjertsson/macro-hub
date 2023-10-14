@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -32,7 +31,7 @@ public class GovernmentBillScrapeService {
     public Integer scrapeGovernmentBillsSweden(String period) {
         return Stream.ofNullable(period)
                 .map(this::periodToName)
-                .map(this::toScrapeQueueItem)
+                .map(ScrapeQueueItem::of)
                 .map(scrapeRepository::addScrapeQueueItem)
                 .toList()
                 .getFirst();
@@ -49,10 +48,6 @@ public class GovernmentBillScrapeService {
             case "12" -> govBillSwedenName12;
             default -> throw new IllegalArgumentException(errorFormatted);
         };
-    }
-
-    private ScrapeQueueItem toScrapeQueueItem(String name) {
-        return ScrapeQueueItem.of(name, Instant.now());
     }
 
 }

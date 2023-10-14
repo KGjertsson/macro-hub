@@ -1,62 +1,105 @@
 package com.kg.macroanalyzer.services;
 
-import com.kg.macroanalyzer.models.ScrapeEngine.ScrapeEngineGovBonds;
-import com.kg.macroanalyzer.repositories.GovernmentBondsRepository;
-import com.kg.macroanalyzer.utils.ScrapeUtils;
+import com.kg.macroanalyzer.models.ScrapeQueueItem;
+import com.kg.macroanalyzer.repositories.ScrapeRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
 public class GovernmentBondScrapeService {
 
-    private final List<String> ALLOWED_PERIOD_COUNTRIES = List.of(
-            "2year-swe",
-            "5year-swe",
-            "5year-eur",
-            "5year-gb",
-            "5year-japan",
-            "5year-france",
-            "5year-germany",
-            "5year-netherlands",
-            "5year-usa",
-            "7year-swe",
-            "10year-swe",
-            "10year-denmark",
-            "10year-eur",
-            "10year-finland",
-            "10year-france",
-            "10year-gb",
-            "10year-germany",
-            "10year-japan",
-            "10year-netherlands",
-            "10year-norway",
-            "10year-usa"
-    );
+    private final ScrapeRepository scrapeRepository;
 
-    private final GovernmentBondsRepository govBondsRepository;
-    private final ScrapeUtils scrapeUtils;
+    @Value("${scrape.data.name.gov.bonds.sweden.2year}")
+    private String govBondSweden2Year;
+    @Value("${scrape.data.name.gov.bonds.sweden.5year}")
+    private String govBondSweden5Year;
+    @Value("${scrape.data.name.gov.bonds.sweden.7year}")
+    private String govBondSweden7Year;
+    @Value("${scrape.data.name.gov.bonds.sweden.10year}")
+    private String govBondSweden10Year;
+    @Value("${scrape.data.name.gov.bonds.gb.5year}")
+    private String govBondGb5Year;
+    @Value("${scrape.data.name.gov.bonds.gb.10year}")
+    private String govBondGb10Year;
+    @Value("${scrape.data.name.gov.bonds.eur.5year}")
+    private String govBondEur5Year;
+    @Value("${scrape.data.name.gov.bonds.eur.10year}")
+    private String govBondEur10Year;
+    @Value("${scrape.data.name.gov.bonds.japan.5year}")
+    private String govBondJapan5Year;
+    @Value("${scrape.data.name.gov.bonds.japan.10year}")
+    private String govBondJapan10Year;
+    @Value("${scrape.data.name.gov.bonds.france.5year}")
+    private String govBondFrance5Year;
+    @Value("${scrape.data.name.gov.bonds.france.10year}")
+    private String govBondFrance10Year;
+    @Value("${scrape.data.name.gov.bonds.germany.5year}")
+    private String govBondGermany5Year;
+    @Value("${scrape.data.name.gov.bonds.germany.10year}")
+    private String govBondGermany10Year;
+    @Value("${scrape.data.name.gov.bonds.netherlands.5year}")
+    private String govBondNetherlands5Year;
+    @Value("${scrape.data.name.gov.bonds.netherlands.10year}")
+    private String govBondNetherlands10Year;
+    @Value("${scrape.data.name.gov.bonds.usa.5year}")
+    private String govBondUsa5Year;
+    @Value("${scrape.data.name.gov.bonds.usa.10year}")
+    private String govBondUsa10Year;
+    @Value("${scrape.data.name.gov.bonds.denmark.10year}")
+    private String govBondDenmark10Year;
+    @Value("${scrape.data.name.gov.bonds.finland.10year}")
+    private String govBondFinland10Year;
+    @Value("${scrape.data.name.gov.bonds.norway.10year}")
+    private String govBondNorway10Year;
 
-
-    public GovernmentBondScrapeService(
-            GovernmentBondsRepository govBondsRepository,
-            ScrapeUtils scrapeUtils
-    ) {
-        this.govBondsRepository = govBondsRepository;
-        this.scrapeUtils = scrapeUtils;
+    @Autowired
+    public GovernmentBondScrapeService(ScrapeRepository scrapeRepository) {
+        this.scrapeRepository = scrapeRepository;
     }
 
     public Integer scrapeGovBonds(String periodCountry) {
-        final var errorRaw = "Expected param period to be one of %S but found %s";
-        final var errorFormatted = errorRaw.formatted(ALLOWED_PERIOD_COUNTRIES, periodCountry);
+        return Stream.ofNullable(periodCountry)
+                .map(this::periodCountryToName)
+                .map(ScrapeQueueItem::of)
+                .map(scrapeRepository::addScrapeQueueItem)
+                .toList()
+                .getFirst();
+    }
 
-        if (!ALLOWED_PERIOD_COUNTRIES.contains(periodCountry)) {
-            throw new IllegalArgumentException(errorFormatted);
-        }
+    private String periodCountryToName(String periodCountry) {
+        final var errorRaw = "Unexpected value of param periodCountry: %s";
+        final var errorFormatted = errorRaw.formatted(periodCountry);
 
-        return new ScrapeEngineGovBonds(govBondsRepository, scrapeUtils, periodCountry).scrape();
+        return switch (periodCountry) {
+            case "2year-swe" -> govBondSweden2Year;
+            case "5year-swe" -> govBondSweden5Year;
+            case "7year-swe" -> govBondSweden7Year;
+            case "10year-swe" -> govBondSweden10Year;
+            case "5year-gb" -> govBondGb5Year;
+            case "10year-gb" -> govBondGb10Year;
+            case "5year-eur" -> govBondEur5Year;
+            case "10year-eur" -> govBondEur10Year;
+            case "5year-japan" -> govBondJapan5Year;
+            case "10year-japan" -> govBondJapan10Year;
+            case "5year-france" -> govBondFrance5Year;
+            case "10year-france" -> govBondFrance10Year;
+            case "5year-germany" -> govBondGermany5Year;
+            case "10year-germany" -> govBondGermany10Year;
+            case "5year-netherlands" -> govBondNetherlands5Year;
+            case "10year-netherlands" -> govBondNetherlands10Year;
+            case "5year-usa" -> govBondUsa5Year;
+            case "10year-usa" -> govBondUsa10Year;
+            case "10year-denmark" -> govBondDenmark10Year;
+            case "10year-finland" -> govBondFinland10Year;
+            case "10year-norway" -> govBondNorway10Year;
+            default -> throw new IllegalArgumentException(errorFormatted);
+        };
     }
 
 }
