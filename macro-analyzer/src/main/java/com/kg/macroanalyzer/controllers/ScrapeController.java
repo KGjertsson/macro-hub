@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
@@ -99,14 +98,18 @@ public class ScrapeController {
     }
 
     @PostMapping("euro-market-rate")
-    public Integer scrapeEuroMarketRate(
+    public ResponseEntity<Void> scrapeEuroMarketRate(
             @RequestParam("period") String period,
             @RequestParam("country") String country
-    ) throws IOException {
+    ) {
         final var periodCountry = period.toLowerCase() + '-' + country.toLowerCase();
-        log.info(("Scraping euro market rate with periodCountry=%s").formatted(periodCountry));
 
-        return euroMarketRateScrapeService.scrapeEuroMarketRate(periodCountry);
+        return Stream.ofNullable(periodCountry)
+                .peek(pc -> log.info(("Scraping euro market rate with pc=%s").formatted(pc)))
+                .map(euroMarketRateScrapeService::scrapeEuroMarketRate)
+                .map(this::toResponseEntity)
+                .toList()
+                .getFirst();
     }
 
     @PostMapping("schedule-all")

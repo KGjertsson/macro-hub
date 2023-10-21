@@ -30,6 +30,7 @@ public class ScrapeService {
 
     public Integer scheduleAll(ChronoUnit interval, Integer multiplier) {
         return Arrays.stream(scrapeDataNames.split(","))
+                .map(String::trim)
                 .reduce(initializer(), accumulator(interval, multiplier), combiner())
                 .stream()
                 .map(scrapeRepository::addScrapeQueueItem)

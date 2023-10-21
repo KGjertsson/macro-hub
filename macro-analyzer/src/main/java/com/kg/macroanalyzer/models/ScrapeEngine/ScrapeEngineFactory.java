@@ -12,6 +12,7 @@ public class ScrapeEngineFactory {
     private final GovernmentBillRepository govBillRepository;
     private final GovernmentBondsRepository govBondsRepository;
     private final ExchangeRateRepository exchangeRateRepository;
+    private final EuroMarketRateRepository euroMarketRateRepository;
     private final ScrapeRepository scrapeRepository;
 
     @Autowired
@@ -20,12 +21,14 @@ public class ScrapeEngineFactory {
             GovernmentBillRepository govBillRepository,
             GovernmentBondsRepository govBondsRepository,
             ExchangeRateRepository exchangeRateRepository,
+            EuroMarketRateRepository euroMarketRateRepository,
             ScrapeRepository scrapeRepository
     ) {
         this.policyRateRepository = policyRateRepository;
         this.govBillRepository = govBillRepository;
         this.govBondsRepository = govBondsRepository;
         this.exchangeRateRepository = exchangeRateRepository;
+        this.euroMarketRateRepository = euroMarketRateRepository;
         this.scrapeRepository = scrapeRepository;
     }
 
@@ -231,6 +234,90 @@ public class ScrapeEngineFactory {
                     scrapeQueueItem,
                     scrapeRepository,
                     exchangeRateRepository
+            );
+            case "euro-market-rate?period=3month&country=denmark" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP3MDKK/1981-11-12",
+                    euroMarketRateRepository.getEuroMarketRate3MonthDenmark(),
+                    euroMarketRateRepository.insertEuroMarketRate3MonthDenmark()
+            );
+            case "euro-market-rate?period=3month&country=eur" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP3MEUR/1999-01-04",
+                    euroMarketRateRepository.getEuroMarketRate3MonthEur(),
+                    euroMarketRateRepository.insertEuroMarketRate3MonthEur()
+            );
+            case "euro-market-rate?period=3month&country=gb" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP3MGBP/1979-12-19",
+                    euroMarketRateRepository.getEuroMarketRate3MonthGB(),
+                    euroMarketRateRepository.insertEuroMarketRate3MonthGB()
+            );
+            case "euro-market-rate?period=3month&country=japan" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP3MJPY/1979-11-29",
+                    euroMarketRateRepository.getEuroMarketRate3MonthJapan(),
+                    euroMarketRateRepository.insertEuroMarketRate3MonthJapan()
+            );
+            case "euro-market-rate?period=3month&country=norway" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP3MNOK/1981-11-12",
+                    euroMarketRateRepository.getEuroMarketRate3MonthNorway(),
+                    euroMarketRateRepository.insertEuroMarketRate3MonthNorway()
+            );
+            case "euro-market-rate?period=3month&country=usa" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP3MUSD/1979-11-28",
+                    euroMarketRateRepository.getEuroMarketRate3MonthUsa(),
+                    euroMarketRateRepository.insertEuroMarketRate3MonthUsa()
+            );
+            case "euro-market-rate?period=6month&country=denmark" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP6MDKK/1981-11-12",
+                    euroMarketRateRepository.getEuroMarketRate6MonthDenmark(),
+                    euroMarketRateRepository.insertEuroMarketRate6MonthDenmark()
+            );
+            case "euro-market-rate?period=6month&country=eur" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP6MEUR/1999-01-04",
+                    euroMarketRateRepository.getEuroMarketRate6MonthEur(),
+                    euroMarketRateRepository.insertEuroMarketRate6MonthEur()
+            );
+            case "euro-market-rate?period=6month&country=gb" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP6MGBP/1979-11-28",
+                    euroMarketRateRepository.getEuroMarketRate6MonthGB(),
+                    euroMarketRateRepository.insertEuroMarketRate6MonthGB()
+            );
+            case "euro-market-rate?period=6month&country=japan" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP3MJPY/1979-11-29",
+                    euroMarketRateRepository.getEuroMarketRate6MonthJapan(),
+                    euroMarketRateRepository.insertEuroMarketRate6MonthJapan()
+            );
+            case "euro-market-rate?period=6month&country=norway" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP6MNOK/1981-11-12",
+                    euroMarketRateRepository.getEuroMarketRate6MonthNorway(),
+                    euroMarketRateRepository.insertEuroMarketRate6MonthNorway()
+            );
+            case "euro-market-rate?period=6month&country=usa" -> new ScrapeEngineEuroMarketRate(
+                    scrapeRepository,
+                    scrapeQueueItem,
+                    "/EUDP6MUSD/1979-11-28",
+                    euroMarketRateRepository.getEuroMarketRate6MonthUsa(),
+                    euroMarketRateRepository.insertEuroMarketRate6MonthUsa()
             );
             default -> {
                 final var msg = "Found unexpected argument [%s]".formatted(name);

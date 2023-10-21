@@ -8,7 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @RestController
@@ -26,11 +30,18 @@ public class EuroMarketRateController {
             @RequestParam("period") String period,
             @RequestParam("country") String country
     ) {
-        final var msg = ("Received request for /euro-market-rate with query parameters " +
-                "country=%s, period=%s").formatted(country, period);
-        log.info(msg);
-        final var e = "Found unexpected combination of query parameters country and period.";
         final var periodCountry = period.toLowerCase() + '-' + country.toLowerCase();
+        log.info("GET /euro-market-rate with query period-country=%s".formatted(periodCountry));
+
+        return Stream.ofNullable(periodCountry)
+                .map(this::getEuroMarketRateReader)
+                .map(Supplier::get)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    public Supplier<List<EuroMarketRateItem>> getEuroMarketRateReader(String periodCountry) {
+        final var e = "Found unexpected combination of query parameters country and period.";
 
         return switch (periodCountry) {
             case "3month-denmark" -> euroMarketRateRepository.getEuroMarketRate3MonthDenmark();
