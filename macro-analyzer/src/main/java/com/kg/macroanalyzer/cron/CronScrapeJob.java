@@ -40,7 +40,7 @@ public class CronScrapeJob {
     private Stream<ScrapeQueueItem> fetchItemsToScrape() {
         final var now = LocalDateTime.now(ZoneOffset.UTC);
         final var items = scrapeRepository.getItemsToScrape(now);
-        log.info("Running scrape cron job with %s items".formatted(items.size()));
+        log.info("Running scrape cron job with %s items".formatted(items));
 
         return items.stream();
     }

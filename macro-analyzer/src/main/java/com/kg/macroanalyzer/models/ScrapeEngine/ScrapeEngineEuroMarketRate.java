@@ -43,7 +43,6 @@ public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine<EuroMarketR
         );
     }
 
-
     @Override
     protected Integer insertScrapedItems(List<EuroMarketRateItem> scraped) {
         final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
