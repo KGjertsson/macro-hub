@@ -41,7 +41,8 @@ public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine {
             this.markAsDone();
 
             return inserted;
-        } catch (IOException ioException) {
+        } catch (IOException | RuntimeException e) {
+            log.error("Exception while attempting to scrape data: %s".formatted(e.getMessage()));
 
             return 0;
         }

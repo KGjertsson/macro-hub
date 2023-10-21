@@ -33,10 +33,8 @@ public class ScrapeEngineExchangeRate extends AbstractScrapeEngine {
             this.markAsDone();
 
             return novelScrapedItems.size();
-        } catch (IOException ioException) {
-            final var msgRaw = "Received IOException while scraping usd-sek exchange rate: %s";
-            final var msgFormatted = msgRaw.formatted(ioException.getMessage());
-            log.error(msgFormatted);
+        } catch (IOException | RuntimeException e) {
+            log.error("Exception while attempting to scrape data: %s".formatted(e.getMessage()));
 
             return 0;
         }

@@ -3,8 +3,6 @@ package com.kg.macroanalyzer.models.ScrapeEngine;
 import com.kg.macroanalyzer.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.repositories.ScrapeRepository;
 
-import java.util.stream.Stream;
-
 public abstract class AbstractScrapeEngine implements ScrapeEngine {
 
     private final ScrapeRepository scrapeRepository;
@@ -19,10 +17,7 @@ public abstract class AbstractScrapeEngine implements ScrapeEngine {
     }
 
     protected void markAsDone() {
-        Stream.of(scrapeQueueItem)
-                .map(ScrapeQueueItem::id)
-                .toList()
-                .forEach(scrapeRepository::markAsDone);
+        scrapeRepository.markAsDone(scrapeQueueItem.id());
     }
 
 }
