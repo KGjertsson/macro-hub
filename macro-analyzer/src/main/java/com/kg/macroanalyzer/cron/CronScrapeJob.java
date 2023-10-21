@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -37,7 +38,7 @@ public class CronScrapeJob {
     }
 
     private Stream<ScrapeQueueItem> fetchItemsToScrape() {
-        final var now = LocalDateTime.now();
+        final var now = LocalDateTime.now(ZoneOffset.UTC);
         final var items = scrapeRepository.getItemsToScrape(now);
         log.info("Running scrape cron job with %s items".formatted(items.size()));
 
