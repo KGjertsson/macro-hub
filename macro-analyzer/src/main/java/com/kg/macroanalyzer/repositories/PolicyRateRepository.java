@@ -30,7 +30,7 @@ public class PolicyRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertPolicyRateItemsSweden(List<PolicyRateItem> policyRateItemList) {
+    public Integer insertPolicyRateItemsSweden(List<PolicyRateItem> policyRateItemList) {
         if (!policyRateItemList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(
@@ -46,8 +46,12 @@ public class PolicyRateRepository {
                     policyRateItemSweden.date()
             ));
 
-            insertQuery.execute();
+            final var response = insertQuery.execute();
+
+            return response.length;
         }
+
+        return 0;
     }
 
 }

@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine {
+public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine<EuroMarketRateItem> {
 
     private final String url;
     private final Supplier<List<EuroMarketRateItem>> euroMarketRateReadSupplier;
@@ -34,21 +34,7 @@ public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine {
     }
 
     @Override
-    public Integer scrape() {
-        try {
-            final var scraped = scrapeItems();
-            final var inserted = insertScrapedItems(scraped);
-            this.markAsDone();
-
-            return inserted;
-        } catch (IOException | RuntimeException e) {
-            log.error("Exception while attempting to scrape data: %s".formatted(e.getMessage()));
-
-            return 0;
-        }
-    }
-
-    private List<EuroMarketRateItem> scrapeItems() throws IOException {
+    protected List<EuroMarketRateItem> scrapeItems() throws IOException {
         final var existingEuroMarketRateItems = euroMarketRateReadSupplier.get();
         return ScrapeUtils.scrapeNovelItems(
                 url,
@@ -57,7 +43,9 @@ public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine {
         );
     }
 
-    private Integer insertScrapedItems(List<EuroMarketRateItem> scraped) {
+
+    @Override
+    protected Integer insertScrapedItems(List<EuroMarketRateItem> scraped) {
         final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
         final var msgFormatted = msgRaw.formatted(scraped.size(), url);
         log.info(msgFormatted);

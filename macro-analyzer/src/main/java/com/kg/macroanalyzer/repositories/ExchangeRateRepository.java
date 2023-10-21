@@ -30,7 +30,7 @@ public class ExchangeRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void insertExchangeRateUsdSek(List<ExchangeRateUsdSek> exchangeRateUsdSekList) {
+    public Integer insertExchangeRateUsdSek(List<ExchangeRateUsdSek> exchangeRateUsdSekList) {
         if (!exchangeRateUsdSekList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(
@@ -46,8 +46,12 @@ public class ExchangeRateRepository {
                     exchangeRateUsdSek.date()
             ));
 
-            insertQuery.execute();
+            final var response = insertQuery.execute();
+
+            return response.length;
         }
+
+        return 0;
     }
 
 }

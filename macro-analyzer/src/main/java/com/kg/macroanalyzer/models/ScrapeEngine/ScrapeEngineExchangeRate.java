@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Slf4j
-public class ScrapeEngineExchangeRate extends AbstractScrapeEngine {
+public class ScrapeEngineExchangeRate extends AbstractScrapeEngine<ExchangeRateUsdSek> {
 
     private final ExchangeRateRepository exchangeRateRepository;
 
@@ -26,21 +26,7 @@ public class ScrapeEngineExchangeRate extends AbstractScrapeEngine {
     }
 
     @Override
-    public Integer scrape() {
-        try {
-            final var novelScrapedItems = scrapeItems();
-            insertScrapedItems(novelScrapedItems);
-            this.markAsDone();
-
-            return novelScrapedItems.size();
-        } catch (IOException | RuntimeException e) {
-            log.error("Exception while attempting to scrape data: %s".formatted(e.getMessage()));
-
-            return 0;
-        }
-    }
-
-    private List<ExchangeRateUsdSek> scrapeItems() throws IOException {
+    protected List<ExchangeRateUsdSek> scrapeItems() throws IOException {
         String url = "https://api-test.riksbank.se/swea/v1/Observations/SEKUSDPMI/1993-01-04";
         final var items = exchangeRateRepository.getExchangeRateUsdSek();
 
@@ -51,11 +37,13 @@ public class ScrapeEngineExchangeRate extends AbstractScrapeEngine {
         );
     }
 
-    private void insertScrapedItems(List<ExchangeRateUsdSek> novelScrapedItems) {
-        exchangeRateRepository.insertExchangeRateUsdSek(novelScrapedItems);
+    @Override
+    protected Integer insertScrapedItems(List<ExchangeRateUsdSek> novelScrapedItems) {
         final var msgRaw = "Found %s new items from scraping, persisting do db...";
         final var msgFormatted = msgRaw.formatted(novelScrapedItems.size());
         log.info(msgFormatted);
+
+        return exchangeRateRepository.insertExchangeRateUsdSek(novelScrapedItems);
     }
 
 }

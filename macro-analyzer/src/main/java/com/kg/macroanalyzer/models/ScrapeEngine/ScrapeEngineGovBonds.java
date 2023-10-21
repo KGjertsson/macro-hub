@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public class ScrapeEngineGovBonds extends AbstractScrapeEngine {
+public class ScrapeEngineGovBonds extends AbstractScrapeEngine<GovernmentBondItem> {
 
     private final String url;
     private final Supplier<List<GovernmentBondItem>> govBondReadSupplier;
@@ -34,21 +34,7 @@ public class ScrapeEngineGovBonds extends AbstractScrapeEngine {
     }
 
     @Override
-    public Integer scrape() {
-        try {
-            final var scraped = scrapeItems();
-            final var inserted = insertScrapedItems(scraped);
-            this.markAsDone();
-
-            return inserted;
-        } catch (IOException | RuntimeException e) {
-            log.error("Exception while attempting to scrape data: %s".formatted(e.getMessage()));
-
-            return 0;
-        }
-    }
-
-    private List<GovernmentBondItem> scrapeItems() throws IOException {
+    protected List<GovernmentBondItem> scrapeItems() throws IOException {
         final var existingGovBondItems = govBondReadSupplier.get();
         return ScrapeUtils.scrapeNovelItems(
                 url,
@@ -57,7 +43,8 @@ public class ScrapeEngineGovBonds extends AbstractScrapeEngine {
         );
     }
 
-    private Integer insertScrapedItems(List<GovernmentBondItem> scraped) {
+    @Override
+    protected Integer insertScrapedItems(List<GovernmentBondItem> scraped) {
         final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
         final var msgFormatted = msgRaw.formatted(scraped.size(), url);
         log.info(msgFormatted);
