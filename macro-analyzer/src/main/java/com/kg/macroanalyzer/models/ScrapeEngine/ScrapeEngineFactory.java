@@ -43,27 +43,31 @@ public class ScrapeEngineFactory {
             );
             case "government-bills/sweden?period=1" -> new ScrapeEngineGovBills(
                     scrapeQueueItem,
-                    govBillRepository,
                     scrapeRepository,
-                    "1"
+                    "/SETB1MBENCHC/1983-01-03",
+                    govBillRepository.swedishGovBills1MonthReader(),
+                    govBillRepository.swedishGovBill1MonthWriter()
             );
             case "government-bills/sweden?period=3" -> new ScrapeEngineGovBills(
                     scrapeQueueItem,
-                    govBillRepository,
                     scrapeRepository,
-                    "3"
+                    "/SETB3MBENCH/1983-01-03",
+                    govBillRepository.swedishGovBills3MonthReader(),
+                    govBillRepository.swedishGovBill3MonthWriter()
             );
             case "government-bills/sweden?period=6" -> new ScrapeEngineGovBills(
                     scrapeQueueItem,
-                    govBillRepository,
                     scrapeRepository,
-                    "6"
+                    "/SETB6MBENCH/1984-01-02",
+                    govBillRepository.swedishGovBills6MonthReader(),
+                    govBillRepository.swedishGovBill6MonthWriter()
             );
             case "government-bills/sweden?period=12" -> new ScrapeEngineGovBills(
                     scrapeQueueItem,
-                    govBillRepository,
                     scrapeRepository,
-                    "12"
+                    "/SETB12MBENCH/1983-01-03",
+                    govBillRepository.swedishGovBills12MonthReader(),
+                    govBillRepository.swedishGovBill12MonthWriter()
             );
             case "government-bonds/sweden?period=2" -> new ScrapeEngineGovBonds(
                     scrapeQueueItem,

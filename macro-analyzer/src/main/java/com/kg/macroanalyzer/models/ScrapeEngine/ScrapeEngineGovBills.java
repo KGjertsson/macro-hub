@@ -2,7 +2,6 @@ package com.kg.macroanalyzer.models.ScrapeEngine;
 
 import com.kg.macroanalyzer.models.GovernmentBillItem;
 import com.kg.macroanalyzer.models.ScrapeQueueItem;
-import com.kg.macroanalyzer.repositories.GovernmentBillRepository;
 import com.kg.macroanalyzer.repositories.ScrapeRepository;
 import com.kg.macroanalyzer.utils.ScrapeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -21,36 +20,18 @@ public class ScrapeEngineGovBills extends AbstractScrapeEngine {
 
     public ScrapeEngineGovBills(
             ScrapeQueueItem scrapeQueueItem,
-            GovernmentBillRepository govBillRepository,
             ScrapeRepository scrapeRepository,
-            String period
+            String url,
+            Supplier<List<GovernmentBillItem>> govBillReadSupplier,
+            Function<List<GovernmentBillItem>, Integer> govBillWriteSupplier
+
     ) {
         super(scrapeRepository, scrapeQueueItem);
         final var baseUrl = "https://api-test.riksbank.se/swea/v1/Observations";
 
-        switch (period) {
-            case "1" -> {
-                this.url = baseUrl + "/SETB1MBENCHC/1983-01-03";
-                this.govBillReadSupplier = govBillRepository.swedishGovBills1MonthReader();
-                this.govBillWriteSupplier = govBillRepository.swedishGovBill1MonthWriter();
-            }
-            case "3" -> {
-                this.url = baseUrl + "/SETB3MBENCH/1983-01-03";
-                this.govBillReadSupplier = govBillRepository.swedishGovBills3MonthReader();
-                this.govBillWriteSupplier = govBillRepository.swedishGovBill3MonthWriter();
-            }
-            case "6" -> {
-                this.url = baseUrl + "/SETB6MBENCH/1984-01-02";
-                this.govBillReadSupplier = govBillRepository.swedishGovBills6MonthReader();
-                this.govBillWriteSupplier = govBillRepository.swedishGovBill6MonthWriter();
-            }
-            case "12" -> {
-                this.url = baseUrl + "/SETB12MBENCH/1983-01-03";
-                this.govBillReadSupplier = govBillRepository.swedishGovBills12MonthReader();
-                this.govBillWriteSupplier = govBillRepository.swedishGovBill12MonthWriter();
-            }
-            default -> throw new IllegalArgumentException();
-        }
+        this.url = baseUrl + url;
+        this.govBillReadSupplier = govBillReadSupplier;
+        this.govBillWriteSupplier = govBillWriteSupplier;
     }
 
     @Override
