@@ -17,7 +17,7 @@ public class CronEnqueueJob {
         this.scrapeService = scrapeService;
     }
 
-    @Scheduled(cron = "0 22 * * *")
+    @Scheduled(cron = "0 22 * * * ?")
     public void enqueue() {
         scrapeService.scheduleAll(ChronoUnit.MINUTES, 5);
     }
