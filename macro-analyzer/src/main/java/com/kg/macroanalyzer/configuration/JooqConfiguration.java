@@ -30,7 +30,10 @@ public class JooqConfiguration {
                                 .withName("org.jooq.meta.postgres.PostgresDatabase")
                                 .withIncludes(".*")
                                 .withExcludes("")
-                                .withInputSchema("public"))
+                                .withInputSchema("public")
+                                .withCatalogVersionProvider("com.kg.macroanalyzer.configuration.FlywayCatalogVersion")
+                                .withSchemaVersionProvider("com.kg.macroanalyzer.configuration.FlywayCatalogVersion")
+                        )
                         .withTarget(new Target()
                                 .withPackageName("com.kg.macroanalyzer.jooq.generated")
                                 .withDirectory("macro-analyzer/src/main/java")));
