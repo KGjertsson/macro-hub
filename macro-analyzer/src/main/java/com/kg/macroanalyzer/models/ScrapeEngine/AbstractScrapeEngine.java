@@ -41,6 +41,7 @@ public abstract class AbstractScrapeEngine<T> implements ScrapeEngine {
     protected abstract Integer insertScrapedItems(List<T> scraped);
 
     protected void markAsDone() {
+        log.info("Marking scrape queue item %s as done".formatted(scrapeQueueItem.id()));
         scrapeRepository.markAsDone(scrapeQueueItem.id());
     }
 
