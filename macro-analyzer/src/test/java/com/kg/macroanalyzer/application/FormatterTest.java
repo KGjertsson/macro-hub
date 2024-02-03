@@ -9,7 +9,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,7 +36,7 @@ public class FormatterTest {
                 .macroSeries(List.of(
                         MacroSeries.builder()
                                 .name("a")
-                                .macroPoints(List.of(MacroPoint.builder().build()))
+                                .macroPoints(emptyPoints())
                                 .build())
                 )
                 .build();
@@ -42,7 +45,7 @@ public class FormatterTest {
                 .labels(List.of()).build();
 
         // when
-        when(labelGenerator.generateDays(inputBundle)).thenReturn(withLabels);
+        when(labelGenerator.generateFullLabels(inputBundle)).thenReturn(Optional.of(withLabels));
         when(macroSampler.sample(withLabels)).thenReturn(inputBundle);
         final var result = formatter.align(inputBundle);
 
@@ -58,6 +61,13 @@ public class FormatterTest {
 
         // then
         assertTrue(result.isEmpty());
+    }
+
+    private List<MacroPoint> emptyPoints() {
+        return IntStream.range(0, 1)
+                .mapToObj(Double::valueOf)
+                .map(n -> MacroPoint.builder().value(n).date(LocalDate.MIN).build())
+                .toList();
     }
 
 }
