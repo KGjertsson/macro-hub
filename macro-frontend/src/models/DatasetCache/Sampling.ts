@@ -22,15 +22,11 @@ export const sample = (
   } else {
     const regexpFilter = filter as RegExp;
 
-    return runSampling(labels, datasets, regexpFilter);
+    return runSampling(datasets, regexpFilter);
   }
 };
 
-const runSampling = (
-  labels: string[],
-  datasets: Dataset[],
-  filter: RegExp
-): DatasetCache => {
+const runSampling = (datasets: Dataset[], filter: RegExp): DatasetCache => {
   console.log('Running sampling with filter = ' + filter);
   const sampledDatasets = datasets.map((d) => sampleDataset(d, filter));
   const unionOfLabels = unionLabels(sampledDatasets);

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LabelGeneratorTest {
@@ -45,7 +44,7 @@ public class LabelGeneratorTest {
                 .build();
 
         // when
-        final var fullLabelsOptional = labelGenerator.generateFullLabels(bundle);
+        final var fullLabelsOptional = labelGenerator.padToFullLabels(bundle);
 
         // then
         assertTrue(fullLabelsOptional.isPresent());
@@ -59,23 +58,15 @@ public class LabelGeneratorTest {
     @Test
     public void generateLabels_withEmptySeries() {
         // given
-        final var expectedLabelSize = 4;
-        final var expectedStartDate = LocalDate.of(2024, 1, 1);
-        final var expectedEndDate = LocalDate.of(2024, 1, 4);
         final var bundle = MacroBundle.builder()
                 .macroSeries(List.of())
                 .build();
 
         // when
-        final var fullLabelsOptional = labelGenerator.generateFullLabels(bundle);
+        final var fullLabelsOptional = labelGenerator.padToFullLabels(bundle);
 
         // then
-        assertTrue(fullLabelsOptional.isPresent());
-        fullLabelsOptional.ifPresent(fullLabels -> {
-            assertEquals(expectedLabelSize, fullLabels.labels().size());
-            assertEquals(expectedStartDate, fullLabels.labels().getFirst());
-            assertEquals(expectedEndDate, fullLabels.labels().getLast());
-        });
+        assertTrue(fullLabelsOptional.isEmpty());
     }
 
     private MacroPoint buildPoint(LocalDate localDate) {

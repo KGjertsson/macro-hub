@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.application;
 
 import com.kg.macroanalyzer.application.domain.MacroBundle;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import lombok.Builder;
 import org.springframework.stereotype.Component;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -20,20 +22,50 @@ public class LabelGenerator {
             .endDate(LocalDate.MIN)
             .build();
 
-    public Optional<Formatter.WithFullLabels> generateFullLabels(MacroBundle macroBundle) {
+    public Optional<MacroBundle> padToFullLabels(MacroBundle macroBundle) {
         return findEdges(macroBundle)
                 .map(this::generateDatesBetween)
-                .map(fullLabels -> buildBundleWithLabels(macroBundle, fullLabels));
+                .map(paddedLabels -> extendToFullLabels(macroBundle, paddedLabels));
     }
 
-    private Formatter.WithFullLabels buildBundleWithLabels(
-            MacroBundle macroBundle,
-            List<LocalDate> fullLabels
-    ) {
-        return Formatter.WithFullLabels.builder()
-                .macroBundle(macroBundle)
-                .labels(fullLabels)
+    private MacroBundle extendToFullLabels(MacroBundle macroBundle, List<LocalDate> paddedLabels) {
+        final var newSeries = macroBundle.macroSeries().stream()
+                .map(macroSeries -> {
+                    final var macroPoints = macroSeries.macroPoints();
+                    final var startDate = macroPoints.getFirst().date();
+                    final var startDateIndexInFull = paddedLabels.indexOf(startDate);
+
+                    final var newPoints = IntStream.range(0, paddedLabels.size())
+                            .mapToObj(index -> pointFromLabel(index, startDateIndexInFull, paddedLabels, macroPoints))
+                            .toList();
+
+                    return MacroSeries.builder()
+                            .name(macroSeries.name())
+                            .macroPoints(newPoints)
+                            .build();
+                }).toList();
+
+        return MacroBundle.builder()
+                .macroSeries(newSeries)
                 .build();
+    }
+
+    private MacroPoint pointFromLabel(
+            Integer index,
+            Integer startDateIndexInFull,
+            List<LocalDate> fullLabels,
+            List<MacroPoint> macroPoints
+    ) {
+        final var currentDate = fullLabels.get(index);
+
+        if (index < startDateIndexInFull) {
+            return MacroPoint.builder()
+                    .date(currentDate)
+                    .value(0.0)
+                    .build();
+        } else {
+            return macroPoints.get(index - startDateIndexInFull);
+        }
     }
 
     private List<LocalDate> generateDatesBetween(LabelEdges labelEdges) {

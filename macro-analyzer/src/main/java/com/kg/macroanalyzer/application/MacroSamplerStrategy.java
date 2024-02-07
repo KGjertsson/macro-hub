@@ -3,11 +3,15 @@ package com.kg.macroanalyzer.application;
 import com.kg.macroanalyzer.application.domain.MacroBundle;
 import org.springframework.stereotype.Component;
 
-@Component
-public class MacroSampler {
+import java.util.Optional;
 
-    public MacroBundle sample(Formatter.WithFullLabels bundleWithFullLabels) {
-        return bundleWithFullLabels.macroBundle();
+@Component
+public class MacroSamplerStrategy {
+
+    public Optional<MacroBundle> sample(MacroBundle macroBundle) {
+
+
+        return Optional.of(macroBundle);
     }
 
 }

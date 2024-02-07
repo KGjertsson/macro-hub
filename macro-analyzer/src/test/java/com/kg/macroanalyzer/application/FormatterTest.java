@@ -24,7 +24,7 @@ public class FormatterTest {
     @InjectMocks
     Formatter formatter;
     @Mock
-    MacroSampler macroSampler;
+    MacroSamplerStrategy macroSamplerStrategy;
     @Mock
     LabelGenerator labelGenerator;
 
@@ -45,8 +45,8 @@ public class FormatterTest {
                 .labels(List.of()).build();
 
         // when
-        when(labelGenerator.generateFullLabels(inputBundle)).thenReturn(Optional.of(withLabels));
-        when(macroSampler.sample(withLabels)).thenReturn(inputBundle);
+        when(labelGenerator.padToFullLabels(inputBundle)).thenReturn(Optional.of(withLabels));
+        when(macroSamplerStrategy.sample(inputBundle)).thenReturn(Optional.of(inputBundle));
         final var result = formatter.align(inputBundle);
 
         // then
