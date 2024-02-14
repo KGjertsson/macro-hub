@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LabelGeneratorTest {
@@ -44,14 +45,18 @@ public class LabelGeneratorTest {
                 .build();
 
         // when
-        final var fullLabelsOptional = labelGenerator.padToFullLabels(bundle);
+        final var paddedBundleOptional = labelGenerator.padToFullLabels(bundle);
 
         // then
-        assertTrue(fullLabelsOptional.isPresent());
-        fullLabelsOptional.ifPresent(fullLabels -> {
-            assertEquals(expectedLabelSize, fullLabels.labels().size());
-            assertEquals(expectedStartDate, fullLabels.labels().getFirst());
-            assertEquals(expectedEndDate, fullLabels.labels().getLast());
+        assertTrue(paddedBundleOptional.isPresent());
+        paddedBundleOptional.ifPresent(paddedBundle -> {
+            final var labels = paddedBundle.macroSeries()
+                    .getFirst()
+                    .macroPoints().stream()
+                    .map(MacroPoint::date).toList();
+            assertEquals(expectedLabelSize, labels.size());
+            assertEquals(expectedStartDate, labels.getFirst());
+            assertEquals(expectedEndDate, labels.getLast());
         });
     }
 

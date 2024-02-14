@@ -58,7 +58,7 @@ public class LabelGenerator {
     ) {
         final var currentDate = fullLabels.get(index);
 
-        if (index < startDateIndexInFull) {
+        if (index < startDateIndexInFull || index >= macroPoints.size()) {
             return MacroPoint.builder()
                     .date(currentDate)
                     .value(0.0)

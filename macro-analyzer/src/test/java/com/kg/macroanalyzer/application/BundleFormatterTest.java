@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class FormatterTest {
+public class BundleFormatterTest {
 
     @InjectMocks
-    Formatter formatter;
+    BundleFormatter bundleFormatter;
     @Mock
     MacroSamplerStrategy macroSamplerStrategy;
     @Mock
@@ -40,14 +40,11 @@ public class FormatterTest {
                                 .build())
                 )
                 .build();
-        final var withLabels = Formatter.WithFullLabels.builder()
-                .macroBundle(inputBundle)
-                .labels(List.of()).build();
 
         // when
-        when(labelGenerator.padToFullLabels(inputBundle)).thenReturn(Optional.of(withLabels));
+        when(labelGenerator.padToFullLabels(inputBundle)).thenReturn(Optional.of(inputBundle));
         when(macroSamplerStrategy.sample(inputBundle)).thenReturn(Optional.of(inputBundle));
-        final var result = formatter.align(inputBundle);
+        final var result = bundleFormatter.align(inputBundle);
 
         // then
         assertTrue(result.isPresent());
@@ -57,7 +54,7 @@ public class FormatterTest {
     @Test
     public void alignBundle_withNullBundle() {
         // when
-        final var result = formatter.align(null);
+        final var result = bundleFormatter.align(null);
 
         // then
         assertTrue(result.isEmpty());

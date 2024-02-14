@@ -7,13 +7,16 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-public class Formatter {
+public class BundleFormatter {
 
     private final LabelGenerator labelGenerator;
     private final MacroSamplerStrategy macroSamplerStrategy;
 
     @Autowired
-    public Formatter(LabelGenerator labelGenerator, MacroSamplerStrategy macroSamplerStrategy) {
+    public BundleFormatter(
+            LabelGenerator labelGenerator,
+            MacroSamplerStrategy macroSamplerStrategy
+    ) {
         this.labelGenerator = labelGenerator;
         this.macroSamplerStrategy = macroSamplerStrategy;
     }
