@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.application;
 
+import com.kg.macroanalyzer.application.SampleStrategy.MacroSamplerStrategyFactory;
 import com.kg.macroanalyzer.application.domain.MacroBundle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -10,21 +11,23 @@ import java.util.Optional;
 public class BundleFormatter {
 
     private final LabelGenerator labelGenerator;
-    private final MacroSamplerStrategy macroSamplerStrategy;
+    private final MacroSamplerStrategyFactory macroSamplerStrategyFactory;
 
     @Autowired
     public BundleFormatter(
             LabelGenerator labelGenerator,
-            MacroSamplerStrategy macroSamplerStrategy
+            MacroSamplerStrategyFactory macroSamplerStrategyFactory
     ) {
         this.labelGenerator = labelGenerator;
-        this.macroSamplerStrategy = macroSamplerStrategy;
+        this.macroSamplerStrategyFactory = macroSamplerStrategyFactory;
     }
 
     public Optional<MacroBundle> align(MacroBundle macroBundleRaw) {
+        final var sampleStrategy = macroSamplerStrategyFactory.build();
+
         return Optional.ofNullable(macroBundleRaw)
                 .flatMap(labelGenerator::padToFullLabels)
-                .flatMap(macroSamplerStrategy::sample);
+                .flatMap(sampleStrategy::sample);
     }
 
 }

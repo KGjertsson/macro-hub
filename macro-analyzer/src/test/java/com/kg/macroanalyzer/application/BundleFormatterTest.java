@@ -1,5 +1,7 @@
 package com.kg.macroanalyzer.application;
 
+import com.kg.macroanalyzer.application.SampleStrategy.MacroSamplerStrategyFactory;
+import com.kg.macroanalyzer.application.SampleStrategy.SampleStrategy;
 import com.kg.macroanalyzer.application.domain.MacroBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
@@ -16,6 +18,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,9 +27,11 @@ public class BundleFormatterTest {
     @InjectMocks
     BundleFormatter bundleFormatter;
     @Mock
-    MacroSamplerStrategy macroSamplerStrategy;
+    MacroSamplerStrategyFactory macroSamplerStrategyFactory;
     @Mock
     LabelGenerator labelGenerator;
+    @Mock
+    SampleStrategy sampleStrategy;
 
 
     @Test
@@ -43,7 +48,8 @@ public class BundleFormatterTest {
 
         // when
         when(labelGenerator.padToFullLabels(inputBundle)).thenReturn(Optional.of(inputBundle));
-        when(macroSamplerStrategy.sample(inputBundle)).thenReturn(Optional.of(inputBundle));
+        when(macroSamplerStrategyFactory.build()).thenReturn(sampleStrategy);
+        when(sampleStrategy.sample(inputBundle)).thenReturn(Optional.of(inputBundle));
         final var result = bundleFormatter.align(inputBundle);
 
         // then
@@ -53,6 +59,9 @@ public class BundleFormatterTest {
 
     @Test
     public void alignBundle_withNullBundle() {
+        // given
+        when(macroSamplerStrategyFactory.build()).thenReturn(sampleStrategy);
+
         // when
         final var result = bundleFormatter.align(null);
 
