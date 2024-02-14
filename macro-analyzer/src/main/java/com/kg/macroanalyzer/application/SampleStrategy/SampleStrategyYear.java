@@ -8,6 +8,7 @@ public class SampleStrategyYear implements SampleStrategy {
 
     @Override
     public Optional<MacroBundle> sample(MacroBundle macroBundle) {
+        // TODO
         return Optional.empty();
     }
 

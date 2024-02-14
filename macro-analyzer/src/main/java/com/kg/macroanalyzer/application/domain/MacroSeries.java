@@ -5,6 +5,6 @@ import lombok.NonNull;
 
 import java.util.List;
 
-@Builder
+@Builder(toBuilder = true)
 public record MacroSeries(@NonNull String name, @NonNull List<MacroPoint> macroPoints) {
 }

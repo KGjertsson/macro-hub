@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application;
 
-import com.kg.macroanalyzer.application.SampleStrategy.MacroSamplerStrategyFactory;
+import com.kg.macroanalyzer.application.SampleStrategy.StrategyFactory;
 import com.kg.macroanalyzer.application.SampleStrategy.SampleStrategy;
 import com.kg.macroanalyzer.application.domain.MacroBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
@@ -24,10 +24,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class BundleFormatterTest {
 
+    private final StrategyFactory.Strategy STRATEGY = StrategyFactory.Strategy.MONTH;
+
     @InjectMocks
     BundleFormatter bundleFormatter;
     @Mock
-    MacroSamplerStrategyFactory macroSamplerStrategyFactory;
+    StrategyFactory strategyFactory;
     @Mock
     LabelGenerator labelGenerator;
     @Mock
@@ -48,9 +50,9 @@ public class BundleFormatterTest {
 
         // when
         when(labelGenerator.padToFullLabels(inputBundle)).thenReturn(Optional.of(inputBundle));
-        when(macroSamplerStrategyFactory.build()).thenReturn(sampleStrategy);
+        when(strategyFactory.build(STRATEGY)).thenReturn(sampleStrategy);
         when(sampleStrategy.sample(inputBundle)).thenReturn(Optional.of(inputBundle));
-        final var result = bundleFormatter.align(inputBundle);
+        final var result = bundleFormatter.align(inputBundle, STRATEGY);
 
         // then
         assertTrue(result.isPresent());
@@ -60,10 +62,10 @@ public class BundleFormatterTest {
     @Test
     public void alignBundle_withNullBundle() {
         // given
-        when(macroSamplerStrategyFactory.build()).thenReturn(sampleStrategy);
+        when(strategyFactory.build(STRATEGY)).thenReturn(sampleStrategy);
 
         // when
-        final var result = bundleFormatter.align(null);
+        final var result = bundleFormatter.align(null, STRATEGY);
 
         // then
         assertTrue(result.isEmpty());
