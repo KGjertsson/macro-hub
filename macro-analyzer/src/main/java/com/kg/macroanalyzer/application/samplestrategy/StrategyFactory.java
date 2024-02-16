@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.SampleStrategy;
+package com.kg.macroanalyzer.application.samplestrategy;
 
 import org.springframework.stereotype.Component;
 

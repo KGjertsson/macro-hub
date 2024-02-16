@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.application;
 
-import com.kg.macroanalyzer.application.SampleStrategy.StrategyFactory;
 import com.kg.macroanalyzer.application.domain.MacroBundle;
+import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

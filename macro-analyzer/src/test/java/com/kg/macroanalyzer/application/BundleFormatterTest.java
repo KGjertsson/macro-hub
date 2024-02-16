@@ -1,10 +1,10 @@
 package com.kg.macroanalyzer.application;
 
-import com.kg.macroanalyzer.application.SampleStrategy.StrategyFactory;
-import com.kg.macroanalyzer.application.SampleStrategy.SampleStrategy;
 import com.kg.macroanalyzer.application.domain.MacroBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.samplestrategy.SampleStrategy;
+import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +18,6 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
