@@ -6,7 +6,6 @@ import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.exceptions.InvalidBundleDimensionException;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -23,9 +22,7 @@ public class SampleStrategyMonth implements SampleStrategy {
     ) {
         return Optional.ofNullable(macroBundle)
                 .flatMap(this::validateBundle)
-                .map(MacroBundle::macroSeries)
-                .map(this::sample)
-                .map(this::toBundle);
+                .map(this::runSampling);
     }
 
     private Optional<MacroBundle> validateBundle(
@@ -53,13 +50,17 @@ public class SampleStrategyMonth implements SampleStrategy {
                 : Optional.of(macroBundle);
     }
 
-    private List<MacroSeries> sample(List<MacroSeries> macroSeries) {
-        return macroSeries.stream()
-                .map(this::sample)
+    private MacroBundle runSampling(MacroBundle macroBundle) {
+        final var sampledSeries = macroBundle.macroSeries().stream()
+                .map(this::runSampling)
                 .toList();
+
+        return MacroBundle.builder()
+                .macroSeries(sampledSeries)
+                .build();
     }
 
-    private MacroSeries sample(MacroSeries macroSeries) {
+    private MacroSeries runSampling(MacroSeries macroSeries) {
         final var sampledPoints = macroSeries.macroPoints().stream()
                 .filter(this::sampleFilter)
                 .collect(new UniqueMacroPointCollector());
@@ -81,12 +82,6 @@ public class SampleStrategyMonth implements SampleStrategy {
         }
 
         return false;
-    }
-
-    private MacroBundle toBundle(List<MacroSeries> macroSeries) {
-        return MacroBundle.builder()
-                .macroSeries(macroSeries)
-                .build();
     }
 
 }
