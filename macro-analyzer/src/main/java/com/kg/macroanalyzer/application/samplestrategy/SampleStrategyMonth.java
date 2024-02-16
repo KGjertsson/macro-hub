@@ -6,8 +6,10 @@ import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.exceptions.InvalidBundleDimensionException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.YearMonth;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @Slf4j
 public class SampleStrategyMonth implements SampleStrategy {
@@ -62,7 +64,7 @@ public class SampleStrategyMonth implements SampleStrategy {
 
     private MacroSeries runSampling(MacroSeries macroSeries) {
         final var sampledPoints = macroSeries.macroPoints().stream()
-                .filter(this::sampleFilter)
+                .flatMap(this::matchDate)
                 .collect(new UniqueMacroPointCollector());
 
         return macroSeries.toBuilder()
@@ -70,18 +72,19 @@ public class SampleStrategyMonth implements SampleStrategy {
                 .build();
     }
 
-    private boolean sampleFilter(MacroPoint macroPoint) {
-        // TODO
+    private Stream<MacroPoint> matchDate(MacroPoint macroPoint) {
         final var matcher = pattern.matcher(macroPoint.date().toString());
 
         if (matcher.find()) {
-            String matchedString = matcher.group(1);
-            System.out.println("Matched string: " + matchedString);
+            final var matchedGroup = matcher.group(0);
+            final var yearMonth = YearMonth.parse(matchedGroup);
+            final var sampledPoint = macroPoint.toBuilder()
+                    .date(yearMonth)
+                    .build();
+            return Stream.of(sampledPoint);
         } else {
-            System.out.println("No match found.");
+            return Stream.empty();
         }
-
-        return false;
     }
 
 }

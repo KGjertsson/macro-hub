@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -38,9 +39,19 @@ public class SampleStrategyMonthTest {
         assertTrue(sampledBundle.isPresent());
         sampledBundle.ifPresent(presentBundle -> {
             final var sampledSeries = presentBundle.macroSeries().getFirst().macroPoints();
+
+            final var firstPoint = inputSeries.macroPoints().getFirst();
+            final var firstInputAsYearMonth = firstPoint.toBuilder()
+                    .date(YearMonth.from(firstPoint.date()))
+                    .build();
+            final var lastPoint = inputSeries.macroPoints().getLast();
+            final var lastInputAsYearMonth = lastPoint.toBuilder()
+                    .date(YearMonth.from(lastPoint.date()))
+                    .build();
+
             assertEquals(expectedSeriesSize, sampledSeries.size());
-            assertEquals(inputSeries.macroPoints().getFirst(), sampledSeries.getFirst());
-            assertEquals(inputSeries.macroPoints().getLast(), sampledSeries.getLast());
+            assertEquals(firstInputAsYearMonth, sampledSeries.getFirst());
+            assertEquals(lastInputAsYearMonth, sampledSeries.getLast());
         });
     }
 

@@ -22,7 +22,10 @@ public class UniqueMacroPointCollector implements Collector<MacroPoint, List<Mac
     @Override
     public BiConsumer<List<MacroPoint>, MacroPoint> accumulator() {
         return (acc, element) -> {
-            final var elementAlreadyExists = acc.contains(element);
+            final var elementAlreadyExists = acc.stream()
+                    .map(MacroPoint::date)
+                    .toList()
+                    .contains(element.date());
             if (!elementAlreadyExists) {
                 acc.add(element);
             }

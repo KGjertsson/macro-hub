@@ -32,7 +32,7 @@ public class LabelGenerator {
         final var newSeries = macroBundle.macroSeries().stream()
                 .map(macroSeries -> {
                     final var macroPoints = macroSeries.macroPoints();
-                    final var startDate = macroPoints.getFirst().date();
+                    final var startDate = LocalDate.from(macroPoints.getFirst().date());
                     final var startDateIndexInFull = paddedLabels.indexOf(startDate);
 
                     final var newPoints = IntStream.range(0, paddedLabels.size())
@@ -102,8 +102,8 @@ public class LabelGenerator {
 
     private LabelEdges toLabelEdges(MacroSeries macroSeries) {
         return LabelEdges.builder()
-                .startDate(macroSeries.macroPoints().getFirst().date())
-                .endDate(macroSeries.macroPoints().getLast().date())
+                .startDate(LocalDate.from(macroSeries.macroPoints().getFirst().date()))
+                .endDate(LocalDate.from(macroSeries.macroPoints().getLast().date()))
                 .build();
     }
 
