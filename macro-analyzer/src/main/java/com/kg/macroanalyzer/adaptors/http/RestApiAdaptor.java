@@ -1,5 +1,5 @@
 package com.kg.macroanalyzer.adaptors.http;
 
-public interface RestApiAdaptor {
+public class RestApiAdaptor {
 
 }
