@@ -1,62 +1,40 @@
 package com.kg.macroanalyzer.application.samplestrategy;
 
-import com.kg.macroanalyzer.application.domain.MacroBundle;
+import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.exceptions.InvalidBundleDimensionException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
-public abstract class AbstractSampleStrategy implements SampleStrategy {
+public abstract class AbstractSampleStrategy extends ValidatingStrategy {
 
     @Override
-    public Optional<MacroBundle> sample(
-            MacroBundle macroBundle
-    ) {
-        return Optional.ofNullable(macroBundle)
-                .flatMap(this::validateBundle)
-                .map(this::runSampling);
+    public Optional<AlignedBundle> sample(List<MacroSeries> macroSeriesList) {
+        return Optional.ofNullable(macroSeriesList)
+                .flatMap(this::validate)
+                .map(this::runSamplingOnSeriesList);
     }
 
-    private Optional<MacroBundle> validateBundle(
-            MacroBundle macroBundle
-    ) {
-        if (macroBundle.macroSeries().isEmpty()) {
-            log.info("Validating bundle with empty series");
-            return Optional.empty();
-        }
-
-        final var referenceSize = macroBundle.macroSeries().getFirst().macroPoints().size();
-        final var withUnexpectedDimensions = macroBundle.macroSeries().stream()
-                .map(MacroSeries::macroPoints)
-                .filter(macroPoints -> macroPoints.size() != referenceSize)
-                .count();
-        final var hasDifferentDimensions = withUnexpectedDimensions > 0;
-        if (hasDifferentDimensions) {
-            final var msgRaw = "Expected bundle with dimension %s but found deviation";
-            final var msgFormatted = msgRaw.formatted(referenceSize);
-            log.error(new InvalidBundleDimensionException(msgFormatted).toString());
-        }
-
-        return hasDifferentDimensions
-                ? Optional.empty()
-                : Optional.of(macroBundle);
-    }
-
-    private MacroBundle runSampling(MacroBundle macroBundle) {
-        final var sampledSeries = macroBundle.macroSeries().stream()
-                .map(this::runSampling)
+    private AlignedBundle runSamplingOnSeriesList(List<MacroSeries> macroSeriesList) {
+        final var sampledSeries = macroSeriesList.stream()
+                .map(this::runSamplingOnSeries)
+                .toList();
+        final var labels = sampledSeries.getFirst()
+                .macroPoints().stream()
+                .map(MacroPoint::date)
                 .toList();
 
-        return MacroBundle.builder()
+        return AlignedBundle.builder()
                 .macroSeries(sampledSeries)
+                .labels(labels)
                 .build();
     }
 
-    private MacroSeries runSampling(MacroSeries macroSeries) {
+    private MacroSeries runSamplingOnSeries(MacroSeries macroSeries) {
         final var sampledPoints = macroSeries.macroPoints().stream()
                 .flatMap(this::matchDate)
                 .collect(new UniqueMacroPointCollector());

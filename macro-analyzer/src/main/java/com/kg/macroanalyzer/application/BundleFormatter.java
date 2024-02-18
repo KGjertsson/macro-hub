@@ -1,10 +1,12 @@
 package com.kg.macroanalyzer.application;
 
-import com.kg.macroanalyzer.application.domain.MacroBundle;
+import com.kg.macroanalyzer.application.domain.AlignedBundle;
+import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -22,13 +24,13 @@ public class BundleFormatter {
         this.strategyFactory = strategyFactory;
     }
 
-    public Optional<MacroBundle> align(
-            MacroBundle macroBundleRaw,
+    public Optional<AlignedBundle> align(
+            List<MacroSeries> macroSeriesList,
             StrategyFactory.Strategy strategy
     ) {
         final var sampleStrategy = strategyFactory.build(strategy);
 
-        return Optional.ofNullable(macroBundleRaw)
+        return Optional.ofNullable(macroSeriesList)
                 .flatMap(labelGenerator::padToFullLabels)
                 .flatMap(sampleStrategy::sample);
     }

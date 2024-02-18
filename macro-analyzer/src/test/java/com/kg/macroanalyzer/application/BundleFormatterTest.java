@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application;
 
-import com.kg.macroanalyzer.application.domain.MacroBundle;
+import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.samplestrategy.SampleStrategy;
@@ -38,20 +38,25 @@ public class BundleFormatterTest {
     @Test
     public void alignBundle_withSimpleBundle() {
         // given
-        final var inputBundle = MacroBundle.builder()
-                .macroSeries(List.of(
-                        MacroSeries.builder()
-                                .name("a")
-                                .macroPoints(emptyPoints())
-                                .build())
-                )
+        final var macroSeries = List.of(
+                MacroSeries.builder()
+                        .name("a")
+                        .macroPoints(emptyPoints())
+                        .build()
+        );
+        final var labels = macroSeries.getFirst()
+                .macroPoints().stream()
+                .map(MacroPoint::date).toList();
+        final var inputBundle = AlignedBundle.builder()
+                .macroSeries(macroSeries)
+                .labels(labels)
                 .build();
 
         // when
-        when(labelGenerator.padToFullLabels(inputBundle)).thenReturn(Optional.of(inputBundle));
+        when(labelGenerator.padToFullLabels(macroSeries)).thenReturn(Optional.of(macroSeries));
         when(strategyFactory.build(STRATEGY)).thenReturn(sampleStrategy);
-        when(sampleStrategy.sample(inputBundle)).thenReturn(Optional.of(inputBundle));
-        final var result = bundleFormatter.align(inputBundle, STRATEGY);
+        when(sampleStrategy.sample(macroSeries)).thenReturn(Optional.of(inputBundle));
+        final var result = bundleFormatter.align(macroSeries, STRATEGY);
 
         // then
         assertTrue(result.isPresent());

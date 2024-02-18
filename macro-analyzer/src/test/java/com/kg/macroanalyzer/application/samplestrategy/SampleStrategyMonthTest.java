@@ -1,9 +1,7 @@
-package com.kg.macroanalyzer.application;
+package com.kg.macroanalyzer.application.samplestrategy;
 
-import com.kg.macroanalyzer.application.domain.MacroBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.samplestrategy.SampleStrategyMonth;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,10 +26,10 @@ public class SampleStrategyMonthTest {
     public void testSampleStrategyMonth_multipleMonths() {
         // given
         final var inputSeries = createMacroSeries("a");
-        final var inputBundle = new MacroBundle(List.of(inputSeries));
+        final var inputSeriesList = List.of(inputSeries);
 
         // when
-        final var sampledBundle = sampleStrategyMonth.sample(inputBundle);
+        final var sampledBundle = sampleStrategyMonth.sample(inputSeriesList);
 
         // then
         final var expectedSeriesSize = 2;
@@ -59,10 +57,9 @@ public class SampleStrategyMonthTest {
     public void testSampleStrategyMonth_multipleSeries() {
         // given
         final var inputSeries = List.of(createMacroSeries("a"), createMacroSeries("b"));
-        final var inputBundle = new MacroBundle(inputSeries);
 
         // when
-        final var sampledBundle = sampleStrategyMonth.sample(inputBundle);
+        final var sampledBundle = sampleStrategyMonth.sample(inputSeries);
 
         // then
         final var expectedSeriesSize = 2;
@@ -85,10 +82,10 @@ public class SampleStrategyMonthTest {
     @Test
     public void testSampleStrategyMonth_emptySeries() {
         // given
-        final var inputBundle = new MacroBundle(List.of());
+        final var emptyList = List.<MacroSeries>of();
 
         // when
-        final var sampledBundle = sampleStrategyMonth.sample(inputBundle);
+        final var sampledBundle = sampleStrategyMonth.sample(emptyList);
 
         // then
         assertTrue(sampledBundle.isEmpty());
@@ -112,10 +109,10 @@ public class SampleStrategyMonthTest {
                 .macroPoints(seriesTwo.macroPoints().subList(0, seriesTwo.macroPoints().size() - 2))
                 .build();
 
-        final var inputBundle = new MacroBundle(List.of(seriesOne, seriesTwo));
+        final var macroSeriesList = List.of(seriesOne, seriesTwo);
 
         // when
-        final var sampledBundle = sampleStrategyMonth.sample(inputBundle);
+        final var sampledBundle = sampleStrategyMonth.sample(macroSeriesList);
 
         // then
         assertTrue(sampledBundle.isEmpty());

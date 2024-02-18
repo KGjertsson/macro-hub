@@ -1,9 +1,7 @@
-package com.kg.macroanalyzer.application;
+package com.kg.macroanalyzer.application.samplestrategy;
 
-import com.kg.macroanalyzer.application.domain.MacroBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.samplestrategy.SampleStrategyYear;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,10 +25,9 @@ public class SampleStrategyYearTest {
     public void testSampleStrategyMonth_multipleSeries() {
         // given
         final var inputSeries = List.of(createMacroSeries("a"), createMacroSeries("b"));
-        final var inputBundle = new MacroBundle(inputSeries);
 
         // when
-        final var sampledBundle = sampleStrategyYear.sample(inputBundle);
+        final var sampledBundle = sampleStrategyYear.sample(inputSeries);
 
         // then
         final var expectedSeriesSize = 2;

@@ -1,8 +1,9 @@
 package com.kg.macroanalyzer.application.ports.driving;
 
-import com.kg.macroanalyzer.application.domain.MacroPoint;
+import lombok.Builder;
 
 import java.util.List;
 
-public record ChartData(List<MacroPoint> data, String name, String color) {
+@Builder
+public record ChartData(List<Double> values, String name, String color) {
 }

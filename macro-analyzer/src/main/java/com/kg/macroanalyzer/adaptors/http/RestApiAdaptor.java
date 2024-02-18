@@ -30,7 +30,7 @@ public class RestApiAdaptor {
     }
 
     private void logRequest(BuildChartDataParams params) {
-        final var msgRaw = "Received GET chart-data request with chartSeriesParams=%s";
+        final var msgRaw = "Received GET chart-values request with chartSeriesParams=%s";
         final var msgFormatted = msgRaw.formatted(params);
         log.info(msgFormatted);
     }

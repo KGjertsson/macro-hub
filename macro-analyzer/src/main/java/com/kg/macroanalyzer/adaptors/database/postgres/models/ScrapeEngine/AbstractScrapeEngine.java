@@ -30,7 +30,7 @@ public abstract class AbstractScrapeEngine<T> implements ScrapeEngine {
 
             return inserted;
         } catch (IOException | RuntimeException e) {
-            log.error("Exception while attempting to scrape data: %s".formatted(e.getMessage()));
+            log.error("Exception while attempting to scrape values: %s".formatted(e.getMessage()));
 
             return 0;
         }

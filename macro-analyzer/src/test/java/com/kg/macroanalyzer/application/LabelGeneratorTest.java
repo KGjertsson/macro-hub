@@ -1,11 +1,12 @@
 package com.kg.macroanalyzer.application;
 
 
-import com.kg.macroanalyzer.application.domain.MacroBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,14 +14,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(MockitoExtension.class)
 public class LabelGeneratorTest {
 
+    @InjectMocks
     LabelGenerator labelGenerator;
-
-    @BeforeEach
-    public void setUp() {
-        labelGenerator = new LabelGenerator();
-    }
 
     @Test
     public void generateLabels_findExtremesWithMultipleSeries() {
@@ -40,17 +38,15 @@ public class LabelGeneratorTest {
                         buildPoint(LocalDate.of(2024, 1, 2)),
                         buildPoint(expectedEndDate)
                 )).build();
-        final var bundle = MacroBundle.builder()
-                .macroSeries(List.of(seriesOne, seriesTwo))
-                .build();
+        final var macroSeriesList = List.of(seriesOne, seriesTwo);
 
         // when
-        final var paddedBundleOptional = labelGenerator.padToFullLabels(bundle);
+        final var paddedSeriesOptional = labelGenerator.padToFullLabels(macroSeriesList);
 
         // then
-        assertTrue(paddedBundleOptional.isPresent());
-        paddedBundleOptional.ifPresent(paddedBundle -> {
-            final var labels = paddedBundle.macroSeries()
+        assertTrue(paddedSeriesOptional.isPresent());
+        paddedSeriesOptional.ifPresent(paddedSeries -> {
+            final var labels = paddedSeries
                     .getFirst()
                     .macroPoints().stream()
                     .map(MacroPoint::date).toList();
@@ -63,12 +59,9 @@ public class LabelGeneratorTest {
     @Test
     public void generateLabels_withEmptySeries() {
         // given
-        final var bundle = MacroBundle.builder()
-                .macroSeries(List.of())
-                .build();
-
+        final var emptyList = List.<MacroSeries>of();
         // when
-        final var fullLabelsOptional = labelGenerator.padToFullLabels(bundle);
+        final var fullLabelsOptional = labelGenerator.padToFullLabels(emptyList);
 
         // then
         assertTrue(fullLabelsOptional.isEmpty());

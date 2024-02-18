@@ -1,6 +1,5 @@
 package com.kg.macroanalyzer.application;
 
-import com.kg.macroanalyzer.application.domain.MacroBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import lombok.Builder;
@@ -22,14 +21,17 @@ public class LabelGenerator {
             .endDate(LocalDate.MIN)
             .build();
 
-    public Optional<MacroBundle> padToFullLabels(MacroBundle macroBundle) {
-        return findEdges(macroBundle)
+    public Optional<List<MacroSeries>> padToFullLabels(List<MacroSeries> macroSeriesList) {
+        return findEdges(macroSeriesList)
                 .map(this::generateDatesBetween)
-                .map(paddedLabels -> extendToFullLabels(macroBundle, paddedLabels));
+                .map(paddedLabels -> extendToFullLabels(macroSeriesList, paddedLabels));
     }
 
-    private MacroBundle extendToFullLabels(MacroBundle macroBundle, List<LocalDate> paddedLabels) {
-        final var newSeries = macroBundle.macroSeries().stream()
+    private List<MacroSeries> extendToFullLabels(
+            List<MacroSeries> macroSeriesList,
+            List<LocalDate> paddedLabels
+    ) {
+        final var newSeries = macroSeriesList.stream()
                 .map(macroSeries -> {
                     final var macroPoints = macroSeries.macroPoints();
                     final var startDate = LocalDate.from(macroPoints.getFirst().date());
@@ -45,9 +47,7 @@ public class LabelGenerator {
                             .build();
                 }).toList();
 
-        return MacroBundle.builder()
-                .macroSeries(newSeries)
-                .build();
+        return newSeries;
     }
 
     private MacroPoint pointFromLabel(
@@ -77,8 +77,8 @@ public class LabelGenerator {
                 .collect(toList());
     }
 
-    private Optional<LabelEdges> findEdges(MacroBundle macroBundle) {
-        return macroBundle.macroSeries().stream()
+    private Optional<LabelEdges> findEdges(List<MacroSeries> macroSeriesList) {
+        return macroSeriesList.stream()
                 .map(this::toLabelEdges)
                 .reduce(IDENTITY_LABELS, this::findEdges)
                 .toOptional()

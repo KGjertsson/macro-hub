@@ -1,7 +1,8 @@
 package com.kg.macroanalyzer.application.ports.driving;
 
 import com.kg.macroanalyzer.application.BundleFormatter;
-import com.kg.macroanalyzer.application.ports.DatabasePort;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
+import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,27 @@ public class RestApiPort implements DrivingPort {
 
     @Override
     public ChartDataWithLabels buildChartData(BuildChartDataParams params) {
-        final var blueBerry = databasePort.readMacroBundle(params);
-        final var raspBerry = blueBerry.map(bundle -> bundleFormatter.align(bundle, params.strategy()));
+        final var chartSeriesParamList = params.chartSeriesParams();
 
-        return null;
+        final var blueBerry = databasePort.readMacroSeries(chartSeriesParamList);
+        final var raspBerry = bundleFormatter.align(blueBerry, params.strategy());
+        final var strawBerry = raspBerry.map(b -> {
+            final var labels = b.labels();
+            final var values = b.macroSeries().stream()
+                    .map(series ->
+                            ChartData.builder()
+                                    .values(series.macroPoints().stream().map(MacroPoint::value).toList())
+                                    .name(series.name())
+                                    .build()
+                    ).toList();
+
+            return ChartDataWithLabels.builder()
+                    .chartData(values)
+                    .labels(labels)
+                    .build();
+        });
+
+        return strawBerry.orElse(null);
     }
 
 }
