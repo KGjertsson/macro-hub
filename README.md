@@ -2,6 +2,8 @@
 
 Visualizing macro-economic trends and parameters.
 
+![macro-arch.drawio.png](macro-analyzer%2Fmacro-arch.drawio.png)
+
 ### Set Up Guide
 
 1. Start the docker database container

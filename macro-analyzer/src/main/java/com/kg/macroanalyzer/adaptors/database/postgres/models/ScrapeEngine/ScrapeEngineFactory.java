@@ -1,9 +1,7 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
-import com.kg.macroanalyzer.adaptors.database.repositories.*;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
-import com.kg.macroanalyzer.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
