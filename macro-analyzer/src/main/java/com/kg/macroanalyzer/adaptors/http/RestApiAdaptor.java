@@ -1,12 +1,13 @@
 package com.kg.macroanalyzer.adaptors.http;
 
+import com.kg.macroanalyzer.application.ports.driving.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.ChartDataWithLabels;
 import com.kg.macroanalyzer.application.ports.driving.DrivingPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -21,20 +22,16 @@ public class RestApiAdaptor {
         this.drivingPort = drivingPort;
     }
 
-    @GetMapping("/chart-data/")
-    public ChartDataWithLabels getChartData(
-            @RequestParam("name") String name,
-            @RequestParam("country") String country,
-            @RequestParam("period") String period
-    ) {
-        logRequest(name, country, period);
+    @PostMapping("/chart-data")
+    public ChartDataWithLabels buildChartData(@RequestBody BuildChartDataParams params) {
+        logRequest(params);
 
-        return drivingPort.getChartData(name, country, period);
+        return drivingPort.buildChartData(params);
     }
 
-    private void logRequest(String name, String country, String period) {
-        final var msgRaw = "Received GET chart-data request with name=%s, country=%s, period=%s";
-        final var msgFormatted = msgRaw.formatted(name, country, period);
+    private void logRequest(BuildChartDataParams params) {
+        final var msgRaw = "Received GET chart-data request with chartSeriesParams=%s";
+        final var msgFormatted = msgRaw.formatted(params);
         log.info(msgFormatted);
     }
 
