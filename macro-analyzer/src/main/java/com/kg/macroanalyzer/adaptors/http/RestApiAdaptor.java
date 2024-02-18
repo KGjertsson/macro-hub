@@ -5,6 +5,8 @@ import com.kg.macroanalyzer.application.ports.driving.ChartDataWithLabels;
 import com.kg.macroanalyzer.application.ports.driving.DrivingPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,16 +25,30 @@ public class RestApiAdaptor {
     }
 
     @PostMapping("/chart-data")
-    public ChartDataWithLabels buildChartData(@RequestBody BuildChartDataParams params) {
+    public ResponseEntity<ChartDataWithLabels> buildChartData(
+            @RequestBody BuildChartDataParams params
+    ) {
         logRequest(params);
 
-        return drivingPort.buildChartData(params);
+        return drivingPort.buildChartData(params)
+                .map(this::toResponseEntity)
+                .orElse(noContentResponse());
     }
 
     private void logRequest(BuildChartDataParams params) {
         final var msgRaw = "Received GET chart-values request with chartSeriesParams=%s";
         final var msgFormatted = msgRaw.formatted(params);
         log.info(msgFormatted);
+    }
+
+    private ResponseEntity<ChartDataWithLabels> toResponseEntity(
+            ChartDataWithLabels chartDataWithLabels
+    ) {
+        return new ResponseEntity<>(chartDataWithLabels, HttpStatus.OK);
+    }
+
+    private ResponseEntity<ChartDataWithLabels> noContentResponse() {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

@@ -1,7 +1,9 @@
 package com.kg.macroanalyzer.application.ports.driving;
 
+import java.util.Optional;
+
 public interface DrivingPort {
 
-    ChartDataWithLabels buildChartData(BuildChartDataParams params);
+    Optional<ChartDataWithLabels> buildChartData(BuildChartDataParams params);
 
 }
