@@ -33,6 +33,8 @@ public class RestApiAdaptor {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
+        // TODO: return the whole draw entity, not just the data
+
         return drivingPort.buildChartData(params)
                 .map(this::toResponseEntity)
                 .orElse(noContentResponse());
