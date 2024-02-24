@@ -30,7 +30,7 @@ const alignedBundleReducer = (
     case CacheActionTypes.SET_CACHE:
       return {
         labels: action.payload.labels,
-        datasets: action.payload.datasets,
+        chartData: action.payload.chartData,
       };
     default:
       throw new Error(
@@ -39,7 +39,7 @@ const alignedBundleReducer = (
   }
 };
 
-const defaultSampled: DatasetCache = { labels: [], datasets: [] };
+const defaultSampled: DatasetCache = { labels: [], chartData: [] };
 
 const DynamicChartRenderComponent = ({
   selectedItems,
