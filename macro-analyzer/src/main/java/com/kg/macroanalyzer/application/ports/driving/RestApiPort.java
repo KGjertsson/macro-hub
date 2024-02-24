@@ -25,8 +25,8 @@ public class RestApiPort implements DrivingPort {
     public Optional<ChartDataWithLabels> buildChartData(BuildChartDataParams params) {
         final var chartSeriesParamList = params.chartSeriesParams();
         final var strategy = params.strategy();
-
         final var macroSeriesList = databasePort.readMacroSeries(chartSeriesParamList);
+
         return bundleFormatter.align(macroSeriesList, strategy)
                 .map(this::buildResponse);
     }

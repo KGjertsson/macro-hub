@@ -6,10 +6,12 @@ import org.springframework.stereotype.Component;
 public class StrategyFactory {
 
     public SampleStrategy build(Strategy strategy) {
+        final var errorMsg = "Found invalid strategy %s".formatted(strategy);
+
         return switch (strategy) {
             case YEAR -> new SampleStrategyYear();
             case MONTH -> new SampleStrategyMonth();
-            default -> throw new IllegalArgumentException("prutt");
+            default -> throw new IllegalArgumentException(errorMsg);
         };
     }
 

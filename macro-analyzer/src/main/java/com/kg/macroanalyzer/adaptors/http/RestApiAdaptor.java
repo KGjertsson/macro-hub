@@ -29,6 +29,9 @@ public class RestApiAdaptor {
             @RequestBody BuildChartDataParams params
     ) {
         logRequest(params);
+        if (invalidRequest(params)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
 
         return drivingPort.buildChartData(params)
                 .map(this::toResponseEntity)
@@ -39,6 +42,19 @@ public class RestApiAdaptor {
         final var msgRaw = "Received GET chart-values request with chartSeriesParams=%s";
         final var msgFormatted = msgRaw.formatted(params);
         log.info(msgFormatted);
+    }
+
+    private boolean invalidRequest(BuildChartDataParams params) {
+        if (params.strategy() == null) {
+            log.error("Received bad request with strategy == null");
+            return false;
+        }
+        if (params.chartSeriesParams() == null) {
+            log.error("Received bad reqeust with chartSeriesParams == null");
+            return false;
+        }
+
+        return true;
     }
 
     private ResponseEntity<ChartDataWithLabels> toResponseEntity(

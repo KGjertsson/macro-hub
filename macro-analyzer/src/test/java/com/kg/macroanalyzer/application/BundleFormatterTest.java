@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,11 +51,11 @@ public class BundleFormatterTest {
                 .macroSeries(macroSeries)
                 .labels(labels)
                 .build();
-
-        // when
         when(labelGenerator.padToFullLabels(macroSeries)).thenReturn(Optional.of(macroSeries));
         when(strategyFactory.build(STRATEGY)).thenReturn(sampleStrategy);
         when(sampleStrategy.sample(macroSeries)).thenReturn(Optional.of(inputBundle));
+
+        // when
         final var result = bundleFormatter.align(macroSeries, STRATEGY);
 
         // then
@@ -73,6 +73,18 @@ public class BundleFormatterTest {
 
         // then
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void shouldThrowException_whenStrategyIsNull() {
+        // given
+        when(strategyFactory.build(null)).thenThrow(IllegalArgumentException.class);
+
+        // when/then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> bundleFormatter.align(emptyList(), null)
+        );
     }
 
     private List<MacroPoint> emptyPoints() {
