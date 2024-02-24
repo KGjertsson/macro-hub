@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.adaptors.http.controllers;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.PolicyRateItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.PolicyRateRepository;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,15 +24,17 @@ public class PolicyRateController {
     }
 
     @GetMapping("/{country}")
-    public List<PolicyRateItem> getPolicyRate(@PathVariable("country") String country) {
+    public List<MacroPoint> getPolicyRate(@PathVariable("country") String country) {
         final var countryFormatted = country.toLowerCase().trim();
         log.info("Received request for /policy-rate/%s".formatted(countryFormatted));
 
         final var e = "Unexpected country value, expected one of ['sweden'], but found: %s".formatted(countryFormatted);
         return switch (countryFormatted) {
-            case "sweden" -> policyRateRepository.getPolicyRateSweden();
-            case "usa" -> throw new IllegalArgumentException("usa not implemented, feature is on it's way");
-            case "eu" -> throw new IllegalArgumentException("eu not implemented, feature is on it's way");
+            case "sweden" -> policyRateRepository.policyRateSwedenReader().get();
+            case "usa" ->
+                    throw new IllegalArgumentException("usa not implemented, feature is on it's way");
+            case "eu" ->
+                    throw new IllegalArgumentException("eu not implemented, feature is on it's way");
             default -> throw new IllegalArgumentException(e);
         };
 

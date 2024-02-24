@@ -1,8 +1,8 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.EuroMarketRateItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.ScrapeRepository;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.utils.ScrapeUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,18 +12,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine<EuroMarketRateItem> {
+public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine<MacroPoint> {
 
     private final String url;
-    private final Supplier<List<EuroMarketRateItem>> euroMarketRateReadSupplier;
-    private final Function<List<EuroMarketRateItem>, Integer> euroMarketRateWriteSupplier;
+    private final Supplier<List<MacroPoint>> euroMarketRateReadSupplier;
+    private final Function<List<MacroPoint>, Integer> euroMarketRateWriteSupplier;
 
     public ScrapeEngineEuroMarketRate(
             ScrapeRepository scrapeRepository,
             ScrapeQueueItem scrapeQueueItem,
             String url,
-            Supplier<List<EuroMarketRateItem>> euroMarketRateReadSupplier,
-            Function<List<EuroMarketRateItem>, Integer> euroMarketRateWriteSupplier
+            Supplier<List<MacroPoint>> euroMarketRateReadSupplier,
+            Function<List<MacroPoint>, Integer> euroMarketRateWriteSupplier
     ) {
         super(scrapeRepository, scrapeQueueItem);
         final var baseUrl = "https://api-test.riksbank.se/swea/v1/Observations";
@@ -34,17 +34,17 @@ public class ScrapeEngineEuroMarketRate extends AbstractScrapeEngine<EuroMarketR
     }
 
     @Override
-    protected List<EuroMarketRateItem> scrapeItems() throws IOException {
+    protected List<MacroPoint> scrapeItems() throws IOException {
         final var existingEuroMarketRateItems = euroMarketRateReadSupplier.get();
         return ScrapeUtils.scrapeNovelItems(
                 url,
                 existingEuroMarketRateItems,
-                EuroMarketRateItem.class
+                MacroPoint.class
         );
     }
 
     @Override
-    protected Integer insertScrapedItems(List<EuroMarketRateItem> scraped) {
+    protected Integer insertScrapedItems(List<MacroPoint> scraped) {
         final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
         final var msgFormatted = msgRaw.formatted(scraped.size(), url);
         log.info(msgFormatted);

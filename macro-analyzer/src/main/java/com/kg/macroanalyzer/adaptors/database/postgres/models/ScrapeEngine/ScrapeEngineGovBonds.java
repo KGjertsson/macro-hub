@@ -1,8 +1,8 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.GovernmentBondItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.ScrapeRepository;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.utils.ScrapeUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,18 +12,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public class ScrapeEngineGovBonds extends AbstractScrapeEngine<GovernmentBondItem> {
+public class ScrapeEngineGovBonds extends AbstractScrapeEngine<MacroPoint> {
 
     private final String url;
-    private final Supplier<List<GovernmentBondItem>> govBondReadSupplier;
-    private final Function<List<GovernmentBondItem>, Integer> govBondWriteSupplier;
+    private final Supplier<List<MacroPoint>> govBondReadSupplier;
+    private final Function<List<MacroPoint>, Integer> govBondWriteSupplier;
 
     public ScrapeEngineGovBonds(
             ScrapeQueueItem scrapeQueueItem,
             ScrapeRepository scrapeRepository,
             String url,
-            Supplier<List<GovernmentBondItem>> govBondReadSupplier,
-            Function<List<GovernmentBondItem>, Integer> govBondWriteSupplier
+            Supplier<List<MacroPoint>> govBondReadSupplier,
+            Function<List<MacroPoint>, Integer> govBondWriteSupplier
     ) {
         super(scrapeRepository, scrapeQueueItem);
         final var baseUrl = "https://api-test.riksbank.se/swea/v1/Observations";
@@ -34,17 +34,17 @@ public class ScrapeEngineGovBonds extends AbstractScrapeEngine<GovernmentBondIte
     }
 
     @Override
-    protected List<GovernmentBondItem> scrapeItems() throws IOException {
+    protected List<MacroPoint> scrapeItems() throws IOException {
         final var existingGovBondItems = govBondReadSupplier.get();
         return ScrapeUtils.scrapeNovelItems(
                 url,
                 existingGovBondItems,
-                GovernmentBondItem.class
+                MacroPoint.class
         );
     }
 
     @Override
-    protected Integer insertScrapedItems(List<GovernmentBondItem> scraped) {
+    protected Integer insertScrapedItems(List<MacroPoint> scraped) {
         final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
         final var msgFormatted = msgRaw.formatted(scraped.size(), url);
         log.info(msgFormatted);

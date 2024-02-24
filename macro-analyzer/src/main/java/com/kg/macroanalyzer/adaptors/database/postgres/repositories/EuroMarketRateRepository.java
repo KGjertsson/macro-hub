@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.EuroMarketRateItem;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,92 +25,152 @@ public class EuroMarketRateRepository {
         this.dslContext = dslContext;
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate3MonthDenmark() {
+    public Supplier<List<MacroPoint>> euroMarketRate3MonthDenmark() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_3_MONTH_DENMARK)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate3MonthDenmark);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_3_MONTH_DENMARK.VALUE))
+                                .date(r.getValue(EURO_MARKET_3_MONTH_DENMARK.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate3MonthEur() {
+    public Supplier<List<MacroPoint>> euroMarketRate3MonthEur() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_3_MONTH_EUR)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate3MonthEur);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_3_MONTH_EUR.VALUE))
+                                .date(r.getValue(EURO_MARKET_3_MONTH_EUR.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate3MonthGB() {
+    public Supplier<List<MacroPoint>> euroMarketRate3MonthGB() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_3_MONTH_GB)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate3MonthGb);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_3_MONTH_GB.VALUE))
+                                .date(r.getValue(EURO_MARKET_3_MONTH_GB.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate3MonthJapan() {
+    public Supplier<List<MacroPoint>> euroMarketRate3MonthJapan() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_3_MONTH_JAPAN)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate3MonthJapan);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_3_MONTH_JAPAN.VALUE))
+                                .date(r.getValue(EURO_MARKET_3_MONTH_JAPAN.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate3MonthNorway() {
+    public Supplier<List<MacroPoint>> euroMarketRate3MonthNorway() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_3_MONTH_NORWAY)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate3MonthNorway);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_3_MONTH_NORWAY.VALUE))
+                                .date(r.getValue(EURO_MARKET_3_MONTH_NORWAY.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate3MonthUsa() {
+    public Supplier<List<MacroPoint>> euroMarketRate3MonthUsa() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_3_MONTH_EUR)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate3MonthUsa);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_3_MONTH_EUR.VALUE))
+                                .date(r.getValue(EURO_MARKET_3_MONTH_EUR.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate6MonthDenmark() {
+    public Supplier<List<MacroPoint>> euroMarketRate6MonthDenmark() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_6_MONTH_DENMARK)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate6MonthDenmark);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_6_MONTH_DENMARK.VALUE))
+                                .date(r.getValue(EURO_MARKET_6_MONTH_DENMARK.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate6MonthEur() {
+    public Supplier<List<MacroPoint>> getEuroMarketRate6MonthEur() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_6_MONTH_EUR)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate6MonthEur);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_6_MONTH_EUR.VALUE))
+                                .date(r.getValue(EURO_MARKET_6_MONTH_EUR.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate6MonthGB() {
+    public Supplier<List<MacroPoint>> getEuroMarketRate6MonthGB() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_6_MONTH_GB)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate6MonthGb);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_6_MONTH_GB.VALUE))
+                                .date(r.getValue(EURO_MARKET_6_MONTH_GB.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate6MonthJapan() {
+    public Supplier<List<MacroPoint>> getEuroMarketRate6MonthJapan() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_6_MONTH_JAPAN)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate6MonthJapan);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_6_MONTH_JAPAN.VALUE))
+                                .date(r.getValue(EURO_MARKET_6_MONTH_JAPAN.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate6MonthNorway() {
+    public Supplier<List<MacroPoint>> getEuroMarketRate6MonthNorway() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_6_MONTH_NORWAY)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate6MonthNorway);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_6_MONTH_NORWAY.VALUE))
+                                .date(r.getValue(EURO_MARKET_6_MONTH_NORWAY.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<EuroMarketRateItem>> getEuroMarketRate6MonthUsa() {
+    public Supplier<List<MacroPoint>> getEuroMarketRate6MonthUsa() {
         return () -> this.dslContext.select()
                 .from(EURO_MARKET_6_MONTH_EUR)
                 .fetch()
-                .map(EuroMarketRateItem::ofEuroMarketRate6MonthUsa);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(EURO_MARKET_6_MONTH_EUR.VALUE))
+                                .date(r.getValue(EURO_MARKET_6_MONTH_EUR.DATE))
+                                .build()
+                );
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate3MonthDenmark() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthDenmark() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -137,7 +197,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate3MonthEur() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthEur() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -163,7 +223,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate3MonthGB() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthGB() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -189,7 +249,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate3MonthJapan() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthJapan() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -215,7 +275,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate3MonthNorway() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthNorway() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -241,7 +301,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate3MonthUsa() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthUsa() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -267,7 +327,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate6MonthDenmark() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthDenmark() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -293,7 +353,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate6MonthEur() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthEur() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -319,7 +379,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate6MonthGB() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthGB() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -345,7 +405,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate6MonthJapan() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthJapan() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -371,7 +431,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate6MonthNorway() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthNorway() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -397,7 +457,7 @@ public class EuroMarketRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<EuroMarketRateItem>, Integer> insertEuroMarketRate6MonthUsa() {
+    public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthUsa() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(

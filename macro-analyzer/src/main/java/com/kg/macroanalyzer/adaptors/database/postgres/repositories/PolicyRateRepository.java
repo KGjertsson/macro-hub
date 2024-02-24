@@ -1,7 +1,8 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.PolicyRateItem;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static com.kg.macroanalyzer.jooq.generated.Tables.POLICY_RATE_SWEDEN;
 
@@ -22,15 +24,15 @@ public class PolicyRateRepository {
         this.dslContext = dslContext;
     }
 
-    public List<PolicyRateItem> getPolicyRateSweden() {
-        return dslContext.select()
+    public Supplier<List<MacroPoint>> policyRateSwedenReader() {
+        return () -> dslContext.select()
                 .from(POLICY_RATE_SWEDEN)
                 .fetch()
-                .map(PolicyRateItem::ofSweden);
+                .map(this::toMacroPoint);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Integer insertPolicyRateItemsSweden(List<PolicyRateItem> policyRateItemList) {
+    public Integer insertPolicyRateItemsSweden(List<MacroPoint> policyRateItemList) {
         if (!policyRateItemList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(
@@ -52,6 +54,13 @@ public class PolicyRateRepository {
         }
 
         return 0;
+    }
+
+    private MacroPoint toMacroPoint(Record r) {
+        return MacroPoint.builder()
+                .value(r.getValue(POLICY_RATE_SWEDEN.POLICY_RATE))
+                .date(r.getValue(POLICY_RATE_SWEDEN.POLICY_RATE_DATE))
+                .build();
     }
 
 }

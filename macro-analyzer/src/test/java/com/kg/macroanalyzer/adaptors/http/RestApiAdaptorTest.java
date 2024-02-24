@@ -56,7 +56,7 @@ public class RestApiAdaptorTest {
                 .build();
 
         when(drivingPort.buildChartData(any())).thenReturn(Optional.of(chartDataWithLabels));
-        final var response = restApiAdaptor.buildChartData(any());
+        final var response = restApiAdaptor.buildChartData(BuildChartDataParams.builder().build());
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());

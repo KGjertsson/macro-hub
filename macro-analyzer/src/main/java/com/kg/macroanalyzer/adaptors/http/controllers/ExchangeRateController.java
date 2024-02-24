@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.adaptors.http.controllers;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.ExchangeRateUsdSek;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.ExchangeRateRepository;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,10 +23,10 @@ public class ExchangeRateController {
     }
 
     @GetMapping("/usd-sek")
-    public List<ExchangeRateUsdSek> getExchangeRateUsdSek() {
+    public List<MacroPoint> getExchangeRateUsdSek() {
         log.info("Received request for /exchange-rate/usd-sek");
 
-        return exchangeRateRepository.getExchangeRateUsdSek();
+        return exchangeRateRepository.getExchangeRateUsdSek().get();
     }
 
 }

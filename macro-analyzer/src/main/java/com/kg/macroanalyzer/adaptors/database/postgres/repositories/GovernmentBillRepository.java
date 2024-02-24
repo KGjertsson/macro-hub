@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.GovernmentBillItem;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,38 +24,58 @@ public class GovernmentBillRepository {
         this.dslContext = dslContext;
     }
 
-    public Supplier<List<GovernmentBillItem>> swedishGovBills1MonthReader() {
+    public Supplier<List<MacroPoint>> swedishGovBills1MonthReader() {
         return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BILL_1_MONTH)
                 .fetch()
-                .map(GovernmentBillItem::ofSwedish1Month);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(SWEDISH_GOVERNMENT_BILL_1_MONTH.VALUE))
+                                .date(r.getValue(SWEDISH_GOVERNMENT_BILL_1_MONTH.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBillItem>> swedishGovBills3MonthReader() {
+    public Supplier<List<MacroPoint>> swedishGovBills3MonthReader() {
         return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BILL_3_MONTH)
                 .fetch()
-                .map(GovernmentBillItem::ofSwedish3Month);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(SWEDISH_GOVERNMENT_BILL_3_MONTH.VALUE))
+                                .date(r.getValue(SWEDISH_GOVERNMENT_BILL_3_MONTH.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBillItem>> swedishGovBills6MonthReader() {
+    public Supplier<List<MacroPoint>> swedishGovBills6MonthReader() {
         return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BILL_6_MONTH)
                 .fetch()
-                .map(GovernmentBillItem::ofSwedish6Month);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(SWEDISH_GOVERNMENT_BILL_6_MONTH.VALUE))
+                                .date(r.getValue(SWEDISH_GOVERNMENT_BILL_6_MONTH.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBillItem>> swedishGovBills12MonthReader() {
+    public Supplier<List<MacroPoint>> swedishGovBills12MonthReader() {
         return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BILL_12_MONTH)
                 .fetch()
-                .map(GovernmentBillItem::ofSwedish12Month);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(SWEDISH_GOVERNMENT_BILL_12_MONTH.VALUE))
+                                .date(r.getValue(SWEDISH_GOVERNMENT_BILL_12_MONTH.DATE))
+                                .build()
+                );
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBillItem>, Integer> swedishGovBill1MonthWriter() {
-        return governmentBillItemList -> {
-            if (!governmentBillItemList.isEmpty()) {
+    public Function<List<MacroPoint>, Integer> swedishGovBill1MonthWriter() {
+        return MacroPointList -> {
+            if (!MacroPointList.isEmpty()) {
                 final var insertQuery = dslContext.batch(
                         dslContext.insertInto(
                                 SWEDISH_GOVERNMENT_BILL_1_MONTH,
@@ -64,10 +84,10 @@ public class GovernmentBillRepository {
                                 SWEDISH_GOVERNMENT_BILL_1_MONTH.DATE
                         ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
                 );
-                governmentBillItemList.forEach(governmentBillItem -> insertQuery.bind(
+                MacroPointList.forEach(MacroPoint -> insertQuery.bind(
                         UUID.randomUUID(),
-                        governmentBillItem.value(),
-                        governmentBillItem.date()
+                        MacroPoint.value(),
+                        MacroPoint.date()
                 ));
                 final var result = insertQuery.execute();
 
@@ -79,9 +99,9 @@ public class GovernmentBillRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBillItem>, Integer> swedishGovBill3MonthWriter() {
-        return governmentBillItemList -> {
-            if (!governmentBillItemList.isEmpty()) {
+    public Function<List<MacroPoint>, Integer> swedishGovBill3MonthWriter() {
+        return MacroPointList -> {
+            if (!MacroPointList.isEmpty()) {
                 final var insertQuery = dslContext.batch(
                         dslContext.insertInto(
                                 SWEDISH_GOVERNMENT_BILL_3_MONTH,
@@ -90,10 +110,10 @@ public class GovernmentBillRepository {
                                 SWEDISH_GOVERNMENT_BILL_3_MONTH.DATE
                         ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
                 );
-                governmentBillItemList.forEach(governmentBillItem -> insertQuery.bind(
+                MacroPointList.forEach(MacroPoint -> insertQuery.bind(
                         UUID.randomUUID(),
-                        governmentBillItem.value(),
-                        governmentBillItem.date()
+                        MacroPoint.value(),
+                        MacroPoint.date()
                 ));
 
                 final var result = insertQuery.execute();
@@ -106,9 +126,9 @@ public class GovernmentBillRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBillItem>, Integer> swedishGovBill6MonthWriter() {
-        return governmentBillItemList -> {
-            if (!governmentBillItemList.isEmpty()) {
+    public Function<List<MacroPoint>, Integer> swedishGovBill6MonthWriter() {
+        return MacroPointList -> {
+            if (!MacroPointList.isEmpty()) {
                 final var insertQuery = dslContext.batch(
                         dslContext.insertInto(
                                 SWEDISH_GOVERNMENT_BILL_6_MONTH,
@@ -117,10 +137,10 @@ public class GovernmentBillRepository {
                                 SWEDISH_GOVERNMENT_BILL_6_MONTH.DATE
                         ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
                 );
-                governmentBillItemList.forEach(governmentBillItem -> insertQuery.bind(
+                MacroPointList.forEach(MacroPoint -> insertQuery.bind(
                         UUID.randomUUID(),
-                        governmentBillItem.value(),
-                        governmentBillItem.date()
+                        MacroPoint.value(),
+                        MacroPoint.date()
                 ));
                 final var result = insertQuery.execute();
 
@@ -132,9 +152,9 @@ public class GovernmentBillRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBillItem>, Integer> swedishGovBill12MonthWriter() {
-        return governmentBillItemList -> {
-            if (!governmentBillItemList.isEmpty()) {
+    public Function<List<MacroPoint>, Integer> swedishGovBill12MonthWriter() {
+        return MacroPointList -> {
+            if (!MacroPointList.isEmpty()) {
                 final var insertQuery = dslContext.batch(
                         dslContext.insertInto(
                                 SWEDISH_GOVERNMENT_BILL_12_MONTH,
@@ -143,10 +163,10 @@ public class GovernmentBillRepository {
                                 SWEDISH_GOVERNMENT_BILL_12_MONTH.DATE
                         ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
                 );
-                governmentBillItemList.forEach(governmentBillItem -> insertQuery.bind(
+                MacroPointList.forEach(MacroPoint -> insertQuery.bind(
                         UUID.randomUUID(),
-                        governmentBillItem.value(),
-                        governmentBillItem.date()
+                        MacroPoint.value(),
+                        MacroPoint.date()
                 ));
 
                 final var result = insertQuery.execute();

@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.GovernmentBondItem;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -24,38 +24,58 @@ public class GovernmentBondsRepository {
         this.dslContext = dslContext;
     }
 
-    public Supplier<List<GovernmentBondItem>> swedishGovBond2YearReader() {
+    public Supplier<List<MacroPoint>> swedishGovBond2YearReader() {
         return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_2_YEAR)
                 .fetch()
-                .map(GovernmentBondItem::ofSwedish2Month);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(SWEDISH_GOVERNMENT_BONDS_2_YEAR.VALUE))
+                                .date(r.getValue(SWEDISH_GOVERNMENT_BONDS_2_YEAR.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> swedishGovBond5YearReader() {
+    public Supplier<List<MacroPoint>> swedishGovBond5YearReader() {
         return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_5_YEAR)
                 .fetch()
-                .map(GovernmentBondItem::ofSwedish5Month);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(SWEDISH_GOVERNMENT_BONDS_5_YEAR.VALUE))
+                                .date(r.getValue(SWEDISH_GOVERNMENT_BONDS_5_YEAR.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> swedishGovBond7YearReader() {
+    public Supplier<List<MacroPoint>> swedishGovBond7YearReader() {
         return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_7_YEAR)
                 .fetch()
-                .map(GovernmentBondItem::ofSwedish7Month);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(SWEDISH_GOVERNMENT_BONDS_7_YEAR.VALUE))
+                                .date(r.getValue(SWEDISH_GOVERNMENT_BONDS_7_YEAR.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> swedishGovBond10YearReader() {
+    public Supplier<List<MacroPoint>> swedishGovBond10YearReader() {
         return () -> dslContext.select()
                 .from(SWEDISH_GOVERNMENT_BONDS_10_YEAR)
                 .fetch()
-                .map(GovernmentBondItem::ofSwedish10Month);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(SWEDISH_GOVERNMENT_BONDS_10_YEAR.VALUE))
+                                .date(r.getValue(SWEDISH_GOVERNMENT_BONDS_10_YEAR.DATE))
+                                .build()
+                );
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> swedishGovBond2YearWriter() {
-        return governmentBondItemList -> {
-            if (!governmentBondItemList.isEmpty()) {
+    public Function<List<MacroPoint>, Integer> swedishGovBond2YearWriter() {
+        return MacroPointList -> {
+            if (!MacroPointList.isEmpty()) {
                 final var insertQuery = dslContext.batch(
                         dslContext.insertInto(
                                 SWEDISH_GOVERNMENT_BONDS_2_YEAR,
@@ -64,7 +84,7 @@ public class GovernmentBondsRepository {
                                 SWEDISH_GOVERNMENT_BONDS_2_YEAR.DATE
                         ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
                 );
-                governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
+                MacroPointList.forEach(governmentBillItem -> insertQuery.bind(
                         UUID.randomUUID(),
                         governmentBillItem.value(),
                         governmentBillItem.date()
@@ -79,9 +99,9 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> swedishGovBond5YearWriter() {
-        return governmentBondItemList -> {
-            if (!governmentBondItemList.isEmpty()) {
+    public Function<List<MacroPoint>, Integer> swedishGovBond5YearWriter() {
+        return MacroPointList -> {
+            if (!MacroPointList.isEmpty()) {
                 final var insertQuery = dslContext.batch(
                         dslContext.insertInto(
                                 SWEDISH_GOVERNMENT_BONDS_5_YEAR,
@@ -90,7 +110,7 @@ public class GovernmentBondsRepository {
                                 SWEDISH_GOVERNMENT_BONDS_5_YEAR.DATE
                         ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
                 );
-                governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
+                MacroPointList.forEach(governmentBillItem -> insertQuery.bind(
                         UUID.randomUUID(),
                         governmentBillItem.value(),
                         governmentBillItem.date()
@@ -105,9 +125,9 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> swedishGovBond7YearWriter() {
-        return governmentBondItemList -> {
-            if (!governmentBondItemList.isEmpty()) {
+    public Function<List<MacroPoint>, Integer> swedishGovBond7YearWriter() {
+        return MacroPointList -> {
+            if (!MacroPointList.isEmpty()) {
                 final var insertQuery = dslContext.batch(
                         dslContext.insertInto(
                                 SWEDISH_GOVERNMENT_BONDS_7_YEAR,
@@ -116,7 +136,7 @@ public class GovernmentBondsRepository {
                                 SWEDISH_GOVERNMENT_BONDS_7_YEAR.DATE
                         ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
                 );
-                governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
+                MacroPointList.forEach(governmentBillItem -> insertQuery.bind(
                         UUID.randomUUID(),
                         governmentBillItem.value(),
                         governmentBillItem.date()
@@ -131,9 +151,9 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> swedishGovBond10YearWriter() {
-        return governmentBondItemList -> {
-            if (!governmentBondItemList.isEmpty()) {
+    public Function<List<MacroPoint>, Integer> swedishGovBond10YearWriter() {
+        return MacroPointList -> {
+            if (!MacroPointList.isEmpty()) {
                 final var insertQuery = dslContext.batch(
                         dslContext.insertInto(
                                 SWEDISH_GOVERNMENT_BONDS_10_YEAR,
@@ -142,7 +162,7 @@ public class GovernmentBondsRepository {
                                 SWEDISH_GOVERNMENT_BONDS_10_YEAR.DATE
                         ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
                 );
-                governmentBondItemList.forEach(governmentBillItem -> insertQuery.bind(
+                MacroPointList.forEach(governmentBillItem -> insertQuery.bind(
                         UUID.randomUUID(),
                         governmentBillItem.value(),
                         governmentBillItem.date()
@@ -156,127 +176,212 @@ public class GovernmentBondsRepository {
         };
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond5YearReaderEur() {
+    public Supplier<List<MacroPoint>> intGovBond5YearReaderEur() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_5_YEAR_EUR)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond5YearEur);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_5_YEAR_EUR.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_5_YEAR_EUR.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond5YearReaderGB() {
+    public Supplier<List<MacroPoint>> intGovBond5YearReaderGB() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_5_YEAR_GB)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond5YearGb);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_5_YEAR_GB.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_5_YEAR_GB.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond5YearReaderJapan() {
+    public Supplier<List<MacroPoint>> intGovBond5YearReaderJapan() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_5_YEAR_JAPAN)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond5YearJapan);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_5_YEAR_JAPAN.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_5_YEAR_JAPAN.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond5YearReaderUSA() {
+    public Supplier<List<MacroPoint>> intGovBond5YearReaderUSA() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_5_YEAR_USA)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond5YearUsa);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_5_YEAR_USA.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_5_YEAR_USA.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond5YearReaderFrance() {
+    public Supplier<List<MacroPoint>> intGovBond5YearReaderFrance() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_5_YEAR_FRANCE)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond5YearFrance);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_5_YEAR_FRANCE.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_5_YEAR_FRANCE.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond5YearReaderGermany() {
+    public Supplier<List<MacroPoint>> intGovBond5YearReaderGermany() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_5_YEAR_GERMANY)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond5YearGermany);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_5_YEAR_GERMANY.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_5_YEAR_GERMANY.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond5YearReaderHolland() {
+    public Supplier<List<MacroPoint>> intGovBond5YearReaderHolland() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_5_YEAR_NETHERLANDS)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond5YearNetherlands);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_5_YEAR_NETHERLANDS.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_5_YEAR_NETHERLANDS.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderDenmark() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderDenmark() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_DENMARK)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearDenmark);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_DENMARK.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_DENMARK.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderEur() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderEur() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_EUR)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearEur);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_EUR.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_EUR.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderFinland() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderFinland() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_FINLAND)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearFinland);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_FINLAND.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_FINLAND.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderFrance() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderFrance() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_FRANCE)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearFrance);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_FRANCE.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_FRANCE.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderGB() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderGB() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_GB)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearGb);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_GB.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_GB.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderGermany() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderGermany() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_GERMANY)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearGermany);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_GERMANY.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_GERMANY.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderJapan() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderJapan() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_JAPAN)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearJapan);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_JAPAN.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_JAPAN.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderHolland() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderHolland() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_NETHERLANDS)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearNetherlands);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_NETHERLANDS.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_NETHERLANDS.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderNorway() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderNorway() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_NORWAY)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearNorway);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_NORWAY.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_NORWAY.DATE))
+                                .build()
+                );
     }
 
-    public Supplier<List<GovernmentBondItem>> intGovBond10YearReaderUSA() {
+    public Supplier<List<MacroPoint>> intGovBond10YearReaderUSA() {
         return () -> this.dslContext.select()
                 .from(INT_GOV_BOND_10_YEAR_USA)
                 .fetch()
-                .map(GovernmentBondItem::ofIntGovBond10YearUsa);
+                .map(r ->
+                        MacroPoint.builder()
+                                .value(r.getValue(INT_GOV_BOND_10_YEAR_USA.VALUE))
+                                .date(r.getValue(INT_GOV_BOND_10_YEAR_USA.DATE))
+                                .build()
+                );
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond5YearWriterEur() {
+    public Function<List<MacroPoint>, Integer> intGovBond5YearWriterEur() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -302,7 +407,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond5YearWriterGB() {
+    public Function<List<MacroPoint>, Integer> intGovBond5YearWriterGB() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -328,7 +433,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond5YearWriterJapan() {
+    public Function<List<MacroPoint>, Integer> intGovBond5YearWriterJapan() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -354,7 +459,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond5YearWriterUSA() {
+    public Function<List<MacroPoint>, Integer> intGovBond5YearWriterUSA() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -380,7 +485,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond5YearWriterFrance() {
+    public Function<List<MacroPoint>, Integer> intGovBond5YearWriterFrance() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -406,7 +511,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond5YearWriterHolland() {
+    public Function<List<MacroPoint>, Integer> intGovBond5YearWriterHolland() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -432,7 +537,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond5YearWriterGermany() {
+    public Function<List<MacroPoint>, Integer> intGovBond5YearWriterGermany() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -458,7 +563,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterUSA() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterUSA() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -484,7 +589,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterNorway() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterNorway() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -510,7 +615,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterHolland() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterHolland() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -536,7 +641,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterJapan() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterJapan() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -562,7 +667,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterGermany() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterGermany() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -588,7 +693,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterGB() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterGB() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -614,7 +719,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterFrance() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterFrance() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -640,7 +745,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterFinland() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterFinland() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -666,7 +771,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterEur() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterEur() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(
@@ -692,7 +797,7 @@ public class GovernmentBondsRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Function<List<GovernmentBondItem>, Integer> intGovBond10YearWriterDenmark() {
+    public Function<List<MacroPoint>, Integer> intGovBond10YearWriterDenmark() {
         return scraped -> {
             if (!scraped.isEmpty()) {
                 final var insertQuery = dslContext.batch(

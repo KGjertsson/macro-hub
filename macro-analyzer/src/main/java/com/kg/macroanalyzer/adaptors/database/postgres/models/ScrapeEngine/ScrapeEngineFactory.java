@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
+import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -243,49 +243,49 @@ public class ScrapeEngineFactory {
                     scrapeRepository,
                     scrapeQueueItem,
                     "/EUDP3MDKK/1981-11-12",
-                    euroMarketRateRepository.getEuroMarketRate3MonthDenmark(),
+                    euroMarketRateRepository.euroMarketRate3MonthDenmark(),
                     euroMarketRateRepository.insertEuroMarketRate3MonthDenmark()
             );
             case "euro-market-rate?period=3month&country=eur" -> new ScrapeEngineEuroMarketRate(
                     scrapeRepository,
                     scrapeQueueItem,
                     "/EUDP3MEUR/1999-01-04",
-                    euroMarketRateRepository.getEuroMarketRate3MonthEur(),
+                    euroMarketRateRepository.euroMarketRate3MonthEur(),
                     euroMarketRateRepository.insertEuroMarketRate3MonthEur()
             );
             case "euro-market-rate?period=3month&country=gb" -> new ScrapeEngineEuroMarketRate(
                     scrapeRepository,
                     scrapeQueueItem,
                     "/EUDP3MGBP/1979-12-19",
-                    euroMarketRateRepository.getEuroMarketRate3MonthGB(),
+                    euroMarketRateRepository.euroMarketRate3MonthGB(),
                     euroMarketRateRepository.insertEuroMarketRate3MonthGB()
             );
             case "euro-market-rate?period=3month&country=japan" -> new ScrapeEngineEuroMarketRate(
                     scrapeRepository,
                     scrapeQueueItem,
                     "/EUDP3MJPY/1979-11-29",
-                    euroMarketRateRepository.getEuroMarketRate3MonthJapan(),
+                    euroMarketRateRepository.euroMarketRate3MonthJapan(),
                     euroMarketRateRepository.insertEuroMarketRate3MonthJapan()
             );
             case "euro-market-rate?period=3month&country=norway" -> new ScrapeEngineEuroMarketRate(
                     scrapeRepository,
                     scrapeQueueItem,
                     "/EUDP3MNOK/1981-11-12",
-                    euroMarketRateRepository.getEuroMarketRate3MonthNorway(),
+                    euroMarketRateRepository.euroMarketRate3MonthNorway(),
                     euroMarketRateRepository.insertEuroMarketRate3MonthNorway()
             );
             case "euro-market-rate?period=3month&country=usa" -> new ScrapeEngineEuroMarketRate(
                     scrapeRepository,
                     scrapeQueueItem,
                     "/EUDP3MUSD/1979-11-28",
-                    euroMarketRateRepository.getEuroMarketRate3MonthUsa(),
+                    euroMarketRateRepository.euroMarketRate3MonthUsa(),
                     euroMarketRateRepository.insertEuroMarketRate3MonthUsa()
             );
             case "euro-market-rate?period=6month&country=denmark" -> new ScrapeEngineEuroMarketRate(
                     scrapeRepository,
                     scrapeQueueItem,
                     "/EUDP6MDKK/1981-11-12",
-                    euroMarketRateRepository.getEuroMarketRate6MonthDenmark(),
+                    euroMarketRateRepository.euroMarketRate6MonthDenmark(),
                     euroMarketRateRepository.insertEuroMarketRate6MonthDenmark()
             );
             case "euro-market-rate?period=6month&country=eur" -> new ScrapeEngineEuroMarketRate(

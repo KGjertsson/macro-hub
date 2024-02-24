@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.adaptors.http.controllers;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.GovernmentBillItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.GovernmentBillRepository;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +28,7 @@ public class GovernmentBillController {
     }
 
     @GetMapping("/sweden")
-    public List<GovernmentBillItem> getSwedishGovernmentBillItems(@RequestParam("period") String period) {
+    public List<MacroPoint> getSwedishGovernmentBillItems(@RequestParam("period") String period) {
         log.info("GET request for /government-bills/sweden with period = %s".formatted(period));
 
         return Stream.ofNullable(period)
@@ -38,7 +38,7 @@ public class GovernmentBillController {
                 .collect(Collectors.toList());
     }
 
-    private Supplier<List<GovernmentBillItem>> getGovBillReader(String period) {
+    private Supplier<List<MacroPoint>> getGovBillReader(String period) {
         final var errorRaw = "Expected param 'period' to be one of [1, 3, 6, 12] but found: %s";
         final var errorFormatted = errorRaw.formatted(period);
 

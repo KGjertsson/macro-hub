@@ -1,9 +1,9 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.PolicyRateItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.PolicyRateRepository;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.ScrapeRepository;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.utils.ScrapeUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Slf4j
-public class ScrapeEnginePolicyRate extends AbstractScrapeEngine<PolicyRateItem> {
+public class ScrapeEnginePolicyRate extends AbstractScrapeEngine<MacroPoint> {
 
     private final PolicyRateRepository policyRateRepository;
 
@@ -25,19 +25,19 @@ public class ScrapeEnginePolicyRate extends AbstractScrapeEngine<PolicyRateItem>
     }
 
     @Override
-    protected List<PolicyRateItem> scrapeItems() throws IOException {
+    protected List<MacroPoint> scrapeItems() throws IOException {
         String url = "https://api-test.riksbank.se/swea/v1/Observations/SECBREPOEFF/1994-06-01";
-        final var items = policyRateRepository.getPolicyRateSweden();
+        final var items = policyRateRepository.policyRateSwedenReader().get();
 
         return ScrapeUtils.scrapeNovelItems(
                 url,
                 items,
-                PolicyRateItem.class
+                MacroPoint.class
         );
     }
 
     @Override
-    protected Integer insertScrapedItems(List<PolicyRateItem> novelScrapedItems) {
+    protected Integer insertScrapedItems(List<MacroPoint> novelScrapedItems) {
         final var msgRaw = "Found %s new items from scraping, persisting do db...";
         final var msgFormatted = msgRaw.formatted(novelScrapedItems.size());
         log.info(msgFormatted);

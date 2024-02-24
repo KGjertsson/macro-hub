@@ -1,8 +1,8 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.GovernmentBillItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.ScrapeRepository;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.utils.ScrapeUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,18 +12,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public class ScrapeEngineGovBills extends AbstractScrapeEngine<GovernmentBillItem> {
+public class ScrapeEngineGovBills extends AbstractScrapeEngine<MacroPoint> {
 
     private final String url;
-    private final Supplier<List<GovernmentBillItem>> govBillReadSupplier;
-    private final Function<List<GovernmentBillItem>, Integer> govBillWriteSupplier;
+    private final Supplier<List<MacroPoint>> govBillReadSupplier;
+    private final Function<List<MacroPoint>, Integer> govBillWriteSupplier;
 
     public ScrapeEngineGovBills(
             ScrapeQueueItem scrapeQueueItem,
             ScrapeRepository scrapeRepository,
             String url,
-            Supplier<List<GovernmentBillItem>> govBillReadSupplier,
-            Function<List<GovernmentBillItem>, Integer> govBillWriteSupplier
+            Supplier<List<MacroPoint>> govBillReadSupplier,
+            Function<List<MacroPoint>, Integer> govBillWriteSupplier
 
     ) {
         super(scrapeRepository, scrapeQueueItem);
@@ -35,17 +35,17 @@ public class ScrapeEngineGovBills extends AbstractScrapeEngine<GovernmentBillIte
     }
 
     @Override
-    protected List<GovernmentBillItem> scrapeItems() throws IOException {
+    protected List<MacroPoint> scrapeItems() throws IOException {
         final var existingGovBillItems = govBillReadSupplier.get();
         return ScrapeUtils.scrapeNovelItems(
                 url,
                 existingGovBillItems,
-                GovernmentBillItem.class
+                MacroPoint.class
         );
     }
 
     @Override
-    protected Integer insertScrapedItems(List<GovernmentBillItem> scraped) {
+    protected Integer insertScrapedItems(List<MacroPoint> scraped) {
         final var msgRaw = "Found %s new items from scraping %s, persisting do db...";
         final var msgFormatted = msgRaw.formatted(scraped.size(), url);
         log.info(msgFormatted);

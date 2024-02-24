@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.adaptors.http.controllers;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.GovernmentBondItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.GovernmentBondsRepository;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +28,7 @@ public class GovernmentBondController {
     }
 
     @GetMapping("/sweden")
-    public List<GovernmentBondItem> getSwedishGovernmentBondItems(@RequestParam("period") String period) {
+    public List<MacroPoint> getSwedishGovernmentBondItems(@RequestParam("period") String period) {
         log.info("Received request for /government-bonds/sweden with period = %s".formatted(period));
 
         return Stream.ofNullable(period)
@@ -38,7 +38,7 @@ public class GovernmentBondController {
                 .collect(Collectors.toList());
     }
 
-    private Supplier<List<GovernmentBondItem>> getGovBondReader(String period) {
+    private Supplier<List<MacroPoint>> getGovBondReader(String period) {
         final var errorRaw = "Expected param 'period' to be one of [2, 5, 7, 10] but found: %s";
         final var errorFormatted = errorRaw.formatted(period);
 
@@ -52,7 +52,7 @@ public class GovernmentBondController {
     }
 
     @GetMapping("/international")
-    public List<GovernmentBondItem> getInternationalGovernmentBondItems(
+    public List<MacroPoint> getInternationalGovernmentBondItems(
             @RequestParam("period") String period,
             @RequestParam("country") String country
     ) {
@@ -68,7 +68,7 @@ public class GovernmentBondController {
                 .collect(Collectors.toList());
     }
 
-    private Supplier<List<GovernmentBondItem>> getIntGovBondReader(String periodCountry) {
+    private Supplier<List<MacroPoint>> getIntGovBondReader(String periodCountry) {
         final var e = "Found unexpected combination of query parameters country and period.";
 
         return switch (periodCountry) {

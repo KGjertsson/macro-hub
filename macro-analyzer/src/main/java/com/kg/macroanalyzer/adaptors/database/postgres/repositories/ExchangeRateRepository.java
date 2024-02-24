@@ -1,7 +1,8 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.ExchangeRateUsdSek;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek.EXCHANGE_USD_SEK;
 
@@ -22,15 +24,15 @@ public class ExchangeRateRepository {
         this.dslContext = dslContext;
     }
 
-    public List<ExchangeRateUsdSek> getExchangeRateUsdSek() {
-        return dslContext.select()
+    public Supplier<List<MacroPoint>> getExchangeRateUsdSek() {
+        return () -> dslContext.select()
                 .from(EXCHANGE_USD_SEK)
                 .fetch()
-                .map(ExchangeRateUsdSek::of);
+                .map(this::toMacroPoint);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Integer insertExchangeRateUsdSek(List<ExchangeRateUsdSek> exchangeRateUsdSekList) {
+    public Integer insertExchangeRateUsdSek(List<MacroPoint> exchangeRateUsdSekList) {
         if (!exchangeRateUsdSekList.isEmpty()) {
             final var insertQuery = dslContext.batch(
                     dslContext.insertInto(
@@ -52,6 +54,13 @@ public class ExchangeRateRepository {
         }
 
         return 0;
+    }
+
+    private MacroPoint toMacroPoint(Record r) {
+        return MacroPoint.builder()
+                .value(r.getValue(EXCHANGE_USD_SEK.USD_SEK))
+                .date(r.getValue(EXCHANGE_USD_SEK.USD_SEK_DATE))
+                .build();
     }
 
 }
