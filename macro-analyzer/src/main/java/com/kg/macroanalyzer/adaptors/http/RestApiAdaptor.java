@@ -47,14 +47,14 @@ public class RestApiAdaptor {
     private boolean invalidRequest(BuildChartDataParams params) {
         if (params.strategy() == null) {
             log.error("Received bad request with strategy == null");
-            return false;
+            return true;
         }
         if (params.chartSeriesParams() == null) {
-            log.error("Received bad reqeust with chartSeriesParams == null");
-            return false;
+            log.error("Received bad request with chartSeriesParams == null");
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private ResponseEntity<ChartDataWithLabels> toResponseEntity(

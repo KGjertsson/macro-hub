@@ -47,7 +47,7 @@ const DynamicChartComponent = ({ sampled }: Props) => {
       }}
       data={{
         labels: sampled.labels,
-        datasets: sampled.datasets.map((dataset, index) => {
+        datasets: sampled.chartData.map((dataset, index) => {
           return {
             data: dataset.data,
             label: dataset.lineConfig.label,

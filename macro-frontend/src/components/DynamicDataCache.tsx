@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer } from 'react';
-import { DATASET_NAMES, SAMPLE_SIZE } from '@/models/Constants';
+import { DATASET_NAMES, SAMPLE_STRATEGY } from '@/models/Constants';
 import DynamicChartComponent from '@/components/DynamicChartComponent';
 import {
   DatasetCache,
@@ -13,7 +13,7 @@ import { Dataset } from '@/models/Dataset';
 
 interface Props {
   selectedItemNames: DATASET_NAMES[];
-  selectedSample: SAMPLE_SIZE;
+  selectedSample: SAMPLE_STRATEGY;
 }
 
 enum CacheActionTypes {

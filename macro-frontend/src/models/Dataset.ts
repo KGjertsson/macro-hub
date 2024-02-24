@@ -20,7 +20,7 @@ const policyRateSweden: Dataset = {
     pointRadius: 2,
   },
   selected: false,
-  name: DATASET_NAMES.SwedenPolicyRate,
+  name: DATASET_NAMES.PolicyRateSweden,
   url: '/policy-rate/sweden',
 };
 

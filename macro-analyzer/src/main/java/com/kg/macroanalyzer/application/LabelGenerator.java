@@ -6,6 +6,7 @@ import lombok.Builder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -31,7 +32,7 @@ public class LabelGenerator {
             List<MacroSeries> macroSeriesList,
             List<LocalDate> paddedLabels
     ) {
-        final var newSeries = macroSeriesList.stream()
+        return macroSeriesList.stream()
                 .map(macroSeries -> {
                     final var macroPoints = macroSeries.macroPoints();
                     final var startDate = LocalDate.from(macroPoints.getFirst().date());
@@ -46,8 +47,6 @@ public class LabelGenerator {
                             .macroPoints(newPoints)
                             .build();
                 }).toList();
-
-        return newSeries;
     }
 
     private MacroPoint pointFromLabel(
@@ -73,7 +72,7 @@ public class LabelGenerator {
         final var end = labelEdges.endDate;
 
         return Stream.iterate(start, date -> date.plusDays(1))
-                .limit(start.until(end).getDays() + 1)
+                .limit(ChronoUnit.DAYS.between(start, end) + 1)
                 .collect(toList());
     }
 

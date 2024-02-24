@@ -56,6 +56,9 @@ public class PostgresAdaptor implements DatabasePort {
     }
 
     private Supplier<List<MacroPoint>> macroPointSupplier(ChartSeriesParam params) {
+        final var name = params.name();
+        final var errorMsg = String.format("Found unexpected MacroSeries name=%s".formatted(name));
+
         return switch (params.name()) {
             case "PolicyRateSweden" -> policyRateRepo.policyRateSwedenReader();
             case "UsdSekExchangeRate" -> exchangeRateRepo.getExchangeRateUsdSek();
@@ -96,7 +99,7 @@ public class PostgresAdaptor implements DatabasePort {
             case "IntGovBondsNetherlands10Year" -> govBondsRepo.intGovBond10YearReaderHolland();
             case "IntGovBondsNorway10Year" -> govBondsRepo.intGovBond10YearReaderNorway();
             case "IntGovBondsUsa10Year" -> govBondsRepo.intGovBond10YearReaderUSA();
-            default -> throw new IllegalArgumentException("inga blåbär här inte");
+            default -> throw new IllegalArgumentException(errorMsg);
         };
     }
 

@@ -1,27 +1,27 @@
 export const rootUrl: string = 'http://localhost:8080';
 
-export enum SAMPLE_SIZE {
+export enum SAMPLE_STRATEGY {
   Day,
   Month,
   Year,
 }
 
 export const allSamples = [
-  SAMPLE_SIZE[SAMPLE_SIZE.Day],
-  SAMPLE_SIZE[SAMPLE_SIZE.Month],
-  SAMPLE_SIZE[SAMPLE_SIZE.Year],
+  SAMPLE_STRATEGY[SAMPLE_STRATEGY.Day],
+  SAMPLE_STRATEGY[SAMPLE_STRATEGY.Month],
+  SAMPLE_STRATEGY[SAMPLE_STRATEGY.Year],
 ];
 
 export const NO_FILTER = 'no_filter';
 
 export const sampleToFilter = {
-  [SAMPLE_SIZE.Day]: NO_FILTER,
-  [SAMPLE_SIZE.Month]: new RegExp(/^(\d{4}-\d{1,2})/),
-  [SAMPLE_SIZE.Year]: new RegExp(/^(\d{4})/),
+  [SAMPLE_STRATEGY.Day]: NO_FILTER,
+  [SAMPLE_STRATEGY.Month]: new RegExp(/^(\d{4}-\d{1,2})/),
+  [SAMPLE_STRATEGY.Year]: new RegExp(/^(\d{4})/),
 };
 
 export enum DATASET_NAMES {
-  SwedenPolicyRate,
+  PolicyRateSweden,
   UsdSekExchangeRate,
   GovernmentBondSweden2Year,
   GovernmentBondSweden5Year,
@@ -63,7 +63,7 @@ export enum DATASET_NAMES {
 }
 
 export const allDatasetNames = [
-  DATASET_NAMES[DATASET_NAMES.SwedenPolicyRate],
+  DATASET_NAMES[DATASET_NAMES.PolicyRateSweden],
   DATASET_NAMES[DATASET_NAMES.UsdSekExchangeRate],
   DATASET_NAMES[DATASET_NAMES.GovernmentBondSweden2Year],
   DATASET_NAMES[DATASET_NAMES.GovernmentBondSweden5Year],

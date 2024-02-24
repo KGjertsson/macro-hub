@@ -1,13 +1,13 @@
 import { Dataset, defaultDataset } from '@/models/Dataset';
 
 export type DatasetCache = {
-  datasets: Dataset[];
   labels: string[];
+  chartData: Dataset[];
 };
 
 export const emptyCache: DatasetCache = {
   labels: [],
-  datasets: defaultDataset,
+  chartData: defaultDataset,
 };
 
 export const deselect = (dataset: Dataset): Dataset => {

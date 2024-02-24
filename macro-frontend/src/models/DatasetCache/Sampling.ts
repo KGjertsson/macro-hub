@@ -2,7 +2,7 @@ import { Dataset } from '@/models/Dataset';
 import {
   DATASET_NAMES,
   NO_FILTER,
-  SAMPLE_SIZE,
+  SAMPLE_STRATEGY,
   sampleToFilter,
 } from '@/models/Constants';
 import { DatasetCache } from '@/models/DatasetCache/DatasetCache';
@@ -11,7 +11,7 @@ import { unionLabels } from '@/models/DatasetCache/Labels';
 export const sample = (
   labels: string[],
   datasets: Dataset[],
-  selectedSample: SAMPLE_SIZE
+  selectedSample: SAMPLE_STRATEGY
 ): DatasetCache => {
   const filter = sampleToFilter[selectedSample];
 

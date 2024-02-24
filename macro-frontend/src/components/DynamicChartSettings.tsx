@@ -1,15 +1,16 @@
 import { ChangeEvent, useEffect, useState } from 'react';
-import DynamicDataCache from '@/components/DynamicDataCache';
 import {
   allDatasetNames,
   allSamples,
   DATASET_NAMES,
-  SAMPLE_SIZE,
+  SAMPLE_STRATEGY,
 } from '@/models/Constants';
+import DynamicChartRenderComponent from '@/components/DynamicChartRenderComponent';
+import { defaultDataset } from '@/models/Dataset';
 
 const DynamicChartSettings = () => {
   const [selectedItems, setSelectedItems] = useState<DATASET_NAMES[]>([]);
-  const [sample, setSample] = useState<SAMPLE_SIZE>(SAMPLE_SIZE.Month);
+  const [sample, setSample] = useState<SAMPLE_STRATEGY>(SAMPLE_STRATEGY.Month);
 
   useEffect(() => {
     const init = async () => {
@@ -30,7 +31,7 @@ const DynamicChartSettings = () => {
 
   const setSampleFromEvent = (e: ChangeEvent<HTMLSelectElement>) => {
     const selectedOption = parseOptionFromElement(e).map(
-      (selected) => SAMPLE_SIZE[selected as keyof typeof SAMPLE_SIZE]
+      (selected) => SAMPLE_STRATEGY[selected as keyof typeof SAMPLE_STRATEGY]
     )[0];
 
     setSample(selectedOption);
@@ -61,7 +62,7 @@ const DynamicChartSettings = () => {
         <select
           data-te-select-init
           onChange={setSampleFromEvent}
-          defaultValue={SAMPLE_SIZE[SAMPLE_SIZE.Month]}
+          defaultValue={SAMPLE_STRATEGY[SAMPLE_STRATEGY.Month]}
         >
           {allSamples.map((sample) => (
             <option key={sample} value={sample}>
@@ -71,9 +72,11 @@ const DynamicChartSettings = () => {
         </select>
         <label data-te-select-label-ref>Super bra label</label>
       </div>
-      <DynamicDataCache
-        selectedItemNames={selectedItems}
-        selectedSample={sample}
+      <DynamicChartRenderComponent
+        selectedItems={defaultDataset.filter((d) =>
+          selectedItems.includes(d.name)
+        )}
+        sampleStrategy={sample}
       />
     </div>
   );
