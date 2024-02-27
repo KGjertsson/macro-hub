@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -38,10 +39,8 @@ public class RestApiAdaptor {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        // TODO: return the whole draw entity, not just the data
-
         return drivingPort.buildAlignedBundle(params)
-                .map(this::toChartDataWithLabels)
+                .flatMap(this::toChartDataWithLabels)
                 .map(this::toResponseEntity)
                 .orElse(noContentResponse());
     }
@@ -65,11 +64,17 @@ public class RestApiAdaptor {
         return false;
     }
 
-    private ChartDataWithLabels toChartDataWithLabels(AlignedBundle alignedBundle) {
-        return ChartDataWithLabels.builder()
-                .labels(alignedBundle.labels())
-                .chartData(buildChartDataList(alignedBundle.macroSeries()))
-                .build();
+    private Optional<ChartDataWithLabels> toChartDataWithLabels(AlignedBundle alignedBundle) {
+        return Optional.ofNullable(alignedBundle)
+                .map(b -> {
+                    final var labels = b.labels();
+                    final var chartData = buildChartDataList(b.macroSeries());
+
+                    return ChartDataWithLabels.builder()
+                            .labels(labels)
+                            .chartData(chartData)
+                            .build();
+                });
     }
 
     private List<ChartData> buildChartDataList(List<MacroSeries> macroSeriesList) {

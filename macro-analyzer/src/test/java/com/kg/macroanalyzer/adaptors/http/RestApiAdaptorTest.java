@@ -1,9 +1,13 @@
 package com.kg.macroanalyzer.adaptors.http;
 
+import com.kg.macroanalyzer.application.domain.AlignedBundle;
+import com.kg.macroanalyzer.application.domain.MacroPoint;
+import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driving.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.ChartData;
 import com.kg.macroanalyzer.application.ports.driving.ChartDataWithLabels;
 import com.kg.macroanalyzer.application.ports.driving.DrivingPort;
+import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,43 +34,65 @@ public class RestApiAdaptorTest {
     DrivingPort drivingPort;
 
     @Test
-    public void testBuildChartData_multipleSeries() {
+    public void shouldReturnOk_whenValidBundleRetrieved() {
         // given
-        final List<Temporal> cloudBerry = List.of(
+        final List<Temporal> labels = List.of(
                 LocalDate.of(2024, 1, 1),
                 LocalDate.of(2024, 1, 2),
                 LocalDate.of(2024, 1, 3)
-
         );
-        final var chartData = List.of(
-                ChartData.builder()
-                        .name("a")
-                        .color("color1")
-                        .values(List.of(1.0, 2.0, 3.0))
-                        .build(),
-                ChartData.builder()
-                        .name("b")
-                        .color("color2")
-                        .values(List.of(4.0, 5.0, 6.0))
-                        .build()
+        final List<MacroPoint> macroPoints = List.of(
+                new MacroPoint(1.0, labels.get(0)),
+                new MacroPoint(2.0, labels.get(1)),
+                new MacroPoint(3.0, labels.get(2))
         );
-        final var chartDataWithLabels = ChartDataWithLabels.builder()
-                .labels(cloudBerry)
+        final var macroSeries = List.of(
+                new MacroSeries("seriesA", macroPoints)
+        );
+        final var alignedBundle = AlignedBundle.builder()
+                .labels(labels)
+                .macroSeries(macroSeries)
+                .build();
+        final var chartData = macroSeries.stream()
+                .map(s -> new ChartData(s.getValues(), s.name(), "rgb(207,82,48)"))
+                .toList();
+        final var expected = ChartDataWithLabels.builder()
+                .labels(labels)
                 .chartData(chartData)
                 .build();
 
-        when(drivingPort.buildAlignedBundle(any())).thenReturn(Optional.of(chartDataWithLabels));
-        final var response = restApiAdaptor.toChartDataWithLabels(BuildChartDataParams.builder().build());
+        // when
+        final var params = BuildChartDataParams.builder()
+                .strategy(StrategyFactory.Strategy.MONTH)
+                .chartSeriesParams(List.of())
+                .build();
+        when(drivingPort.buildAlignedBundle(any())).thenReturn(Optional.of(alignedBundle));
+        final var response = restApiAdaptor.toChartDataWithLabels(params);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(chartDataWithLabels, response.getBody());
+        assertEquals(expected, response.getBody());
     }
 
     @Test
-    public void testBuildChartData_emptyParams() {
+    public void shouldReturnBadRequest_whenEmptyRequest() {
         // given
         final var params = BuildChartDataParams.builder().build();
+
+        // when
+        final var response = restApiAdaptor.toChartDataWithLabels(params);
+
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void shouldReturnNoContent_whenEmptyReplyFromServer() {
+        // given
+        final var params = BuildChartDataParams.builder()
+                .strategy(StrategyFactory.Strategy.MONTH)
+                .chartSeriesParams(List.of())
+                .build();
 
         // when
         when(drivingPort.buildAlignedBundle(any())).thenReturn(Optional.empty());

@@ -65,7 +65,7 @@ public class RestApiPortTest {
         assertTrue(response.isPresent());
         response.ifPresent(r -> {
             assertEquals(2, r.labels().size());
-            assertEquals(2, r.chartData().getFirst().values().size());
+            assertEquals(2, r.macroSeries().getFirst().macroPoints().size());
         });
 
     }
