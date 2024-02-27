@@ -1,7 +1,7 @@
 import { Dataset } from '@/models/Dataset';
 
 export const isEmpty = (dataset: Dataset) => {
-  return dataset.data === null || dataset.data === undefined;
+  return dataset.values === null || dataset.values === undefined;
 };
 
 export const shouldFetchData = (

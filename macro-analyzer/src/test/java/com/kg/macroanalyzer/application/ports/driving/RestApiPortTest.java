@@ -59,7 +59,7 @@ public class RestApiPortTest {
 
         // when
 
-        final var response = restApiPort.buildChartData(params);
+        final var response = restApiPort.buildAlignedBundle(params);
 
         // then
         assertTrue(response.isPresent());
@@ -81,7 +81,7 @@ public class RestApiPortTest {
         when(bundleFormatter.align(any(), eq(params.strategy()))).thenReturn(Optional.empty());
 
         // when
-        final var response = restApiPort.buildChartData(params);
+        final var response = restApiPort.buildAlignedBundle(params);
 
         // then
         assertTrue(response.isEmpty());

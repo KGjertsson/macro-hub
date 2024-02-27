@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { DatasetCache } from '@/models/DatasetCache/DatasetCache';
+import { DatasetWithLabels } from '@/models/DatasetCache/DatasetWithLabels';
 import { displayColors } from '@/models/Constants';
 
 ChartJS.register(
@@ -25,7 +25,7 @@ ChartJS.register(
 );
 
 interface Props {
-  sampled: DatasetCache;
+  sampled: DatasetWithLabels;
 }
 
 const DynamicChartComponent = ({ sampled }: Props) => {
@@ -49,11 +49,11 @@ const DynamicChartComponent = ({ sampled }: Props) => {
         labels: sampled.labels,
         datasets: sampled.chartData.map((dataset, index) => {
           return {
-            data: dataset.data,
-            label: dataset.lineConfig.label,
+            data: dataset.values,
+            label: dataset.name.toString(),
             borderColor: displayColors[index % displayColors.length],
             backgroundColor: displayColors[index % displayColors.length],
-            pointRadius: dataset.lineConfig.pointRadius,
+            pointRadius: 2,
           };
         }),
       }}

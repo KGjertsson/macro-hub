@@ -5,14 +5,14 @@ import {
   SAMPLE_STRATEGY,
   sampleToFilter,
 } from '@/models/Constants';
-import { DatasetCache } from '@/models/DatasetCache/DatasetCache';
+import { DatasetWithLabels } from '@/models/DatasetCache/DatasetWithLabels';
 import { unionLabels } from '@/models/DatasetCache/Labels';
 
 export const sample = (
   labels: string[],
   datasets: Dataset[],
   selectedSample: SAMPLE_STRATEGY
-): DatasetCache => {
+): DatasetWithLabels => {
   const filter = sampleToFilter[selectedSample];
 
   if (filter === NO_FILTER) {
@@ -26,7 +26,10 @@ export const sample = (
   }
 };
 
-const runSampling = (datasets: Dataset[], filter: RegExp): DatasetCache => {
+const runSampling = (
+  datasets: Dataset[],
+  filter: RegExp
+): DatasetWithLabels => {
   console.log('Running sampling with filter = ' + filter);
   const sampledDatasets = datasets.map((d) => sampleDataset(d, filter));
   const unionOfLabels = unionLabels(sampledDatasets);
@@ -39,7 +42,7 @@ const runSampling = (datasets: Dataset[], filter: RegExp): DatasetCache => {
 
 const sampleDataset = (dataset: Dataset, filter: RegExp): Dataset => {
   const labelsRaw = dataset.labels!;
-  const dataRaw = dataset.data!;
+  const dataRaw = dataset.values!;
 
   const sampledLabels: string[] = [];
   const sampledData: number[] = [];
@@ -56,7 +59,7 @@ const sampleDataset = (dataset: Dataset, filter: RegExp): Dataset => {
     }
   });
 
-  return { ...dataset, data: sampledData, labels: sampledLabels };
+  return { ...dataset, values: sampledData, labels: sampledLabels };
 };
 
 const extendDatasetToFullLabels = (
@@ -80,10 +83,10 @@ const extendDatasetToFullLabels = (
       if (currentLabel.getTime() < firstLabel.getTime()) {
         return 0;
       } else {
-        return dataset.data![index - offset];
+        return dataset.values![index - offset];
       }
     });
 
-    return { ...dataset, labels: unionOfLabels, data: extendedData };
+    return { ...dataset, labels: unionOfLabels, values: extendedData };
   }
 };

@@ -1,6 +1,9 @@
 package com.kg.macroanalyzer.adaptors.http;
 
+import com.kg.macroanalyzer.application.domain.AlignedBundle;
+import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driving.BuildChartDataParams;
+import com.kg.macroanalyzer.application.ports.driving.ChartData;
 import com.kg.macroanalyzer.application.ports.driving.ChartDataWithLabels;
 import com.kg.macroanalyzer.application.ports.driving.DrivingPort;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -25,7 +30,7 @@ public class RestApiAdaptor {
     }
 
     @PostMapping("/chart-data")
-    public ResponseEntity<ChartDataWithLabels> buildChartData(
+    public ResponseEntity<ChartDataWithLabels> toChartDataWithLabels(
             @RequestBody BuildChartDataParams params
     ) {
         logRequest(params);
@@ -35,7 +40,8 @@ public class RestApiAdaptor {
 
         // TODO: return the whole draw entity, not just the data
 
-        return drivingPort.buildChartData(params)
+        return drivingPort.buildAlignedBundle(params)
+                .map(this::toChartDataWithLabels)
                 .map(this::toResponseEntity)
                 .orElse(noContentResponse());
     }
@@ -57,6 +63,27 @@ public class RestApiAdaptor {
         }
 
         return false;
+    }
+
+    private ChartDataWithLabels toChartDataWithLabels(AlignedBundle alignedBundle) {
+        return ChartDataWithLabels.builder()
+                .labels(alignedBundle.labels())
+                .chartData(buildChartDataList(alignedBundle.macroSeries()))
+                .build();
+    }
+
+    private List<ChartData> buildChartDataList(List<MacroSeries> macroSeriesList) {
+        return macroSeriesList.stream()
+                .map(this::buildChartData)
+                .toList();
+    }
+
+    private ChartData buildChartData(MacroSeries macroSeries) {
+        return ChartData.builder()
+                .name(macroSeries.name())
+                .values(macroSeries.getValues())
+                .color("rgb(207,82,48)")
+                .build();
     }
 
     private ResponseEntity<ChartDataWithLabels> toResponseEntity(

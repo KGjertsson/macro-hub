@@ -43,7 +43,13 @@ const DynamicChartRenderComponent = ({
 
   if (error) return 'An error has occurred: ' + error.message;
 
-  return <DynamicChartComponent sampled={data} />;
+  const formattedData = {
+    ...data,
+    labels: data.labels.map((label: String) => label[0] + '-' + label[1]),
+  };
+  console.log(formattedData);
+
+  return <DynamicChartComponent sampled={formattedData} />;
 };
 
 export default DynamicChartRenderComponent;

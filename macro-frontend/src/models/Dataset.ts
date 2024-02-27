@@ -6,7 +6,7 @@ export type LineConfig = {
 };
 
 export type Dataset = {
-  data?: number[];
+  values?: number[];
   labels?: string[];
   lineConfig: LineConfig;
   selected: boolean;

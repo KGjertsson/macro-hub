@@ -2,10 +2,10 @@ import React, { useEffect, useReducer } from 'react';
 import { DATASET_NAMES, SAMPLE_STRATEGY } from '@/models/Constants';
 import DynamicChartComponent from '@/components/DynamicChartComponent';
 import {
-  DatasetCache,
+  DatasetWithLabels,
   deselect,
   emptyCache,
-} from '@/models/DatasetCache/DatasetCache';
+} from '@/models/DatasetCache/DatasetWithLabels';
 import { sample } from '@/models/DatasetCache/Sampling';
 import { loadDataset } from '@/models/DatasetCache/CacheIO';
 import { generateLabels } from '@/models/DatasetCache/Labels';
@@ -23,27 +23,27 @@ enum CacheActionTypes {
 
 type CacheAction = {
   type: CacheActionTypes;
-  payload: DatasetCache;
+  payload: DatasetWithLabels;
 };
 
 const cacheReducer = (
-  state: DatasetCache,
+  state: DatasetWithLabels,
   action: CacheAction
-): DatasetCache => {
+): DatasetWithLabels => {
   switch (action.type) {
     case CacheActionTypes.SET_LABELS:
       return { ...state, labels: action.payload.labels };
     case CacheActionTypes.SET_CACHE:
       return {
         labels: action.payload.labels,
-        datasets: action.payload.datasets,
+        chartData: action.payload.chartData,
       };
     default:
       throw new Error('Unexpected action type in cacheReducer: ' + action.type);
   }
 };
 
-const defaultSampled: DatasetCache = { labels: [], datasets: [] };
+const defaultSampled: DatasetWithLabels = { labels: [], chartData: [] };
 
 const DynamicDataCache = ({ selectedItemNames, selectedSample }: Props) => {
   const [cache, cacheDispatch] = useReducer(cacheReducer, emptyCache);
@@ -57,7 +57,7 @@ const DynamicDataCache = ({ selectedItemNames, selectedSample }: Props) => {
       const generatedLabels = generateLabels(newSelection);
       cacheDispatch({
         type: CacheActionTypes.SET_CACHE,
-        payload: { labels: generatedLabels, datasets: updatedCache },
+        payload: { labels: generatedLabels, chartData: updatedCache },
       });
 
       const sampled = sample(generatedLabels, newSelection, selectedSample);
@@ -74,7 +74,7 @@ const DynamicDataCache = ({ selectedItemNames, selectedSample }: Props) => {
     selectedItemNames: DATASET_NAMES[]
   ): Promise<Dataset[]> => {
     return Promise.all(
-      cache.datasets
+      cache.chartData
         .map((dataset) => deselect(dataset))
         .map(async (dataset) => loadDataset(dataset, selectedItemNames))
     );

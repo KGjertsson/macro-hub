@@ -1,11 +1,11 @@
 import { Dataset, defaultDataset } from '@/models/Dataset';
 
-export type DatasetCache = {
+export type DatasetWithLabels = {
   labels: string[];
   chartData: Dataset[];
 };
 
-export const emptyCache: DatasetCache = {
+export const emptyCache: DatasetWithLabels = {
   labels: [],
   chartData: defaultDataset,
 };
