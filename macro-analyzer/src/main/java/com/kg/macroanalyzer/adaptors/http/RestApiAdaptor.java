@@ -24,10 +24,12 @@ import java.util.Optional;
 public class RestApiAdaptor {
 
     private final DrivingPort drivingPort;
+    private final ColorSelectionStrategy colorSelectionStrategy;
 
     @Autowired
-    public RestApiAdaptor(DrivingPort drivingPort) {
+    public RestApiAdaptor(DrivingPort drivingPort, ColorSelectionStrategy colorSelectionStrategy) {
         this.drivingPort = drivingPort;
+        this.colorSelectionStrategy = colorSelectionStrategy;
     }
 
     @PostMapping("/chart-data")
@@ -78,17 +80,11 @@ public class RestApiAdaptor {
     }
 
     private List<ChartData> buildChartDataList(List<MacroSeries> macroSeriesList) {
-        return macroSeriesList.stream()
-                .map(this::buildChartData)
-                .toList();
-    }
+        final var chartDataFactory = new ChartDataFactory();
 
-    private ChartData buildChartData(MacroSeries macroSeries) {
-        return ChartData.builder()
-                .name(macroSeries.name())
-                .values(macroSeries.getValues())
-                .color("rgb(207,82,48)")
-                .build();
+        return macroSeriesList.stream()
+                .map(chartDataFactory::build)
+                .toList();
     }
 
     private ResponseEntity<ChartDataWithLabels> toResponseEntity(
@@ -99,6 +95,27 @@ public class RestApiAdaptor {
 
     private ResponseEntity<ChartDataWithLabels> noContentResponse() {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    private class ChartDataFactory {
+
+        private Integer index;
+
+        public ChartDataFactory() {
+            this.index = 0;
+        }
+
+        public ChartData build(MacroSeries macroSeries) {
+            this.index = this.index + 1;
+            final var color = colorSelectionStrategy.pickColor(index);
+
+            return ChartData.builder()
+                    .values(macroSeries.getValues())
+                    .name(macroSeries.name())
+                    .color(color)
+                    .build();
+        }
+
     }
 
 }
