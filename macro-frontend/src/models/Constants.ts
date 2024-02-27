@@ -6,19 +6,11 @@ export enum SAMPLE_STRATEGY {
   Year,
 }
 
-export const allSamples = [
+export const sampleStrategies = [
   SAMPLE_STRATEGY[SAMPLE_STRATEGY.Day],
   SAMPLE_STRATEGY[SAMPLE_STRATEGY.Month],
   SAMPLE_STRATEGY[SAMPLE_STRATEGY.Year],
 ];
-
-export const NO_FILTER = 'no_filter';
-
-export const sampleToFilter = {
-  [SAMPLE_STRATEGY.Day]: NO_FILTER,
-  [SAMPLE_STRATEGY.Month]: new RegExp(/^(\d{4}-\d{1,2})/),
-  [SAMPLE_STRATEGY.Year]: new RegExp(/^(\d{4})/),
-};
 
 export enum DATASET_NAMES {
   PolicyRateSweden,
@@ -102,12 +94,4 @@ export const allDatasetNames = [
   DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsNetherlands10Year],
   DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsNorway10Year],
   DATASET_NAMES[DATASET_NAMES.InternationalGovernmentBondsUsa10Year],
-];
-
-export const displayColors = [
-  'rgb(207,82,48)',
-  'rgb(245,154,68)',
-  'rgb(227,197,152)',
-  'rgb(110,97,47)',
-  'rgb(110,53,44)',
 ];

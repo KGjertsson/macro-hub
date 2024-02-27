@@ -1,9 +1,9 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import {
   allDatasetNames,
-  allSamples,
   DATASET_NAMES,
   SAMPLE_STRATEGY,
+  sampleStrategies,
 } from '@/models/Constants';
 import DynamicChartRenderComponent from '@/components/DynamicChartRenderComponent';
 import { defaultDataset } from '@/models/Dataset';
@@ -64,7 +64,7 @@ const DynamicChartSettings = () => {
           onChange={setSampleFromEvent}
           defaultValue={SAMPLE_STRATEGY[SAMPLE_STRATEGY.Month]}
         >
-          {allSamples.map((sample) => (
+          {sampleStrategies.map((sample) => (
             <option key={sample} value={sample}>
               {sample}
             </option>

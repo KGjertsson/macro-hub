@@ -47,7 +47,6 @@ const DynamicChartRenderComponent = ({
     ...data,
     labels: data.labels.map((label: String) => label[0] + '-' + label[1]),
   };
-  console.log(formattedData);
 
   return <DynamicChartComponent sampled={formattedData} />;
 };
