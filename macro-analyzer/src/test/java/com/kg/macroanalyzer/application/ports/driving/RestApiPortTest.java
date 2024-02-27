@@ -6,6 +6,7 @@ import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
+import com.kg.macroanalyzer.application.ports.driving.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

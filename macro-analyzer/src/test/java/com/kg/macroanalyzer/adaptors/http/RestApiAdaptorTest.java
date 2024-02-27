@@ -3,10 +3,10 @@ package com.kg.macroanalyzer.adaptors.http;
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.ports.driving.BuildChartDataParams;
-import com.kg.macroanalyzer.application.ports.driving.ChartData;
-import com.kg.macroanalyzer.application.ports.driving.ChartDataWithLabels;
 import com.kg.macroanalyzer.application.ports.driving.DrivingPort;
+import com.kg.macroanalyzer.application.ports.driving.chartdata.BuildChartDataParams;
+import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartData;
+import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartDataWithLabels;
 import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,7 +67,7 @@ public class RestApiAdaptorTest {
                 .chartSeriesParams(List.of())
                 .build();
         when(drivingPort.buildAlignedBundle(any())).thenReturn(Optional.of(alignedBundle));
-        final var response = restApiAdaptor.toChartDataWithLabels(params);
+        final var response = restApiAdaptor.buildChartData(params);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -80,7 +80,7 @@ public class RestApiAdaptorTest {
         final var params = BuildChartDataParams.builder().build();
 
         // when
-        final var response = restApiAdaptor.toChartDataWithLabels(params);
+        final var response = restApiAdaptor.buildChartData(params);
 
         // then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -96,7 +96,7 @@ public class RestApiAdaptorTest {
 
         // when
         when(drivingPort.buildAlignedBundle(any())).thenReturn(Optional.empty());
-        final var response = restApiAdaptor.toChartDataWithLabels(params);
+        final var response = restApiAdaptor.buildChartData(params);
 
         // then
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());

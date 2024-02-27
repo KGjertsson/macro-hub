@@ -4,7 +4,8 @@ import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.ChartSeriesParam;
+import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartSeriesParam;
+import com.kg.macroanalyzer.application.ports.driving.seriesconfig.SeriesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ public class PostgresAdaptor implements DatabasePort {
     GovernmentBondsRepository govBondsRepo;
     PolicyRateRepository policyRateRepo;
     ScrapeRepository scrapeRepository;
+    SeriesConfigRepository seriesConfigRepository;
 
     @Autowired
     public PostgresAdaptor(
@@ -28,7 +30,8 @@ public class PostgresAdaptor implements DatabasePort {
             GovernmentBillRepository governmentBillRepo,
             GovernmentBondsRepository govBondsRepo,
             PolicyRateRepository policyRateRepo,
-            ScrapeRepository scrapeRepository
+            ScrapeRepository scrapeRepository,
+            SeriesConfigRepository seriesConfigRepository
     ) {
         this.euroMarketRateRepo = euroMarketRateRepo;
         this.exchangeRateRepo = exchangeRateRepo;
@@ -36,6 +39,7 @@ public class PostgresAdaptor implements DatabasePort {
         this.govBondsRepo = govBondsRepo;
         this.policyRateRepo = policyRateRepo;
         this.scrapeRepository = scrapeRepository;
+        this.seriesConfigRepository = seriesConfigRepository;
     }
 
     @Override
@@ -44,6 +48,12 @@ public class PostgresAdaptor implements DatabasePort {
                 .map(this::buildSeries)
                 .toList();
     }
+
+    @Override
+    public List<SeriesConfig> readSeriesConfigList() {
+        return seriesConfigRepository.readSeriesConfigList();
+    }
+
 
     private MacroSeries buildSeries(ChartSeriesParam params) {
         final var name = params.name();

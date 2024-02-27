@@ -2,18 +2,16 @@ package com.kg.macroanalyzer.adaptors.http;
 
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.ports.driving.BuildChartDataParams;
-import com.kg.macroanalyzer.application.ports.driving.ChartData;
-import com.kg.macroanalyzer.application.ports.driving.ChartDataWithLabels;
 import com.kg.macroanalyzer.application.ports.driving.DrivingPort;
+import com.kg.macroanalyzer.application.ports.driving.chartdata.BuildChartDataParams;
+import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartData;
+import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartDataWithLabels;
+import com.kg.macroanalyzer.application.ports.driving.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,24 +31,36 @@ public class RestApiAdaptor {
     }
 
     @PostMapping("/chart-data")
-    public ResponseEntity<ChartDataWithLabels> toChartDataWithLabels(
+    public ResponseEntity<ChartDataWithLabels> buildChartData(
             @RequestBody BuildChartDataParams params
     ) {
-        logRequest(params);
+        logBuildChartDataRequest(params);
         if (invalidRequest(params)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         return drivingPort.buildAlignedBundle(params)
-                .flatMap(this::toChartDataWithLabels)
+                .flatMap(this::buildChartData)
                 .map(this::toResponseEntity)
                 .orElse(noContentResponse());
     }
 
-    private void logRequest(BuildChartDataParams params) {
-        final var msgRaw = "Received GET chart-values request with chartSeriesParams=%s";
-        final var msgFormatted = msgRaw.formatted(params);
-        log.info(msgFormatted);
+    @GetMapping("/series-config")
+    public ResponseEntity<List<SeriesConfig>> getSeriesConfig() {
+        log.info("Received GET macro-analyzer/series-config");
+        final var seriesConfigList = drivingPort.getSeriesConfigList();
+        final var responseCode = seriesConfigList.isEmpty()
+                ? HttpStatus.NO_CONTENT
+                : HttpStatus.OK;
+
+        return new ResponseEntity<>(seriesConfigList, responseCode);
+    }
+
+    private void logBuildChartDataRequest(BuildChartDataParams params) {
+        var msg = "Received POST macro-analyzer/chart-values request with ";
+        msg = msg + "chartSeriesParams=%s";
+        msg = msg.formatted(params);
+        log.info(msg);
     }
 
     private boolean invalidRequest(BuildChartDataParams params) {
@@ -66,7 +76,7 @@ public class RestApiAdaptor {
         return false;
     }
 
-    private Optional<ChartDataWithLabels> toChartDataWithLabels(AlignedBundle alignedBundle) {
+    private Optional<ChartDataWithLabels> buildChartData(AlignedBundle alignedBundle) {
         return Optional.ofNullable(alignedBundle)
                 .map(b -> {
                     final var labels = b.labels();
