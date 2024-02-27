@@ -32,6 +32,8 @@ public class RestApiAdaptorTest {
 
     @Mock
     DrivingPort drivingPort;
+    @Mock
+    ColorSelectionStrategy colorSelectionStrategy;
 
     @Test
     public void shouldReturnOk_whenValidBundleRetrieved() {
@@ -67,6 +69,7 @@ public class RestApiAdaptorTest {
                 .chartSeriesParams(List.of())
                 .build();
         when(drivingPort.buildAlignedBundle(any())).thenReturn(Optional.of(alignedBundle));
+        when(colorSelectionStrategy.pickColor(any())).thenReturn("rgb(207,82,48)");
         final var response = restApiAdaptor.buildChartData(params);
 
         // then
