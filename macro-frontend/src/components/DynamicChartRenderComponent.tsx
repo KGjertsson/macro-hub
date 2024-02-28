@@ -1,11 +1,11 @@
 import React from 'react';
-import { DATASET_NAMES, rootUrl, SAMPLE_STRATEGY } from '@/models/Constants';
+import { rootUrl, SAMPLE_STRATEGY } from '@/models/Constants';
 import DynamicChartComponent from '@/components/DynamicChartComponent';
-import { Dataset } from '@/models/Dataset';
 import { useQuery } from '@tanstack/react-query';
+import { SeriesConfig } from '@/models/SeriesConfig';
 
 interface Props {
-  selectedItems: Dataset[];
+  selectedItems: SeriesConfig[];
   sampleStrategy: SAMPLE_STRATEGY;
 }
 
@@ -15,11 +15,11 @@ const DynamicChartRenderComponent = ({
 }: Props) => {
   const body = {
     strategy: sampleStrategy,
-    chartSeriesParams: selectedItems.map((d) => {
+    chartSeriesParams: selectedItems.map((config) => {
       return {
-        name: DATASET_NAMES[d.name],
-        country: '',
-        period: '',
+        name: config.name,
+        country: config.country,
+        period: config.period,
       };
     }),
   };

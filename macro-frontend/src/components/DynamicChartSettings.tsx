@@ -1,16 +1,32 @@
 import { ChangeEvent, useEffect, useState } from 'react';
-import {
-  allDatasetNames,
-  DATASET_NAMES,
-  SAMPLE_STRATEGY,
-  sampleStrategies,
-} from '@/models/Constants';
+import { rootUrl, SAMPLE_STRATEGY, sampleStrategies } from '@/models/Constants';
 import DynamicChartRenderComponent from '@/components/DynamicChartRenderComponent';
-import { defaultDataset } from '@/models/Dataset';
+import { SeriesConfig } from '@/models/SeriesConfig';
+import { useQuery } from '@tanstack/react-query';
 
 const DynamicChartSettings = () => {
-  const [selectedItems, setSelectedItems] = useState<DATASET_NAMES[]>([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [sample, setSample] = useState<SAMPLE_STRATEGY>(SAMPLE_STRATEGY.Month);
+  const [allSeriesConfigs, setAllSeriesConfigs] = useState<SeriesConfig[]>([]);
+
+  const fetchSeriesConfig = () =>
+    fetch(rootUrl + '/macro-analyzer/series-config', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then((res) => res.json());
+
+  const { isPending, error, data } = useQuery({
+    queryKey: ['seriesConfig'],
+    queryFn: fetchSeriesConfig,
+  });
+
+  useEffect(() => {
+    if (!isPending && !error) {
+      setAllSeriesConfigs(data);
+    }
+  }, [isPending, error, data]);
 
   useEffect(() => {
     const init = async () => {
@@ -22,9 +38,7 @@ const DynamicChartSettings = () => {
   }, []);
 
   const filterSelectedGraphs = (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = parseOptionFromElement(e).map(
-      (selected) => DATASET_NAMES[selected as keyof typeof DATASET_NAMES]
-    );
+    const selectedOptions = parseOptionFromElement(e);
 
     setSelectedItems(selectedOptions);
   };
@@ -53,11 +67,13 @@ const DynamicChartSettings = () => {
           Select an option
         </label>
         <select data-te-select-init multiple onChange={filterSelectedGraphs}>
-          {allDatasetNames.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
+          {allSeriesConfigs
+            .map((config) => config.name)
+            .map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
         </select>
         <select
           data-te-select-init
@@ -73,7 +89,7 @@ const DynamicChartSettings = () => {
         <label data-te-select-label-ref>Super bra label</label>
       </div>
       <DynamicChartRenderComponent
-        selectedItems={defaultDataset.filter((d) =>
+        selectedItems={allSeriesConfigs.filter((d) =>
           selectedItems.includes(d.name)
         )}
         sampleStrategy={sample}
