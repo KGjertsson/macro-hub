@@ -2,11 +2,11 @@ package com.kg.macroanalyzer.adaptors.http;
 
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.ports.driving.DrivingPort;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.BuildChartDataParams;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartData;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartDataWithLabels;
-import com.kg.macroanalyzer.application.ports.driving.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.application.ports.driving.out.OutPort;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartData;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartDataWithLabels;
+import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,12 +21,12 @@ import java.util.Optional;
 @RequestMapping("macro-analyzer")
 public class RestApiAdaptor {
 
-    private final DrivingPort drivingPort;
+    private final OutPort outPort;
     private final ColorSelectionStrategy colorSelectionStrategy;
 
     @Autowired
-    public RestApiAdaptor(DrivingPort drivingPort, ColorSelectionStrategy colorSelectionStrategy) {
-        this.drivingPort = drivingPort;
+    public RestApiAdaptor(OutPort outPort, ColorSelectionStrategy colorSelectionStrategy) {
+        this.outPort = outPort;
         this.colorSelectionStrategy = colorSelectionStrategy;
     }
 
@@ -39,7 +39,7 @@ public class RestApiAdaptor {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        return drivingPort.buildAlignedBundle(params)
+        return outPort.buildAlignedBundle(params)
                 .flatMap(this::buildChartData)
                 .map(this::toResponseEntity)
                 .orElse(noContentResponse());
@@ -48,7 +48,7 @@ public class RestApiAdaptor {
     @GetMapping("/series-config")
     public ResponseEntity<List<SeriesConfig>> getSeriesConfig() {
         log.info("Received GET macro-analyzer/series-config");
-        final var seriesConfigList = drivingPort.getSeriesConfigList();
+        final var seriesConfigList = outPort.getSeriesConfigList();
         final var responseCode = seriesConfigList.isEmpty()
                 ? HttpStatus.NO_CONTENT
                 : HttpStatus.OK;

@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.application.samplestrategy;
 
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy.SampleStrategyYear;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.ports.driving.chartdata;
+package com.kg.macroanalyzer.application.ports.driving.out.chartdata;
 
 import lombok.Builder;
 

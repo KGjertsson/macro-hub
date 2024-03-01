@@ -1,10 +1,10 @@
-package com.kg.macroanalyzer.application.ports.driving;
+package com.kg.macroanalyzer.application.ports.driving.out;
 
-import com.kg.macroanalyzer.application.BundleFormatter;
+import com.kg.macroanalyzer.application.services.bundleformatservice.BundleFormatService;
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.BuildChartDataParams;
-import com.kg.macroanalyzer.application.ports.driving.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
+import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,15 +12,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class RestApiPort implements DrivingPort {
+public class OutPortImpl implements OutPort {
 
     private final DatabasePort databasePort;
-    private final BundleFormatter bundleFormatter;
+    private final BundleFormatService bundleFormatService;
 
     @Autowired
-    public RestApiPort(DatabasePort databasePort, BundleFormatter bundleFormatter) {
+    public OutPortImpl(DatabasePort databasePort, BundleFormatService bundleFormatService) {
         this.databasePort = databasePort;
-        this.bundleFormatter = bundleFormatter;
+        this.bundleFormatService = bundleFormatService;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class RestApiPort implements DrivingPort {
         final var strategy = params.strategy();
         final var macroSeriesList = databasePort.readMacroSeries(chartSeriesParamList);
 
-        return bundleFormatter.align(macroSeriesList, strategy);
+        return bundleFormatService.align(macroSeriesList, strategy);
     }
 
     @Override

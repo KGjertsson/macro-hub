@@ -3,11 +3,11 @@ package com.kg.macroanalyzer.adaptors.http;
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.ports.driving.DrivingPort;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.BuildChartDataParams;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartData;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartDataWithLabels;
-import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
+import com.kg.macroanalyzer.application.ports.driving.out.OutPort;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartData;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartDataWithLabels;
+import com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +31,7 @@ public class RestApiAdaptorTest {
     RestApiAdaptor restApiAdaptor;
 
     @Mock
-    DrivingPort drivingPort;
+    OutPort outPort;
     @Mock
     ColorSelectionStrategy colorSelectionStrategy;
 
@@ -68,7 +68,7 @@ public class RestApiAdaptorTest {
                 .strategy(StrategyFactory.Strategy.MONTH)
                 .chartSeriesParams(List.of())
                 .build();
-        when(drivingPort.buildAlignedBundle(any())).thenReturn(Optional.of(alignedBundle));
+        when(outPort.buildAlignedBundle(any())).thenReturn(Optional.of(alignedBundle));
         when(colorSelectionStrategy.pickColor(any())).thenReturn("rgb(207,82,48)");
         final var response = restApiAdaptor.buildChartData(params);
 
@@ -98,7 +98,7 @@ public class RestApiAdaptorTest {
                 .build();
 
         // when
-        when(drivingPort.buildAlignedBundle(any())).thenReturn(Optional.empty());
+        when(outPort.buildAlignedBundle(any())).thenReturn(Optional.empty());
         final var response = restApiAdaptor.buildChartData(params);
 
         // then

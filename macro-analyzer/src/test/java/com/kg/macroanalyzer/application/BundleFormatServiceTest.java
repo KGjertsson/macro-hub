@@ -3,8 +3,10 @@ package com.kg.macroanalyzer.application;
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.samplestrategy.SampleStrategy;
-import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
+import com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy.SampleStrategy;
+import com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy.StrategyFactory;
+import com.kg.macroanalyzer.application.services.bundleformatservice.BundleFormatService;
+import com.kg.macroanalyzer.application.services.LabelGenerationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,16 +23,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class BundleFormatterTest {
+public class BundleFormatServiceTest {
 
     private final StrategyFactory.Strategy STRATEGY = StrategyFactory.Strategy.MONTH;
 
     @InjectMocks
-    BundleFormatter bundleFormatter;
+    BundleFormatService bundleFormatService;
     @Mock
     StrategyFactory strategyFactory;
     @Mock
-    LabelGenerator labelGenerator;
+    LabelGenerationService labelGenerationService;
     @Mock
     SampleStrategy sampleStrategy;
 
@@ -51,12 +53,12 @@ public class BundleFormatterTest {
                 .macroSeries(macroSeries)
                 .labels(labels)
                 .build();
-        when(labelGenerator.padToFullLabels(macroSeries)).thenReturn(Optional.of(macroSeries));
+        when(labelGenerationService.padToFullLabels(macroSeries)).thenReturn(Optional.of(macroSeries));
         when(strategyFactory.build(STRATEGY)).thenReturn(sampleStrategy);
         when(sampleStrategy.sample(macroSeries)).thenReturn(Optional.of(inputBundle));
 
         // when
-        final var result = bundleFormatter.align(macroSeries, STRATEGY);
+        final var result = bundleFormatService.align(macroSeries, STRATEGY);
 
         // then
         assertTrue(result.isPresent());
@@ -69,7 +71,7 @@ public class BundleFormatterTest {
         when(strategyFactory.build(STRATEGY)).thenReturn(sampleStrategy);
 
         // when
-        final var result = bundleFormatter.align(null, STRATEGY);
+        final var result = bundleFormatService.align(null, STRATEGY);
 
         // then
         assertTrue(result.isEmpty());
@@ -83,7 +85,7 @@ public class BundleFormatterTest {
         // when/then
         assertThrows(
                 IllegalArgumentException.class,
-                () -> bundleFormatter.align(emptyList(), null)
+                () -> bundleFormatService.align(emptyList(), null)
         );
     }
 

@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
 
-import com.kg.macroanalyzer.application.ports.driving.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.springframework.stereotype.Repository;

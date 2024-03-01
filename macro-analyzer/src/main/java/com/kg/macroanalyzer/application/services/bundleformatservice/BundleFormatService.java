@@ -1,26 +1,27 @@
-package com.kg.macroanalyzer.application;
+package com.kg.macroanalyzer.application.services.bundleformatservice;
 
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
-import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
+import com.kg.macroanalyzer.application.services.LabelGenerationService;
+import com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy.StrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Component
-public class BundleFormatter {
+@Service
+public class BundleFormatService {
 
-    private final LabelGenerator labelGenerator;
+    private final LabelGenerationService labelGenerationService;
     private final StrategyFactory strategyFactory;
 
     @Autowired
-    public BundleFormatter(
-            LabelGenerator labelGenerator,
+    public BundleFormatService(
+            LabelGenerationService labelGenerationService,
             StrategyFactory strategyFactory
     ) {
-        this.labelGenerator = labelGenerator;
+        this.labelGenerationService = labelGenerationService;
         this.strategyFactory = strategyFactory;
     }
 
@@ -31,7 +32,7 @@ public class BundleFormatter {
         final var sampleStrategy = strategyFactory.build(strategy);
 
         return Optional.ofNullable(macroSeriesList)
-                .flatMap(labelGenerator::padToFullLabels)
+                .flatMap(labelGenerationService::padToFullLabels)
                 .flatMap(sampleStrategy::sample);
     }
 

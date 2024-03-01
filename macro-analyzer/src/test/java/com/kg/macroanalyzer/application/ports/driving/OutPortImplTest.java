@@ -1,13 +1,14 @@
 package com.kg.macroanalyzer.application.ports.driving;
 
 
-import com.kg.macroanalyzer.application.BundleFormatter;
+import com.kg.macroanalyzer.application.services.bundleformatservice.BundleFormatService;
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.BuildChartDataParams;
-import com.kg.macroanalyzer.application.samplestrategy.StrategyFactory;
+import com.kg.macroanalyzer.application.ports.driving.out.OutPortImpl;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
+import com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,15 +27,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class RestApiPortTest {
+public class OutPortImplTest {
 
     @InjectMocks
-    RestApiPort restApiPort;
+    OutPortImpl outPortImpl;
 
     @Mock
     DatabasePort databasePort;
     @Mock
-    BundleFormatter bundleFormatter;
+    BundleFormatService bundleFormatService;
 
     @Test
     void shouldReturnAlignedBundle_whenInputListIsPresent() {
@@ -52,7 +53,7 @@ public class RestApiPortTest {
                 .macroSeries(macroSeriesList)
                 .build();
         when(databasePort.readMacroSeries(any())).thenReturn(emptyList());
-        when(bundleFormatter.align(any(), any())).thenReturn(Optional.of(alignedBundle));
+        when(bundleFormatService.align(any(), any())).thenReturn(Optional.of(alignedBundle));
         final var params = BuildChartDataParams.builder()
                 .chartSeriesParams(emptyList())
                 .strategy(StrategyFactory.Strategy.MONTH)
@@ -60,7 +61,7 @@ public class RestApiPortTest {
 
         // when
 
-        final var response = restApiPort.buildAlignedBundle(params);
+        final var response = outPortImpl.buildAlignedBundle(params);
 
         // then
         assertTrue(response.isPresent());
@@ -79,10 +80,10 @@ public class RestApiPortTest {
                 .strategy(StrategyFactory.Strategy.MONTH)
                 .build();
         when(databasePort.readMacroSeries(params.chartSeriesParams())).thenReturn(emptyList());
-        when(bundleFormatter.align(any(), eq(params.strategy()))).thenReturn(Optional.empty());
+        when(bundleFormatService.align(any(), eq(params.strategy()))).thenReturn(Optional.empty());
 
         // when
-        final var response = restApiPort.buildAlignedBundle(params);
+        final var response = outPortImpl.buildAlignedBundle(params);
 
         // then
         assertTrue(response.isEmpty());

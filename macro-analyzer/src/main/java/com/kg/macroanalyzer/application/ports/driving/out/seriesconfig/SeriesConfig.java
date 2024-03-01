@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.ports.driving.seriesconfig;
+package com.kg.macroanalyzer.application.ports.driving.out.seriesconfig;
 
 import lombok.Builder;
 

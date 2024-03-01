@@ -3,6 +3,7 @@ package com.kg.macroanalyzer.application;
 
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.services.LabelGenerationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,10 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
-public class LabelGeneratorTest {
+public class LabelGenerationServiceTest {
 
     @InjectMocks
-    LabelGenerator labelGenerator;
+    LabelGenerationService labelGenerationService;
 
     @Test
     public void generateLabels_findExtremesWithMultipleSeries() {
@@ -41,7 +42,7 @@ public class LabelGeneratorTest {
         final var macroSeriesList = List.of(seriesOne, seriesTwo);
 
         // when
-        final var paddedSeriesOptional = labelGenerator.padToFullLabels(macroSeriesList);
+        final var paddedSeriesOptional = labelGenerationService.padToFullLabels(macroSeriesList);
 
         // then
         assertTrue(paddedSeriesOptional.isPresent());
@@ -61,7 +62,7 @@ public class LabelGeneratorTest {
         // given
         final var emptyList = List.<MacroSeries>of();
         // when
-        final var fullLabelsOptional = labelGenerator.padToFullLabels(emptyList);
+        final var fullLabelsOptional = labelGenerationService.padToFullLabels(emptyList);
 
         // then
         assertTrue(fullLabelsOptional.isEmpty());

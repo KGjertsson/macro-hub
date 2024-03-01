@@ -1,17 +1,20 @@
 package com.kg.macroanalyzer.adaptors.database.postgres;
 
+import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.chartdata.ChartSeriesParam;
-import com.kg.macroanalyzer.application.ports.driving.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartSeriesParam;
+import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.function.Supplier;
 
+@Slf4j
 @Component
 public class PostgresAdaptor implements DatabasePort {
 
@@ -52,6 +55,13 @@ public class PostgresAdaptor implements DatabasePort {
     @Override
     public List<SeriesConfig> readSeriesConfigList() {
         return seriesConfigRepository.readSeriesConfigList();
+    }
+
+    @Override
+    public void persist(ScrapeQueueItem scrapeQueueItem) {
+        log.info("Persisting scrapeQueueItem=%s".formatted(scrapeQueueItem));
+
+        scrapeRepository.addScrapeQueueItem(scrapeQueueItem);
     }
 
 

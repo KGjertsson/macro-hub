@@ -1,9 +1,9 @@
-package com.kg.macroanalyzer.application;
+package com.kg.macroanalyzer.application.services;
 
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import lombok.Builder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -14,8 +14,8 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-@Component
-public class LabelGenerator {
+@Service
+public class LabelGenerationService {
 
     private final LabelEdges IDENTITY_LABELS = LabelEdges.builder()
             .startDate(LocalDate.MAX)
