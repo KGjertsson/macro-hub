@@ -1,13 +1,11 @@
 package com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy;
 
 import com.kg.macroanalyzer.application.domain.MacroPoint;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.YearMonth;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-@Slf4j
 public class SampleStrategyMonth extends AbstractSampleStrategy {
 
     private final String PATTERN = "^(\\d{4}-\\d{1,2})";

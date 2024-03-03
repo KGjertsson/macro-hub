@@ -19,13 +19,13 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("macro-analyzer")
-public class RestApiAdaptor {
+public class ExtractionAdaptor {
 
     private final OutPort outPort;
     private final ColorSelectionStrategy colorSelectionStrategy;
 
     @Autowired
-    public RestApiAdaptor(OutPort outPort, ColorSelectionStrategy colorSelectionStrategy) {
+    public ExtractionAdaptor(OutPort outPort, ColorSelectionStrategy colorSelectionStrategy) {
         this.outPort = outPort;
         this.colorSelectionStrategy = colorSelectionStrategy;
     }

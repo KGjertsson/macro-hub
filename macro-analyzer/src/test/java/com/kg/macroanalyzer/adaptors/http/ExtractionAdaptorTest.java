@@ -25,10 +25,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class RestApiAdaptorTest {
+public class ExtractionAdaptorTest {
 
     @InjectMocks
-    RestApiAdaptor restApiAdaptor;
+    ExtractionAdaptor extractionAdaptor;
 
     @Mock
     OutPort outPort;
@@ -70,7 +70,7 @@ public class RestApiAdaptorTest {
                 .build();
         when(outPort.buildAlignedBundle(any())).thenReturn(Optional.of(alignedBundle));
         when(colorSelectionStrategy.pickColor(any())).thenReturn("rgb(207,82,48)");
-        final var response = restApiAdaptor.buildChartData(params);
+        final var response = extractionAdaptor.buildChartData(params);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -83,7 +83,7 @@ public class RestApiAdaptorTest {
         final var params = BuildChartDataParams.builder().build();
 
         // when
-        final var response = restApiAdaptor.buildChartData(params);
+        final var response = extractionAdaptor.buildChartData(params);
 
         // then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -99,7 +99,7 @@ public class RestApiAdaptorTest {
 
         // when
         when(outPort.buildAlignedBundle(any())).thenReturn(Optional.empty());
-        final var response = restApiAdaptor.buildChartData(params);
+        final var response = extractionAdaptor.buildChartData(params);
 
         // then
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
