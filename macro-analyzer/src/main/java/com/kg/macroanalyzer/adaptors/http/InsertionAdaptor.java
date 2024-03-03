@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 @Slf4j
 @RestController
 @RequestMapping("macro-analyzer")
@@ -45,6 +48,22 @@ public class InsertionAdaptor {
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Throwable t) {
             log.error("Received unexpected error when processing enqueue all request", t);
+
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/scrape-from-queue")
+    public ResponseEntity<Void> scrapeFromQueue() {
+        log.info("Received request to scrape from queue");
+
+        try {
+            final var timeStamp = LocalDateTime.now(ZoneOffset.UTC);
+            inPort.scrapeFromQueue(timeStamp);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Throwable t) {
+            log.error("Received unexpected error when attempting to scrape from queue", t);
 
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
