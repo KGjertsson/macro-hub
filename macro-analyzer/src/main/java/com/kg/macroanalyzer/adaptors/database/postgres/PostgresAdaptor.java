@@ -5,12 +5,12 @@ import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartSeriesParam;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -46,7 +46,7 @@ public class PostgresAdaptor implements DatabasePort {
     }
 
     @Override
-    public List<MacroSeries> readMacroSeries(List<ChartSeriesParam> paramList) {
+    public List<MacroSeries> readMacroSeries(List<SeriesConfig> paramList) {
         return paramList.stream()
                 .map(this::buildSeries)
                 .toList();
@@ -69,8 +69,12 @@ public class PostgresAdaptor implements DatabasePort {
         return scrapeRepository.getCurrentQueue();
     }
 
+    @Override
+    public List<ScrapeQueueItem> getItemsToScrape(LocalDateTime timeStamp) {
+        return scrapeRepository.getItemsToScrape(timeStamp);
+    }
 
-    private MacroSeries buildSeries(ChartSeriesParam params) {
+    private MacroSeries buildSeries(SeriesConfig params) {
         final var name = params.name();
         final var macroPoints = macroPointSupplier(params).get();
 
@@ -80,7 +84,7 @@ public class PostgresAdaptor implements DatabasePort {
                 .build();
     }
 
-    private Supplier<List<MacroPoint>> macroPointSupplier(ChartSeriesParam params) {
+    private Supplier<List<MacroPoint>> macroPointSupplier(SeriesConfig params) {
         final var name = params.name();
         final var errorMsg = String.format("Found unexpected MacroSeries name=%s".formatted(name));
 
