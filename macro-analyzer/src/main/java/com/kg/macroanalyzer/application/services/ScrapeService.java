@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.adaptors.http.services;
+package com.kg.macroanalyzer.application.services;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine.ScrapeEngine;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine.ScrapeEngineFactory;

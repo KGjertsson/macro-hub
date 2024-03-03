@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application.ports.driving.in;
 
-import com.kg.macroanalyzer.adaptors.http.services.ScrapeService;
+import com.kg.macroanalyzer.application.services.ScrapeService;
 import com.kg.macroanalyzer.application.services.enqueue.EnqueueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
