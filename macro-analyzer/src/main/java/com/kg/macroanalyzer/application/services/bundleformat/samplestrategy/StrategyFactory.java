@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy;
+package com.kg.macroanalyzer.application.services.bundleformat.samplestrategy;
 
 import org.springframework.stereotype.Component;
 

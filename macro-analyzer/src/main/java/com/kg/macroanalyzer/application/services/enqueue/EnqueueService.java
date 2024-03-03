@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.services.enqueueservice;
+package com.kg.macroanalyzer.application.services.enqueue;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem.ScrapeQueueItemBuilder;

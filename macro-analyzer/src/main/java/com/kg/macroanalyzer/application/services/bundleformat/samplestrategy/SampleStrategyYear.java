@@ -1,14 +1,14 @@
-package com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy;
+package com.kg.macroanalyzer.application.services.bundleformat.samplestrategy;
 
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 
-import java.time.YearMonth;
+import java.time.Year;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class SampleStrategyMonth extends AbstractSampleStrategy {
+public class SampleStrategyYear extends AbstractSampleStrategy {
 
-    private final String PATTERN = "^(\\d{4}-\\d{1,2})";
+    private final String PATTERN = "^(\\d{4})";
     private final Pattern pattern = Pattern.compile(PATTERN);
 
     @Override
@@ -17,9 +17,9 @@ public class SampleStrategyMonth extends AbstractSampleStrategy {
 
         if (matcher.find()) {
             final var matchedGroup = matcher.group(0);
-            final var yearMonth = YearMonth.parse(matchedGroup);
+            final var year = Year.parse(matchedGroup);
             final var sampledPoint = macroPoint.toBuilder()
-                    .date(yearMonth)
+                    .date(year)
                     .build();
             return Stream.of(sampledPoint);
         } else {

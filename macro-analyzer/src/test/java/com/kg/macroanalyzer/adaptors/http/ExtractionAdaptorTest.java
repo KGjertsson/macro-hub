@@ -7,7 +7,7 @@ import com.kg.macroanalyzer.application.ports.driving.out.OutPort;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartData;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartDataWithLabels;
-import com.kg.macroanalyzer.application.services.bundleformatservice.samplestrategy.StrategyFactory;
+import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

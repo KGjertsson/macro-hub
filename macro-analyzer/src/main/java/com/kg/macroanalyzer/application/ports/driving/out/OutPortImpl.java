@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application.ports.driving.out;
 
-import com.kg.macroanalyzer.application.services.bundleformatservice.BundleFormatService;
+import com.kg.macroanalyzer.application.services.bundleformat.BundleFormatService;
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;

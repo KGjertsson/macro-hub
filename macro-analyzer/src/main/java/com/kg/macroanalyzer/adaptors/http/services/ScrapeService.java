@@ -1,74 +1,42 @@
 package com.kg.macroanalyzer.adaptors.http.services;
 
+import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine.ScrapeEngine;
+import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeEngine.ScrapeEngineFactory;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.ScrapeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
 public class ScrapeService {
 
     private final ScrapeRepository scrapeRepository;
-
-    @Value("${scrape.data.names}")
-    private String scrapeDataNames;
+    private final ScrapeEngineFactory scrapeEngineFactory;
 
     @Autowired
-    public ScrapeService(ScrapeRepository scrapeRepository) {
+    public ScrapeService(ScrapeRepository scrapeRepository, ScrapeEngineFactory scrapeEngineFactory) {
         this.scrapeRepository = scrapeRepository;
+        this.scrapeEngineFactory = scrapeEngineFactory;
     }
 
-    public Integer scheduleAll(ChronoUnit interval, Integer multiplier) {
-        return Arrays.stream(scrapeDataNames.split(","))
-                .map(String::trim)
-                .reduce(initializer(), accumulator(interval, multiplier), combiner())
-                .stream()
-                .map(scrapeRepository::addScrapeQueueItem)
-                .mapToInt(Integer::intValue)
-                .sum();
+    public void scrapeFromQueue(LocalDateTime timeStamp) {
+        fetchItemsToScrape(timeStamp)
+                .map(scrapeEngineFactory::createScrapeEngine)
+                .filter(Objects::nonNull)
+                .forEach(ScrapeEngine::scrape);
     }
 
-    private ArrayList<ScrapeQueueItem> initializer() {
-        return new ArrayList<>();
-    }
+    private Stream<ScrapeQueueItem> fetchItemsToScrape(LocalDateTime timeStamp) {
+        final var items = scrapeRepository.getItemsToScrape(timeStamp);
+        log.info("Scraping items from queue: %s".formatted(items));
 
-    private BiFunction<ArrayList<ScrapeQueueItem>, String, ArrayList<ScrapeQueueItem>> accumulator(
-            ChronoUnit interval,
-            Integer multiplier
-    ) {
-        return (acc, element) -> {
-            if (acc.isEmpty()) {
-                final var scrapeQueueItem = ScrapeQueueItem.of(element, Instant.now());
-                final var initialized = new ArrayList<ScrapeQueueItem>();
-                initialized.add(scrapeQueueItem);
-
-                return initialized;
-            } else {
-                final var last = acc.get(acc.size() - 1).scrapeDate();
-                final var next = last.plus(multiplier, interval);
-                final var scrapeQueueItem = ScrapeQueueItem.of(element, next);
-                acc.add(scrapeQueueItem);
-
-                return acc;
-            }
-        };
-    }
-
-    private BinaryOperator<ArrayList<ScrapeQueueItem>> combiner() {
-        return (list1, list2) -> {
-            list1.addAll(list2);
-            return list1;
-        };
+        return items.stream();
     }
 
 }
