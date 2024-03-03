@@ -36,4 +36,18 @@ public class InsertionAdaptor {
         }
     }
 
+    @PostMapping("/enqueue-all")
+    public ResponseEntity<Void> enqueueAll() {
+        log.info("Received enqueue all request");
+        try {
+            inPort.enqueueAll();
+
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (Throwable t) {
+            log.error("Received unexpected error when processing enqueue all request", t);
+
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

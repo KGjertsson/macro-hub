@@ -31,6 +31,14 @@ public class ScrapeRepository {
                 .map(ScrapeQueueItem::of);
     }
 
+    public List<ScrapeQueueItem> getCurrentQueue() {
+        return dslContext.select()
+                .from(SCRAPE_ACTION_QUEUE)
+                .where(SCRAPE_ACTION_QUEUE.STATUS.eq(0))
+                .fetch()
+                .map(ScrapeQueueItem::of);
+    }
+
     public Integer addScrapeQueueItem(ScrapeQueueItem scrapeQueueItem) {
         final var name = scrapeQueueItem.name();
         final var time = scrapeQueueItem.scrapeDate()

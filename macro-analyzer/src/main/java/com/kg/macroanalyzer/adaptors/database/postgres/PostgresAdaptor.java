@@ -64,6 +64,11 @@ public class PostgresAdaptor implements DatabasePort {
         scrapeRepository.addScrapeQueueItem(scrapeQueueItem);
     }
 
+    @Override
+    public List<ScrapeQueueItem> getScrapeQueue() {
+        return scrapeRepository.getCurrentQueue();
+    }
+
 
     private MacroSeries buildSeries(ChartSeriesParam params) {
         final var name = params.name();

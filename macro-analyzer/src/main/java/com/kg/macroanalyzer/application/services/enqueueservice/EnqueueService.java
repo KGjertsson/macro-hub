@@ -1,6 +1,7 @@
-package com.kg.macroanalyzer.application.services;
+package com.kg.macroanalyzer.application.services.enqueueservice;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
+import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem.ScrapeQueueItemBuilder;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,18 @@ public class EnqueueService {
     }
 
     public void enqueueAll() {
-        // TODO: don't forget spacing in between
+        final var queueTimeStrategy = new QueueTimeStrategy();
+        final var builder = ScrapeQueueItem.builder();
+        final var currentQueue = databasePort.getScrapeQueue().stream()
+                .map(ScrapeQueueItem::name).toList();
+
+        availableSeries.stream()
+                .map(SeriesConfig::name)
+                .filter(name -> !currentQueue.contains(name))
+                .map(builder::name)
+                .map(queueTimeStrategy::withTimeSlot)
+                .map(ScrapeQueueItemBuilder::build)
+                .forEach(databasePort::persist);
     }
 
 }

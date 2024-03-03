@@ -15,4 +15,6 @@ public interface DatabasePort {
 
     void persist(ScrapeQueueItem scrapeQueueItem);
 
+    List<ScrapeQueueItem> getScrapeQueue();
+
 }

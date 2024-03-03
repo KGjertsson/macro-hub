@@ -9,7 +9,7 @@ import java.time.ZoneOffset;
 
 import static com.kg.macroanalyzer.jooq.generated.Tables.SCRAPE_ACTION_QUEUE;
 
-@Builder
+@Builder(toBuilder = true)
 public record ScrapeQueueItem(
         Integer id,
         @NonNull String name,
