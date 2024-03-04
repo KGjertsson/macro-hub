@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.kg.macroanalyzer.jooq.generated.Tables.POLICY_RATE_SWEDEN;
@@ -32,28 +33,30 @@ public class PolicyRateRepository {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public Integer insertPolicyRateItemsSweden(List<MacroPoint> policyRateItemList) {
-        if (!policyRateItemList.isEmpty()) {
-            final var insertQuery = dslContext.batch(
-                    dslContext.insertInto(
-                            POLICY_RATE_SWEDEN,
-                            POLICY_RATE_SWEDEN.GLOBAL_ID,
-                            POLICY_RATE_SWEDEN.POLICY_RATE,
-                            POLICY_RATE_SWEDEN.POLICY_RATE_DATE
-                    ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-            );
-            policyRateItemList.forEach(policyRateItemSweden -> insertQuery.bind(
-                    UUID.randomUUID(),
-                    policyRateItemSweden.value(),
-                    policyRateItemSweden.date()
-            ));
+    public Function<List<MacroPoint>, Integer> insertPolicyRateItemsSweden() {
+        return policyRateItemList -> {
+            if (!policyRateItemList.isEmpty()) {
+                final var insertQuery = dslContext.batch(
+                        dslContext.insertInto(
+                                POLICY_RATE_SWEDEN,
+                                POLICY_RATE_SWEDEN.GLOBAL_ID,
+                                POLICY_RATE_SWEDEN.POLICY_RATE,
+                                POLICY_RATE_SWEDEN.POLICY_RATE_DATE
+                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
+                );
+                policyRateItemList.forEach(policyRateItemSweden -> insertQuery.bind(
+                        UUID.randomUUID(),
+                        policyRateItemSweden.value(),
+                        policyRateItemSweden.date()
+                ));
 
-            final var response = insertQuery.execute();
+                final var response = insertQuery.execute();
 
-            return response.length;
-        }
+                return response.length;
+            }
 
-        return 0;
+            return 0;
+        };
     }
 
     private MacroPoint toMacroPoint(Record r) {

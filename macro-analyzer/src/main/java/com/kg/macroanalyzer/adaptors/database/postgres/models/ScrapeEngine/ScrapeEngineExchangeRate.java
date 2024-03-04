@@ -43,7 +43,7 @@ public class ScrapeEngineExchangeRate extends AbstractScrapeEngine<MacroPoint> {
         final var msgFormatted = msgRaw.formatted(novelScrapedItems.size());
         log.info(msgFormatted);
 
-        return exchangeRateRepository.insertExchangeRateUsdSek(novelScrapedItems);
+        return exchangeRateRepository.insertExchangeRateUsdSek().apply(novelScrapedItems);
     }
 
 }

@@ -4,6 +4,7 @@ import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -48,8 +50,13 @@ public class PostgresAdaptor implements DatabasePort {
     @Override
     public List<MacroSeries> readMacroSeries(List<SeriesConfig> paramList) {
         return paramList.stream()
-                .map(this::buildSeries)
+                .map(this::readMacroSeries)
                 .toList();
+    }
+
+    @Override
+    public MacroSeries readMacroSeries(SeriesConfig paramList) {
+        return buildSeries(paramList);
     }
 
     @Override
@@ -72,6 +79,19 @@ public class PostgresAdaptor implements DatabasePort {
     @Override
     public List<ScrapeQueueItem> getItemsToScrape(LocalDateTime timeStamp) {
         return scrapeRepository.getItemsToScrape(timeStamp);
+    }
+
+    @Override
+    public Integer writeMacroPoints(ConfigWithMacroPoints configWithMacroPoints) {
+        final var seriesConfig = configWithMacroPoints.seriesConfig();
+        final var macroPoints = configWithMacroPoints.macroPoints();
+        final var writer = macroPointWriter(seriesConfig);
+        return writer.apply(macroPoints);
+    }
+
+    @Override
+    public void markAsDone(SeriesConfig seriesConfig) {
+        scrapeRepository.markAsDone(seriesConfig.name());
     }
 
     private MacroSeries buildSeries(SeriesConfig params) {
@@ -128,6 +148,54 @@ public class PostgresAdaptor implements DatabasePort {
             case "IntGovBondsNetherlands10Year" -> govBondsRepo.intGovBond10YearReaderHolland();
             case "IntGovBondsNorway10Year" -> govBondsRepo.intGovBond10YearReaderNorway();
             case "IntGovBondsUsa10Year" -> govBondsRepo.intGovBond10YearReaderUSA();
+            default -> throw new IllegalArgumentException(errorMsg);
+        };
+    }
+
+    private Function<List<MacroPoint>, Integer> macroPointWriter(SeriesConfig params) {
+        final var name = params.name();
+        final var errorMsg = String.format("Found unexpected MacroSeries name=%s".formatted(name));
+
+        return switch (params.name()) {
+            case "PolicyRateSweden" -> policyRateRepo.insertPolicyRateItemsSweden();
+            case "UsdSekExchangeRate" -> exchangeRateRepo.insertExchangeRateUsdSek();
+            case "GovernmentBondSweden2Year" -> govBondsRepo.swedishGovBond2YearWriter();
+            case "GovernmentBondSweden5Year" -> govBondsRepo.swedishGovBond5YearWriter();
+            case "GovernmentBondSweden7Year" -> govBondsRepo.swedishGovBond7YearWriter();
+            case "GovernmentBondSweden10Year" -> govBondsRepo.swedishGovBond10YearWriter();
+            case "GovernmentBillSweden1Month" -> governmentBillRepo.swedishGovBill1MonthWriter();
+            case "GovernmentBillSweden3Month" -> governmentBillRepo.swedishGovBill3MonthWriter();
+            case "GovernmentBillSweden6Month" -> governmentBillRepo.swedishGovBill6MonthWriter();
+            case "GovernmentBillSweden12Month" -> governmentBillRepo.swedishGovBill12MonthWriter();
+            case "EuroMarketRateDenmark3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthDenmark();
+            case "EuroMarketRateEur3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthEur();
+            case "EuroMarketRateGB3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthGB();
+            case "EuroMarketRateJapan3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthJapan();
+            case "EuroMarketRateNorway3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthNorway();
+            case "EuroMarketRateUsa3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthUsa();
+            case "EuroMarketRateDenmark6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthDenmark();
+            case "EuroMarketRateEur6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthEur();
+            case "EuroMarketRateGB6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthGB();
+            case "EuroMarketRateJapan6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthJapan();
+            case "EuroMarketRateNorway6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthNorway();
+            case "EuroMarketRateUsa6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthUsa();
+            case "IntGovBondsEur5Year" -> govBondsRepo.intGovBond5YearWriterEur();
+            case "IntGovBondsFrance5Year" -> govBondsRepo.intGovBond5YearWriterFrance();
+            case "IntGovBondsGB5Year" -> govBondsRepo.intGovBond5YearWriterGB();
+            case "IntGovBondsGermany5Year" -> govBondsRepo.intGovBond5YearWriterGermany();
+            case "IntGovBondsJapan5Year" -> govBondsRepo.intGovBond5YearWriterJapan();
+            case "IntGovBondsNetherlands5Year" -> govBondsRepo.intGovBond5YearWriterHolland();
+            case "IntGovBondsUsa5Year" -> govBondsRepo.intGovBond5YearWriterUSA();
+            case "IntGovBondsDenmark10Year" -> govBondsRepo.intGovBond10YearWriterDenmark();
+            case "IntGovBondsEur10Year" -> govBondsRepo.intGovBond10YearWriterEur();
+            case "IntGovBondsFinland10Year" -> govBondsRepo.intGovBond10YearWriterFinland();
+            case "IntGovBondsFrance10Year" -> govBondsRepo.intGovBond10YearWriterFrance();
+            case "IntGovBondsGB10Year" -> govBondsRepo.intGovBond10YearWriterGB();
+            case "IntGovBondsGermany10Year" -> govBondsRepo.intGovBond10YearWriterGermany();
+            case "IntGovBondsJapan10Year" -> govBondsRepo.intGovBond10YearWriterJapan();
+            case "IntGovBondsNetherlands10Year" -> govBondsRepo.intGovBond10YearWriterHolland();
+            case "IntGovBondsNorway10Year" -> govBondsRepo.intGovBond10YearWriterNorway();
+            case "IntGovBondsUsa10Year" -> govBondsRepo.intGovBond10YearWriterUSA();
             default -> throw new IllegalArgumentException(errorMsg);
         };
     }

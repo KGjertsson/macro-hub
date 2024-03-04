@@ -42,7 +42,7 @@ public class ScrapeEnginePolicyRate extends AbstractScrapeEngine<MacroPoint> {
         final var msgFormatted = msgRaw.formatted(novelScrapedItems.size());
         log.info(msgFormatted);
 
-        return policyRateRepository.insertPolicyRateItemsSweden(novelScrapedItems);
+        return policyRateRepository.insertPolicyRateItemsSweden().apply(novelScrapedItems);
     }
 
 }

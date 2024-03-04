@@ -1,13 +1,13 @@
 package com.kg.macroanalyzer.application.ports.driving;
 
 
-import com.kg.macroanalyzer.application.services.bundleformat.BundleFormatService;
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.OutPortImpl;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
+import com.kg.macroanalyzer.application.services.bundleformat.BundleFormatService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,8 +22,7 @@ import java.util.Optional;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +51,7 @@ public class OutPortImplTest {
                 .labels(List.of(firstDate, secondDate))
                 .macroSeries(macroSeriesList)
                 .build();
-        when(databasePort.readMacroSeries(any())).thenReturn(emptyList());
+        when(databasePort.readMacroSeries(anyList())).thenReturn(emptyList());
         when(bundleFormatService.align(any(), any())).thenReturn(Optional.of(alignedBundle));
         final var params = BuildChartDataParams.builder()
                 .chartSeriesParams(emptyList())
@@ -79,7 +78,7 @@ public class OutPortImplTest {
                 .chartSeriesParams(emptyList())
                 .strategy(StrategyFactory.Strategy.MONTH)
                 .build();
-        when(databasePort.readMacroSeries(params.chartSeriesParams())).thenReturn(emptyList());
+        when(databasePort.readMacroSeries(anyList())).thenReturn(emptyList());
         when(bundleFormatService.align(any(), eq(params.strategy()))).thenReturn(Optional.empty());
 
         // when

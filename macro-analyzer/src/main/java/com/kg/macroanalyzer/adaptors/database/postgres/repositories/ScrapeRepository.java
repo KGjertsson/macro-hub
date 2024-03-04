@@ -39,13 +39,13 @@ public class ScrapeRepository {
                 .map(ScrapeQueueItem::of);
     }
 
-    public Integer addScrapeQueueItem(ScrapeQueueItem scrapeQueueItem) {
+    public void addScrapeQueueItem(ScrapeQueueItem scrapeQueueItem) {
         final var name = scrapeQueueItem.name();
         final var time = scrapeQueueItem.scrapeDate()
                 .atZone(ZoneOffset.UTC)
                 .toLocalDateTime();
 
-        return dslContext.insertInto(
+        dslContext.insertInto(
                         SCRAPE_ACTION_QUEUE,
                         SCRAPE_ACTION_QUEUE.DATASET_NAME,
                         SCRAPE_ACTION_QUEUE.SCRAPE_DATE)
@@ -57,6 +57,13 @@ public class ScrapeRepository {
         dslContext.update(SCRAPE_ACTION_QUEUE)
                 .set(SCRAPE_ACTION_QUEUE.STATUS, 1)
                 .where(SCRAPE_ACTION_QUEUE.ID.eq(id))
+                .execute();
+    }
+
+    public void markAsDone(String name) {
+        dslContext.update(SCRAPE_ACTION_QUEUE)
+                .set(SCRAPE_ACTION_QUEUE.STATUS, 1)
+                .where(SCRAPE_ACTION_QUEUE.DATASET_NAME.eq(name))
                 .execute();
     }
 
