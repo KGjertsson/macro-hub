@@ -31,6 +31,7 @@ public class SeriesConfigRepository {
                 .displayName(r.getValue(SERIES_CONFIGURATION.DISPLAY_NAME))
                 .country(r.getValue(SERIES_CONFIGURATION.COUNTRY))
                 .period(r.getValue(SERIES_CONFIGURATION.PERIOD))
+                .scrapeUrl(r.getValue(SERIES_CONFIGURATION.SCRAPE_URL))
                 .build();
     }
 

@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import lombok.NonNull;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class ScrapeUtils {
@@ -19,31 +22,32 @@ public class ScrapeUtils {
         final var objectMapper = ScrapeUtils.createObjectMapper();
 
         JavaType collectionType = objectMapper.getTypeFactory()
-                .constructCollectionType(List.class, MacroPoint.class);
-        final List<MacroPoint> resultList = objectMapper.readValue(response, collectionType);
+                .constructCollectionType(List.class, ScrapedResponse.class);
+        final List<ScrapedResponse> resultList = objectMapper.readValue(response, collectionType);
 
-        return resultList.stream().filter(i -> !persistedItems.contains(i)).toList();
-    }
-
-    public static <E> List<E> scrapeNovelItems(
-            String url,
-            List<E> persistedItems,
-            Class<E> itemType
-    ) throws IOException {
-        final var response = WebUtils.getHTTP(url);
-        final var objectMapper = ScrapeUtils.createObjectMapper();
-
-        JavaType collectionType = objectMapper.getTypeFactory()
-                .constructCollectionType(List.class, itemType);
-        List<E> resultList = objectMapper.readValue(response, collectionType);
-
-        return resultList.stream().filter(i -> !persistedItems.contains(i)).toList();
+        return resultList.stream()
+                .map(ScrapedResponse::toMacroPoint)
+                .filter(i -> !persistedItems.contains(i))
+                .toList();
     }
 
     private static ObjectMapper createObjectMapper() {
         final var objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
+    }
+
+    private record ScrapedResponse(@NonNull Double value, @NonNull String date) {
+
+        public MacroPoint toMacroPoint() {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            return MacroPoint.builder()
+                    .value(value)
+                    .date(LocalDate.parse(date, formatter))
+                    .build();
+        }
+
     }
 
 }
