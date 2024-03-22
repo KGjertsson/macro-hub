@@ -1,9 +1,11 @@
 package com.kg.macroanalyzer.application;
 
 
+import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.services.LabelGenerationService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,25 +23,21 @@ public class LabelGenerationServiceTest {
     @InjectMocks
     LabelGenerationService labelGenerationService;
 
+    TestJsonReader testJsonReader;
+
+    @BeforeEach
+    public void setUp() {
+        testJsonReader = new TestJsonReader();
+    }
+
     @Test
     public void generateLabels_findExtremesWithMultipleSeries() {
         // given
         final var expectedLabelSize = 4;
         final var expectedStartDate = LocalDate.of(2024, 1, 1);
         final var expectedEndDate = LocalDate.of(2024, 1, 4);
-        final var seriesOne = MacroSeries.builder()
-                .name("a")
-                .macroPoints(List.of(
-                        buildPoint(expectedStartDate),
-                        buildPoint(LocalDate.of(2024, 1, 2))
-                )).build();
-        final var seriesTwo = MacroSeries.builder()
-                .name("a")
-                .macroPoints(List.of(
-                        buildPoint(LocalDate.of(2024, 1, 2)),
-                        buildPoint(expectedEndDate)
-                )).build();
-        final var macroSeriesList = List.of(seriesOne, seriesTwo);
+        final var resource = "json/macro_series_multiple.json";
+        final var macroSeriesList = testJsonReader.readMacroSeriesList(resource);
 
         // when
         final var paddedSeriesOptional = labelGenerationService.padToFullLabels(macroSeriesList);
@@ -66,13 +64,6 @@ public class LabelGenerationServiceTest {
 
         // then
         assertTrue(fullLabelsOptional.isEmpty());
-    }
-
-    private MacroPoint buildPoint(LocalDate localDate) {
-        return MacroPoint.builder()
-                .value(1.0)
-                .date(localDate)
-                .build();
     }
 
 }
