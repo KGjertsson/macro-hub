@@ -8,6 +8,8 @@ import com.kg.macroanalyzer.application.services.LabelGenerationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -30,13 +32,13 @@ public class LabelGenerationServiceTest {
         testJsonReader = new TestJsonReader();
     }
 
-    @Test
-    public void generateLabels_findExtremesWithMultipleSeries() {
+    @ParameterizedTest
+    @ValueSource(strings = {"json/multiple_macro_series.json"})
+    public void generateLabels_findExtremesWithMultipleSeries(String resource) {
         // given
         final var expectedLabelSize = 4;
         final var expectedStartDate = LocalDate.of(2024, 1, 1);
         final var expectedEndDate = LocalDate.of(2024, 1, 4);
-        final var resource = "json/macro_series_multiple.json";
         final var macroSeriesList = testJsonReader.readMacroSeriesList(resource);
 
         // when
