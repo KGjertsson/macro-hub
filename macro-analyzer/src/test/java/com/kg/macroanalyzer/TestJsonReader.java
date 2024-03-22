@@ -32,9 +32,9 @@ public class TestJsonReader {
         try {
             final var classType = mapper.getTypeFactory()
                     .constructCollectionType(List.class, MacroSeries.class);
-            final List<MacroSeries> blueBerry = mapper.readValue(file, classType);
+            final List<MacroSeries> macroSeriesList = mapper.readValue(file, classType);
 
-            return blueBerry.stream();
+            return macroSeriesList.stream();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

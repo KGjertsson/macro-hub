@@ -1,11 +1,14 @@
 package com.kg.macroanalyzer.application.samplestrategy;
 
 import com.kg.macroanalyzer.TestJsonReader;
+import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.SampleStrategyYear;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +27,7 @@ public class SampleStrategyYearTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"json/multiple_macro_series_multiple_years.json"})
+    @ValueSource(strings = {"json/multiple_years_macro_series.json"})
     public void testSampleStrategyMonth_multipleSeries(String resource) {
         // given
         final var inputSeries = testJsonReader.readMacroSeriesList(resource);
@@ -48,6 +51,33 @@ public class SampleStrategyYearTest {
                 assertEquals(indexedInput.getLast(), indexedSampled.getLast());
             });
         });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"json/empty_macro_series.json"})
+    public void testEmptyMacroSeries_shouldReturnEmptySampleResponse(String resource) {
+        // given
+        final var inputSeries = testJsonReader.readMacroSeriesList(resource);
+
+        // when
+        final var sampledBundle = sampleStrategyYear.sample(inputSeries);
+
+        // then
+        assertTrue(sampledBundle.isPresent());
+        sampledBundle.ifPresent(presentBundle -> {
+            assertEquals(1, presentBundle.macroSeries().size());
+            assertTrue(presentBundle.macroSeries().getFirst().macroPoints().isEmpty());
+        });
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void nullAndEmptySource_shouldReturnEmptySampleResponse(List<MacroSeries> inputSeries) {
+        // when
+        final var sampledBundle = sampleStrategyYear.sample(inputSeries);
+
+        // then
+        assertTrue(sampledBundle.isEmpty());
     }
 
 }
