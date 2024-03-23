@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SampleStrategyYearTest {
 
     SampleStrategyYear sampleStrategyYear;
-
     TestJsonReader testJsonReader;
 
     @BeforeEach

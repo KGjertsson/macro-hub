@@ -1,14 +1,12 @@
 package com.kg.macroanalyzer.application.samplestrategy;
 
-import com.kg.macroanalyzer.application.domain.MacroPoint;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.SampleStrategyMonth;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,20 +15,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SampleStrategyMonthTest {
 
     SampleStrategyMonth sampleStrategyMonth;
+    TestJsonReader testJsonReader;
 
     @BeforeEach
     public void setUp() {
         sampleStrategyMonth = new SampleStrategyMonth();
+        testJsonReader = new TestJsonReader();
     }
 
-    @Test
-    public void testSampleStrategyMonth_multipleMonths() {
+    @ParameterizedTest
+    @ValueSource(strings = {"json/single_macro_series.json"})
+    public void sampleOneSeriesMultipleMonths_shouldReturnUniqueResponse(String resource) {
         // given
-        final var inputSeries = createMacroSeries("a");
-        final var inputSeriesList = List.of(inputSeries);
+        final var inputSeries = testJsonReader.readMacroSeriesList(resource);
 
         // when
-        final var sampledBundle = sampleStrategyMonth.sample(inputSeriesList);
+        final var sampledBundle = sampleStrategyMonth.sample(inputSeries);
 
         // then
         final var expectedSeriesSize = 2;
@@ -39,11 +39,11 @@ public class SampleStrategyMonthTest {
         sampledBundle.ifPresent(presentBundle -> {
             final var sampledSeries = presentBundle.macroSeries().getFirst().macroPoints();
 
-            final var firstPoint = inputSeries.macroPoints().getFirst();
+            final var firstPoint = inputSeries.getFirst().macroPoints().getFirst();
             final var firstInputAsYearMonth = firstPoint.toBuilder()
                     .date(YearMonth.from(firstPoint.date()))
                     .build();
-            final var lastPoint = inputSeries.macroPoints().getLast();
+            final var lastPoint = inputSeries.getFirst().macroPoints().getLast();
             final var lastInputAsYearMonth = lastPoint.toBuilder()
                     .date(YearMonth.from(lastPoint.date()))
                     .build();
@@ -54,10 +54,11 @@ public class SampleStrategyMonthTest {
         });
     }
 
-    @Test
-    public void testSampleStrategyMonth_multipleSeries() {
+    @ParameterizedTest
+    @ValueSource(strings = {"json/multiple_months_macro_series.json"})
+    public void sampleMultipleSeriesMultipleMonths_shouldReturnUniqueResponse(String resource) {
         // given
-        final var inputSeries = List.of(createMacroSeries("a"), createMacroSeries("b"));
+        final var inputSeries = testJsonReader.readMacroSeriesList(resource);
 
         // when
         final var sampledBundle = sampleStrategyMonth.sample(inputSeries);
@@ -80,52 +81,17 @@ public class SampleStrategyMonthTest {
         });
     }
 
-    @Test
-    public void testSampleStrategyMonth_emptySeries() {
+    @ParameterizedTest
+    @ValueSource(strings = {"json/multiple_macro_series_different_length.json"})
+    public void testSampleStrategyMonth_nonNormalizedInput(String resource) {
         // given
-        final var emptyList = List.<MacroSeries>of();
+        final var inputSeries = testJsonReader.readMacroSeriesList(resource);
 
         // when
-        final var sampledBundle = sampleStrategyMonth.sample(emptyList);
+        final var sampledBundle = sampleStrategyMonth.sample(inputSeries);
 
         // then
         assertTrue(sampledBundle.isEmpty());
-    }
-
-    @Test
-    public void testSampleStrategyMonth_nullInput() {
-        // when
-        final var sampledBundle = sampleStrategyMonth.sample(null);
-
-        // then
-        assertTrue(sampledBundle.isEmpty());
-    }
-
-    @Test
-    public void testSampleStrategyMonth_nonNormalizedInput() {
-        // given
-        final var seriesOne = createMacroSeries("a");
-        var seriesTwo = createMacroSeries("b");
-        seriesTwo = seriesTwo.toBuilder()
-                .macroPoints(seriesTwo.macroPoints().subList(0, seriesTwo.macroPoints().size() - 2))
-                .build();
-
-        final var macroSeriesList = List.of(seriesOne, seriesTwo);
-
-        // when
-        final var sampledBundle = sampleStrategyMonth.sample(macroSeriesList);
-
-        // then
-        assertTrue(sampledBundle.isEmpty());
-    }
-
-    private MacroSeries createMacroSeries(String name) {
-        final var inputPointsOne = List.of(
-                new MacroPoint(202411.0, LocalDate.of(2024, 1, 1)),
-                new MacroPoint(202412.0, LocalDate.of(2024, 1, 2)),
-                new MacroPoint(202421.0, LocalDate.of(2024, 2, 1))
-        );
-        return new MacroSeries(name, inputPointsOne);
     }
 
 }

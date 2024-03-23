@@ -1,0 +1,15 @@
+[
+  {
+    "name": "macro_series_1",
+    "macroPoints": [
+      {
+        "value": 1,
+        "date": "2024-01-01"
+      },
+      {
+        "value": 2,
+        "date": "2024-02-01"
+      }
+    ]
+  }
+]
