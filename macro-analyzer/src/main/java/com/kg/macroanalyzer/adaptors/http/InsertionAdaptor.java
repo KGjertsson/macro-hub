@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.adaptors.http;
 
 import com.kg.macroanalyzer.application.ports.driving.in.InPort;
+import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -59,7 +61,8 @@ public class InsertionAdaptor {
 
         try {
             final var timeStamp = LocalDateTime.now(ZoneOffset.UTC);
-            inPort.scrapeFromQueue(timeStamp);
+            final var scrapeResult = inPort.scrapeFromQueue(timeStamp);
+            logScrapeResult(scrapeResult);
 
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Throwable t) {
@@ -67,6 +70,21 @@ public class InsertionAdaptor {
 
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private void logScrapeResult(List<ScrapeResult> scrapeResultList) {
+        final var success = scrapeResultList.stream()
+                .filter(r -> r.equals(ScrapeResult.SUCCESS))
+                .count();
+        final var empty = scrapeResultList.stream()
+                .filter(r -> r.equals(ScrapeResult.EMPTY))
+                .count();
+        final var failed = scrapeResultList.stream()
+                .filter(r -> r.equals(ScrapeResult.FAILED))
+                .count();
+        final var msgRaw = "Scrape result: SUCCESS: %s, EMPTY: %S, FAILED: %s";
+        final var msg = msgRaw.formatted(success, empty, failed);
+        log.info(msg);
     }
 
 }

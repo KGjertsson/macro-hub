@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.services;
+package com.kg.macroanalyzer.application.services.scrape;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
@@ -31,9 +31,10 @@ public class ScrapeService {
         this.seriesConfigList = seriesConfigList;
     }
 
-    public void scrapeFromQueue(LocalDateTime timeStamp) {
-        fetchItemsToScrape(timeStamp)
-                .forEach(this::scrape);
+    public List<ScrapeResult> scrapeFromQueue(LocalDateTime timeStamp) {
+        return fetchItemsToScrape(timeStamp)
+                .map(this::scrape)
+                .toList();
     }
 
     private Stream<ScrapeQueueItem> fetchItemsToScrape(LocalDateTime timeStamp) {
@@ -43,11 +44,12 @@ public class ScrapeService {
         return items.stream();
     }
 
-    private void scrape(ScrapeQueueItem scrapeQueueItem) {
-        toSeriesConfig(scrapeQueueItem)
+    private ScrapeResult scrape(ScrapeQueueItem scrapeQueueItem) {
+        return toSeriesConfig(scrapeQueueItem)
                 .flatMap(this::findExisting)
                 .map(this::scrape)
-                .ifPresent(this::persist);
+                .map(this::persist)
+                .orElse(ScrapeResult.FAILED);
     }
 
     private Optional<SeriesConfig> toSeriesConfig(ScrapeQueueItem scrapeQueueItem) {
@@ -77,13 +79,16 @@ public class ScrapeService {
         }
     }
 
-    private void persist(ConfigWithMacroPoints configWithMacroPoints) {
+    private ScrapeResult persist(ConfigWithMacroPoints configWithMacroPoints) {
         final var persistedCount = databasePort.writeMacroPoints(configWithMacroPoints);
         final var name = configWithMacroPoints.seriesConfig().name();
         final var config = configWithMacroPoints.seriesConfig();
         log.info("Persist %s novel macro points for %s".formatted(persistedCount, name));
-
         databasePort.markAsDone(config);
+
+        return configWithMacroPoints.macroPoints().isEmpty()
+                ? ScrapeResult.EMPTY
+                : ScrapeResult.SUCCESS;
     }
 
 }
