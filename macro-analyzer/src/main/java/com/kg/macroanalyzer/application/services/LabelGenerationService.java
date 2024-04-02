@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -33,6 +34,7 @@ public class LabelGenerationService {
             List<LocalDate> paddedLabels
     ) {
         return macroSeriesList.stream()
+                .map(this::fillGapsInSeries)
                 .map(macroSeries -> {
                     final var macroPoints = macroSeries.macroPoints();
                     final var startDate = LocalDate.from(macroPoints.getFirst().date());
@@ -49,6 +51,47 @@ public class LabelGenerationService {
                 }).toList();
     }
 
+    private MacroSeries fillGapsInSeries(MacroSeries macroSeries) {
+        final var macroPoints = macroSeries.macroPoints();
+        final var endDate = (LocalDate) macroPoints.getLast().date();
+        final var filledList = new ArrayList<MacroPoint>();
+
+        int i = 0;
+        while (i < macroPoints.size()) {
+            if (i == 0) {
+                filledList.add(macroSeries.macroPoints().getFirst());
+                i++;
+            } else {
+                final var currentIndexPoint = macroPoints.get(i);
+                final var previousIndexPoint = filledList.getLast();
+
+                final LocalDate currentDate = (LocalDate) currentIndexPoint.date();
+                final LocalDate previousDate = (LocalDate) previousIndexPoint.date();
+
+                if (endDate.isBefore(currentDate) || endDate.isEqual(previousDate)) {
+                    break;
+                }
+
+                final var isConsecutive = currentDate.minusDays(1).equals(previousDate);
+
+                if (isConsecutive) {
+                    filledList.add(currentIndexPoint);
+                    i++;
+                } else {
+                    final var paddedPoint = MacroPoint.builder()
+                            .date(previousDate.plusDays(1))
+                            .value(previousIndexPoint.value())
+                            .build();
+                    filledList.add(paddedPoint);
+                }
+            }
+        }
+
+        return macroSeries.toBuilder()
+                .macroPoints(filledList)
+                .build();
+    }
+
     private MacroPoint pointFromLabel(
             Integer index,
             Integer startDateIndexInFull,
@@ -57,7 +100,7 @@ public class LabelGenerationService {
     ) {
         final var currentDate = fullLabels.get(index);
 
-        if (index < startDateIndexInFull || index >= macroPoints.size()) {
+        if (index < startDateIndexInFull || (index - startDateIndexInFull) >= macroPoints.size()) {
             return MacroPoint.builder()
                     .date(currentDate)
                     .value(0.0)
