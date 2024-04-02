@@ -13,6 +13,11 @@ const DynamicChartRenderComponent = ({
   selectedItems,
   sampleStrategy,
 }: Props) => {
+  const queryKey =
+    sampleStrategy +
+    '@' +
+    selectedItems.map((i: SeriesConfig) => i.name).join(',');
+
   const body = {
     strategy: sampleStrategy,
     chartSeriesParams: selectedItems.map((config) => {
@@ -34,7 +39,7 @@ const DynamicChartRenderComponent = ({
     }).then((res) => res.json());
 
   const { isPending, error, data } = useQuery({
-    queryKey: ['repoData'],
+    queryKey: [queryKey],
     queryFn: fetchChartData,
     enabled: selectedItems.length > 0,
   });
@@ -43,9 +48,13 @@ const DynamicChartRenderComponent = ({
 
   if (error) return 'An error has occurred: ' + error.message;
 
+  const labels =
+    sampleStrategy === SAMPLE_STRATEGY.Month
+      ? data.labels.map((label: String) => label[0] + '-' + label[1])
+      : data.labels;
   const formattedData = {
     ...data,
-    labels: data.labels.map((label: String) => label[0] + '-' + label[1]),
+    labels: labels,
   };
 
   return <DynamicChartComponent sampled={formattedData} />;

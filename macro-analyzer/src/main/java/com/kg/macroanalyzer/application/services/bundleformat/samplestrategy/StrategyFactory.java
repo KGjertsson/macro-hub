@@ -27,7 +27,7 @@ public class StrategyFactory {
     }
 
     public enum Strategy {
-        YEAR, MONTH, DAY
+        DAY, MONTH, YEAR
     }
 
 }
