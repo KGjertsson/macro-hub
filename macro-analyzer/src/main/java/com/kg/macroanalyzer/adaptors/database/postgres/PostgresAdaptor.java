@@ -65,7 +65,7 @@ public class PostgresAdaptor implements DatabasePort {
     }
 
     @Override
-    public void persist(ScrapeQueueItem scrapeQueueItem) {
+    public void persistScrapeQueueItem(ScrapeQueueItem scrapeQueueItem) {
         log.info("Persisting scrapeQueueItem=%s".formatted(scrapeQueueItem));
 
         scrapeRepository.addScrapeQueueItem(scrapeQueueItem);
@@ -167,17 +167,23 @@ public class PostgresAdaptor implements DatabasePort {
             case "GovernmentBillSweden3Month" -> governmentBillRepo.swedishGovBill3MonthWriter();
             case "GovernmentBillSweden6Month" -> governmentBillRepo.swedishGovBill6MonthWriter();
             case "GovernmentBillSweden12Month" -> governmentBillRepo.swedishGovBill12MonthWriter();
-            case "EuroMarketRateDenmark3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthDenmark();
+            case "EuroMarketRateDenmark3Month" ->
+                    euroMarketRateRepo.insertEuroMarketRate3MonthDenmark();
             case "EuroMarketRateEur3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthEur();
             case "EuroMarketRateGB3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthGB();
-            case "EuroMarketRateJapan3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthJapan();
-            case "EuroMarketRateNorway3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthNorway();
+            case "EuroMarketRateJapan3Month" ->
+                    euroMarketRateRepo.insertEuroMarketRate3MonthJapan();
+            case "EuroMarketRateNorway3Month" ->
+                    euroMarketRateRepo.insertEuroMarketRate3MonthNorway();
             case "EuroMarketRateUsa3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthUsa();
-            case "EuroMarketRateDenmark6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthDenmark();
+            case "EuroMarketRateDenmark6Month" ->
+                    euroMarketRateRepo.insertEuroMarketRate6MonthDenmark();
             case "EuroMarketRateEur6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthEur();
             case "EuroMarketRateGB6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthGB();
-            case "EuroMarketRateJapan6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthJapan();
-            case "EuroMarketRateNorway6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthNorway();
+            case "EuroMarketRateJapan6Month" ->
+                    euroMarketRateRepo.insertEuroMarketRate6MonthJapan();
+            case "EuroMarketRateNorway6Month" ->
+                    euroMarketRateRepo.insertEuroMarketRate6MonthNorway();
             case "EuroMarketRateUsa6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthUsa();
             case "IntGovBondsEur5Year" -> govBondsRepo.intGovBond5YearWriterEur();
             case "IntGovBondsFrance5Year" -> govBondsRepo.intGovBond5YearWriterFrance();

@@ -1,12 +1,11 @@
-package com.kg.macroanalyzer.application;
+package com.kg.macroanalyzer.application.services.bundleformat;
 
 import com.kg.macroanalyzer.application.domain.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.services.LabelGenerationService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.SampleStrategy;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
-import com.kg.macroanalyzer.application.services.bundleformat.BundleFormatService;
-import com.kg.macroanalyzer.application.services.LabelGenerationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

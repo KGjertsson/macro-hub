@@ -19,17 +19,17 @@ import java.util.stream.Stream;
 public class ScrapeService {
 
     private final DatabasePort databasePort;
-    private final ScrapeAdaptor scrapeAdaptor;
+    private final ScrapeUtils scrapeUtils;
     private final List<SeriesConfig> seriesConfigList;
 
     @Autowired
     public ScrapeService(
             DatabasePort databasePort,
-            ScrapeAdaptor scrapeAdaptor,
+            ScrapeUtils scrapeUtils,
             List<SeriesConfig> seriesConfigList
     ) {
         this.databasePort = databasePort;
-        this.scrapeAdaptor = scrapeAdaptor;
+        this.scrapeUtils = scrapeUtils;
         this.seriesConfigList = seriesConfigList;
     }
 
@@ -71,7 +71,7 @@ public class ScrapeService {
         try {
             final var config = configWithMacroPoints.seriesConfig();
             final var macroPoints = configWithMacroPoints.macroPoints();
-            final var novelScraped = scrapeAdaptor.scrapeNovelItems(config, macroPoints);
+            final var novelScraped = scrapeUtils.scrapeNovelItems(config, macroPoints);
 
             return Optional.ofNullable(
                     configWithMacroPoints.toBuilder()

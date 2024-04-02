@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.services;
+package com.kg.macroanalyzer.application.services.scrape;
 
 import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.TestSeriesConfigFactory;
@@ -8,9 +8,6 @@ import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeAdaptor;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,12 +38,12 @@ public class ScrapeServiceTest {
     @Mock
     DatabasePort databasePort;
     @Mock
-    ScrapeAdaptor scrapeAdaptor;
+    ScrapeUtils scrapeUtils;
 
     @BeforeEach
     public void setUp() {
         seriesConfigList = TestSeriesConfigFactory.buildTestConfig();
-        scrapeService = new ScrapeService(databasePort, scrapeAdaptor, seriesConfigList);
+        scrapeService = new ScrapeService(databasePort, scrapeUtils, seriesConfigList);
         testJsonReader = new TestJsonReader();
     }
 
@@ -93,7 +90,7 @@ public class ScrapeServiceTest {
         when(databasePort.getItemsToScrape(any())).thenReturn(databaseResponse);
         when(databasePort.readMacroSeries(any(SeriesConfig.class))).thenReturn(emptySeries);
         when(databasePort.writeMacroPoints(any())).thenReturn(2);
-        when(scrapeAdaptor.scrapeNovelItems(any(), any())).thenReturn(macroSeries.macroPoints());
+        when(scrapeUtils.scrapeNovelItems(any(), any())).thenReturn(macroSeries.macroPoints());
 
         final var response = scrapeService.scrapeFromQueue(inputItemDate);
 
@@ -129,7 +126,7 @@ public class ScrapeServiceTest {
         // when
         when(databasePort.getItemsToScrape(any())).thenReturn(databaseResponse);
         when(databasePort.readMacroSeries(any(SeriesConfig.class))).thenReturn(persistedSeries);
-        when(scrapeAdaptor.scrapeNovelItems(any(), any())).thenReturn(emptyList());
+        when(scrapeUtils.scrapeNovelItems(any(), any())).thenReturn(emptyList());
 
         final var response = scrapeService.scrapeFromQueue(inputItemDate);
 
@@ -164,7 +161,7 @@ public class ScrapeServiceTest {
         // when
         when(databasePort.getItemsToScrape(any())).thenReturn(databaseResponse);
         when(databasePort.readMacroSeries(any(SeriesConfig.class))).thenReturn(emptySeries);
-        when(scrapeAdaptor.scrapeNovelItems(any(), any())).thenThrow(scrapeException);
+        when(scrapeUtils.scrapeNovelItems(any(), any())).thenThrow(scrapeException);
 
         final var response = scrapeService.scrapeFromQueue(inputItemDate);
 
@@ -228,9 +225,9 @@ public class ScrapeServiceTest {
         when(databasePort.readMacroSeries(config3)).thenReturn(macroSeries3);
 
         final var scrapeException = new ScrapeException("test scrape exception");
-        when(scrapeAdaptor.scrapeNovelItems(eq(config1), any())).thenReturn(macroSeries1.macroPoints());
-        when(scrapeAdaptor.scrapeNovelItems(eq(config2), any())).thenReturn(macroSeries2.macroPoints());
-        when(scrapeAdaptor.scrapeNovelItems(eq(config3), any())).thenThrow(scrapeException);
+        when(scrapeUtils.scrapeNovelItems(eq(config1), any())).thenReturn(macroSeries1.macroPoints());
+        when(scrapeUtils.scrapeNovelItems(eq(config2), any())).thenReturn(macroSeries2.macroPoints());
+        when(scrapeUtils.scrapeNovelItems(eq(config3), any())).thenThrow(scrapeException);
 
         when(databasePort.writeMacroPoints(any())).thenReturn(1);
 

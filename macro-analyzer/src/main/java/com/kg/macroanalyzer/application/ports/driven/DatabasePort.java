@@ -15,7 +15,7 @@ public interface DatabasePort {
 
     List<SeriesConfig> readSeriesConfigList();
 
-    void persist(ScrapeQueueItem scrapeQueueItem);
+    void persistScrapeQueueItem(ScrapeQueueItem scrapeQueueItem);
 
     List<ScrapeQueueItem> getScrapeQueue();
 
