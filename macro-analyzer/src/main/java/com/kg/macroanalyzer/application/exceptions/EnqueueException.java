@@ -6,5 +6,4 @@ public class EnqueueException extends Exception {
         super(message);
     }
 
-
 }
