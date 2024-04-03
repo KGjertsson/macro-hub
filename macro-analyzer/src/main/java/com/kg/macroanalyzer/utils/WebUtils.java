@@ -8,6 +8,7 @@ import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -24,6 +25,9 @@ import java.util.stream.Stream;
 @Slf4j
 @Component
 public class WebUtils {
+
+    @Value("${riskbanken.prod.subscription.key}")
+    private String subscriptionKey;
 
     public Stream<MacroPoint> getMacroPoints(SeriesConfig seriesConfig) throws ScrapeException {
         try {
@@ -56,6 +60,11 @@ public class WebUtils {
             final var url = new URI(endpointUrl).toURL();
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
+
+            if (subscriptionKey != null) {
+                // Add custom header "Ocp-Apim-Subscription-Key" with its value
+                connection.setRequestProperty("Ocp-Apim-Subscription-Key", subscriptionKey);
+            }
 
             // Read the response
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));

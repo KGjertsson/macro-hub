@@ -56,7 +56,6 @@ const DynamicChartRenderComponent = ({
     ...data,
     labels: labels,
   };
-  console.log(formattedData);
 
   return <DynamicChartComponent sampled={formattedData} />;
 };
