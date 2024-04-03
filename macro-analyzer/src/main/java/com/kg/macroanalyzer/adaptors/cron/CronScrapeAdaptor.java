@@ -20,7 +20,7 @@ public class CronScrapeAdaptor {
         this.inPort = inPort;
     }
 
-    @Scheduled(fixedDelay = 300000)
+    @Scheduled(fixedDelay = 60000)
     public void scrape() {
         log.info("Cron: scraping all applicable items from the queue");
 
@@ -28,6 +28,7 @@ public class CronScrapeAdaptor {
             final var timeStamp = LocalDateTime.now(ZoneOffset.UTC);
 
             inPort.scrapeFromQueue(timeStamp);
+            log.info("Scrape completed");
         } catch (Throwable t) {
             log.error("Received unexpected error when attempting to scrape items from queue", t);
         }
