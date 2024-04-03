@@ -85,15 +85,15 @@ public class ScrapeService {
 
     private ScrapeResult persist(ConfigWithMacroPoints configWithMacroPoints) {
         final var name = configWithMacroPoints.seriesConfig().name();
+        final var config = configWithMacroPoints.seriesConfig();
+        databasePort.markAsDone(config);
         if (configWithMacroPoints.macroPoints().isEmpty()) {
             log.info("Found no new macro points for %s".formatted(name));
 
             return ScrapeResult.EMPTY;
         }
         final var persistedCount = databasePort.writeMacroPoints(configWithMacroPoints);
-        final var config = configWithMacroPoints.seriesConfig();
         log.info("Persist %s novel macro points for %s".formatted(persistedCount, name));
-        databasePort.markAsDone(config);
 
         return ScrapeResult.SUCCESS;
     }
