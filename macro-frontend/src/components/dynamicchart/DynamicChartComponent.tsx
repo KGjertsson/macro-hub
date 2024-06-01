@@ -40,7 +40,7 @@ const DynamicChartComponent = ({ sampled }: Props) => {
           },
           title: {
             display: true,
-            text: 'super bra titel',
+            text: 'Dynamisk graf',
           },
         },
       }}

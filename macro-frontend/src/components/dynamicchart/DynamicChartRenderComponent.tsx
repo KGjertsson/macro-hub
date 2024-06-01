@@ -1,6 +1,6 @@
 import React from 'react';
 import { rootUrl, SAMPLE_STRATEGY } from '@/models/Constants';
-import DynamicChartComponent from '@/components/DynamicChartComponent';
+import DynamicChartComponent from '@/components/dynamicchart/DynamicChartComponent';
 import { useQuery } from '@tanstack/react-query';
 import { SeriesConfig } from '@/models/SeriesConfig';
 

@@ -20,7 +20,7 @@ import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import DynamicChartSettings from '@/components/DynamicChartSettings';
+import DynamicChartSettings from '@/components/dynamicchart/DynamicChartSettings';
 
 const queryClient = new QueryClient();
 
@@ -82,7 +82,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-start',
 }));
 
-export default function PersistentDrawerRight() {
+const DrawerWrapper = () => {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
@@ -97,17 +97,22 @@ export default function PersistentDrawerRight() {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" open={open} sx={{ backgroundColor: 'white' }}>
         <Toolbar>
-          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} component="div">
-            Persistent drawer
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{ flexGrow: 1, color: 'black' }}
+            component="div"
+          >
+            Macro Hub
           </Typography>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="end"
             onClick={handleDrawerOpen}
-            sx={{ ...(open && { display: 'none' }) }}
+            sx={{ ...(open && { display: 'none' }), color: 'black' }}
           >
             <MenuIcon />
           </IconButton>
@@ -169,4 +174,6 @@ export default function PersistentDrawerRight() {
       </Drawer>
     </Box>
   );
-}
+};
+
+export default DrawerWrapper;

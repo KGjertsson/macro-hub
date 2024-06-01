@@ -1,8 +1,20 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import { rootUrl, SAMPLE_STRATEGY, sampleStrategies } from '@/models/Constants';
-import DynamicChartRenderComponent from '@/components/DynamicChartRenderComponent';
+import DynamicChartRenderComponent from '@/components/dynamicchart/DynamicChartRenderComponent';
 import { SeriesConfig } from '@/models/SeriesConfig';
 import { useQuery } from '@tanstack/react-query';
+
+type SampleStrategyDisplay = {
+  Day: string;
+  Month: string;
+  Year: string;
+};
+
+const sampleStrategyDisplay: SampleStrategyDisplay = {
+  Day: 'Dag',
+  Month: 'Månad',
+  Year: 'År',
+};
 
 const DynamicChartSettings = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -57,15 +69,9 @@ const DynamicChartSettings = () => {
     return Array.from(e.target.selectedOptions, (option) => option.value);
   };
 
-  return (
-    <div>
-      <div className="relative" data-te-dropdown-ref>
-        <label
-          htmlFor="countries_multiple"
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-        >
-          Select an option
-        </label>
+  const dataSelectionComponent = () => {
+    return (
+      <div>
         <select data-te-select-init multiple onChange={filterSelectedGraphs}>
           {allSeriesConfigs
             .map((config) => config.name)
@@ -75,6 +81,14 @@ const DynamicChartSettings = () => {
               </option>
             ))}
         </select>
+        <label data-te-select-label-ref>Välj datatyp</label>
+      </div>
+    );
+  };
+
+  const strategySelectionComponent = () => {
+    return (
+      <div style={{ marginTop: '10px' }}>
         <select
           data-te-select-init
           onChange={setSampleFromEvent}
@@ -82,12 +96,27 @@ const DynamicChartSettings = () => {
         >
           {sampleStrategies.map((sample) => (
             <option key={sample} value={sample}>
-              {sample}
+              {sampleStrategyDisplay[sample as keyof SampleStrategyDisplay]}
             </option>
           ))}
         </select>
-        <label data-te-select-label-ref>Super bra label</label>
+        <label data-te-select-label-ref>Välj upplösning</label>
       </div>
+    );
+  };
+
+  return (
+    <div>
+      <div className="relative" data-te-dropdown-ref>
+        <label
+          htmlFor="countries_multiple"
+          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        >
+          Välj datatyp och upplösning för dynamisk rendering
+        </label>
+      </div>
+      {dataSelectionComponent()}
+      {strategySelectionComponent()}
       <DynamicChartRenderComponent
         selectedItems={allSeriesConfigs.filter((d) =>
           selectedItems.includes(d.name)
