@@ -1,13 +1,10 @@
 'use client';
 
 import './globals.css';
-import { Inter } from 'next/font/google';
 import 'tw-elements/dist/css/tw-elements.min.css';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
 import React from 'react';
-import DrawerWrapper from '@/components/DrawerWrapper';
-
-const inter = Inter({ subsets: ['latin'] });
+import DrawerWrapper from '@/components/drawer/DrawerWrapper';
 
 export const metadata = {
   title: 'Create Next App',
@@ -16,13 +13,9 @@ export const metadata = {
 
 const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <AppRouterCacheProvider>
-          <DrawerWrapper>{children}</DrawerWrapper>
-        </AppRouterCacheProvider>
-      </body>
-    </html>
+    <AppRouterCacheProvider>
+      <DrawerWrapper>{children}</DrawerWrapper>
+    </AppRouterCacheProvider>
   );
 };
 
