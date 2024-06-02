@@ -71,10 +71,15 @@ const DynamicChartSettings = () => {
 
   const dataSelectionComponent = () => {
     return (
-      <div>
-        <select data-te-select-init multiple onChange={filterSelectedGraphs}>
+      <div style={{ minWidth: '500px' }}>
+        <select
+          data-te-select-init
+          multiple
+          onChange={filterSelectedGraphs}
+          style={{ width: '500px' }}
+        >
           {allSeriesConfigs
-            .map((config) => config.name)
+            .map((config) => config.displayName)
             .map((name) => (
               <option key={name} value={name}>
                 {name}
@@ -119,7 +124,7 @@ const DynamicChartSettings = () => {
       {strategySelectionComponent()}
       <DynamicChartRenderComponent
         selectedItems={allSeriesConfigs.filter((d) =>
-          selectedItems.includes(d.name)
+          selectedItems.includes(d.displayName)
         )}
         sampleStrategy={sample}
       />
