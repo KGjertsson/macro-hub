@@ -1,10 +1,8 @@
-import ClientLayout from '@/app/ClientLayout';
-
 const Home = () => {
   return (
-    <ClientLayout>
-      <div>main page</div>
-    </ClientLayout>
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      main page
+    </main>
   );
 };
 

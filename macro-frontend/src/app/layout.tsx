@@ -2,6 +2,8 @@ import './globals.css';
 import { Inter } from 'next/font/google';
 import 'tw-elements/dist/css/tw-elements.min.css';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
+import DrawerWrapper from '@/components/drawer/DrawerWrapper';
+import React from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,7 +17,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
+        <AppRouterCacheProvider>
+          <DrawerWrapper>{children}</DrawerWrapper>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
