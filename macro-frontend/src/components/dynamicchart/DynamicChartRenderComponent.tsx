@@ -44,7 +44,7 @@ const DynamicChartRenderComponent = ({
     enabled: selectedItems.length > 0,
   });
 
-  if (isPending) return 'Loading...';
+  if (isPending) return <div />;
 
   if (error) return 'An error has occurred: ' + error.message;
 

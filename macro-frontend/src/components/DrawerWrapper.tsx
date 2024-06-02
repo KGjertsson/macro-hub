@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -19,8 +21,6 @@ import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-import DynamicChartSettings from '@/components/dynamicchart/DynamicChartSettings';
 
 const queryClient = new QueryClient();
 
@@ -82,7 +82,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-start',
 }));
 
-const DrawerWrapper = () => {
+const DrawerWrapper = ({ children }: { children: React.ReactNode }) => {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
@@ -121,7 +121,7 @@ const DrawerWrapper = () => {
       <Main open={open}>
         <DrawerHeader />
         <QueryClientProvider client={queryClient}>
-          <DynamicChartSettings />
+          {children}
         </QueryClientProvider>
       </Main>
       <Drawer

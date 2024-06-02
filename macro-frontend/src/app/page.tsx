@@ -1,11 +1,10 @@
-'use client';
-import DrawerWrapper from '@/components/DrawerWrapper';
+import ClientLayout from '@/app/ClientLayout';
 
 const Home = () => {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <DrawerWrapper />
-    </main>
+    <ClientLayout>
+      <div>main page</div>
+    </ClientLayout>
   );
 };
 
