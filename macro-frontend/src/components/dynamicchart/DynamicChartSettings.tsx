@@ -1,8 +1,13 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { rootUrl, SAMPLE_STRATEGY, sampleStrategies } from '@/models/Constants';
 import DynamicChartRenderComponent from '@/components/dynamicchart/DynamicChartRenderComponent';
 import { SeriesConfig } from '@/models/SeriesConfig';
 import { useQuery } from '@tanstack/react-query';
+
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import { Select, SelectChangeEvent } from '@mui/material';
 
 type SampleStrategyDisplay = {
   Day: string;
@@ -49,64 +54,62 @@ const DynamicChartSettings = () => {
     init();
   }, []);
 
-  const filterSelectedGraphs = (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = parseOptionFromElement(e);
-
-    setSelectedItems(selectedOptions);
+  const filterSelectedGraphs = (
+    event: SelectChangeEvent<typeof selectedItems>
+  ) => {
+    const value = event.target.value;
+    setSelectedItems(typeof value === 'string' ? value.split(',') : value);
   };
 
-  const setSampleFromEvent = (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedOption = parseOptionFromElement(e).map(
-      (selected) => SAMPLE_STRATEGY[selected as keyof typeof SAMPLE_STRATEGY]
-    )[0];
+  const setSampleFromEvent = (e: SelectChangeEvent) => {
+    const selectedOption =
+      SAMPLE_STRATEGY[e.target.value as keyof typeof SAMPLE_STRATEGY];
 
     setSample(selectedOption);
   };
 
-  const parseOptionFromElement = (
-    e: ChangeEvent<HTMLSelectElement>
-  ): string[] => {
-    return Array.from(e.target.selectedOptions, (option) => option.value);
-  };
-
   const dataSelectionComponent = () => {
     return (
-      <div style={{ minWidth: '500px' }}>
-        <select
-          data-te-select-init
+      <FormControl fullWidth>
+        <InputLabel id="demo-simple-select-label">Datatyp</InputLabel>
+        <Select
           multiple
+          labelId="data-selection-component"
+          id="data-selection-component"
+          label="Upplösning"
+          value={selectedItems}
           onChange={filterSelectedGraphs}
-          style={{ width: '500px' }}
         >
           {allSeriesConfigs
             .map((config) => config.displayName)
             .map((name) => (
-              <option key={name} value={name}>
+              <MenuItem key={name} value={name}>
                 {name}
-              </option>
+              </MenuItem>
             ))}
-        </select>
-        <label data-te-select-label-ref>Välj datatyp</label>
-      </div>
+        </Select>
+      </FormControl>
     );
   };
 
   const strategySelectionComponent = () => {
     return (
-      <div style={{ marginTop: '10px' }}>
-        <select
-          data-te-select-init
+      <FormControl fullWidth>
+        <InputLabel id="demo-simple-select-label">Upplösning</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={SAMPLE_STRATEGY[sample]}
+          label="Upplösning"
           onChange={setSampleFromEvent}
-          defaultValue={SAMPLE_STRATEGY[SAMPLE_STRATEGY.Month]}
         >
           {sampleStrategies.map((sample) => (
-            <option key={sample} value={sample}>
+            <MenuItem key={sample} value={sample}>
               {sampleStrategyDisplay[sample as keyof SampleStrategyDisplay]}
-            </option>
+            </MenuItem>
           ))}
-        </select>
-        <label data-te-select-label-ref>Välj upplösning</label>
-      </div>
+        </Select>
+      </FormControl>
     );
   };
 
@@ -121,6 +124,7 @@ const DynamicChartSettings = () => {
         </label>
       </div>
       {dataSelectionComponent()}
+      <div style={{ margin: '10px' }} />
       {strategySelectionComponent()}
       <DynamicChartRenderComponent
         selectedItems={allSeriesConfigs.filter((d) =>
