@@ -23,6 +23,10 @@ const menuItems: MenuItem[] = [
     name: 'Dynamisk graf',
     route: '/chart',
   },
+  {
+    name: 'Källor',
+    route: '/sources',
+  },
 ];
 
 const MenuList = () => {
