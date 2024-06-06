@@ -3,6 +3,7 @@ import { rootUrl, SAMPLE_STRATEGY } from '@/models/Constants';
 import DynamicChartComponent from '@/components/dynamicchart/DynamicChartComponent';
 import { useQuery } from '@tanstack/react-query';
 import { SeriesConfig } from '@/models/SeriesConfig';
+import { Dataset } from '@/models/Dataset';
 
 interface Props {
   selectedItems: SeriesConfig[];
@@ -13,6 +14,19 @@ const DynamicChartRenderComponent = ({
   selectedItems,
   sampleStrategy,
 }: Props) => {
+  const findDisplayName = (name: String) =>
+    selectedItems.filter((item) => item.name === name)[0].displayName;
+
+  const formatDisplayName = (raw: Dataset[]): Dataset[] => {
+    return raw.map((d) => {
+      const displayName = findDisplayName(d.name);
+      return {
+        ...d,
+        name: displayName,
+      };
+    });
+  };
+
   const queryKey =
     sampleStrategy +
     '@' +
@@ -52,8 +66,9 @@ const DynamicChartRenderComponent = ({
     sampleStrategy === SAMPLE_STRATEGY.Month
       ? data.labels.map((label: String) => label[0] + '-' + label[1])
       : data.labels;
+
   const formattedData = {
-    ...data,
+    chartData: formatDisplayName(data.chartData),
     labels: labels,
   };
 
