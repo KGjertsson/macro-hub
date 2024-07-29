@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 INSERT INTO series_configuration (global_id, name, display_name, country, period, scrape_url)
 VALUES (uuid_generate_v4(), 'PolicyRateSweden', 'Styrränta Sverige', '', '',
         'https://api.riksbank.se/swea/v1/Observations/SECBREPOEFF/1994-06-01'),

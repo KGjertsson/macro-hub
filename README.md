@@ -17,7 +17,7 @@ More details on the individual steps can be found below.
 
 ## marco-analyzer
 
-![macro-arch.drawio.png](macro-analyzer%2Fmacro-arch.drawio.png)
+![macro-hub-services-arch.drawio.png](macro-hub-services-arch.drawio.png)
 
 ### start docker database container
 
