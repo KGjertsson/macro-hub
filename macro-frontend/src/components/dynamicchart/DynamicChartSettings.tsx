@@ -8,6 +8,8 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { Select, SelectChangeEvent } from '@mui/material';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 
 type SampleStrategyDisplay = {
   Day: string;
@@ -80,6 +82,9 @@ const DynamicChartSettings = () => {
           value={selectedItems}
           onChange={filterSelectedGraphs}
         >
+          <Typography>
+            <b>Riksbanken</b>
+          </Typography>
           {allSeriesConfigs
             .map((config) => config.displayName)
             .map((name) => (
@@ -87,6 +92,10 @@ const DynamicChartSettings = () => {
                 {name}
               </MenuItem>
             ))}
+          <Divider />
+          <Typography>
+            <b>Statistiska centralbyrån</b>
+          </Typography>
         </Select>
       </FormControl>
     );
