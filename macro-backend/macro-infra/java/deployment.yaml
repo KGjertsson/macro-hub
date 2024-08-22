@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: macro-analyzer-java-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: macro-analyzer-java-app
+  template:
+    metadata:
+      labels:
+        app: macro-analyzer-java-app
+    spec:
+      containers:
+        - name: macro-analyzer-java-app
+          image: macro-analyzer:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080

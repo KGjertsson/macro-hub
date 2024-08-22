@@ -4,33 +4,16 @@ Visualizing macro-economic trends and parameters.
 
 ### Set Up Guide
 
-1. Start the docker database container
-2. Create the database in the container
+1. Configure the microk8s cluster
+2. Run postgres pod in the cluster
 3. Run the backend application in IntelliJ
 4. Install the frontend repo
 5. Run the frontend repo
 6. Run individual scrape queries below to populate the database
 
-More details on the individual steps can be found below.
-
 ---
 
 ## marco-analyzer
-
-![macro-hub-services-arch.drawio.png](macro-hub-services-arch.drawio.png)
-
-### start docker database container
-
-`docker run --name postgres-db -p 15432:5432 -e POSTGRES_PASSWORD=pgp -d postgres`
-
-### create database
-
-```
-psql -h localhost -p 15432 -U postgres -W
-CREATE DATABASE macroanalyzer;
-CREATE USER macrouser WITH PASSWORD 'macropassword';
-ALTER USER macrouser WITH SUPERUSER;
-```
 
 ### generate jooq model
 
