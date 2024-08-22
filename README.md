@@ -1,6 +1,9 @@
 # macro-hub
 
-Visualizing macro-economic trends and parameters.
+Visualizing macro-economic trends and parameters.  
+
+Potential future architecture:
+![macro-hub-services-arch.drawio.png](macro-hub-services-arch.drawio.png)
 
 ### Set Up Guide
 
