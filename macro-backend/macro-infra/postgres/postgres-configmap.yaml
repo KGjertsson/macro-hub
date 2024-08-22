@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: macro-analyzer
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: "macroanalyzer"
+  POSTGRES_USER: "macrouser"
+  POSTGRES_PASSWORD: "macropassword"
