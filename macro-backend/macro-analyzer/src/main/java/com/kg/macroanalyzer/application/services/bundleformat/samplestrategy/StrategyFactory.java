@@ -12,17 +12,15 @@ public class StrategyFactory {
         final var nullMsg = "Found unexpected instance of null in StrategyFactory";
 
         return Optional.ofNullable(strategy)
-                .map(this::createClass)
+                .map(this::buildStrategy)
                 .orElseThrow(() -> new IllegalArgumentException(nullMsg));
     }
 
-    private SampleStrategy createClass(@NonNull Strategy strategy) {
-        final var errorMsg = "Found invalid strategy %s".formatted(strategy);
-
+    private SampleStrategy buildStrategy(@NonNull Strategy strategy) {
         return switch (strategy) {
             case YEAR -> new SampleStrategyYear();
             case MONTH -> new SampleStrategyMonth();
-            default -> throw new IllegalArgumentException(errorMsg);
+            case DAY -> new SampleStrategyDay();
         };
     }
 

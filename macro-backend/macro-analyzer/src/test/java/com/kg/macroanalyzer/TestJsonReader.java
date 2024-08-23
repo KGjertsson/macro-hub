@@ -13,7 +13,7 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class TestJsonReader {
+public class    TestJsonReader {
 
     public List<MacroSeries> readMacroSeriesList(String path) {
         return Stream.ofNullable(TestJsonReader.class.getClassLoader().getResource(path))
