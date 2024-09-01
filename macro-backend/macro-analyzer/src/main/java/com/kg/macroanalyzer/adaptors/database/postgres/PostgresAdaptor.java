@@ -25,6 +25,7 @@ public class PostgresAdaptor implements DatabasePort {
     GovernmentBillRepository governmentBillRepo;
     GovernmentBondsRepository govBondsRepo;
     PolicyRateRepository policyRateRepo;
+    FedRepository fedRepository;
     ScrapeRepository scrapeRepository;
     SeriesConfigRepository seriesConfigRepository;
 
@@ -35,6 +36,7 @@ public class PostgresAdaptor implements DatabasePort {
             GovernmentBillRepository governmentBillRepo,
             GovernmentBondsRepository govBondsRepo,
             PolicyRateRepository policyRateRepo,
+            FedRepository fedRepository,
             ScrapeRepository scrapeRepository,
             SeriesConfigRepository seriesConfigRepository
     ) {
@@ -43,6 +45,7 @@ public class PostgresAdaptor implements DatabasePort {
         this.governmentBillRepo = governmentBillRepo;
         this.govBondsRepo = govBondsRepo;
         this.policyRateRepo = policyRateRepo;
+        this.fedRepository = fedRepository;
         this.scrapeRepository = scrapeRepository;
         this.seriesConfigRepository = seriesConfigRepository;
     }
@@ -108,7 +111,7 @@ public class PostgresAdaptor implements DatabasePort {
         final var name = params.name();
         final var errorMsg = String.format("Found unexpected MacroSeries name=%s".formatted(name));
 
-        return switch (params.name()) {
+        return switch (name) {
             case "PolicyRateSweden" -> policyRateRepo.policyRateSwedenReader();
             case "UsdSekExchangeRate" -> exchangeRateRepo.getExchangeRateUsdSek();
             case "GovernmentBondSweden2Year" -> govBondsRepo.swedishGovBond2YearReader();
@@ -148,6 +151,17 @@ public class PostgresAdaptor implements DatabasePort {
             case "IntGovBondsNetherlands10Year" -> govBondsRepo.intGovBond10YearReaderHolland();
             case "IntGovBondsNorway10Year" -> govBondsRepo.intGovBond10YearReaderNorway();
             case "IntGovBondsUsa10Year" -> govBondsRepo.intGovBond10YearReaderUSA();
+            case "FEDUnemploymentRate",
+                 "FEDGPD",
+                 "FEDTotalPublicDebt",
+                 "FEDPublicDebtAsGDPPercentage",
+                 "FEDSurplusOrDeficit",
+                 "FEDEffectiveFederalFundsRate",
+                 "FEDSPX500",
+                 "FEDDJ",
+                 "FEDN100",
+                 "FEDVIX",
+                 "FEDCPI" -> fedRepository.fedReader(name);
             default -> throw new IllegalArgumentException(errorMsg);
         };
     }
@@ -167,23 +181,17 @@ public class PostgresAdaptor implements DatabasePort {
             case "GovernmentBillSweden3Month" -> governmentBillRepo.swedishGovBill3MonthWriter();
             case "GovernmentBillSweden6Month" -> governmentBillRepo.swedishGovBill6MonthWriter();
             case "GovernmentBillSweden12Month" -> governmentBillRepo.swedishGovBill12MonthWriter();
-            case "EuroMarketRateDenmark3Month" ->
-                    euroMarketRateRepo.insertEuroMarketRate3MonthDenmark();
+            case "EuroMarketRateDenmark3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthDenmark();
             case "EuroMarketRateEur3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthEur();
             case "EuroMarketRateGB3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthGB();
-            case "EuroMarketRateJapan3Month" ->
-                    euroMarketRateRepo.insertEuroMarketRate3MonthJapan();
-            case "EuroMarketRateNorway3Month" ->
-                    euroMarketRateRepo.insertEuroMarketRate3MonthNorway();
+            case "EuroMarketRateJapan3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthJapan();
+            case "EuroMarketRateNorway3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthNorway();
             case "EuroMarketRateUsa3Month" -> euroMarketRateRepo.insertEuroMarketRate3MonthUsa();
-            case "EuroMarketRateDenmark6Month" ->
-                    euroMarketRateRepo.insertEuroMarketRate6MonthDenmark();
+            case "EuroMarketRateDenmark6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthDenmark();
             case "EuroMarketRateEur6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthEur();
             case "EuroMarketRateGB6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthGB();
-            case "EuroMarketRateJapan6Month" ->
-                    euroMarketRateRepo.insertEuroMarketRate6MonthJapan();
-            case "EuroMarketRateNorway6Month" ->
-                    euroMarketRateRepo.insertEuroMarketRate6MonthNorway();
+            case "EuroMarketRateJapan6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthJapan();
+            case "EuroMarketRateNorway6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthNorway();
             case "EuroMarketRateUsa6Month" -> euroMarketRateRepo.insertEuroMarketRate6MonthUsa();
             case "IntGovBondsEur5Year" -> govBondsRepo.intGovBond5YearWriterEur();
             case "IntGovBondsFrance5Year" -> govBondsRepo.intGovBond5YearWriterFrance();
@@ -202,6 +210,17 @@ public class PostgresAdaptor implements DatabasePort {
             case "IntGovBondsNetherlands10Year" -> govBondsRepo.intGovBond10YearWriterHolland();
             case "IntGovBondsNorway10Year" -> govBondsRepo.intGovBond10YearWriterNorway();
             case "IntGovBondsUsa10Year" -> govBondsRepo.intGovBond10YearWriterUSA();
+            case "FEDUnemploymentRate",
+                 "FEDGPD",
+                 "FEDTotalPublicDebt",
+                 "FEDPublicDebtAsGDPPercentage",
+                 "FEDSurplusOrDeficit",
+                 "FEDEffectiveFederalFundsRate",
+                 "FEDSPX500",
+                 "FEDDJ",
+                 "FEDN100",
+                 "FEDVIX",
+                 "FEDCPI" -> fedRepository.fedWriter(name);
             default -> throw new IllegalArgumentException(errorMsg);
         };
     }

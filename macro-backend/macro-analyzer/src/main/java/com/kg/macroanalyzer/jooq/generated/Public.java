@@ -17,6 +17,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthNorway;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
+import com.kg.macroanalyzer.jooq.generated.tables.FedSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearEur;
@@ -133,6 +134,11 @@ public class Public extends SchemaImpl {
      * The table <code>public.exchange_usd_sek</code>.
      */
     public final ExchangeUsdSek EXCHANGE_USD_SEK = ExchangeUsdSek.EXCHANGE_USD_SEK;
+
+    /**
+     * The table <code>public.fed_series</code>.
+     */
+    public final FedSeries FED_SERIES = FedSeries.FED_SERIES;
 
     /**
      * The table <code>public.flyway_schema_history</code>.
@@ -335,6 +341,7 @@ public class Public extends SchemaImpl {
             EuroMarket_6MonthNorway.EURO_MARKET_6_MONTH_NORWAY,
             EuroMarket_6MonthUsa.EURO_MARKET_6_MONTH_USA,
             ExchangeUsdSek.EXCHANGE_USD_SEK,
+            FedSeries.FED_SERIES,
             FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
             IntGovBond_10YearDenmark.INT_GOV_BOND_10_YEAR_DENMARK,
             IntGovBond_10YearEur.INT_GOV_BOND_10_YEAR_EUR,

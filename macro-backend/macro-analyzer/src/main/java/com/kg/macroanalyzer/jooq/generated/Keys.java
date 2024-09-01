@@ -17,6 +17,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthNorway;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
+import com.kg.macroanalyzer.jooq.generated.tables.FedSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearEur;
@@ -59,6 +60,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_6MonthJapan
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_6MonthNorwayRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_6MonthUsaRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ExchangeUsdSekRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.FedSeriesRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.FlywaySchemaHistoryRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_10YearDenmarkRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_10YearEurRecord;
@@ -119,6 +121,7 @@ public class Keys {
     public static final UniqueKey<EuroMarket_6MonthNorwayRecord> EURO_MARKET_6_MONTH_NORWAY_PKEY = Internal.createUniqueKey(EuroMarket_6MonthNorway.EURO_MARKET_6_MONTH_NORWAY, DSL.name("euro_market_6_month_norway_pkey"), new TableField[] { EuroMarket_6MonthNorway.EURO_MARKET_6_MONTH_NORWAY.ID }, true);
     public static final UniqueKey<EuroMarket_6MonthUsaRecord> EURO_MARKET_6_MONTH_USA_PKEY = Internal.createUniqueKey(EuroMarket_6MonthUsa.EURO_MARKET_6_MONTH_USA, DSL.name("euro_market_6_month_usa_pkey"), new TableField[] { EuroMarket_6MonthUsa.EURO_MARKET_6_MONTH_USA.ID }, true);
     public static final UniqueKey<ExchangeUsdSekRecord> EXCHANGE_USD_SEK_PKEY = Internal.createUniqueKey(ExchangeUsdSek.EXCHANGE_USD_SEK, DSL.name("exchange_usd_sek_pkey"), new TableField[] { ExchangeUsdSek.EXCHANGE_USD_SEK.ID }, true);
+    public static final UniqueKey<FedSeriesRecord> FED_SERIES_PKEY = Internal.createUniqueKey(FedSeries.FED_SERIES, DSL.name("fed_series_pkey"), new TableField[] { FedSeries.FED_SERIES.ID }, true);
     public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, DSL.name("flyway_schema_history_pk"), new TableField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK }, true);
     public static final UniqueKey<IntGovBond_10YearDenmarkRecord> EURO_MARKET_10_YEAR_DENMARK_PKEY = Internal.createUniqueKey(IntGovBond_10YearDenmark.INT_GOV_BOND_10_YEAR_DENMARK, DSL.name("euro_market_10_year_denmark_pkey"), new TableField[] { IntGovBond_10YearDenmark.INT_GOV_BOND_10_YEAR_DENMARK.ID }, true);
     public static final UniqueKey<IntGovBond_10YearEurRecord> EURO_MARKET_10_YEAR_EUR_PKEY = Internal.createUniqueKey(IntGovBond_10YearEur.INT_GOV_BOND_10_YEAR_EUR, DSL.name("euro_market_10_year_eur_pkey"), new TableField[] { IntGovBond_10YearEur.INT_GOV_BOND_10_YEAR_EUR.ID }, true);

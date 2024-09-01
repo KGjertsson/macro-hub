@@ -96,6 +96,9 @@ const DynamicChartSettings = () => {
           <Typography>
             <b>Statistiska centralbyrån</b>
           </Typography>
+          <Typography>
+            <b>USA grajjor</b>
+          </Typography>
         </Select>
       </FormControl>
     );

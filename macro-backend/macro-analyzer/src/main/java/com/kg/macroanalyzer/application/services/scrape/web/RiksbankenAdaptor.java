@@ -1,5 +1,6 @@
-package com.kg.macroanalyzer.utils;
+package com.kg.macroanalyzer.application.services.scrape.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -11,9 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,28 +23,42 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Component
-public class WebUtils {
+public class RiksbankenAdaptor extends WebAdaptor {
 
     @Value("${riskbanken.prod.subscription.key}")
     private String subscriptionKey;
 
-    public Stream<MacroPoint> getMacroPoints(SeriesConfig seriesConfig) throws ScrapeException {
-        try {
-            final var response = getHTTP(seriesConfig.scrapeUrl());
-            final var objectMapper = createObjectMapper();
+    @Override
+    protected HttpURLConnection buildConnection(SeriesConfig seriesConfig) throws IOException, URISyntaxException {
+        final var endpointUrl = seriesConfig.scrapeUrl();
+        final var url = new URI(endpointUrl).toURL();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
 
+        if (subscriptionKey != null) {
+            // Add custom header "Ocp-Apim-Subscription-Key" with its value
+            connection.setRequestProperty("Ocp-Apim-Subscription-Key", subscriptionKey);
+        }
+
+        return connection;
+    }
+
+    @Override
+    protected Stream<MacroPoint> parseResponse(String response) throws ScrapeException {
+        try {
+            final var objectMapper = createObjectMapper();
             JavaType collectionType = objectMapper.getTypeFactory()
                     .constructCollectionType(List.class, ScrapedResponse.class);
             final List<ScrapedResponse> resultList = objectMapper.readValue(response, collectionType);
 
             return resultList.stream()
                     .map(ScrapedResponse::toMacroPoint);
-        } catch (IOException ioException) {
-            final var msgRaw = "Encountered IOException when scraping %s, e=%s";
-            final var msgFormatted = msgRaw.formatted(seriesConfig.displayName(), ioException);
+        } catch (JsonProcessingException jsonProcessingException) {
+            final var msgRaw = "Caught exception while parsing response from Riskbanken's API: %s";
+            final var msgFormatted = String.format(msgRaw, jsonProcessingException.getMessage());
             log.error(msgFormatted);
 
-            throw new ScrapeException(msgFormatted);
+            throw new ScrapeException(jsonProcessingException.getMessage());
         }
     }
 
@@ -53,38 +66,6 @@ public class WebUtils {
         final var objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
-    }
-
-    private String getHTTP(String endpointUrl) {
-        try {
-            final var url = new URI(endpointUrl).toURL();
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-
-            if (subscriptionKey != null) {
-                // Add custom header "Ocp-Apim-Subscription-Key" with its value
-                connection.setRequestProperty("Ocp-Apim-Subscription-Key", subscriptionKey);
-            }
-
-            // Read the response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder responseBuilder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                responseBuilder.append(line);
-            }
-            reader.close();
-
-            // Get the response as a string
-            String response = responseBuilder.toString();
-
-            // Close the connection
-            connection.disconnect();
-
-            return response;
-        } catch (IOException | URISyntaxException ioException) {
-            throw new RuntimeException(ioException.getMessage());
-        }
     }
 
     private record ScrapedResponse(@NonNull Double value, @NonNull String date) {
@@ -99,5 +80,6 @@ public class WebUtils {
         }
 
     }
+
 
 }

@@ -3,7 +3,8 @@ package com.kg.macroanalyzer.application.services.scrape;
 import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import com.kg.macroanalyzer.utils.WebUtils;
+import com.kg.macroanalyzer.application.services.scrape.web.WebAdaptor;
+import com.kg.macroanalyzer.application.services.scrape.web.WebAdaptorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,11 +17,11 @@ import static java.util.Objects.isNull;
 @Component
 public class ScrapeUtils {
 
-    private final WebUtils webUtils;
+    private final WebAdaptorFactory webAdaptorFactory;
 
     @Autowired
-    public ScrapeUtils(WebUtils webUtils) {
-        this.webUtils = webUtils;
+    public ScrapeUtils(WebAdaptorFactory webAdaptorFactory) {
+        this.webAdaptorFactory = webAdaptorFactory;
     }
 
     public List<MacroPoint> scrapeNovelItems(
@@ -30,8 +31,9 @@ public class ScrapeUtils {
         if (isNull(seriesConfig)) {
             throw new ScrapeException("Found null seriesConfig when scraping novel items");
         }
+        final var webAdaptor = webAdaptorFactory.build(seriesConfig);
 
-        return webUtils.getMacroPoints(seriesConfig)
+        return webAdaptor.getMacroPoints(seriesConfig)
                 .filter(i -> !persistedItems.contains(i))
                 .toList();
     }

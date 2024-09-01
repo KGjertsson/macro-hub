@@ -79,6 +79,10 @@ public class ScrapeService {
                             .build()
             );
         } catch (ScrapeException scrapeException) {
+            final var msg = "Caught ScrapeException for config=%s";
+            final var formattedMsg = String.format(msg, configWithMacroPoints.seriesConfig());
+            log.error(formattedMsg);
+
             return Optional.empty();
         }
     }

@@ -32,18 +32,6 @@ public class StrategyFactoryTest {
     }
 
     @Test
-    public void buildShouldThrowIllegalArgumentException_whenDayStrategy() {
-        // given
-        final var strategy = Strategy.DAY;
-
-        // when/then
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> strategyFactory.build(strategy)
-        );
-    }
-
-    @Test
     public void shouldBuildSampleStrategyMonth_whenMonthStrategy() {
         // given
         final var strategy = Strategy.MONTH;

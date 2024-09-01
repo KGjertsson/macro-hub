@@ -17,6 +17,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthNorway;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
+import com.kg.macroanalyzer.jooq.generated.tables.FedSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearEur;
@@ -118,6 +119,11 @@ public class Tables {
      * The table <code>public.exchange_usd_sek</code>.
      */
     public static final ExchangeUsdSek EXCHANGE_USD_SEK = ExchangeUsdSek.EXCHANGE_USD_SEK;
+
+    /**
+     * The table <code>public.fed_series</code>.
+     */
+    public static final FedSeries FED_SERIES = FedSeries.FED_SERIES;
 
     /**
      * The table <code>public.flyway_schema_history</code>.
