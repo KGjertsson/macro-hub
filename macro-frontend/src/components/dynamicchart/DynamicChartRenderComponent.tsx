@@ -1,5 +1,5 @@
 import React from 'react';
-import { rootUrl, SAMPLE_STRATEGY } from '@/models/Constants';
+import { rootUrl, SAMPLE_STRATEGY, TIME_FRAME } from '@/models/Constants';
 import DynamicChartComponent from '@/components/dynamicchart/DynamicChartComponent';
 import { useQuery } from '@tanstack/react-query';
 import { SeriesConfig } from '@/models/SeriesConfig';
@@ -8,11 +8,13 @@ import { Dataset } from '@/models/Dataset';
 interface Props {
   selectedItems: SeriesConfig[];
   sampleStrategy: SAMPLE_STRATEGY;
+  timeframe: TIME_FRAME;
 }
 
 const DynamicChartRenderComponent = ({
   selectedItems,
   sampleStrategy,
+  timeFrame
 }: Props) => {
   const findDisplayName = (name: String) =>
     selectedItems.filter((item) => item.name === name)[0].displayName;
@@ -30,10 +32,13 @@ const DynamicChartRenderComponent = ({
   const queryKey =
     sampleStrategy +
     '@' +
+    timeFrame +
+    '@' +
     selectedItems.map((i: SeriesConfig) => i.name).join(',');
 
   const body = {
     strategy: sampleStrategy,
+    timeFrame: timeFrame,
     chartSeriesParams: selectedItems.map((config) => {
       return {
         name: config.name,

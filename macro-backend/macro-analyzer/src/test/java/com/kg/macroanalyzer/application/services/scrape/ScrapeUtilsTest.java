@@ -4,6 +4,7 @@ import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.scrape.web.WebAdaptor;
+import com.kg.macroanalyzer.application.services.scrape.web.WebAdaptorFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,6 +29,8 @@ public class ScrapeUtilsTest {
     @InjectMocks
     ScrapeUtils scrapeUtils;
     @Mock
+    WebAdaptorFactory webAdaptorFactory;
+    @Mock
     WebAdaptor webAdaptor;
     @Mock
     SeriesConfig seriesConfig;
@@ -51,6 +54,7 @@ public class ScrapeUtilsTest {
         final List<MacroPoint> macroPoints = emptyList();
 
         // when
+        when(webAdaptorFactory.build(any())).thenReturn(webAdaptor);
         when(webAdaptor.getMacroPoints(any())).thenThrow(new ScrapeException("Test ScrapeException"));
 
         // when/then
@@ -71,6 +75,7 @@ public class ScrapeUtilsTest {
         );
 
         // when
+        when(webAdaptorFactory.build(any())).thenReturn(webAdaptor);
         when(webAdaptor.getMacroPoints(any())).thenReturn(scrapedList);
         final var novelItems = scrapeUtils.scrapeNovelItems(seriesConfig, persistedList);
 
@@ -92,6 +97,7 @@ public class ScrapeUtilsTest {
         );
 
         // when
+        when(webAdaptorFactory.build(any())).thenReturn(webAdaptor);
         when(webAdaptor.getMacroPoints(any())).thenReturn(scrapedList);
         final var novelItems = scrapeUtils.scrapeNovelItems(seriesConfig, persistedList);
 

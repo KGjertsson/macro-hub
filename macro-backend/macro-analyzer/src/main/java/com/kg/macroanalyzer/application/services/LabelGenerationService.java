@@ -121,7 +121,7 @@ public class LabelGenerationService {
 
     private Optional<LabelEdges> findEdges(List<MacroSeries> macroSeriesList) {
         return macroSeriesList.stream()
-                .map(this::toLabelEdges)
+                .flatMap(this::toLabelEdges)
                 .reduce(IDENTITY_LABELS, this::findEdges)
                 .toOptional()
                 .filter(this::isNotIdentity);
@@ -142,11 +142,14 @@ public class LabelGenerationService {
         return edgeBuilder.build();
     }
 
-    private LabelEdges toLabelEdges(MacroSeries macroSeries) {
-        return LabelEdges.builder()
+    private Stream<LabelEdges> toLabelEdges(MacroSeries macroSeries) {
+        if (macroSeries.macroPoints().isEmpty()) return Stream.empty();
+        final var labelEdges =  LabelEdges.builder()
                 .startDate(LocalDate.from(macroSeries.macroPoints().getFirst().date()))
                 .endDate(LocalDate.from(macroSeries.macroPoints().getLast().date()))
                 .build();
+
+        return Stream.of(labelEdges);
     }
 
     @Builder(toBuilder = true)

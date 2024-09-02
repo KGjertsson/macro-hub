@@ -5,6 +5,7 @@ import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.services.LabelGenerationService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.UniqueMacroPointCollector;
+import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,13 +13,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class BundleFormatService {
+public class AlignmentService {
 
     private final LabelGenerationService labelGenerationService;
     private final StrategyFactory strategyFactory;
 
     @Autowired
-    public BundleFormatService(
+    public AlignmentService(
             LabelGenerationService labelGenerationService,
             StrategyFactory strategyFactory
     ) {

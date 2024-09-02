@@ -7,8 +7,10 @@ import com.kg.macroanalyzer.application.domain.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.OutPortImpl;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
-import com.kg.macroanalyzer.application.services.bundleformat.BundleFormatService;
+import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
+import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
+import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,7 +36,9 @@ public class OutPortImplTest {
     @Mock
     DatabasePort databasePort;
     @Mock
-    BundleFormatService bundleFormatService;
+    AlignmentService alignmentService;
+    @Mock
+    TimeFilterService timeFilterService;
 
     @Test
     void shouldReturnAlignedBundle_whenInputListIsPresent() {
@@ -51,11 +55,13 @@ public class OutPortImplTest {
                 .labels(List.of(firstDate, secondDate))
                 .macroSeries(macroSeriesList)
                 .build();
-        when(databasePort.readMacroSeries(anyList())).thenReturn(emptyList());
-        when(bundleFormatService.align(any(), any())).thenReturn(Optional.of(alignedBundle));
+        when(databasePort.readMacroSeries(anyList())).thenReturn(macroSeriesList);
+        when(timeFilterService.shrinkToTimeFrame(anyList(), any())).thenReturn(Optional.of(macroSeriesList));
+        when(alignmentService.align(any(), any())).thenReturn(Optional.of(alignedBundle));
         final var params = BuildChartDataParams.builder()
                 .chartSeriesParams(emptyList())
                 .strategy(StrategyFactory.Strategy.MONTH)
+                .timeFrame(TimeFilterStrategyFactory.TimeFrame.ALL)
                 .build();
 
         // when
@@ -79,7 +85,6 @@ public class OutPortImplTest {
                 .strategy(StrategyFactory.Strategy.MONTH)
                 .build();
         when(databasePort.readMacroSeries(anyList())).thenReturn(emptyList());
-        when(bundleFormatService.align(any(), eq(params.strategy()))).thenReturn(Optional.empty());
 
         // when
         final var response = outPortImpl.buildAlignedBundle(params);

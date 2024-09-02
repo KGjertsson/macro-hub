@@ -9,5 +9,17 @@ export enum SAMPLE_STRATEGY {
 export const sampleStrategies = [
   SAMPLE_STRATEGY[SAMPLE_STRATEGY.Day],
   SAMPLE_STRATEGY[SAMPLE_STRATEGY.Month],
-  SAMPLE_STRATEGY[SAMPLE_STRATEGY.Year],
+  SAMPLE_STRATEGY[SAMPLE_STRATEGY.Year]
+];
+
+export enum TIME_FRAME {
+  All,
+  OneYear,
+  OneMonth
+}
+
+export const timeWindows = [
+  TIME_FRAME[TIME_FRAME.All],
+  TIME_FRAME[TIME_FRAME.OneYear],
+  TIME_FRAME[TIME_FRAME.OneMonth]
 ];

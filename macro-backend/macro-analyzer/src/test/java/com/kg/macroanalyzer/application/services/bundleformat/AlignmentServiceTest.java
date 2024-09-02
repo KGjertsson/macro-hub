@@ -22,12 +22,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class BundleFormatServiceTest {
+public class AlignmentServiceTest {
 
     private final StrategyFactory.Strategy STRATEGY = StrategyFactory.Strategy.MONTH;
 
     @InjectMocks
-    BundleFormatService bundleFormatService;
+    AlignmentService alignmentService;
     @Mock
     StrategyFactory strategyFactory;
     @Mock
@@ -57,7 +57,7 @@ public class BundleFormatServiceTest {
         when(sampleStrategy.sample(macroSeries)).thenReturn(Optional.of(inputBundle));
 
         // when
-        final var result = bundleFormatService.align(macroSeries, STRATEGY);
+        final var result = alignmentService.align(macroSeries, STRATEGY);
 
         // then
         assertTrue(result.isPresent());
@@ -70,7 +70,7 @@ public class BundleFormatServiceTest {
         when(strategyFactory.build(STRATEGY)).thenReturn(sampleStrategy);
 
         // when
-        final var result = bundleFormatService.align(null, STRATEGY);
+        final var result = alignmentService.align(null, STRATEGY);
 
         // then
         assertTrue(result.isEmpty());
@@ -84,7 +84,7 @@ public class BundleFormatServiceTest {
         // when/then
         assertThrows(
                 IllegalArgumentException.class,
-                () -> bundleFormatService.align(emptyList(), null)
+                () -> alignmentService.align(emptyList(), null)
         );
     }
 

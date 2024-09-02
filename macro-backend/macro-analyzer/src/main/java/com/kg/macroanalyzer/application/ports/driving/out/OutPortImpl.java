@@ -6,7 +6,8 @@ import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartSeriesParam;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import com.kg.macroanalyzer.application.services.bundleformat.BundleFormatService;
+import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
+import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,27 +19,30 @@ import java.util.Optional;
 public class OutPortImpl implements OutPort {
 
     private final DatabasePort databasePort;
-    private final BundleFormatService bundleFormatService;
+    private final AlignmentService alignmentService;
+    private final TimeFilterService timeFilterService;
     private final List<SeriesConfig> seriesConfigList;
 
     @Autowired
     public OutPortImpl(
             DatabasePort databasePort,
-            BundleFormatService bundleFormatService
+            AlignmentService alignmentService,
+            TimeFilterService timeFilterService
     ) {
         this.databasePort = databasePort;
-        this.bundleFormatService = bundleFormatService;
+        this.alignmentService = alignmentService;
+        this.timeFilterService = timeFilterService;
         this.seriesConfigList = databasePort.readSeriesConfigList();
     }
 
     @Override
     public Optional<AlignedBundle> buildAlignedBundle(@NonNull BuildChartDataParams params) {
         final var strategy = params.strategy();
+        final var timeFrame = params.timeFrame();
 
-        return Optional.of(params)
-                .map(BuildChartDataParams::chartSeriesParams)
-                .map(this::readMacroSeries)
-                .flatMap(macroSeriesList -> bundleFormatService.align(macroSeriesList, strategy));
+        return readMacroSeries(params.chartSeriesParams())
+                .flatMap(macroSeries -> timeFilterService.shrinkToTimeFrame(macroSeries, timeFrame))
+                .flatMap(macroSeriesList -> alignmentService.align(macroSeriesList, strategy));
     }
 
     @Override
@@ -46,7 +50,7 @@ public class OutPortImpl implements OutPort {
         return seriesConfigList;
     }
 
-    private List<MacroSeries> readMacroSeries(
+    private Optional<List<MacroSeries>> readMacroSeries(
             @NonNull List<ChartSeriesParam> chartSeriesParamList
     ) {
         final var chartSeriesParamNames = chartSeriesParamList.stream()
@@ -57,7 +61,7 @@ public class OutPortImpl implements OutPort {
                 .filter(c -> chartSeriesParamNames.contains(c.name()))
                 .toList();
 
-        return databasePort.readMacroSeries(requestedMacroSeries);
+        return Optional.ofNullable(databasePort.readMacroSeries(requestedMacroSeries));
     }
 
 }
