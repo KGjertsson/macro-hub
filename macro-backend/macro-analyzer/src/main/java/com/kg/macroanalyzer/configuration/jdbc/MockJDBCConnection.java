@@ -12,4 +12,5 @@ public class MockJDBCConnection implements MockDataProvider {
     public MockResult[] execute(MockExecuteContext mockExecuteContext) throws SQLException {
         return new MockResult[0];
     }
+
 }

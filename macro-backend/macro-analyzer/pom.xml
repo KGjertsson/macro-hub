@@ -104,7 +104,7 @@
                 <configuration>
                     <jdbc>
                         <driver>org.postgresql.Driver</driver>
-                        <url>jdbc:postgresql://localhost:5432/macroanalyzer</url>
+                        <url>jdbc:postgresql://192.168.154.7:31274/macroanalyzer</url>
                         <user>macrouser</user>
                         <password>macropassword</password>
                     </jdbc>
