@@ -32,12 +32,16 @@ const sampleStrategyDisplay: SampleStrategyDisplay = {
 type TimeFrameDisplay = {
   All: string,
   OneYear: string,
+  FiveYear: string,
+  TenYear: string,
   OneMonth: string
 };
 
 const timeFrameDisplay: TimeFrameDisplay = {
   All: 'Allt',
   OneYear: 'Ett år',
+  FiveYear: 'Fem år',
+  TenYear: 'Tio år',
   OneMonth: 'En månad'
 };
 

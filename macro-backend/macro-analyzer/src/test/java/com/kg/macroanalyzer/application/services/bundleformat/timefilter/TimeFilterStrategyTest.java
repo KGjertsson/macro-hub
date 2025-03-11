@@ -3,7 +3,7 @@ package com.kg.macroanalyzer.application.services.bundleformat.timefilter;
 import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyAll;
 import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyOneMonth;
-import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyOneYear;
+import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyYear;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -41,7 +41,7 @@ public class TimeFilterStrategyTest {
     public void shouldReturnFiltered_whenOneYearStrategy(String resource) {
         // given
         final var inputSeries = testJsonReader.readMacroSeriesList(resource);
-        final var strategy = new TimeFilterStrategyOneYear(LocalDate.of(2025, 9, 1));
+        final var strategy = new TimeFilterStrategyYear(LocalDate.of(2025, 9, 1), 1);
 
         // when
         final var response = strategy.filter(inputSeries);

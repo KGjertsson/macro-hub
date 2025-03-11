@@ -5,16 +5,19 @@ import com.kg.macroanalyzer.application.domain.MacroSeries;
 import java.time.LocalDate;
 import java.util.List;
 
-public class TimeFilterStrategyOneYear implements TimeFilterStrategy {
+public class TimeFilterStrategyYear implements TimeFilterStrategy {
 
-    private LocalDate now;
+    private final LocalDate now;
+    private final Integer years;
 
-    public TimeFilterStrategyOneYear() {
+    public TimeFilterStrategyYear(Integer years) {
         this.now = LocalDate.now();
+        this.years = years;
     }
 
-    public TimeFilterStrategyOneYear(LocalDate now) {
+    public TimeFilterStrategyYear(LocalDate now, Integer years) {
         this.now = now;
+        this.years = years;
     }
 
     @Override
@@ -25,7 +28,7 @@ public class TimeFilterStrategyOneYear implements TimeFilterStrategy {
     }
 
     private MacroSeries filter(MacroSeries macroSeries) {
-        final var oneYearInThePast = now.minusYears(1);
+        final var oneYearInThePast = now.minusYears(this.years);
         final var filteredPoints = macroSeries.macroPoints().stream()
                 .filter(macroPoint -> LocalDate.from(macroPoint.date()).isAfter(oneYearInThePast))
                 .toList();

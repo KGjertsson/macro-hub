@@ -16,13 +16,15 @@ public class TimeFilterStrategyFactory {
     }
 
     public enum TimeFrame {
-        ALL, ONEYEAR, ONEMONTH
+        ALL, ONEYEAR, FIVEYEAR, TENYEAR, ONEMONTH
     }
 
     private TimeFilterStrategy buildStrategy(TimeFrame timeFrame) {
         return switch (timeFrame) {
             case ALL -> new TimeFilterStrategyAll();
-            case ONEYEAR -> new TimeFilterStrategyOneYear();
+            case ONEYEAR -> new TimeFilterStrategyYear(1);
+            case FIVEYEAR -> new TimeFilterStrategyYear(5);
+            case TENYEAR -> new TimeFilterStrategyYear(10);
             case ONEMONTH -> new TimeFilterStrategyOneMonth();
         };
     }
