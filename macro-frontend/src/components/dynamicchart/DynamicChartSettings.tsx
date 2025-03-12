@@ -66,6 +66,7 @@ const DynamicChartSettings = () => {
 
   useEffect(() => {
     if (!isPending && !error) {
+      console.log(data)
       setAllSeriesConfigs(data);
     }
   }, [isPending, error, data]);
@@ -116,6 +117,7 @@ const DynamicChartSettings = () => {
             <b>Riksbanken</b>
           </Typography>
           {allSeriesConfigs
+            .filter((config) => config.scrapeUrl?.includes("riksbank"))
             .map((config) => config.displayName)
             .map((name) => (
               <MenuItem key={name} value={name}>
@@ -123,12 +125,20 @@ const DynamicChartSettings = () => {
               </MenuItem>
             ))}
           <Divider />
-          <Typography>
-            <b>Statistiska centralbyrån</b>
-          </Typography>
+          {/*<Typography>*/}
+          {/*  <b>Statistiska centralbyrån</b>*/}
+          {/*</Typography>*/}
           <Typography>
             <b>USA grajjor</b>
           </Typography>
+          {allSeriesConfigs
+            .filter((config) => config.scrapeUrl?.includes("stlouisfed"))
+            .map((config) => config.displayName)
+            .map((name) => (
+              <MenuItem key={name} value={name}>
+                {name}
+              </MenuItem>
+            ))}
         </Select>
       </FormControl>
     );

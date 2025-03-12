@@ -3,4 +3,5 @@ export type SeriesConfig = {
   displayName: string;
   country?: string;
   period?: string;
+  scrapeUrl?: string;
 };
