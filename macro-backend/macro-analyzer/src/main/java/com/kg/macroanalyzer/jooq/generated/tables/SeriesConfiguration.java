@@ -14,12 +14,12 @@ import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function9;
+import org.jooq.Function8;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Records;
-import org.jooq.Row9;
+import org.jooq.Row8;
 import org.jooq.Schema;
 import org.jooq.SelectField;
 import org.jooq.Table;
@@ -73,16 +73,6 @@ public class SeriesConfiguration extends TableImpl<SeriesConfigurationRecord> {
     public final TableField<SeriesConfigurationRecord, String> DISPLAY_NAME = createField(DSL.name("display_name"), SQLDataType.VARCHAR(200).nullable(false), this, "");
 
     /**
-     * The column <code>public.series_configuration.country</code>.
-     */
-    public final TableField<SeriesConfigurationRecord, String> COUNTRY = createField(DSL.name("country"), SQLDataType.VARCHAR(100), this, "");
-
-    /**
-     * The column <code>public.series_configuration.period</code>.
-     */
-    public final TableField<SeriesConfigurationRecord, String> PERIOD = createField(DSL.name("period"), SQLDataType.VARCHAR(100), this, "");
-
-    /**
      * The column <code>public.series_configuration.created</code>.
      */
     public final TableField<SeriesConfigurationRecord, LocalDateTime> CREATED = createField(DSL.name("created"), SQLDataType.LOCALDATETIME(6).defaultValue(DSL.field(DSL.raw("now()"), SQLDataType.LOCALDATETIME)), this, "");
@@ -96,6 +86,11 @@ public class SeriesConfiguration extends TableImpl<SeriesConfigurationRecord> {
      * The column <code>public.series_configuration.scrape_url</code>.
      */
     public final TableField<SeriesConfigurationRecord, String> SCRAPE_URL = createField(DSL.name("scrape_url"), SQLDataType.VARCHAR(200), this, "");
+
+    /**
+     * The column <code>public.series_configuration.category</code>.
+     */
+    public final TableField<SeriesConfigurationRecord, String> CATEGORY = createField(DSL.name("category"), SQLDataType.VARCHAR(200), this, "");
 
     private SeriesConfiguration(Name alias, Table<SeriesConfigurationRecord> aliased) {
         this(alias, aliased, null);
@@ -187,18 +182,18 @@ public class SeriesConfiguration extends TableImpl<SeriesConfigurationRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row9 type methods
+    // Row8 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row9<Integer, UUID, String, String, String, String, LocalDateTime, LocalDateTime, String> fieldsRow() {
-        return (Row9) super.fieldsRow();
+    public Row8<Integer, UUID, String, String, LocalDateTime, LocalDateTime, String, String> fieldsRow() {
+        return (Row8) super.fieldsRow();
     }
 
     /**
      * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
      */
-    public <U> SelectField<U> mapping(Function9<? super Integer, ? super UUID, ? super String, ? super String, ? super String, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? super String, ? extends U> from) {
+    public <U> SelectField<U> mapping(Function8<? super Integer, ? super UUID, ? super String, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? super String, ? super String, ? extends U> from) {
         return convertFrom(Records.mapping(from));
     }
 
@@ -206,7 +201,7 @@ public class SeriesConfiguration extends TableImpl<SeriesConfigurationRecord> {
      * Convenience mapping calling {@link SelectField#convertFrom(Class,
      * Function)}.
      */
-    public <U> SelectField<U> mapping(Class<U> toType, Function9<? super Integer, ? super UUID, ? super String, ? super String, ? super String, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? super String, ? extends U> from) {
+    public <U> SelectField<U> mapping(Class<U> toType, Function8<? super Integer, ? super UUID, ? super String, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? super String, ? super String, ? extends U> from) {
         return convertFrom(toType, Records.mapping(from));
     }
 }
