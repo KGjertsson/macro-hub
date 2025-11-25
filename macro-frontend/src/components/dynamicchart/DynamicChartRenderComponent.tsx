@@ -8,7 +8,7 @@ import { Dataset } from '@/models/Dataset';
 interface Props {
   selectedItems: SeriesConfig[];
   sampleStrategy: SAMPLE_STRATEGY;
-  timeframe: TIME_FRAME;
+  timeFrame: TIME_FRAME;
 }
 
 const DynamicChartRenderComponent = ({
@@ -42,8 +42,6 @@ const DynamicChartRenderComponent = ({
     chartSeriesParams: selectedItems.map((config) => {
       return {
         name: config.name,
-        country: config.country,
-        period: config.period,
       };
     }),
   };

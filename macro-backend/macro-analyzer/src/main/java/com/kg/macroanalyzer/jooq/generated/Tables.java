@@ -4,6 +4,7 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
+import com.kg.macroanalyzer.jooq.generated.tables.Category;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthEur;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthGb;
@@ -54,6 +55,11 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Year;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
+
+    /**
+     * The table <code>public.category</code>.
+     */
+    public static final Category CATEGORY = Category.CATEGORY;
 
     /**
      * The table <code>public.euro_market_3_month_denmark</code>.

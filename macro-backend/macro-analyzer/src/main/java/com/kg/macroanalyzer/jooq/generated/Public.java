@@ -4,6 +4,7 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
+import com.kg.macroanalyzer.jooq.generated.tables.Category;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthEur;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthGb;
@@ -69,6 +70,11 @@ public class Public extends SchemaImpl {
      * The reference instance of <code>public</code>
      */
     public static final Public PUBLIC = new Public();
+
+    /**
+     * The table <code>public.category</code>.
+     */
+    public final Category CATEGORY = Category.CATEGORY;
 
     /**
      * The table <code>public.euro_market_3_month_denmark</code>.
@@ -328,6 +334,7 @@ public class Public extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.asList(
+            Category.CATEGORY,
             EuroMarket_3MonthDenmark.EURO_MARKET_3_MONTH_DENMARK,
             EuroMarket_3MonthEur.EURO_MARKET_3_MONTH_EUR,
             EuroMarket_3MonthGb.EURO_MARKET_3_MONTH_GB,

@@ -53,7 +53,7 @@ const SourcesPage = () => {
             <Typography variant={'h1'}>Riksbanken</Typography>
           </Grid>
           {riksbankenDataTypes.map((rdt) => (
-            <Grid item>
+            <Grid item key={rdt}>
               <b>
                 <Typography variant={'h6'}>
                   <strong>{rdt}</strong>

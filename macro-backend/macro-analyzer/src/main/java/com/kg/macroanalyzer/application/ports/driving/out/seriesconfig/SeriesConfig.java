@@ -6,8 +6,7 @@ import lombok.Builder;
 public record SeriesConfig(
         String name,
         String displayName,
-        String country,
-        String period,
-        String scrapeUrl
+        String scrapeUrl,
+        String category
 ) {
 }

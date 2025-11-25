@@ -14,8 +14,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { Select, SelectChangeEvent } from '@mui/material';
-import Divider from '@mui/material/Divider';
-import Typography from '@mui/material/Typography';
+import ListSubheader from '@mui/material/ListSubheader';
 
 type SampleStrategyDisplay = {
   Day: string;
@@ -66,7 +65,7 @@ const DynamicChartSettings = () => {
 
   useEffect(() => {
     if (!isPending && !error) {
-      console.log(data)
+      console.log(data);
       setAllSeriesConfigs(data);
     }
   }, [isPending, error, data]);
@@ -101,6 +100,20 @@ const DynamicChartSettings = () => {
     setTimeFrame(selectedOption);
   };
 
+  const renderMenuItemByCategory = (category: string) => {
+    // Use MUI-supported children for Select: ListSubheader + MenuItem. Avoid wrapping in div which breaks selection.
+    return [
+      <ListSubheader key={`hdr-${category}`}>{category}</ListSubheader>,
+      ...allSeriesConfigs
+        .filter((config) => config.category === category)
+        .map((config) => (
+          <MenuItem key={config.name} value={config.displayName}>
+            {config.displayName}
+          </MenuItem>
+        ))
+    ];
+  };
+
   const dataSelectionComponent = () => {
     return (
       <FormControl fullWidth>
@@ -109,36 +122,12 @@ const DynamicChartSettings = () => {
           multiple
           labelId='data-selection-component'
           id='data-selection-component'
-          label='Upplösning'
+          label='Data'
           value={selectedItems}
           onChange={filterSelectedGraphs}
         >
-          <Typography>
-            <b>Riksbanken</b>
-          </Typography>
-          {allSeriesConfigs
-            .filter((config) => config.scrapeUrl?.includes("riksbank"))
-            .map((config) => config.displayName)
-            .map((name) => (
-              <MenuItem key={name} value={name}>
-                {name}
-              </MenuItem>
-            ))}
-          <Divider />
-          {/*<Typography>*/}
-          {/*  <b>Statistiska centralbyrån</b>*/}
-          {/*</Typography>*/}
-          <Typography>
-            <b>USA grajjor</b>
-          </Typography>
-          {allSeriesConfigs
-            .filter((config) => config.scrapeUrl?.includes("stlouisfed"))
-            .map((config) => config.displayName)
-            .map((name) => (
-              <MenuItem key={name} value={name}>
-                {name}
-              </MenuItem>
-            ))}
+          {Array.from(new Set(allSeriesConfigs.map((config) => config.category)))
+            .map((category) => renderMenuItemByCategory(category))}
         </Select>
       </FormControl>
     );

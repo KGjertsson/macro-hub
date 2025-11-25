@@ -34,8 +34,8 @@ const MenuList = () => {
 
   return (
     <List>
-      {menuItems.map((menuItem, index) => (
-        <ListItem key={index} disablePadding>
+      {menuItems.map((menuItem) => (
+        <ListItem key={menuItem.route} disablePadding>
           <ListItemButton onClick={() => router.push(menuItem.route)}>
             <ListItemIcon>
               <MailIcon />
