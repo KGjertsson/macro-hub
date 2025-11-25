@@ -1,6 +1,5 @@
 ## marco-analyzer
 
-![macro-analyzer-arch.drawio.png](macro-analyzer-arch.drawio.png)
 
 ### Build docker image
 
@@ -30,4 +29,10 @@ k apply -f postgres/
 
 ```
 k port-forward <pod-name> 5432:5432
+```
+
+### Maven
+generate jooq model
+```
+mvn -P jooq-codegen generate-sources
 ```
