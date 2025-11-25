@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: macrohub-postgres
+    environment:
+      POSTGRES_DB: macroanalyzer
+      POSTGRES_USER: macrouser
+      POSTGRES_PASSWORD: macropassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  macro-analyzer:
+    image: macro-analyzer:latest
+    container_name: macrohub-macro-analyzer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/macroanalyzer
+      SPRING_DATASOURCE_USERNAME: macrouser
+      SPRING_DATASOURCE_PASSWORD: macropassword
+      SPRING_JOOQ_SQL_DIALECT: POSTGRES
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
