@@ -29,3 +29,36 @@ sudo docker save macro-analyzer:latest | microk8s ctr image import -
  - [Run kafka on kubernetes](https://phoenixnap.com/kb/kafka-on-kubernetes)
  - [Install microk8s on raspberry pis](https://ubuntu.com/tutorials/how-to-kubernetes-cluster-on-raspberry-pi#1-overview)
  - [Microk8s ingress](https://phoenixnap.com/kb/microk8s-ingress)
+
+## Copied from higher readme
+
+
+### Build docker image
+
+```
+sudo docker build -t macro-analyzer:latest .
+```
+
+### Run docker image
+
+```
+docker run -e "SPRING_PROFILES_ACTIVE=prod -p 8080:8080 macro-analyzer
+```
+
+### Upload build docker image to local microk8s storage
+
+```
+sudo docker save macro-analyzer:latest | microk8s ctr image import -
+```
+
+### Apply postgres pods
+
+```
+k apply -f postgres/
+```
+
+### Port forward db from microk8s to local
+
+```
+k port-forward <pod-name> 5432:5432
+```
