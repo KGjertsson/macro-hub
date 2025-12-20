@@ -19,7 +19,6 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -95,7 +94,7 @@ public class FedAdaptor extends WebAdaptor {
 
         public Stream<MacroPoint> toMacroPoint() {
             try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                final var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
                 return Stream.of(
                         MacroPoint.builder()
