@@ -4,6 +4,7 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
+import com.kg.macroanalyzer.jooq.generated.tables.EurostatNationalDebtSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.FedSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 
@@ -23,6 +24,7 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
+    public static final Index EUROSTAT_NATIONAL_DEBT_SERIES_NAME = Internal.createIndex(DSL.name("eurostat_national_debt_series_name"), EurostatNationalDebtSeries.EUROSTAT_NATIONAL_DEBT_SERIES, new OrderField[] { EurostatNationalDebtSeries.EUROSTAT_NATIONAL_DEBT_SERIES.SERIES_NAME }, false);
     public static final Index FED_SERIES_NAME = Internal.createIndex(DSL.name("fed_series_name"), FedSeries.FED_SERIES, new OrderField[] { FedSeries.FED_SERIES.SERIES_NAME }, false);
     public static final Index FLYWAY_SCHEMA_HISTORY_S_IDX = Internal.createIndex(DSL.name("flyway_schema_history_s_idx"), FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, new OrderField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.SUCCESS }, false);
 }

@@ -26,6 +26,7 @@ public class PostgresAdaptor implements DatabasePort {
     GovernmentBondsRepository govBondsRepo;
     PolicyRateRepository policyRateRepo;
     FedRepository fedRepository;
+    EurostatRepository eurostatRepository;
     ScrapeRepository scrapeRepository;
     SeriesConfigRepository seriesConfigRepository;
 
@@ -37,6 +38,7 @@ public class PostgresAdaptor implements DatabasePort {
             GovernmentBondsRepository govBondsRepo,
             PolicyRateRepository policyRateRepo,
             FedRepository fedRepository,
+            EurostatRepository eurostatRepository,
             ScrapeRepository scrapeRepository,
             SeriesConfigRepository seriesConfigRepository
     ) {
@@ -46,6 +48,7 @@ public class PostgresAdaptor implements DatabasePort {
         this.govBondsRepo = govBondsRepo;
         this.policyRateRepo = policyRateRepo;
         this.fedRepository = fedRepository;
+        this.eurostatRepository = eurostatRepository;
         this.scrapeRepository = scrapeRepository;
         this.seriesConfigRepository = seriesConfigRepository;
     }
@@ -162,6 +165,7 @@ public class PostgresAdaptor implements DatabasePort {
                  "FEDN100",
                  "FEDVIX",
                  "FEDCPI" -> fedRepository.fedReader(name);
+            case String str when str.startsWith("Debt") -> eurostatRepository.eurostatReader(name);
             default -> throw new IllegalArgumentException(errorMsg);
         };
     }
