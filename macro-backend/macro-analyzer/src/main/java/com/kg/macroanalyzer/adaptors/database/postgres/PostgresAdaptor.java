@@ -225,6 +225,7 @@ public class PostgresAdaptor implements DatabasePort {
                  "FEDN100",
                  "FEDVIX",
                  "FEDCPI" -> fedRepository.fedWriter(name);
+            case String str when str.startsWith("Debt") -> eurostatRepository.eurostatWriter(name);
             default -> throw new IllegalArgumentException(errorMsg);
         };
     }
