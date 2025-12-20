@@ -41,7 +41,8 @@ public class ScrapeService {
 
     private Stream<ScrapeQueueItem> fetchItemsToScrape(LocalDateTime timeStamp) {
         final var items = databasePort.getItemsToScrape(timeStamp);
-        log.info("Scraping items from queue: %s".formatted(items));
+        final var msg = "Scraping items from queue: %s".formatted(items);
+        log.info(msg);
 
         return items.stream();
     }

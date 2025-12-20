@@ -1,0 +1,1 @@
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1?freq=A&unit=MIO_EUR&sector=S13&na_item=GD&geo=fr

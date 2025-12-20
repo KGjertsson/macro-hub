@@ -17,6 +17,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthGb;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthNorway;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.EurostatNationalDebtSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
 import com.kg.macroanalyzer.jooq.generated.tables.FedSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
@@ -61,6 +62,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_6MonthGbRec
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_6MonthJapanRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_6MonthNorwayRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_6MonthUsaRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.EurostatNationalDebtSeriesRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ExchangeUsdSekRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.FedSeriesRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.FlywaySchemaHistoryRecord;
@@ -124,6 +126,7 @@ public class Keys {
     public static final UniqueKey<EuroMarket_6MonthJapanRecord> EURO_MARKET_6_MONTH_JAPAN_PKEY = Internal.createUniqueKey(EuroMarket_6MonthJapan.EURO_MARKET_6_MONTH_JAPAN, DSL.name("euro_market_6_month_japan_pkey"), new TableField[] { EuroMarket_6MonthJapan.EURO_MARKET_6_MONTH_JAPAN.ID }, true);
     public static final UniqueKey<EuroMarket_6MonthNorwayRecord> EURO_MARKET_6_MONTH_NORWAY_PKEY = Internal.createUniqueKey(EuroMarket_6MonthNorway.EURO_MARKET_6_MONTH_NORWAY, DSL.name("euro_market_6_month_norway_pkey"), new TableField[] { EuroMarket_6MonthNorway.EURO_MARKET_6_MONTH_NORWAY.ID }, true);
     public static final UniqueKey<EuroMarket_6MonthUsaRecord> EURO_MARKET_6_MONTH_USA_PKEY = Internal.createUniqueKey(EuroMarket_6MonthUsa.EURO_MARKET_6_MONTH_USA, DSL.name("euro_market_6_month_usa_pkey"), new TableField[] { EuroMarket_6MonthUsa.EURO_MARKET_6_MONTH_USA.ID }, true);
+    public static final UniqueKey<EurostatNationalDebtSeriesRecord> EUROSTAT_NATIONAL_DEBT_SERIES_PKEY = Internal.createUniqueKey(EurostatNationalDebtSeries.EUROSTAT_NATIONAL_DEBT_SERIES, DSL.name("eurostat_national_debt_series_pkey"), new TableField[] { EurostatNationalDebtSeries.EUROSTAT_NATIONAL_DEBT_SERIES.ID }, true);
     public static final UniqueKey<ExchangeUsdSekRecord> EXCHANGE_USD_SEK_PKEY = Internal.createUniqueKey(ExchangeUsdSek.EXCHANGE_USD_SEK, DSL.name("exchange_usd_sek_pkey"), new TableField[] { ExchangeUsdSek.EXCHANGE_USD_SEK.ID }, true);
     public static final UniqueKey<FedSeriesRecord> FED_SERIES_PKEY = Internal.createUniqueKey(FedSeries.FED_SERIES, DSL.name("fed_series_pkey"), new TableField[] { FedSeries.FED_SERIES.ID }, true);
     public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, DSL.name("flyway_schema_history_pk"), new TableField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK }, true);

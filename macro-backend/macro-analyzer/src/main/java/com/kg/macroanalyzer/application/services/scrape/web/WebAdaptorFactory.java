@@ -9,16 +9,25 @@ public class WebAdaptorFactory {
 
     FedAdaptor fedAdaptor;
     RiksbankenAdaptor riksbankenAdaptor;
+    EuroStatAdaptor eurostatAdaptor;
 
     @Autowired
-    public WebAdaptorFactory(FedAdaptor fedAdaptor, RiksbankenAdaptor riksbankenAdaptor) {
+    public WebAdaptorFactory(
+            FedAdaptor fedAdaptor,
+            RiksbankenAdaptor riksbankenAdaptor,
+            EuroStatAdaptor eurostatAdaptor
+    ) {
         this.fedAdaptor = fedAdaptor;
         this.riksbankenAdaptor = riksbankenAdaptor;
+        this.eurostatAdaptor = eurostatAdaptor;
     }
 
     public WebAdaptor build(SeriesConfig seriesConfig) {
-        if (seriesConfig.name().startsWith("FED")) return fedAdaptor;
-        else return riksbankenAdaptor;
+        return switch (seriesConfig.name()) {
+            case String name when name.startsWith("FED") -> fedAdaptor;
+            case String name when name.startsWith("Debt") -> eurostatAdaptor;
+            default -> riksbankenAdaptor;
+        };
     }
 
 }

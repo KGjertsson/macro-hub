@@ -17,6 +17,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthGb;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthNorway;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.EurostatNationalDebtSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
 import com.kg.macroanalyzer.jooq.generated.tables.FedSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
@@ -135,6 +136,11 @@ public class Public extends SchemaImpl {
      * The table <code>public.euro_market_6_month_usa</code>.
      */
     public final EuroMarket_6MonthUsa EURO_MARKET_6_MONTH_USA = EuroMarket_6MonthUsa.EURO_MARKET_6_MONTH_USA;
+
+    /**
+     * The table <code>public.eurostat_national_debt_series</code>.
+     */
+    public final EurostatNationalDebtSeries EUROSTAT_NATIONAL_DEBT_SERIES = EurostatNationalDebtSeries.EUROSTAT_NATIONAL_DEBT_SERIES;
 
     /**
      * The table <code>public.exchange_usd_sek</code>.
@@ -347,6 +353,7 @@ public class Public extends SchemaImpl {
             EuroMarket_6MonthJapan.EURO_MARKET_6_MONTH_JAPAN,
             EuroMarket_6MonthNorway.EURO_MARKET_6_MONTH_NORWAY,
             EuroMarket_6MonthUsa.EURO_MARKET_6_MONTH_USA,
+            EurostatNationalDebtSeries.EUROSTAT_NATIONAL_DEBT_SERIES,
             ExchangeUsdSek.EXCHANGE_USD_SEK,
             FedSeries.FED_SERIES,
             FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
