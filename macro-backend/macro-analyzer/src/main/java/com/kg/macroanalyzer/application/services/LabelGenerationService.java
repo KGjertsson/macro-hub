@@ -48,7 +48,8 @@ public class LabelGenerationService {
                             .name(macroSeries.name())
                             .macroPoints(newPoints)
                             .build();
-                }).toList();
+                })
+                .toList();
     }
 
     private MacroSeries fillGapsInSeries(MacroSeries macroSeries) {
@@ -100,12 +101,17 @@ public class LabelGenerationService {
     ) {
         final var currentDate = fullLabels.get(index);
 
-        if (index < startDateIndexInFull || (index - startDateIndexInFull) >= macroPoints.size()) {
+        if (index < startDateIndexInFull) {
             return MacroPoint.builder()
                     .date(currentDate)
                     .value(0.0)
                     .build();
-        } else {
+        } else if ((index - startDateIndexInFull) >= macroPoints.size()) {
+            return MacroPoint.builder()
+                    .date(currentDate)
+                    .value(macroPoints.getLast().value())
+                    .build();
+        }  else {
             return macroPoints.get(index - startDateIndexInFull);
         }
     }
