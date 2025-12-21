@@ -3,6 +3,21 @@
 Java backend application for macro-hub. Built using domain driven design principles and the
 hexagonal architecture.
 
+```mermaid
+flowchart LR
+    HttpInsertionAdaptor --> InPort
+    HttpExtractionAdaptor --> OutPort
+    CronAdaptor --> InPort
+    subgraph A[Application]
+        InPort --> domain
+        OutPort --> domain
+        domain{{domain}}
+        domain --> DatabasePort
+    end
+    DatabasePort --> PostgresAdaptor
+
+```
+
 ### Sources
 
 - [Riskbanken REST API](https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/hamta-rantor-och-valutakurser-via-api/)
