@@ -51,9 +51,14 @@ public class LabelGenerationServiceTest {
                     .getFirst()
                     .macroPoints().stream()
                     .map(MacroPoint::date).toList();
+            final var values = paddedSeries
+                    .getFirst()
+                    .macroPoints().stream()
+                    .map(MacroPoint::value).toList();
             assertEquals(expectedLabelSize, labels.size());
             assertEquals(expectedStartDate, labels.getFirst());
             assertEquals(expectedEndDate, labels.getLast());
+            assertTrue(values.getLast() > 0);
         });
     }
 
