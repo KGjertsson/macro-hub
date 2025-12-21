@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -64,12 +63,15 @@ public class EuroStatAdaptor extends WebAdaptor {
         try {
             final var mapper = createObjectMapper();
             final var dataset = mapper.readValue(response, EurostatDataset.class);
-
-            final var values = dataset.value.values().stream().toList();
             final var timeLabels = dataset.orderedTimeLabels();
 
-            return IntStream.range(0, values.size())
-                    .mapToObj(index -> new MacroPoint(values.get(index), timeLabels.get(index)));
+            return dataset.value.entrySet().stream()
+                    .map(entry ->
+                            MacroPoint.builder()
+                                    .value(entry.getValue())
+                                    .date(timeLabels.get(Integer.parseInt(entry.getKey())))
+                                    .build()
+                    );
         } catch (JsonProcessingException e) {
             throw new ScrapeException("Failed to parse Eurostat JSON response: " + e.getMessage());
         }
