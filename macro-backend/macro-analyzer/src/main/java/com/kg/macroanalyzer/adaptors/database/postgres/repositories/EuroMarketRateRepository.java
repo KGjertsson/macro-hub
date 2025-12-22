@@ -87,12 +87,12 @@ public class EuroMarketRateRepository {
 
     public Supplier<List<MacroPoint>> euroMarketRate3MonthUsa() {
         return () -> this.dslContext.select()
-                .from(EURO_MARKET_3_MONTH_EUR)
+                .from(EURO_MARKET_3_MONTH_USA)
                 .fetch()
                 .map(r ->
                         MacroPoint.builder()
-                                .value(r.getValue(EURO_MARKET_3_MONTH_EUR.VALUE))
-                                .date(r.getValue(EURO_MARKET_3_MONTH_EUR.DATE))
+                                .value(r.getValue(EURO_MARKET_3_MONTH_USA.VALUE))
+                                .date(r.getValue(EURO_MARKET_3_MONTH_USA.DATE))
                                 .build()
                 );
     }
@@ -159,12 +159,12 @@ public class EuroMarketRateRepository {
 
     public Supplier<List<MacroPoint>> getEuroMarketRate6MonthUsa() {
         return () -> this.dslContext.select()
-                .from(EURO_MARKET_6_MONTH_EUR)
+                .from(EURO_MARKET_6_MONTH_USA)
                 .fetch()
                 .map(r ->
                         MacroPoint.builder()
-                                .value(r.getValue(EURO_MARKET_6_MONTH_EUR.VALUE))
-                                .date(r.getValue(EURO_MARKET_6_MONTH_EUR.DATE))
+                                .value(r.getValue(EURO_MARKET_6_MONTH_USA.VALUE))
+                                .date(r.getValue(EURO_MARKET_6_MONTH_USA.DATE))
                                 .build()
                 );
     }
