@@ -4,51 +4,53 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 const SeatDistribution = () => {
   const totalSeats = 349;
   
-  // Create a hemicycle-style visualization
-  const renderSeats = () => {
-    const rows = 8;
-    const seatsPerRow = [25, 35, 42, 48, 52, 55, 48, 44];
-    let seatIndex = 0;
-    const allSeats: { party: typeof parties[0]; row: number; position: number }[] = [];
+  // Sort parties by seats for better visual distribution (largest in center)
+  const sortedParties = [...parties].sort((a, b) => b.seats - a.seats);
+  
+  // Calculate percentages and angles for arc segments
+  const getArcSegments = () => {
+    let currentAngle = 0;
+    const arcStart = -90; // Start from left side of semicircle
+    const arcEnd = 90; // End at right side
+    const totalArc = arcEnd - arcStart; // 180 degrees
     
-    // Distribute seats by party
-    parties.forEach(party => {
-      for (let i = 0; i < party.seats; i++) {
-        allSeats.push({ party, row: 0, position: seatIndex });
-        seatIndex++;
-      }
+    return sortedParties.map(party => {
+      const percentage = party.seats / totalSeats;
+      const arcLength = totalArc * percentage;
+      const startAngle = arcStart + currentAngle;
+      const endAngle = startAngle + arcLength;
+      currentAngle += arcLength;
+      
+      return {
+        party,
+        percentage,
+        startAngle,
+        endAngle,
+        midAngle: (startAngle + endAngle) / 2,
+      };
     });
+  };
 
-    // Render rows
-    return (
-      <div className="flex flex-col items-center gap-1 py-8">
-        {seatsPerRow.map((count, rowIndex) => {
-          const startIdx = seatsPerRow.slice(0, rowIndex).reduce((a, b) => a + b, 0);
-          const rowSeats = allSeats.slice(startIdx, startIdx + count);
-          const arcRadius = 120 + rowIndex * 28;
-          
-          return (
-            <div 
-              key={rowIndex} 
-              className="flex justify-center gap-0.5"
-              style={{ 
-                width: `${arcRadius * 2}px`,
-                transform: `translateY(${rowIndex * -2}px)`
-              }}
-            >
-              {rowSeats.map((seat, idx) => (
-                <div
-                  key={idx}
-                  className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-transform hover:scale-150 cursor-pointer"
-                  style={{ backgroundColor: seat.party.color }}
-                  title={`${seat.party.name} (${seat.party.shortName})`}
-                />
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    );
+  const segments = getArcSegments();
+  const radius = 140;
+  const strokeWidth = 40;
+  const centerX = 180;
+  const centerY = 160;
+
+  const polarToCartesian = (angle: number, r: number) => {
+    const radians = (angle * Math.PI) / 180;
+    return {
+      x: centerX + r * Math.cos(radians),
+      y: centerY + r * Math.sin(radians),
+    };
+  };
+
+  const createArcPath = (startAngle: number, endAngle: number, r: number) => {
+    const start = polarToCartesian(startAngle, r);
+    const end = polarToCartesian(endAngle, r);
+    const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+    
+    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
   };
 
   return (
@@ -58,26 +60,76 @@ const SeatDistribution = () => {
         <p className="text-muted-foreground">{totalSeats} Total Seats</p>
       </CardHeader>
       <CardContent>
-        <div className="relative">
-          {renderSeats()}
-          
-          {/* Speaker podium */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-8 bg-muted rounded-t-lg flex items-center justify-center">
-            <span className="text-xs text-muted-foreground">Speaker</span>
-          </div>
+        <div className="flex justify-center">
+          <svg 
+            viewBox="0 0 360 200" 
+            className="w-full max-w-lg"
+            style={{ overflow: 'visible' }}
+          >
+            {/* Arc segments */}
+            {segments.map((segment, index) => (
+              <g key={segment.party.id} className="transition-all duration-300">
+                <path
+                  d={createArcPath(segment.startAngle, segment.endAngle, radius)}
+                  fill="none"
+                  stroke={segment.party.color}
+                  strokeWidth={strokeWidth}
+                  strokeLinecap="butt"
+                  className="transition-all duration-300 hover:opacity-80 cursor-pointer"
+                  style={{
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                  }}
+                >
+                  <title>{segment.party.name}: {segment.party.seats} seats ({(segment.percentage * 100).toFixed(1)}%)</title>
+                </path>
+              </g>
+            ))}
+            
+            {/* Center decoration */}
+            <circle 
+              cx={centerX} 
+              cy={centerY} 
+              r={radius - strokeWidth - 10} 
+              fill="none"
+              stroke="hsl(var(--border))"
+              strokeWidth="1"
+              strokeDasharray="4 4"
+              opacity="0.3"
+            />
+            
+            {/* Center text */}
+            <text 
+              x={centerX} 
+              y={centerY - 10} 
+              textAnchor="middle" 
+              className="fill-foreground text-2xl font-bold font-display"
+            >
+              {totalSeats}
+            </text>
+            <text 
+              x={centerX} 
+              y={centerY + 12} 
+              textAnchor="middle" 
+              className="fill-muted-foreground text-xs"
+            >
+              seats
+            </text>
+          </svg>
         </div>
 
         {/* Legend */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-border/50">
-          {parties.map(party => (
-            <div key={party.id} className="flex items-center gap-2">
+          {sortedParties.map(party => (
+            <div key={party.id} className="flex items-center gap-2 group cursor-pointer">
               <div 
-                className="w-4 h-4 rounded-full flex-shrink-0"
+                className="w-4 h-4 rounded-full flex-shrink-0 transition-transform group-hover:scale-125"
                 style={{ backgroundColor: party.color }}
               />
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">{party.shortName}</p>
-                <p className="text-xs text-muted-foreground">{party.seats} seats</p>
+                <p className="text-xs text-muted-foreground">
+                  {party.seats} seats ({((party.seats / totalSeats) * 100).toFixed(1)}%)
+                </p>
               </div>
             </div>
           ))}
