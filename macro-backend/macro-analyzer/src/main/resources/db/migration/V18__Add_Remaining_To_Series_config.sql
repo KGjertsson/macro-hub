@@ -53,7 +53,6 @@ VALUES
     (uuid_generate_v4(), 'DebtMioEurSk', 'Statsskuld i miljoner euro, Slovakien', 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1?freq=A&unit=MIO_EUR&sector=S13&na_item=GD&geo=sk', 'NationalDebtNominal')
 ;
 
-
 INSERT INTO series_configuration (
     global_id,
     name,
@@ -93,3 +92,7 @@ VALUES
     (uuid_generate_v4(), 'DebtPcGdpSi', 'Statsskuld i % av BNP, Slovenien', 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1?freq=A&unit=PC_GDP&sector=S13&na_item=GD&geo=si', 'NationalDebtPctGDP'),
     (uuid_generate_v4(), 'DebtPcGdpSk', 'Statsskuld i % av BNP, Slovakien', 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1?freq=A&unit=PC_GDP&sector=S13&na_item=GD&geo=sk', 'NationalDebtPctGDP')
 ;
+
+UPDATE series_configuration
+SET display_name = 'Statsskuld i % av BNP'
+WHERE global_id = 'DebtPcGdpAt';
