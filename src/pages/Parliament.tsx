@@ -4,8 +4,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SeatDistribution from '@/components/SeatDistribution';
 import PoliticianCard from '@/components/PoliticianCard';
+import ParliamentBlog from '@/components/ParliamentBlog';
 import { politicians, parties } from '@/data/parliamentData';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Users, Building, ArrowLeft } from 'lucide-react';
@@ -112,6 +112,9 @@ const Parliament = () => {
             </div>
           )}
         </section>
+
+        {/* Blog Section */}
+        <ParliamentBlog />
       </main>
 
       <Footer />
