@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -12,7 +11,6 @@ import java.sql.SQLException;
 
 
 @SpringBootTest
-@Testcontainers
 @ActiveProfiles("test")
 class MacroAnalyzerApplicationTests {
 
