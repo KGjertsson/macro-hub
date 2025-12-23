@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 220 20% 7%;
+        --foreground: 210 20% 95%;
+
+        --card: 220 18% 10%;
+        --card-foreground: 210 20% 95%;
+
+        --popover: 220 18% 10%;
+        --popover-foreground: 210 20% 95%;
+
+        --primary: 174 72% 50%;
+        --primary-foreground: 220 20% 7%;
+
+        --secondary: 220 15% 15%;
+        --secondary-foreground: 210 20% 90%;
+
+        --muted: 220 15% 18%;
+        --muted-foreground: 215 15% 55%;
+
+        --accent: 174 72% 50%;
+        --accent-foreground: 220 20% 7%;
+
+        --destructive: 0 72% 55%;
+        --destructive-foreground: 210 40% 98%;
+
+        --success: 160 72% 45%;
+        --success-foreground: 220 20% 7%;
+
+        --warning: 38 92% 55%;
+        --warning-foreground: 220 20% 7%;
+
+        --border: 220 15% 18%;
+        --input: 220 15% 18%;
+        --ring: 174 72% 50%;
+
+        --radius: 0.75rem;
+
+        --chart-1: 174 72% 50%;
+        --chart-2: 262 72% 60%;
+        --chart-3: 38 92% 55%;
+        --chart-4: 0 72% 55%;
+        --chart-5: 210 72% 55%;
+
+        --gradient-primary: linear-gradient(135deg, hsl(174, 72%, 50%), hsl(174, 72%, 35%));
+        --gradient-card: linear-gradient(145deg, hsl(220, 18%, 12%), hsl(220, 18%, 8%));
+        --gradient-glow: radial-gradient(ellipse at center, hsl(174, 72%, 50%, 0.15), transparent 70%);
+
+        --shadow-glow: 0 0 40px hsl(174, 72%, 50%, 0.2);
+        --shadow-card: 0 4px 24px hsl(220, 20%, 2%, 0.5);
+
+        --sidebar-background: 220 18% 8%;
+        --sidebar-foreground: 210 20% 90%;
+        --sidebar-primary: 174 72% 50%;
+        --sidebar-primary-foreground: 220 20% 7%;
+        --sidebar-accent: 220 15% 15%;
+        --sidebar-accent-foreground: 210 20% 90%;
+        --sidebar-border: 220 15% 18%;
+        --sidebar-ring: 174 72% 50%;
+    }
+
+    .dark {
+        --background: 220 20% 7%;
+        --foreground: 210 20% 95%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground font-sans antialiased;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .font-mono {
+        font-family: 'Space Mono', monospace;
+    }
+}
+
+@layer components {
+    .glass-card {
+        @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg;
+    }
+
+    .glow-effect {
+        box-shadow: var(--shadow-glow);
+    }
+
+    .data-value {
+        @apply font-mono text-2xl font-bold tracking-tight;
+    }
+
+    .trend-up {
+        @apply text-success;
+    }
+
+    .trend-down {
+        @apply text-destructive;
+    }
+
+    .indicator-pulse {
+        animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+    }
+
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes count-up {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fade-in-up 0.6s ease-out forwards;
+    }
+
+    .animate-delay-100 {
+        animation-delay: 100ms;
+    }
+
+    .animate-delay-200 {
+        animation-delay: 200ms;
+    }
+
+    .animate-delay-300 {
+        animation-delay: 300ms;
+    }
+
+    .animate-delay-400 {
+        animation-delay: 400ms;
+    }
+}
+
+@layer utilities {
+    .text-gradient {
+        @apply bg-clip-text text-transparent;
+        background-image: var(--gradient-primary);
+    }
+
+    .bg-gradient-primary {
+        background-image: var(--gradient-primary);
+    }
+
+    .bg-gradient-card {
+        background-image: var(--gradient-card);
+    }
+
+    .bg-gradient-glow {
+        background-image: var(--gradient-glow);
+    }
+}
