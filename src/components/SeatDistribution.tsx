@@ -7,25 +7,9 @@ const SeatDistribution = () => {
   // Sort parties by seats for distribution
   const sortedParties = [...parties].sort((a, b) => b.seats - a.seats);
   
-  // Generate individual seats with party colors
-  const generateSeats = () => {
-    const seats: { party: typeof parties[0]; row: number; angle: number }[] = [];
-    
-    // Create flat list of all seats with party info
-    sortedParties.forEach(party => {
-      for (let i = 0; i < party.seats; i++) {
-        seats.push({ party, row: 0, angle: 0 });
-      }
-    });
-    
-    return seats;
-  };
-
-  const allSeats = generateSeats();
-  
   // Arrange seats in semicircle rows (hemicycle)
   const arrangeInHemicycle = () => {
-    const rows = 8; // Number of rows
+    const rows = 8;
     const centerX = 200;
     const centerY = 190;
     const minRadius = 50;
@@ -61,16 +45,14 @@ const SeatDistribution = () => {
       }
     }
     
-    // Position each seat
-    const positioned: { x: number; y: number; color: string; partyName: string; partyShort: string }[] = [];
-    let seatIndex = 0;
+    // First, generate all seat positions with their angles
+    const allPositions: { x: number; y: number; angle: number; row: number }[] = [];
     
     for (let r = 0; r < rows; r++) {
       const radius = minRadius + r * radiusStep;
       const seatsInRow = adjustedSeatsPerRow[r];
       
-      for (let s = 0; s < seatsInRow && seatIndex < allSeats.length; s++) {
-        // Angle from 180° to 360° (left to right semicircle)
+      for (let s = 0; s < seatsInRow; s++) {
         const angleRange = Math.PI;
         const startAngle = Math.PI;
         const angle = startAngle + (s + 0.5) * (angleRange / seatsInRow);
@@ -78,12 +60,26 @@ const SeatDistribution = () => {
         const x = centerX + radius * Math.cos(angle);
         const y = centerY + radius * Math.sin(angle);
         
+        allPositions.push({ x, y, angle, row: r });
+      }
+    }
+    
+    // Sort all positions by angle (left to right)
+    allPositions.sort((a, b) => a.angle - b.angle);
+    
+    // Now assign parties to seats from left to right
+    const positioned: { x: number; y: number; color: string; partyName: string; partyShort: string }[] = [];
+    let seatIndex = 0;
+    
+    for (const party of sortedParties) {
+      for (let i = 0; i < party.seats && seatIndex < allPositions.length; i++) {
+        const pos = allPositions[seatIndex];
         positioned.push({
-          x,
-          y,
-          color: allSeats[seatIndex].party.color,
-          partyName: allSeats[seatIndex].party.name,
-          partyShort: allSeats[seatIndex].party.shortName,
+          x: pos.x,
+          y: pos.y,
+          color: party.color,
+          partyName: party.name,
+          partyShort: party.shortName,
         });
         seatIndex++;
       }
