@@ -10,8 +10,8 @@ const SeatDistribution = () => {
   // Calculate percentages and angles for arc segments
   const getArcSegments = () => {
     let currentAngle = 0;
-    const arcStart = 0; // Start from bottom of horizontal semicircle
-    const arcEnd = 180; // End at top
+    const arcStart = 180; // Start from top
+    const arcEnd = 360; // End at bottom
     const totalArc = Math.abs(arcEnd - arcStart); // 180 degrees
     
     return sortedParties.map(party => {
