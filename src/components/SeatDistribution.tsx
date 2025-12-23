@@ -4,54 +4,95 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 const SeatDistribution = () => {
   const totalSeats = 349;
   
-  // Sort parties by seats for better visual distribution (largest in center)
+  // Sort parties by seats for distribution
   const sortedParties = [...parties].sort((a, b) => b.seats - a.seats);
   
-  // Calculate percentages and angles for arc segments
-  const getArcSegments = () => {
-    let currentAngle = 0;
-    const arcStart = 180; // Start from top
-    const arcEnd = 360; // End at bottom
-    const totalArc = Math.abs(arcEnd - arcStart); // 180 degrees
+  // Generate individual seats with party colors
+  const generateSeats = () => {
+    const seats: { party: typeof parties[0]; row: number; angle: number }[] = [];
     
-    return sortedParties.map(party => {
-      const percentage = party.seats / totalSeats;
-      const arcLength = totalArc * percentage;
-      const startAngle = arcStart + currentAngle;
-      const endAngle = startAngle + arcLength;
-      currentAngle += arcLength;
-      
-      return {
-        party,
-        percentage,
-        startAngle,
-        endAngle,
-        midAngle: (startAngle + endAngle) / 2,
-      };
+    // Create flat list of all seats with party info
+    sortedParties.forEach(party => {
+      for (let i = 0; i < party.seats; i++) {
+        seats.push({ party, row: 0, angle: 0 });
+      }
     });
-  };
-
-  const segments = getArcSegments();
-  const radius = 140;
-  const strokeWidth = 40;
-  const centerX = 200;
-  const centerY = 180;
-
-  const polarToCartesian = (angle: number, r: number) => {
-    const radians = (angle * Math.PI) / 180;
-    return {
-      x: centerX + r * Math.cos(radians),
-      y: centerY + r * Math.sin(radians),
-    };
-  };
-
-  const createArcPath = (startAngle: number, endAngle: number, r: number) => {
-    const start = polarToCartesian(startAngle, r);
-    const end = polarToCartesian(endAngle, r);
-    const largeArcFlag = Math.abs(startAngle - endAngle) > 180 ? 1 : 0;
     
-    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+    return seats;
   };
+
+  const allSeats = generateSeats();
+  
+  // Arrange seats in semicircle rows (hemicycle)
+  const arrangeInHemicycle = () => {
+    const rows = 8; // Number of rows
+    const centerX = 200;
+    const centerY = 190;
+    const minRadius = 50;
+    const maxRadius = 170;
+    const radiusStep = (maxRadius - minRadius) / (rows - 1);
+    
+    // Calculate seats per row (more seats in outer rows)
+    const seatsPerRow: number[] = [];
+    let totalCapacity = 0;
+    
+    for (let r = 0; r < rows; r++) {
+      const radius = minRadius + r * radiusStep;
+      const circumference = Math.PI * radius;
+      const seatSize = 8;
+      const seatsInRow = Math.floor(circumference / (seatSize + 2));
+      seatsPerRow.push(seatsInRow);
+      totalCapacity += seatsInRow;
+    }
+    
+    // Scale to fit exactly totalSeats
+    const scale = totalSeats / totalCapacity;
+    const adjustedSeatsPerRow = seatsPerRow.map(s => Math.round(s * scale));
+    
+    // Adjust to match exactly totalSeats
+    let diff = totalSeats - adjustedSeatsPerRow.reduce((a, b) => a + b, 0);
+    for (let i = rows - 1; diff !== 0 && i >= 0; i--) {
+      if (diff > 0) {
+        adjustedSeatsPerRow[i]++;
+        diff--;
+      } else {
+        adjustedSeatsPerRow[i]--;
+        diff++;
+      }
+    }
+    
+    // Position each seat
+    const positioned: { x: number; y: number; color: string; partyName: string; partyShort: string }[] = [];
+    let seatIndex = 0;
+    
+    for (let r = 0; r < rows; r++) {
+      const radius = minRadius + r * radiusStep;
+      const seatsInRow = adjustedSeatsPerRow[r];
+      
+      for (let s = 0; s < seatsInRow && seatIndex < allSeats.length; s++) {
+        // Angle from 180° to 360° (left to right semicircle)
+        const angleRange = Math.PI;
+        const startAngle = Math.PI;
+        const angle = startAngle + (s + 0.5) * (angleRange / seatsInRow);
+        
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        
+        positioned.push({
+          x,
+          y,
+          color: allSeats[seatIndex].party.color,
+          partyName: allSeats[seatIndex].party.name,
+          partyShort: allSeats[seatIndex].party.shortName,
+        });
+        seatIndex++;
+      }
+    }
+    
+    return positioned;
+  };
+
+  const positionedSeats = arrangeInHemicycle();
 
   return (
     <Card className="glass-card">
@@ -62,58 +103,38 @@ const SeatDistribution = () => {
       <CardContent>
         <div className="flex justify-center">
           <svg 
-            viewBox="0 0 250 360" 
-            className="w-full max-w-xs"
+            viewBox="0 0 400 220" 
+            className="w-full max-w-lg"
             style={{ overflow: 'visible' }}
           >
-            {/* Arc segments */}
-            {segments.map((segment, index) => (
-              <g key={segment.party.id} className="transition-all duration-300">
-                <path
-                  d={createArcPath(segment.startAngle, segment.endAngle, radius)}
-                  fill="none"
-                  stroke={segment.party.color}
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="butt"
-                  className="transition-all duration-300 hover:opacity-80 cursor-pointer"
-                  style={{
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                  }}
-                >
-                  <title>{segment.party.name}: {segment.party.seats} seats ({(segment.percentage * 100).toFixed(1)}%)</title>
-                </path>
-              </g>
+            {/* Individual seats */}
+            {positionedSeats.map((seat, index) => (
+              <circle
+                key={index}
+                cx={seat.x}
+                cy={seat.y}
+                r={3.5}
+                fill={seat.color}
+                className="transition-all duration-200 hover:r-5 cursor-pointer"
+                style={{
+                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
+                }}
+              >
+                <title>{seat.partyName} ({seat.partyShort})</title>
+              </circle>
             ))}
             
-            {/* Center decoration */}
-            <circle 
-              cx={centerX} 
-              cy={centerY} 
-              r={radius - strokeWidth - 10} 
-              fill="none"
+            {/* Center podium decoration */}
+            <rect
+              x={185}
+              y={195}
+              width={30}
+              height={15}
+              rx={3}
+              fill="hsl(var(--muted))"
               stroke="hsl(var(--border))"
-              strokeWidth="1"
-              strokeDasharray="4 4"
-              opacity="0.3"
+              strokeWidth={1}
             />
-            
-            {/* Center text */}
-            <text 
-              x={centerX} 
-              y={centerY - 10} 
-              textAnchor="middle" 
-              className="fill-foreground text-2xl font-bold font-display"
-            >
-              {totalSeats}
-            </text>
-            <text 
-              x={centerX} 
-              y={centerY + 12} 
-              textAnchor="middle" 
-              className="fill-muted-foreground text-xs"
-            >
-              seats
-            </text>
           </svg>
         </div>
 
