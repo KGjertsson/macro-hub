@@ -10,15 +10,15 @@ const SeatDistribution = () => {
   // Calculate percentages and angles for arc segments
   const getArcSegments = () => {
     let currentAngle = 0;
-    const arcStart = 180; // Start from top of horizontal semicircle
-    const arcEnd = 0; // End at bottom
+    const arcStart = 0; // Start from bottom of horizontal semicircle
+    const arcEnd = 180; // End at top
     const totalArc = Math.abs(arcEnd - arcStart); // 180 degrees
     
     return sortedParties.map(party => {
       const percentage = party.seats / totalSeats;
       const arcLength = totalArc * percentage;
-      const startAngle = arcStart - currentAngle;
-      const endAngle = startAngle - arcLength;
+      const startAngle = arcStart + currentAngle;
+      const endAngle = startAngle + arcLength;
       currentAngle += arcLength;
       
       return {
@@ -50,7 +50,7 @@ const SeatDistribution = () => {
     const end = polarToCartesian(endAngle, r);
     const largeArcFlag = Math.abs(startAngle - endAngle) > 180 ? 1 : 0;
     
-    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
+    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
   };
 
   return (
