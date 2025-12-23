@@ -10,15 +10,15 @@ const SeatDistribution = () => {
   // Calculate percentages and angles for arc segments
   const getArcSegments = () => {
     let currentAngle = 0;
-    const arcStart = -90; // Start from left side of semicircle
-    const arcEnd = 90; // End at right side
-    const totalArc = arcEnd - arcStart; // 180 degrees
+    const arcStart = 180; // Start from top of horizontal semicircle
+    const arcEnd = 0; // End at bottom
+    const totalArc = Math.abs(arcEnd - arcStart); // 180 degrees
     
     return sortedParties.map(party => {
       const percentage = party.seats / totalSeats;
       const arcLength = totalArc * percentage;
-      const startAngle = arcStart + currentAngle;
-      const endAngle = startAngle + arcLength;
+      const startAngle = arcStart - currentAngle;
+      const endAngle = startAngle - arcLength;
       currentAngle += arcLength;
       
       return {
@@ -34,8 +34,8 @@ const SeatDistribution = () => {
   const segments = getArcSegments();
   const radius = 140;
   const strokeWidth = 40;
-  const centerX = 180;
-  const centerY = 160;
+  const centerX = 200;
+  const centerY = 180;
 
   const polarToCartesian = (angle: number, r: number) => {
     const radians = (angle * Math.PI) / 180;
@@ -48,9 +48,9 @@ const SeatDistribution = () => {
   const createArcPath = (startAngle: number, endAngle: number, r: number) => {
     const start = polarToCartesian(startAngle, r);
     const end = polarToCartesian(endAngle, r);
-    const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+    const largeArcFlag = Math.abs(startAngle - endAngle) > 180 ? 1 : 0;
     
-    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
   };
 
   return (
@@ -62,8 +62,8 @@ const SeatDistribution = () => {
       <CardContent>
         <div className="flex justify-center">
           <svg 
-            viewBox="0 0 360 200" 
-            className="w-full max-w-lg"
+            viewBox="0 0 250 360" 
+            className="w-full max-w-xs"
             style={{ overflow: 'visible' }}
           >
             {/* Arc segments */}
