@@ -1,5 +1,11 @@
 import { parties } from '@/data/parliamentData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const SeatDistribution = () => {
   const totalSeats = 349;
@@ -98,27 +104,40 @@ const SeatDistribution = () => {
       </CardHeader>
       <CardContent>
         <div className="flex justify-center">
-          <svg 
-            viewBox="0 0 400 220" 
-            className="w-full max-w-lg"
-            style={{ overflow: 'visible' }}
-          >
-            {/* Individual seats */}
-            {positionedSeats.map((seat, index) => (
-              <circle
-                key={index}
-                cx={seat.x}
-                cy={seat.y}
-                r={3.5}
-                fill={seat.color}
-                className="transition-all duration-200 hover:r-5 cursor-pointer"
-                style={{
-                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
-                }}
-              >
-                <title>{seat.partyName} ({seat.partyShort})</title>
-              </circle>
-            ))}
+          <TooltipProvider delayDuration={0}>
+            <svg 
+              viewBox="0 0 400 220" 
+              className="w-full max-w-lg"
+              style={{ overflow: 'visible' }}
+            >
+              {/* Individual seats */}
+              {positionedSeats.map((seat, index) => (
+                <Tooltip key={index}>
+                  <TooltipTrigger asChild>
+                    <circle
+                      cx={seat.x}
+                      cy={seat.y}
+                      r={3.5}
+                      fill={seat.color}
+                      className="transition-all duration-200 cursor-pointer hover:opacity-80"
+                      style={{
+                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
+                      }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent 
+                    side="top" 
+                    className="flex items-center gap-2"
+                  >
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: seat.color }} 
+                    />
+                    <span className="font-medium">{seat.partyName}</span>
+                    <span className="text-muted-foreground">({seat.partyShort})</span>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
             
             {/* Center podium decoration */}
             <rect
@@ -131,7 +150,8 @@ const SeatDistribution = () => {
               stroke="hsl(var(--border))"
               strokeWidth={1}
             />
-          </svg>
+            </svg>
+          </TooltipProvider>
         </div>
 
         {/* Legend */}
