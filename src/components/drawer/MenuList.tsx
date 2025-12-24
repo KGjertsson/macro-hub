@@ -1,7 +1,5 @@
-'use client';
-
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 
 type MenuItem = {
@@ -25,14 +23,14 @@ const menuItems: MenuItem[] = [
 ];
 
 const MenuList = () => {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   return (
     <ul className="py-2">
       {menuItems.map((menuItem) => (
         <li key={menuItem.route}>
           <button
-            onClick={() => router.push(menuItem.route)}
+            onClick={() => navigate(menuItem.route)}
             className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50"
           >
             <Mail className="h-4 w-4 text-gray-500" />

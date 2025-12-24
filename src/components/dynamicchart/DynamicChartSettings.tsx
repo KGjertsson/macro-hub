@@ -91,21 +91,47 @@ const DynamicChartSettings = () => {
     );
   };
 
+  const toggleDataSelection = (displayName: string) => {
+    setSelectedItems((prev) =>
+      prev.includes(displayName)
+        ? prev.filter((item) => item !== displayName)
+        : [...prev, displayName]
+    );
+  };
+
   const dataSelectionComponent = () => {
     const categories = Array.from(new Set(allSeriesConfigs.map((c) => c.category)));
     return (
       <div className='w-full'>
-        <label htmlFor='data-selection-component' className='block text-sm font-medium mb-1'>Datatyp</label>
-        <select
-          multiple
-          id='data-selection-component'
-          value={selectedItems}
-          onChange={filterSelectedGraphs}
-          className='block w-full rounded-md border border-gray-300 bg-white p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-32'
-        >
-          {categories.map((category) => renderOptGroupByCategory(category))}
-        </select>
-        <p className='text-xs text-gray-500 mt-1'>Håll Ctrl/Cmd för att välja flera.</p>
+        <label className='block text-sm font-medium mb-2'>Datatyp</label>
+        <div className='border border-border rounded-md p-3 max-h-64 overflow-y-auto bg-card'>
+          {categories.map((category) => (
+            <div key={category} className='mb-3 last:mb-0'>
+              <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2'>{category}</p>
+              <div className='flex flex-wrap gap-2'>
+                {allSeriesConfigs
+                  .filter((config) => config.category === category)
+                  .map((config) => {
+                    const isSelected = selectedItems.includes(config.displayName);
+                    return (
+                      <button
+                        key={config.name}
+                        onClick={() => toggleDataSelection(config.displayName)}
+                        className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                          isSelected
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background border-border hover:bg-muted'
+                        }`}
+                      >
+                        {config.displayName}
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className='text-xs text-muted-foreground mt-1'>Klicka för att välja/avvälja datatyper.</p>
       </div>
     );
   };
