@@ -144,10 +144,10 @@ const DynamicChartSettings = () => {
           id='resolution-select'
           value={SAMPLE_STRATEGY[sample]}
           onChange={setSampleFromEvent}
-          className='block w-full rounded-md border border-gray-300 bg-white p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+          className='block w-full rounded-md border border-border bg-card text-foreground p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
         >
           {sampleStrategies.map((s) => (
-            <option key={s} value={s}>
+            <option key={s} value={s} className='bg-card text-foreground'>
               {sampleStrategyDisplay[s as keyof SampleStrategyDisplay]}
             </option>
           ))}
@@ -164,10 +164,10 @@ const DynamicChartSettings = () => {
           id='timeframe-select'
           value={TIME_FRAME[timeFrame]}
           onChange={setTimeWindowFromEvent}
-          className='block w-full rounded-md border border-gray-300 bg-white p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+          className='block w-full rounded-md border border-border bg-card text-foreground p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
         >
           {timeWindows.map((timeWindow) => (
-            <option key={timeWindow} value={timeWindow}>
+            <option key={timeWindow} value={timeWindow} className='bg-card text-foreground'>
               {timeFrameDisplay[timeWindow as keyof TimeFrameDisplay]}
             </option>
           ))}
@@ -178,7 +178,7 @@ const DynamicChartSettings = () => {
 
   return (
     <div>
-      <p className='mb-2 text-sm text-gray-700'>Välj datatyp och upplösning för dynamisk rendering</p>
+      <p className='mb-2 text-sm text-muted-foreground'>Välj datatyp och upplösning för dynamisk rendering</p>
       {dataSelectionComponent()}
       <div className='my-2' />
       {strategySelectionComponent()}
