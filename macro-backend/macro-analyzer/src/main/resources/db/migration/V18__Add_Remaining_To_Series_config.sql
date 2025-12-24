@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE eurostat_national_debt_series
+CREATE TABLE IF NOT EXISTS eurostat_national_debt_series
 (
     id           SERIAL PRIMARY KEY,
     global_id    uuid         NOT NULL,
@@ -95,4 +95,4 @@ VALUES
 
 UPDATE series_configuration
 SET display_name = 'Statsskuld i % av BNP'
-WHERE global_id = 'DebtPcGdpAt';
+WHERE name = 'DebtPcGdpAt';
