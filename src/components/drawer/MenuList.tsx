@@ -13,8 +13,8 @@ const menuItems: MenuItem[] = [
     route: '/',
   },
   {
-    name: 'Dynamisk graf',
-    route: '/chart',
+    name: 'Makroindikatorer',
+    route: '/macroindicator',
   },
   {
     name: 'Källor',

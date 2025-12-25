@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Index from './pages/Index';
 import Parliament from './pages/Parliament';
-import DynamicChart from '@/pages/DynamicChart.tsx';
+import MacroIndicator from '@/pages/MacroIndicator';
 import PoliticianDetail from './pages/PoliticianDetail';
 import Sources from './pages/Sources';
 import NotFound from './pages/NotFound';
@@ -22,7 +22,7 @@ const App = () => (
         <Routes>
           <Route path='/' element={<Index />} />
           <Route path='/parliament' element={<Parliament />} />
-          <Route path='/dynamicchart' element={<DynamicChart />} />
+          <Route path='/macroindicator' element={<MacroIndicator />} />
           <Route path='/sources' element={<Sources />} />
           <Route path='/parliament/politician/:id' element={<PoliticianDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
