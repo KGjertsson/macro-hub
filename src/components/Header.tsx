@@ -21,13 +21,13 @@ const Header = () => {
 
                     <nav className='hidden md:flex items-center gap-8'>
                         <Link
-                            to='/dynamicchart'
+                            to='/macroindicator'
                             className={`text-sm transition-colors flex items-center gap-1.5 ${
                                 isParliamentPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                             <LineChart className='h-4 w-4'/>
-                            Dynamisk Graf
+                            Makroindikatorer
                         </Link>
                         <Link
                             to='/parliament'
