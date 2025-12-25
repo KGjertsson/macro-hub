@@ -1,4 +1,4 @@
-import {BarChart3, Building, Globe, Menu} from 'lucide-react';
+import {BarChart3, LineChart, Landmark, BookOpen, Menu} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useState} from 'react';
 import {Link, useLocation} from 'react-router-dom';
@@ -26,7 +26,7 @@ const Header = () => {
                                 isParliamentPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
-                            <Building className='h-4 w-4'/>
+                            <LineChart className='h-4 w-4'/>
                             Dynamisk Graf
                         </Link>
                         <Link
@@ -35,7 +35,7 @@ const Header = () => {
                                 isParliamentPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
-                            <Building className='h-4 w-4'/>
+                            <Landmark className='h-4 w-4'/>
                             Riksdagen
                         </Link>
                     </nav>
@@ -43,7 +43,7 @@ const Header = () => {
                     <div className='hidden md:flex items-center gap-4'>
                         <Link to='/sources'>
                             <Button variant='ghost' size='sm' className='text-muted-foreground hover:text-foreground'>
-                                <Globe className='h-4 w-4 mr-2'/>
+                                <BookOpen className='h-4 w-4 mr-2'/>
                                 Källor
                             </Button>
                         </Link>
@@ -78,14 +78,14 @@ const Header = () => {
                                 to='/parliament'
                                 className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
                             >
-                                <Building className='h-4 w-4'/>
+                                <Landmark className='h-4 w-4'/>
                                 Riksdagen
                             </Link>
                             <Link
                                 to='/sources'
                                 className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
                             >
-                                <Globe className='h-4 w-4'/>
+                                <BookOpen className='h-4 w-4'/>
                                 Källor
                             </Link>
                         </nav>
