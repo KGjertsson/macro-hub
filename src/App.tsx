@@ -8,6 +8,7 @@ import Parliament from './pages/Parliament';
 import MacroIndicator from '@/pages/MacroIndicator';
 import PoliticianDetail from './pages/PoliticianDetail';
 import Sources from './pages/Sources';
+import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path='/parliament' element={<Parliament />} />
           <Route path='/macroindicator' element={<MacroIndicator />} />
           <Route path='/sources' element={<Sources />} />
+          <Route path='/contact' element={<Contact />} />
           <Route path='/parliament/politician/:id' element={<PoliticianDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path='*' element={<NotFound />} />
