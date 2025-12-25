@@ -13,8 +13,7 @@ const Footer = () => {
                             <span className="text-xl font-semibold tracking-tight">MacroVue</span>
                         </div>
                         <p className="text-sm text-muted-foreground max-w-sm">
-                            Your comprehensive platform for macroeconomic data visualization and analysis.
-                            Track global economic indicators in real-time.
+                            Din kompletta plattform för visualisering och analys av makroekonomisk data och riksdagsinformation. Följ ekonomiska indikatorer och politiska trender i realtid.
                         </p>
                     </div>
 
