@@ -7,6 +7,7 @@ import Index from './pages/Index';
 import Parliament from './pages/Parliament';
 import DynamicChart from '@/pages/DynamicChart.tsx';
 import PoliticianDetail from './pages/PoliticianDetail';
+import Sources from './pages/Sources';
 import NotFound from './pages/NotFound';
 
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route path='/' element={<Index />} />
           <Route path='/parliament' element={<Parliament />} />
           <Route path='/dynamicchart' element={<DynamicChart />} />
+          <Route path='/sources' element={<Sources />} />
           <Route path='/parliament/politician/:id' element={<PoliticianDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path='*' element={<NotFound />} />
