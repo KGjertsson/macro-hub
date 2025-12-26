@@ -106,11 +106,45 @@ const Regions = () => {
                 </div>
                 {(() => {
                   const coalition = getRegionCoalition(selectedRegion.id);
+                  
+                  // Map full party names to abbreviations used in vote data
+                  const partyNameToAbbr: Record<string, string> = {
+                    "Socialdemokraterna": "S",
+                    "Moderaterna": "M",
+                    "Sverigedemokraterna": "SD",
+                    "Centerpartiet": "C",
+                    "Vänsterpartiet": "V",
+                    "Kristdemokraterna": "KD",
+                    "Liberalerna": "L",
+                    "Miljöpartiet": "MP",
+                  };
+                  
+                  // Calculate combined vote percentage for coalition parties
+                  const coalitionVotePercentage = coalition.parties.reduce((sum, party) => {
+                    const abbr = partyNameToAbbr[party.name];
+                    const voteData = selectedRegion.votes.find(v => v.party === abbr);
+                    return sum + (voteData?.percentage || 0);
+                  }, 0);
+                  
+                  // Include support parties if they exist
+                  const supportVotePercentage = coalition.supportParties?.reduce((sum, party) => {
+                    const abbr = partyNameToAbbr[party.name];
+                    const voteData = selectedRegion.votes.find(v => v.party === abbr);
+                    return sum + (voteData?.percentage || 0);
+                  }, 0) || 0;
+                  
+                  const totalCoalitionPercentage = coalitionVotePercentage + supportVotePercentage;
+                  
                   return (
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                          {coalition.name}
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                            {coalition.name}
+                          </div>
+                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-foreground text-sm font-semibold">
+                            {totalCoalitionPercentage.toFixed(1)}% av rösterna
+                          </div>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
                           {coalition.description}
