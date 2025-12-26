@@ -13,7 +13,6 @@ import Contact from './pages/Contact';
 import Regions from './pages/Regions';
 import NotFound from './pages/NotFound';
 
-
 const queryClient = new QueryClient();
 
 const App = () => (
