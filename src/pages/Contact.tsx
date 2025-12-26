@@ -59,18 +59,6 @@ const Contact = () => {
               <div className="p-6 rounded-lg border border-border bg-card">
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <Phone className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Telefon</h3>
-                    <p className="text-muted-foreground">+46 8 123 45 67</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-lg border border-border bg-card">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                     <MapPin className="h-5 w-5 text-primary" />
                   </div>
                   <div>

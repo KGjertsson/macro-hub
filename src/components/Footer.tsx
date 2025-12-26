@@ -13,7 +13,8 @@ const Footer = () => {
                             <span className="text-xl font-semibold tracking-tight">MacroVue</span>
                         </div>
                         <p className="text-sm text-muted-foreground max-w-sm">
-                            Din kompletta plattform för visualisering och analys av makroekonomisk data och riksdagsinformation. Följ ekonomiska indikatorer och politiska trender i realtid.
+                            Din kompletta plattform för visualisering och analys av makroekonomisk data och
+                            riksdagsinformation. Följ ekonomiska indikatorer och politiska trender i realtid.
                         </p>
                     </div>
 
@@ -41,7 +42,7 @@ const Footer = () => {
                 <div
                     className="mt-12 pt-8 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm text-muted-foreground">
-                        © 2025 GjertssonChen AB.
+                        © 2025 GjertssonChen AB
                     </p>
                 </div>
             </div>
