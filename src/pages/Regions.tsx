@@ -96,7 +96,33 @@ const Regions = () => {
               </div>
             </div>
 
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="mt-12 bg-card rounded-2xl border border-border p-6 shadow-lg">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Nuvarande regeringskoalition</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <p className="text-muted-foreground leading-relaxed">
+                    Sveriges nuvarande regering är en koalitionsregering bestående av <span className="font-semibold text-foreground">Moderaterna</span>, <span className="font-semibold text-foreground">Kristdemokraterna</span> och <span className="font-semibold text-foreground">Liberalerna</span>, med stöd av <span className="font-semibold text-foreground">Sverigedemokraterna</span> genom Tidöavtalet.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Regeringen tillträdde i oktober 2022 efter riksdagsvalet samma år. Statsminister är Ulf Kristersson (M), som leder den första högerregeringen på åtta år.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-foreground">Regeringspartier</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: '#52BDEC' }}>Moderaterna</span>
+                    <span className="px-3 py-1.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: '#005B82' }}>Kristdemokraterna</span>
+                    <span className="px-3 py-1.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: '#006AB3' }}>Liberalerna</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mt-4">Stödparti</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: '#DDDD00', color: '#000' }}>Sverigedemokraterna</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-card rounded-xl border border-border p-4 text-center">
                 <div className="text-3xl font-bold text-foreground">21</div>
                 <div className="text-sm text-muted-foreground">Regioner</div>
