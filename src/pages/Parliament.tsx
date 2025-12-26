@@ -5,14 +5,17 @@ import Footer from '@/components/Footer';
 import SeatDistribution from '@/components/SeatDistribution';
 import PoliticianCard from '@/components/PoliticianCard';
 import ParliamentBlog from '@/components/ParliamentBlog';
-import { parties, politicians } from '@/data/parliamentData';
+import { parties, politicians, electionYears, getPartiesForYear } from '@/data/parliamentData';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Building, Search, Users } from 'lucide-react';
+import { ArrowLeft, Building, Calendar, Search, Users } from 'lucide-react';
 
 const Parliament = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [partyFilter, setPartyFilter] = useState<string>('all');
+  const [selectedYear, setSelectedYear] = useState<number>(2022);
+
+  const yearParties = getPartiesForYear(selectedYear);
 
   const filteredPoliticians = politicians.filter(politician => {
     const matchesSearch = politician.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,7 +38,7 @@ const Parliament = () => {
         </Link>
 
         {/* Hero Section */}
-        <section className='mb-12'>
+        <section className='mb-8'>
           <div className='flex items-center gap-3 mb-4'>
             <div className='p-3 rounded-xl bg-primary/10'>
               <Building className='w-8 h-8 text-primary' />
@@ -47,9 +50,31 @@ const Parliament = () => {
           </div>
         </section>
 
+        {/* Year Selection */}
+        <section className='mb-6'>
+          <div className='flex items-center gap-4'>
+            <div className='flex items-center gap-2'>
+              <Calendar className='w-5 h-5 text-muted-foreground' />
+              <span className='text-sm font-medium'>Election Year:</span>
+            </div>
+            <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+              <SelectTrigger className='w-32 bg-card border-border/50'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {electionYears.map(year => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </section>
+
         {/* Seat Distribution */}
         <section className='mb-12 animate-fade-in'>
-          <SeatDistribution />
+          <SeatDistribution year={selectedYear} />
         </section>
 
         {/* Politicians Section */}
@@ -78,7 +103,7 @@ const Parliament = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>All Parties</SelectItem>
-                {parties.map(party => (
+                {yearParties.map(party => (
                   <SelectItem key={party.id} value={party.id}>
                     <span className='flex items-center gap-2'>
                       <span
