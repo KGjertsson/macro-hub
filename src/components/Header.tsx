@@ -1,4 +1,4 @@
-import {BarChart3, LineChart, Landmark, BookOpen, Menu} from 'lucide-react';
+import {BarChart3, LineChart, Landmark, BookOpen, Menu, MapPin} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useState} from 'react';
 import {Link, useLocation} from 'react-router-dom';
@@ -7,6 +7,7 @@ const Header = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
     const isParliamentPage = location.pathname.startsWith('/parliament');
+    const isRegionsPage = location.pathname === '/regions';
 
     return (
         <header className='fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl'>
@@ -23,7 +24,7 @@ const Header = () => {
                         <Link
                             to='/macroindicator'
                             className={`text-sm transition-colors flex items-center gap-1.5 ${
-                                isParliamentPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
+                                location.pathname === '/macroindicator' ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                             <LineChart className='h-4 w-4'/>
@@ -37,6 +38,15 @@ const Header = () => {
                         >
                             <Landmark className='h-4 w-4'/>
                             Riksdagen
+                        </Link>
+                        <Link
+                            to='/regions'
+                            className={`text-sm transition-colors flex items-center gap-1.5 ${
+                                isRegionsPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <MapPin className='h-4 w-4'/>
+                            Regioner
                         </Link>
                     </nav>
 
@@ -80,6 +90,13 @@ const Header = () => {
                             >
                                 <Landmark className='h-4 w-4'/>
                                 Riksdagen
+                            </Link>
+                            <Link
+                                to='/regions'
+                                className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
+                            >
+                                <MapPin className='h-4 w-4'/>
+                                Regioner
                             </Link>
                             <Link
                                 to='/sources'
