@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.services.scrape.web;
+package com.kg.macroanalyzer.adaptors.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
