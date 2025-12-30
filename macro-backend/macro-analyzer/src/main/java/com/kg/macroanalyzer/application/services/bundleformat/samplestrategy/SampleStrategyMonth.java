@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application.services.bundleformat.samplestrategy;
 
-import com.kg.macroanalyzer.application.domain.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 
 import java.time.YearMonth;
 import java.util.regex.Pattern;

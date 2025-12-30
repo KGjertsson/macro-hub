@@ -2,8 +2,8 @@ package com.kg.macroanalyzer.adaptors.database.postgres;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
-import com.kg.macroanalyzer.application.domain.MacroPoint;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;

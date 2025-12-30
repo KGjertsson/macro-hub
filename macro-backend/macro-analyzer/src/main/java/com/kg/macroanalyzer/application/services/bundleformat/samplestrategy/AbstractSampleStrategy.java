@@ -1,8 +1,8 @@
 package com.kg.macroanalyzer.application.services.bundleformat.samplestrategy;
 
-import com.kg.macroanalyzer.application.domain.AlignedBundle;
-import com.kg.macroanalyzer.application.domain.MacroPoint;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;

@@ -1,9 +1,9 @@
 package com.kg.macroanalyzer.application.services.scrape;
 
-import com.kg.macroanalyzer.application.domain.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import com.kg.macroanalyzer.adaptors.web.WebAdaptorFactory;
+import com.kg.macroanalyzer.adaptors.web.macroseries.WebAdaptorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ public class ScrapeUtils {
         }
         final var webAdaptor = webAdaptorFactory.build(seriesConfig);
 
-        return webAdaptor.getMacroPoints(seriesConfig)
+        return webAdaptor.fetchSeriesData(seriesConfig)
                 .filter(i -> !persistedItems.contains(i))
                 .toList();
     }

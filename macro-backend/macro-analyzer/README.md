@@ -15,7 +15,44 @@ flowchart LR
         domain --> DatabasePort
     end
     DatabasePort --> PostgresAdaptor
+```
 
+### Data Model
+
+```mermaid
+erDiagram
+    SERIES_CONFIG ||--|| MACRO_SERIES : configures
+    SERIES_CONFIG ||--}| MEMBERS_OF_PARLIAMENT : configures
+    
+    SERIES_CONFIG {
+        integer id
+        uuid global_id
+        string name
+        string display_name
+        datetime created
+        datetime updated
+        string scrape_url
+        string category
+    }
+    
+    MACRO_SERIES {
+        integer id
+        uuid global_id
+        string series_name
+        double value
+        datetime date
+        datetime created
+        datetime updated
+    }
+    
+    MEMBERS_OF_PARLIAMENT {
+        integer id
+        uuid global_id
+        string member_name
+        jsonb member_data
+        datetime created
+        datetime updated
+    }
 ```
 
 ### Sources

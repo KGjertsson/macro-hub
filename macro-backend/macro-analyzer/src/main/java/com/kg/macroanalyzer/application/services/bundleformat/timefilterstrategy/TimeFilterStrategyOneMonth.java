@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy;
 
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 
 import java.time.LocalDate;
 import java.util.List;

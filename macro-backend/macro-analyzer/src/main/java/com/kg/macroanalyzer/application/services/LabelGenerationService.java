@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.application.services;
 
-import com.kg.macroanalyzer.application.domain.MacroPoint;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import lombok.Builder;
 import org.springframework.stereotype.Service;
 

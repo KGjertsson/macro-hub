@@ -3,7 +3,7 @@ package com.kg.macroanalyzer.application.services.scrape;
 import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;

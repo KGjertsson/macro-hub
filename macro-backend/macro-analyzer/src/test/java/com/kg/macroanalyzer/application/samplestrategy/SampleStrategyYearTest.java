@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.application.samplestrategy;
 
 import com.kg.macroanalyzer.TestJsonReader;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.SampleStrategyYear;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;

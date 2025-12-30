@@ -1,5 +1,7 @@
-package com.kg.macroanalyzer.adaptors.web;
+package com.kg.macroanalyzer.adaptors.web.macroseries;
 
+import com.kg.macroanalyzer.adaptors.web.RiksdagenAdaptor;
+import com.kg.macroanalyzer.adaptors.web.WebAdaptor;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

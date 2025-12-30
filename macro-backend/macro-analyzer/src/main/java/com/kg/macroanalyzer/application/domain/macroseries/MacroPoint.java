@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.application.domain;
+package com.kg.macroanalyzer.application.domain.macroseries;
 
 
 import lombok.Builder;

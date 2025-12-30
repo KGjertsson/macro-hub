@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application.services.bundleformat;
 
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import org.springframework.stereotype.Service;
 

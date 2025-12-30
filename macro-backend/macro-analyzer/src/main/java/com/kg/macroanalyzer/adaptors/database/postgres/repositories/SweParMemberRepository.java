@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
 
-import com.kg.macroanalyzer.application.domain.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -21,6 +21,7 @@ public class SweParMemberRepository {
     }
 
     public Supplier<List<MacroPoint>> reader() {
+        // Upsert all the data every time
         return Collections::emptyList;
     }
 

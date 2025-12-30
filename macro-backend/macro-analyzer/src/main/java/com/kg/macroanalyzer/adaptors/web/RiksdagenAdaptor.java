@@ -2,7 +2,7 @@ package com.kg.macroanalyzer.adaptors.web;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kg.macroanalyzer.application.domain.MacroPoint;
+import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +12,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Slf4j
 @Component
-public class RiksdagenAdaptor extends WebAdaptor {
+public class RiksdagenAdaptor extends WebAdaptor<MemberOfParliament> {
 
     @Override
     protected HttpURLConnection buildConnection(SeriesConfig seriesConfig) throws IOException, URISyntaxException {
@@ -45,20 +44,21 @@ public class RiksdagenAdaptor extends WebAdaptor {
     }
 
     @Override
-    protected Stream<MacroPoint> parseResponse(String response) throws ScrapeException {
+    protected Stream<MemberOfParliament> parseResponse(String response) throws ScrapeException {
         try {
             final var objectMapper = new ObjectMapper();
+            objectMapper.coercionConfigFor(com.fasterxml.jackson.databind.type.LogicalType.POJO)
+                    .setCoercion(
+                            com.fasterxml.jackson.databind.cfg.CoercionInputShape.EmptyString,
+                            com.fasterxml.jackson.databind.cfg.CoercionAction.AsNull
+                    );
             final var riksdagenResponse = objectMapper.readValue(response, RiksdagenResponse.class);
 
             if (riksdagenResponse.personlista() == null || riksdagenResponse.personlista().person() == null) {
                 return Stream.empty();
             }
 
-            return riksdagenResponse.personlista().person().stream()
-                    .map(person -> MacroPoint.builder()
-                            .value(0.0) // Placeholder
-                            .date(LocalDate.now()) // Placeholder
-                            .build());
+            return riksdagenResponse.personlista().person().stream();
         } catch (IOException e) {
             log.error("Failed to parse Riksdagen response", e);
             throw new ScrapeException("Failed to parse Riksdagen response: " + e.getMessage());
@@ -71,63 +71,7 @@ public class RiksdagenAdaptor extends WebAdaptor {
     private record PersonLista(
             @JsonProperty("@systemdatum") String systemDatum,
             @JsonProperty("@hits") String hits,
-            List<Person> person
-    ) {
-    }
-
-    private record Person(
-            String hangar_guid,
-            String sourceid,
-            String intressent_id,
-            String hangar_id,
-            String fodd_ar,
-            String kon,
-            String efternamn,
-            String tilltalsnamn,
-            String sorteringsnamn,
-            String iort,
-            String parti,
-            String valkrets,
-            String status,
-            String person_url_xml,
-            String bild_url_80,
-            String bild_url_192,
-            String bild_url_max,
-            PersonUppdrag personuppdrag,
-            PersonUppgift personuppgift
-    ) {
-    }
-
-    private record PersonUppdrag(List<Uppdrag> uppdrag) {
-    }
-
-    private record Uppdrag(
-            String organ_kod,
-            String roll_kod,
-            String ordningsnummer,
-            String status,
-            String typ,
-            String from,
-            String tom,
-            List<Object> uppgift,
-            String intressent_id,
-            String hangar_id,
-            String sortering,
-            String organ_sortering,
-            String uppdrag_rollsortering,
-            String uppdrag_statussortering
-    ) {
-    }
-
-    private record PersonUppgift(List<Uppgift> uppgift) {
-    }
-
-    private record Uppgift(
-            String kod,
-            List<Object> uppgift,
-            String typ,
-            String intressent_id,
-            String hangar_id
+            List<MemberOfParliament> person
     ) {
     }
 
