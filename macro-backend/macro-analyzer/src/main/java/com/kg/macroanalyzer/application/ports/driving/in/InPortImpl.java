@@ -36,4 +36,5 @@ public class InPortImpl implements InPort {
     public List<ScrapeResult> scrapeFromQueue(LocalDateTime timeStamp) {
         return scrapeService.scrapeFromQueue(timeStamp);
     }
+
 }

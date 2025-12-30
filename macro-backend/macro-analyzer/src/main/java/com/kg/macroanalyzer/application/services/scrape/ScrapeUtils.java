@@ -32,6 +32,7 @@ public class ScrapeUtils {
         }
         final var webAdaptor = webAdaptorFactory.build(seriesConfig);
 
+        // TODO: make this type safe
         return webAdaptor.fetchSeriesData(seriesConfig)
                 .filter(i -> !persistedItems.contains(i))
                 .toList();
