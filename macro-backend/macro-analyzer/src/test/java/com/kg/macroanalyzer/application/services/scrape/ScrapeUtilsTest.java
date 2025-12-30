@@ -1,10 +1,10 @@
 package com.kg.macroanalyzer.application.services.scrape;
 
-import com.kg.macroanalyzer.application.domain.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.adaptors.web.WebAdaptor;
-import com.kg.macroanalyzer.adaptors.web.WebAdaptorFactory;
+import com.kg.macroanalyzer.adaptors.web.macroseries.WebAdaptorFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -55,7 +55,7 @@ public class ScrapeUtilsTest {
 
         // when
         when(webAdaptorFactory.build(any())).thenReturn(webAdaptor);
-        when(webAdaptor.getMacroPoints(any())).thenThrow(new ScrapeException("Test ScrapeException"));
+        when(webAdaptor.fetchSeriesData(any())).thenThrow(new ScrapeException("Test ScrapeException"));
 
         // when/then
         assertThrows(
@@ -76,7 +76,7 @@ public class ScrapeUtilsTest {
 
         // when
         when(webAdaptorFactory.build(any())).thenReturn(webAdaptor);
-        when(webAdaptor.getMacroPoints(any())).thenReturn(scrapedList);
+        when(webAdaptor.fetchSeriesData(any())).thenReturn(scrapedList);
         final var novelItems = scrapeUtils.scrapeNovelItems(seriesConfig, persistedList);
 
         // then
@@ -98,7 +98,7 @@ public class ScrapeUtilsTest {
 
         // when
         when(webAdaptorFactory.build(any())).thenReturn(webAdaptor);
-        when(webAdaptor.getMacroPoints(any())).thenReturn(scrapedList);
+        when(webAdaptor.fetchSeriesData(any())).thenReturn(scrapedList);
         final var novelItems = scrapeUtils.scrapeNovelItems(seriesConfig, persistedList);
 
         // then

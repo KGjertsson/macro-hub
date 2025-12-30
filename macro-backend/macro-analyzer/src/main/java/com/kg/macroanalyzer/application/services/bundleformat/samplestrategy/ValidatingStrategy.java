@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application.services.bundleformat.samplestrategy;
 
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.exceptions.InvalidBundleDimensionException;
 import lombok.extern.slf4j.Slf4j;
 

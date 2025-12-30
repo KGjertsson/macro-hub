@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.application.ports.driving.out;
 
-import com.kg.macroanalyzer.application.domain.AlignedBundle;
+import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 

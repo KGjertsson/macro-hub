@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS swedish_members_of_parliament
     id           SERIAL PRIMARY KEY,
     global_id    uuid         NOT NULL,
     member_name  VARCHAR(100) NOT NULL,
-    data         JSONB        NOT NULL,
+    member_data  JSONB        NOT NULL,
     created      TIMESTAMP DEFAULT NOW(),
     updated      TIMESTAMP DEFAULT NOW()
 );
@@ -32,8 +32,13 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_swedish_members_of_parliament_updated
-    BEFORE UPDATE
-    ON swedish_members_of_parliament
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updated_column();
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_swedish_members_of_parliament_updated') THEN
+        CREATE TRIGGER update_swedish_members_of_parliament_updated
+            BEFORE UPDATE
+            ON swedish_members_of_parliament
+            FOR EACH ROW
+        EXECUTE PROCEDURE update_updated_column();
+    END IF;
+END $$;

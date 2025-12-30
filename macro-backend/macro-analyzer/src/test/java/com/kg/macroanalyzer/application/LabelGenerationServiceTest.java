@@ -2,8 +2,8 @@ package com.kg.macroanalyzer.application;
 
 
 import com.kg.macroanalyzer.TestJsonReader;
-import com.kg.macroanalyzer.application.domain.MacroPoint;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.services.LabelGenerationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

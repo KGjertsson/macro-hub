@@ -1,6 +1,5 @@
 package com.kg.macroanalyzer.adaptors.web;
 
-import com.kg.macroanalyzer.application.domain.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +24,9 @@ import javax.net.ssl.X509TrustManager;
 
 @Slf4j
 @Component
-public abstract class WebAdaptor {
+public abstract class WebAdaptor<T> {
 
-    public Stream<MacroPoint> getMacroPoints(SeriesConfig seriesConfig) throws ScrapeException {
+    public Stream<T> fetchSeriesData(SeriesConfig seriesConfig) throws ScrapeException {
         final var response = getHTTP(seriesConfig);
 
         return parseResponse(response);
@@ -85,7 +84,7 @@ public abstract class WebAdaptor {
 
     protected abstract HttpURLConnection buildConnection(SeriesConfig seriesConfig) throws IOException, URISyntaxException;
 
-    protected abstract Stream<MacroPoint> parseResponse(String response) throws ScrapeException;
+    protected abstract Stream<T> parseResponse(String response) throws ScrapeException;
 
     private void applySSLTrustAll(HttpsURLConnection connection) {
         try {

@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.application.services.bundleformat;
 
-import com.kg.macroanalyzer.application.domain.AlignedBundle;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.services.LabelGenerationService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.UniqueMacroPointCollector;

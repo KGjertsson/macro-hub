@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.application.ports.driven;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 
 import java.time.LocalDateTime;

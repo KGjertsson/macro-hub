@@ -1,11 +1,12 @@
-package com.kg.macroanalyzer.adaptors.web;
+package com.kg.macroanalyzer.adaptors.web.macroseries;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.kg.macroanalyzer.application.domain.MacroPoint;
+import com.kg.macroanalyzer.adaptors.web.WebAdaptor;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;

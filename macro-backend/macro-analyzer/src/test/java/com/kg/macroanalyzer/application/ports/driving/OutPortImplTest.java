@@ -1,9 +1,9 @@
 package com.kg.macroanalyzer.application.ports.driving;
 
 
-import com.kg.macroanalyzer.application.domain.AlignedBundle;
-import com.kg.macroanalyzer.application.domain.MacroPoint;
-import com.kg.macroanalyzer.application.domain.MacroSeries;
+import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.OutPortImpl;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
