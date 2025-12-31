@@ -1,41 +1,44 @@
-package com.kg.macroanalyzer.adaptors.web;
+package com.kg.macroanalyzer.adaptors.webadaptorflow.getter;
 
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.zip.GZIPInputStream;
-import java.util.stream.Stream;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 @Slf4j
-@Component
-public abstract class WebAdaptor<T> {
+public class HttpGetter implements Getter<HttpURLConnection, String> {
 
-    public Stream<T> fetchSeriesData(SeriesConfig seriesConfig) throws ScrapeException {
-        final var response = getHTTP(seriesConfig);
+    private static InputStream getInputStream(int status, HttpURLConnection connection) throws IOException {
+        InputStream is = status >= 400 ? connection.getErrorStream() : connection.getInputStream();
+        if (is == null) {
+            // Fallback to inputStream if errorStream is null
+            is = connection.getInputStream();
+        }
 
-        return parseResponse(response);
+        // Handle gzip compression if present
+        final var contentEncoding = connection.getContentEncoding();
+        if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
+            is = new GZIPInputStream(is);
+        }
+        return is;
     }
 
-    private String getHTTP(SeriesConfig seriesConfig) throws ScrapeException {
+    @Override
+    public String get(HttpURLConnection connection) throws ScrapeException {
         try {
-            final var connection = buildConnection(seriesConfig);
-
             if (connection instanceof HttpsURLConnection httpsURLConnection) {
                 applySSLTrustAll(httpsURLConnection);
             }
@@ -62,29 +65,10 @@ public abstract class WebAdaptor<T> {
             }
 
             return response;
-        } catch (IOException | URISyntaxException exception) {
+        } catch (IOException exception) {
             throw new ScrapeException(exception.getMessage());
         }
     }
-
-    private static InputStream getInputStream(int status, HttpURLConnection connection) throws IOException {
-        InputStream is = status >= 400 ? connection.getErrorStream() : connection.getInputStream();
-        if (is == null) {
-            // Fallback to inputStream if errorStream is null
-            is = connection.getInputStream();
-        }
-
-        // Handle gzip compression if present
-        final var contentEncoding = connection.getContentEncoding();
-        if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
-            is = new GZIPInputStream(is);
-        }
-        return is;
-    }
-
-    protected abstract HttpURLConnection buildConnection(SeriesConfig seriesConfig) throws IOException, URISyntaxException;
-
-    protected abstract Stream<T> parseResponse(String response) throws ScrapeException;
 
     private void applySSLTrustAll(HttpsURLConnection connection) {
         try {

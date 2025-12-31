@@ -45,7 +45,7 @@ public class ExistingMacroPointFinderTest {
 
         // when
         when(databasePort.readMacroSeries(seriesConfig)).thenReturn(emptyMacroSeries);
-        final var existing = existingMacroPointFinder.find(seriesConfig);
+        final var existing = existingMacroPointFinder.findExisting(seriesConfig);
 
         // then
         assertTrue(existing.isPresent());
@@ -61,7 +61,7 @@ public class ExistingMacroPointFinderTest {
 
         // when
         when(databasePort.readMacroSeries(seriesConfig)).thenReturn(macroSeries);
-        final var existing = existingMacroPointFinder.find(seriesConfig);
+        final var existing = existingMacroPointFinder.findExisting(seriesConfig);
 
         // then
         assertTrue(existing.isPresent());

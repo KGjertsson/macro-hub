@@ -11,7 +11,7 @@ public record ExistingMacroPointFinder(
 ) implements ExistingFinder<SeriesConfig, ConfigWithMacroPoints> {
 
     @Override
-    public Optional<ConfigWithMacroPoints> find(SeriesConfig seriesConfig) {
+    public Optional<ConfigWithMacroPoints> findExisting(SeriesConfig seriesConfig) {
         final var existing = databasePort.readMacroSeries(seriesConfig)
                 .macroPoints();
 

@@ -3,5 +3,5 @@ package com.kg.macroanalyzer.application.services.scrape.scrapeflow.existingfind
 import java.util.Optional;
 
 public interface ExistingFinder<Config, Data> {
-    Optional<Data> find(Config prepared);
+    Optional<Data> findExisting(Config prepared);
 }
