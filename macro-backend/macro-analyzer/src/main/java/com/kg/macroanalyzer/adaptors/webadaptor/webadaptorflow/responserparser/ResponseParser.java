@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.adaptors.webadaptorflow.responserparser;
+package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 
