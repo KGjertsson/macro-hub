@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.adaptors.webadaptorflow.responserparser;
+package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;

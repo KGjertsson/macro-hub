@@ -1,8 +1,8 @@
-package com.kg.macroanalyzer.adaptors.webadaptorflow;
+package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow;
 
-import com.kg.macroanalyzer.adaptors.webadaptorflow.connectionbuilder.ConnectionBuilder;
-import com.kg.macroanalyzer.adaptors.webadaptorflow.getter.Getter;
-import com.kg.macroanalyzer.adaptors.webadaptorflow.responserparser.ResponseParser;
+import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.ConnectionBuilder;
+import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.getter.Getter;
+import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.ResponseParser;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 
 import java.net.HttpURLConnection;

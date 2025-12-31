@@ -1,15 +1,18 @@
 package com.kg.macroanalyzer.application.services.scrape.scrapeflow.scraper;
 
-import com.kg.macroanalyzer.adaptors.webadaptorflow.WebAdaptorFlowFactory;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
+import com.kg.macroanalyzer.application.ports.driven.WebPort;
+import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 public record MacroPointScraper(
-        WebAdaptorFlowFactory webAdaptorFlowFactory
+        WebPort<SeriesConfig, Stream<MacroPoint>> webPort
 ) implements Scraper<ConfigWithMacroPoints> {
 
     @Override
@@ -17,10 +20,7 @@ public record MacroPointScraper(
         try {
             final var config = configWithMacroPoints.seriesConfig();
             final var existingMacroPoints = configWithMacroPoints.macroPoints();
-
-            final var scrapeAdaptorFlow = webAdaptorFlowFactory.build(config);
-            final var scrapedMacroPoints = scrapeAdaptorFlow.fetch(config);
-
+            final var scrapedMacroPoints = webPort.fetch(config);
             final var novelScraped = scrapedMacroPoints
                     .filter(i -> !existingMacroPoints.contains(i))
                     .toList();

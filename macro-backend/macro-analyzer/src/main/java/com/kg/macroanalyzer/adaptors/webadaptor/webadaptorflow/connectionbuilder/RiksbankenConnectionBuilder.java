@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.adaptors.webadaptorflow.connectionbuilder;
+package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder;
 
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;

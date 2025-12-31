@@ -1,9 +1,10 @@
 package com.kg.macroanalyzer.configuration.scrapeflow;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
-import com.kg.macroanalyzer.adaptors.webadaptorflow.WebAdaptorFlowFactory;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
+import com.kg.macroanalyzer.application.ports.driven.WebPort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.ScrapeFlow;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.existingfinder.ExistingFinder;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Configuration
 public class MacroPointScrapeFlowConfiguration {
@@ -33,8 +35,8 @@ public class MacroPointScrapeFlowConfiguration {
     }
 
     @Bean
-    public Scraper<ConfigWithMacroPoints> scraper(WebAdaptorFlowFactory webAdaptorFlowFactory) {
-        return new MacroPointScraper(webAdaptorFlowFactory);
+    public Scraper<ConfigWithMacroPoints> scraper(WebPort<SeriesConfig, Stream<MacroPoint>> webAdaptorFlowPort) {
+        return new MacroPointScraper(webAdaptorFlowPort);
     }
 
     @Bean
