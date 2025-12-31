@@ -15,7 +15,7 @@ public record ScrapeFlow<Input, Config, Data>(
 
     public ScrapeResult run(Input input) {
         return preparer.prepare(input)
-                .flatMap(finder::find)
+                .flatMap(finder::findExisting)
                 .flatMap(scraper::scrape)
                 .map(persister::persist)
                 .orElse(ScrapeResult.FAILED);

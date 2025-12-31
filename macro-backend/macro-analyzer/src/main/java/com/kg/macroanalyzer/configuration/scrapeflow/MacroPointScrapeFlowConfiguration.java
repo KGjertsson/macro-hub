@@ -1,11 +1,11 @@
 package com.kg.macroanalyzer.configuration.scrapeflow;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
+import com.kg.macroanalyzer.adaptors.webadaptorflow.WebAdaptorFlowFactory;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.ScrapeFlow;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeUtils;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.existingfinder.ExistingFinder;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.existingfinder.ExistingMacroPointFinder;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.persister.MacroPointPersister;
@@ -33,8 +33,8 @@ public class MacroPointScrapeFlowConfiguration {
     }
 
     @Bean
-    public Scraper<ConfigWithMacroPoints> scraper(ScrapeUtils scrapeUtils) {
-        return new MacroPointScraper(scrapeUtils);
+    public Scraper<ConfigWithMacroPoints> scraper(WebAdaptorFlowFactory webAdaptorFlowFactory) {
+        return new MacroPointScraper(webAdaptorFlowFactory);
     }
 
     @Bean
