@@ -4,6 +4,7 @@ import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
+import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.ScrapeFlow;
@@ -35,11 +36,13 @@ public class ScrapeServiceTest {
     DatabasePort databasePort;
     @Mock
     ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMacroPoints> macroPointScrapeFlow;
+    @Mock
+    ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberOfParliament> memberScrapeFlow;
 
     @BeforeEach
     public void setUp() {
         seriesConfigList = TestSeriesConfigFactory.buildTestConfig();
-        scrapeService = new ScrapeService(databasePort, macroPointScrapeFlow);
+        scrapeService = new ScrapeService(databasePort, macroPointScrapeFlow, memberScrapeFlow);
         testJsonReader = new TestJsonReader();
     }
 

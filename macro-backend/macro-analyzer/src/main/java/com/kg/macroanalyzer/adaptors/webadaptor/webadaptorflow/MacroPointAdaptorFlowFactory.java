@@ -9,15 +9,12 @@ import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.F
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksbankenResponseParser;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-@Component
 public record MacroPointAdaptorFlowFactory(
-        @Value("${fed.prod.subscription.key}") String fedSubscriptionKey,
-        @Value("${riksbanken.prod.subscription.key}") String riksbankenSubscriptionKey
+        String fedSubscriptionKey,
+        String riksbankenSubscriptionKey
 ) {
 
     public WebAdaptorFlow<SeriesConfig, Stream<MacroPoint>> build(SeriesConfig seriesConfig) {
