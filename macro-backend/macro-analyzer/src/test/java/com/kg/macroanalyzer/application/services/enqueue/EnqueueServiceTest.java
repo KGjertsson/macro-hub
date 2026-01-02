@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.application.services.enqueue;
 
 import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
+import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueKind;
 import com.kg.macroanalyzer.application.exceptions.EnqueueException;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,7 +85,7 @@ public class EnqueueServiceTest {
         final var existingQueue = TestSeriesConfigFactory.buildTestConfig();
         final var scrapeQueueItems = existingQueue.stream()
                 .filter(c -> !c.name().equals("macro_series_1"))
-                .map(c -> new ScrapeQueueItem(null, c.name(), Instant.now()))
+                .map(c -> new ScrapeQueueItem(null, c.name(), Instant.now(), ScrapeQueueKind.MACRO_POINT))
                 .toList();
 
         // when
