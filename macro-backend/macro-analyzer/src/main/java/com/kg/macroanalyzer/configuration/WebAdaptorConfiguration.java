@@ -1,8 +1,10 @@
 package com.kg.macroanalyzer.configuration;
 
 import com.kg.macroanalyzer.adaptors.webadaptor.MacroPointWebAdaptor;
+import com.kg.macroanalyzer.adaptors.webadaptor.MembersOfParliamentWebAdaptor;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.MacroPointAdaptorFlowFactory;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
+import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.WebPort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,16 +22,19 @@ public class WebAdaptorConfiguration {
     @Value("${riksbanken.prod.subscription.key}")
     String riksbankenSubscriptionKey;
 
-    @Bean
-    public MacroPointAdaptorFlowFactory macroPointAdaptorFlowFactory() {
-        return new MacroPointAdaptorFlowFactory(fedSubscriptionKey, riksbankenSubscriptionKey);
+    @Bean("macroPointWebAdaptor")
+    public WebPort<SeriesConfig, Stream<MacroPoint>> macroPointWebAdaptor() {
+        final var macroPointAdaptorFlowFactory = new MacroPointAdaptorFlowFactory(
+                fedSubscriptionKey,
+                riksbankenSubscriptionKey
+        );
+
+        return new MacroPointWebAdaptor(macroPointAdaptorFlowFactory);
     }
 
-    @Bean
-    public WebPort<SeriesConfig, Stream<MacroPoint>> macroPointWebAdaptor(
-            MacroPointAdaptorFlowFactory macroPointAdaptorFlowFactory
-    ) {
-        return new MacroPointWebAdaptor(macroPointAdaptorFlowFactory);
+    @Bean("memberWebAdaptor")
+    public WebPort<SeriesConfig, Stream<MemberOfParliament>> memberWebAdaptor() {
+        return new MembersOfParliamentWebAdaptor();
     }
 
 }
