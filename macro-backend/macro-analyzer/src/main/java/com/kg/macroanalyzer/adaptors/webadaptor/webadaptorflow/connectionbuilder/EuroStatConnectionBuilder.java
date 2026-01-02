@@ -43,7 +43,7 @@ public record EuroStatConnectionBuilder() implements ConnectionBuilder<SeriesCon
             connection.setRequestProperty("Accept-Language", "en");
 
             return connection;
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | IllegalArgumentException e) {
             final var msg = "Failed to build EuroStat connection: " + e.getMessage();
 
             throw new ScrapeException(msg);

@@ -2,8 +2,8 @@ package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.getter;
 
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 
-public interface Getter<Connection, InternalResponse> {
+public interface Getter<Connection, Response> {
 
-    InternalResponse get(Connection connection) throws ScrapeException;
+    Response get(Connection connection) throws ScrapeException;
 
 }

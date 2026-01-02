@@ -25,11 +25,11 @@ public class MacroPointScraperTest {
     MacroPointScraper scraper;
 
     @Mock
-    WebPort<SeriesConfig, Stream<MacroPoint>> webAdaptorFlowPort;
+    WebPort<SeriesConfig, Stream<MacroPoint>> webPort;
 
     @BeforeEach
     void setUp() {
-        scraper = new MacroPointScraper(webAdaptorFlowPort);
+        scraper = new MacroPointScraper(webPort);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class MacroPointScraperTest {
         final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
 
         // when
-        when(webAdaptorFlowPort.fetch(any())).thenReturn(Stream.empty());
+        when(webPort.fetch(any())).thenReturn(Stream.empty());
         final var scraped = scraper.scrape(new ConfigWithMacroPoints(seriesConfig, emptyList()));
 
         // then
@@ -51,7 +51,7 @@ public class MacroPointScraperTest {
         final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
 
         // when
-        when(webAdaptorFlowPort.fetch(any())).thenThrow(new ScrapeException("error"));
+        when(webPort.fetch(any())).thenThrow(new ScrapeException("error"));
         final var scraped = scraper.scrape(new ConfigWithMacroPoints(seriesConfig, emptyList()));
 
         // then

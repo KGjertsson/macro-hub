@@ -1,7 +1,4 @@
-package com.kg.macroanalyzer.adaptors.web;
-
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
-import org.junit.jupiter.api.Test;
+package com.kg.macroanalyzer.adaptors.webadaptor;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

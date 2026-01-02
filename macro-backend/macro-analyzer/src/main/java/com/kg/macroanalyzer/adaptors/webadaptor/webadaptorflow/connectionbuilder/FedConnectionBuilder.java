@@ -25,7 +25,7 @@ public record FedConnectionBuilder(
             connection.setRequestMethod("GET");
 
             return connection;
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | IllegalArgumentException e) {
             final var msg = "Failed to build Fed connection: " + e.getMessage();
 
             throw new ScrapeException(msg);

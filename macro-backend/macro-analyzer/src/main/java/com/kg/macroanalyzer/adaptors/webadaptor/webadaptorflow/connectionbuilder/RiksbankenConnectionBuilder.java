@@ -26,7 +26,7 @@ public record RiksbankenConnectionBuilder(
             }
 
             return connection;
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | IllegalArgumentException e) {
             final var msg = "Failed to build Riksbanken connection: " + e.getMessage();
 
             throw new ScrapeException(msg);

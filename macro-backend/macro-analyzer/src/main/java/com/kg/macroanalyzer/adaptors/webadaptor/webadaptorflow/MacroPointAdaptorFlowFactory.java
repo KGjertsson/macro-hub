@@ -34,14 +34,14 @@ public record MacroPointAdaptorFlowFactory(
                 final var getter = new HttpGetter();
                 final var parser = new EuroStatResponseParser();
 
-                return new com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow<>(connectionBuilder, getter, parser);
+                return new WebAdaptorFlow<>(connectionBuilder, getter, parser);
             }
             case String name when isRiksbankenConfig(name) -> {
                 final var connectionBuilder = new RiksbankenConnectionBuilder(riksbankenSubscriptionKey);
                 final var getter = new HttpGetter();
                 final var parser = new RiksbankenResponseParser();
 
-                return new com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow<>(connectionBuilder, getter, parser);
+                return new WebAdaptorFlow<>(connectionBuilder, getter, parser);
             }
             default -> throw new IllegalStateException("Unexpected value: " + seriesConfig.name());
         }
