@@ -5,18 +5,12 @@ import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.WebPort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-@Component
-public class MacroPointWebAdaptor implements WebPort<SeriesConfig, Stream<MacroPoint>> {
-
-    private final MacroPointAdaptorFlowFactory webAdaptorFlowFactory;
-
-    public MacroPointWebAdaptor(MacroPointAdaptorFlowFactory webAdaptorFlowFactory) {
-        this.webAdaptorFlowFactory = webAdaptorFlowFactory;
-    }
+public record MacroPointWebAdaptor(
+        MacroPointAdaptorFlowFactory webAdaptorFlowFactory
+) implements WebPort<SeriesConfig, Stream<MacroPoint>> {
 
     @Override
     public Stream<MacroPoint> fetch(SeriesConfig seriesConfig) throws ScrapeException {
