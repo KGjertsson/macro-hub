@@ -7,7 +7,7 @@ public record MemberOfParliamentPersister() implements Persister<ConfigWithMembe
 
     @Override
     public ScrapeResult persist(ConfigWithMemberOfParliament scraped) {
-        return null;
+        return null; // TODO
     }
 
 }

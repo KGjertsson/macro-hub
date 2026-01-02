@@ -3,6 +3,7 @@ package com.kg.macroanalyzer.application.services.scrape;
 import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
+import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueKind;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
@@ -53,6 +54,7 @@ public class ScrapeServiceTest {
         final var scrapeQueueItem = ScrapeQueueItem.builder()
                 .name("test-name")
                 .scrapeDate(now.toInstant(ZoneOffset.UTC))
+                .scrapeQueueKind(ScrapeQueueKind.MACRO_POINT)
                 .build();
         final List<ScrapeQueueItem> items = List.of(scrapeQueueItem);
 

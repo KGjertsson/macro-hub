@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.application.services.enqueue;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem.ScrapeQueueItemBuilder;
+import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueKind;
 import com.kg.macroanalyzer.application.exceptions.EnqueueException;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
@@ -44,6 +45,7 @@ public class EnqueueService {
     public void enqueueAll() {
         final var queueTimeStrategy = buildQueueStrategy(QueueStrategyFactory.Strategy.INSTANT);
         final var builder = ScrapeQueueItem.builder();
+        builder.scrapeQueueKind(ScrapeQueueKind.MACRO_POINT);
         final var currentQueue = databasePort.getScrapeQueue().stream()
                 .map(ScrapeQueueItem::name).toList();
 
