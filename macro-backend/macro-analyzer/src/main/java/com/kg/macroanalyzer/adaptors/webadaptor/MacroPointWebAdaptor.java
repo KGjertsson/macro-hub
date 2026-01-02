@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 import java.util.stream.Stream;
 
 @Component
-public class WebAdaptor implements WebPort<SeriesConfig, Stream<MacroPoint>> {
+public class MacroPointWebAdaptor implements WebPort<SeriesConfig, Stream<MacroPoint>> {
 
     private final MacroPointAdaptorFlowFactory webAdaptorFlowFactory;
 
-    public WebAdaptor(MacroPointAdaptorFlowFactory webAdaptorFlowFactory) {
+    public MacroPointWebAdaptor(MacroPointAdaptorFlowFactory webAdaptorFlowFactory) {
         this.webAdaptorFlowFactory = webAdaptorFlowFactory;
     }
 

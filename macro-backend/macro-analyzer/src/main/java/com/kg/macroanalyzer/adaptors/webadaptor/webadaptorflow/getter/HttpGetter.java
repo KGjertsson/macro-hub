@@ -36,6 +36,31 @@ public class HttpGetter implements Getter<HttpURLConnection, String> {
         return is;
     }
 
+    private static void applySSLTrustAll(HttpsURLConnection connection) {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+                    }
+            };
+
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            connection.setSSLSocketFactory(sc.getSocketFactory());
+            connection.setHostnameVerifier((hostname, session) -> true);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            log.warn("Failed to apply trust-all SSL context", e);
+        }
+    }
+
     @Override
     public String get(HttpURLConnection connection) throws ScrapeException {
         try {
@@ -67,31 +92,6 @@ public class HttpGetter implements Getter<HttpURLConnection, String> {
             return response;
         } catch (IOException exception) {
             throw new ScrapeException(exception.getMessage());
-        }
-    }
-
-    private void applySSLTrustAll(HttpsURLConnection connection) {
-        try {
-            TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public X509Certificate[] getAcceptedIssuers() {
-                            return null;
-                        }
-
-                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                        }
-
-                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                        }
-                    }
-            };
-
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            connection.setSSLSocketFactory(sc.getSocketFactory());
-            connection.setHostnameVerifier((hostname, session) -> true);
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            log.warn("Failed to apply trust-all SSL context", e);
         }
     }
 

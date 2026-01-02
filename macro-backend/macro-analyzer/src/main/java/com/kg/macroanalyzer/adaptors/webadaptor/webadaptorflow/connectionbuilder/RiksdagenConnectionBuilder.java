@@ -33,7 +33,7 @@ public record RiksdagenConnectionBuilder() implements ConnectionBuilder<SeriesCo
             connection.setRequestProperty("sec-ch-ua-platform", "\"macOS\"");
 
             return connection;
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | IllegalArgumentException e) {
             final var msg = "Failed to build Riksdagen connection: " + e.getMessage();
 
             throw new ScrapeException(msg);

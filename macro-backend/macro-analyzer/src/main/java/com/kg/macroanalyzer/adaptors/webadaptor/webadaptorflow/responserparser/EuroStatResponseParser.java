@@ -22,6 +22,10 @@ public record EuroStatResponseParser() implements ResponseParser<String, Stream<
             final var dataset = mapper.readValue(response, EurostatDataset.class);
             final var timeLabels = dataset.orderedTimeLabels();
 
+            if (timeLabels.isEmpty() || dataset.value == null) {
+                return Stream.empty();
+            }
+
             return dataset.value.entrySet().stream()
                     .map(entry ->
                             MacroPoint.builder()

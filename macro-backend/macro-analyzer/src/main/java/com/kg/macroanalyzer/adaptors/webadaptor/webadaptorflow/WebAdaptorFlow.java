@@ -7,13 +7,13 @@ import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 
 import java.net.HttpURLConnection;
 
-public record WebAdaptorFlow<Config, InternalResponse>(
+public record WebAdaptorFlow<Config, Response>(
         ConnectionBuilder<Config, HttpURLConnection> connectionBuilder,
         Getter<HttpURLConnection, String> getter,
-        ResponseParser<String, InternalResponse> responseParser
+        ResponseParser<String, Response> responseParser
 ) {
 
-    public InternalResponse fetch(Config config) throws ScrapeException {
+    public Response fetch(Config config) throws ScrapeException {
         final var connection = connectionBuilder.buildConnection(config);
         final var externalResponse = getter.get(connection);
 
