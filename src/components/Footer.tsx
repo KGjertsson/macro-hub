@@ -29,12 +29,10 @@ const Footer = () => {
                     </div>
 
                     <div>
-                        <h4 className="font-semibold mb-4">Resources</h4>
+                        <h4 className="font-semibold mb-4">Resurser</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><a href="#" className="hover:text-foreground transition-colors">Documentation</a></li>
-                            <li><a href="#" className="hover:text-foreground transition-colors">API Access</a></li>
-                            <li><a href="#" className="hover:text-foreground transition-colors">Research</a></li>
-                            <li><a href="/contact" className="hover:text-foreground transition-colors">Contact</a></li>
+                            <li><a href="/sources" className="hover:text-foreground transition-colors">Källor</a></li>
+                            <li><a href="/contact" className="hover:text-foreground transition-colors">Kontakt</a></li>
                         </ul>
                     </div>
                 </div>

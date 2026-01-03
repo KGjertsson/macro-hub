@@ -1,4 +1,4 @@
-import {BarChart3, LineChart, Landmark, BookOpen, Menu, MapPin, Building2} from 'lucide-react';
+import {BarChart3, BookOpen, Building2, Landmark, LineChart, MapPin, Menu} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useState} from 'react';
 import {Link, useLocation} from 'react-router-dom';

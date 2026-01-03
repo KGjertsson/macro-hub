@@ -99,8 +99,8 @@ const SeatDistribution = ({ year = 2022 }: SeatDistributionProps) => {
   return (
     <Card className='glass-card'>
       <CardHeader className='text-center'>
-        <CardTitle className='text-2xl font-display'>Riksdag Seat Distribution {year}</CardTitle>
-        <p className='text-muted-foreground'>{totalSeats} Total Seats</p>
+        <CardTitle className='text-2xl font-display'>Riksdagsledamöter {year}</CardTitle>
+        <p className='text-muted-foreground'>{totalSeats} Platser</p>
       </CardHeader>
       <CardContent>
         <div className='flex justify-center'>

@@ -44,8 +44,8 @@ const Parliament = () => {
               <Building className='w-8 h-8 text-primary' />
             </div>
             <div>
-              <h1 className='text-3xl md:text-4xl font-display font-bold'>Parliament Overview</h1>
-              <p className='text-muted-foreground'>Riksdag composition and member profiles</p>
+              <h1 className='text-3xl md:text-4xl font-display font-bold'>Sveriges riksdag</h1>
+              <p className='text-muted-foreground'>Riksdagens komposition och medlemmar</p>
             </div>
           </div>
         </section>
@@ -55,7 +55,7 @@ const Parliament = () => {
           <div className='flex items-center gap-4'>
             <div className='flex items-center gap-2'>
               <Calendar className='w-5 h-5 text-muted-foreground' />
-              <span className='text-sm font-medium'>Election Year:</span>
+              <span className='text-sm font-medium'>Valår:</span>
             </div>
             <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
               <SelectTrigger className='w-32 bg-card border-border/50'>
