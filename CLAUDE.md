@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-macro-hub visualizes macro-economic trends from multiple data sources (Riksbanken, Eurostat, Federal Reserve, Swedish Parliament). It consists of:
+macro-hub visualizes macro-economic trends from multiple data sources (Riksbanken, Eurostat, Federal Reserve, Swedish Parliament, Valmyndigheten). It consists of:
 
 - **macro-backend/macro-analyzer/** — Java 25 / Spring Boot 4.1.2 backend
 - **macro-frontend/** — Vite + React 18 + TypeScript + shadcn-ui dashboard (formerly the separate `macro-view-hub` repo, merged in via `git subtree`)
@@ -69,6 +69,7 @@ npm run preview    # serve the production build
 ```
 
 - Uses Recharts for charts, TanStack Query, React Router; `@/` aliases `src/`
+- Kommun/region maps (`ChoroplethMap`) render `public/geo/kommuner.topo.json` and `lan.topo.json` with d3-geo. They are generated from SCB's CC0 boundary shapefiles by `scripts/build-geo.sh` (run from `macro-frontend/`; needs network and `npx`), and the outputs are committed
 - shadcn-ui components live in `src/components/ui/` (configured via `components.json`)
 - Backend base URL is hardcoded as `rootUrl = 'http://localhost:8080'` in `src/models/Constants.ts`; it calls `/macro-analyzer/series-config` and `/macro-analyzer/chart-data`
 - **Port clash:** `vite.config.ts` also sets the dev server to port 8080. Start the backend first so Vite falls back to the next free port (8081); if Vite starts first, Spring Boot fails to bind. Backend CORS allows all origins.
@@ -121,6 +122,8 @@ CronAdaptor ───────────→ InPort
 - `GET /macro-analyzer/parliament/parties` — party names, colours, ideology
 - `GET /macro-analyzer/parliament/members?year={electionYear}` — members who sat in that term (default: latest)
 - `GET /macro-analyzer/parliament/members/{intressentId}` — member detail (assignments, biography, contact, votes, speeches, motions)
+- `GET /macro-analyzer/municipalities/elections?year=` / `GET /macro-analyzer/regions/elections?year=` — per kommun/region: seats, turnout, votes and seats per party (default: latest year)
+- `GET /macro-analyzer/municipalities/{kommunkod}` / `GET /macro-analyzer/regions/{länskod}` — the same plus elected members and curated governance
 
 ### Riksdagen (parliament) data
 
@@ -128,9 +131,16 @@ CronAdaptor ───────────→ InPort
 - Election seat counts are curated in `riksdag_election_result` (Flyway seed from Valmyndigheten) because Riksdagen only stores each person's *current* party. Add a new election as a migration (rows in `riksdag_election` + `riksdag_election_result`)
 - Riksdagen configs (category `Riksdagen`) are excluded from `/series-config` so they don't appear in the chart picker
 
+### Kommun and region elections (Valmyndigheten)
+
+- `MunicipalElections` (KF) and `RegionElections` (RF) scrape the final results from `resultat.val.se`: `index.md5` lists one zip per kommun/region, and only the `mandatfordelning` JSON inside each is parsed (votes, seats, elected members). First run downloads ~310 zips (~1.5 min); later runs skip files whose md5 is unchanged, so corrected files are picked up automatically
+- `scrape_url` (`.../resultatfiler/val2026`) selects the election; point it at the next election's folder with a migration. Gotland has no regionfullmäktige
+- Who governs (`local_governance`) has no open data source and starts empty; add rows by migration (party abbreviations as in the results). The frontend only shows the "styre" section where a row exists
+- Configs use category `Valmyndigheten` and are also kept out of `/series-config`
+
 ### Database
 
-PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V22). JOOQ generates type-safe table access. Key tables: `series_config`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`.
+PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V23). JOOQ generates type-safe table access. Key tables: `series_config`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`.
 
 ## Testing
 

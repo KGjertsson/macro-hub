@@ -37,6 +37,9 @@ import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearGermany;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearNetherlands;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionArea;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionPartyResult;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalGovernance;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElection;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
@@ -244,6 +247,21 @@ public class Public extends SchemaImpl {
     public final IntGovBond_5YearUsa INT_GOV_BOND_5_YEAR_USA = IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA;
 
     /**
+     * The table <code>public.local_election_area</code>.
+     */
+    public final LocalElectionArea LOCAL_ELECTION_AREA = LocalElectionArea.LOCAL_ELECTION_AREA;
+
+    /**
+     * The table <code>public.local_election_party_result</code>.
+     */
+    public final LocalElectionPartyResult LOCAL_ELECTION_PARTY_RESULT = LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT;
+
+    /**
+     * The table <code>public.local_governance</code>.
+     */
+    public final LocalGovernance LOCAL_GOVERNANCE = LocalGovernance.LOCAL_GOVERNANCE;
+
+    /**
      * The table <code>public.policy_rate_sweden</code>.
      */
     public final PolicyRateSweden POLICY_RATE_SWEDEN = PolicyRateSweden.POLICY_RATE_SWEDEN;
@@ -404,6 +422,9 @@ public class Public extends SchemaImpl {
             IntGovBond_5YearJapan.INT_GOV_BOND_5_YEAR_JAPAN,
             IntGovBond_5YearNetherlands.INT_GOV_BOND_5_YEAR_NETHERLANDS,
             IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA,
+            LocalElectionArea.LOCAL_ELECTION_AREA,
+            LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT,
+            LocalGovernance.LOCAL_GOVERNANCE,
             PolicyRateSweden.POLICY_RATE_SWEDEN,
             RiksdagElection.RIKSDAG_ELECTION,
             RiksdagElectionResult.RIKSDAG_ELECTION_RESULT,

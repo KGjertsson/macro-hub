@@ -2,6 +2,9 @@ package com.kg.macroanalyzer.adaptors.database.postgres;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
+import com.kg.macroanalyzer.application.domain.localelection.Governance;
+import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
+import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.domain.parliament.Election;
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -35,6 +40,7 @@ public class PostgresAdaptor implements DatabasePort {
     SweParMemberRepository sweParMemberRepository;
     SweParActivityRepository sweParActivityRepository;
     RiksdagElectionRepository riksdagElectionRepository;
+    LocalElectionRepository localElectionRepository;
     ScrapeRepository scrapeRepository;
     SeriesConfigRepository seriesConfigRepository;
 
@@ -50,6 +56,7 @@ public class PostgresAdaptor implements DatabasePort {
             SweParMemberRepository sweParMemberRepository,
             SweParActivityRepository sweParActivityRepository,
             RiksdagElectionRepository riksdagElectionRepository,
+            LocalElectionRepository localElectionRepository,
             ScrapeRepository scrapeRepository,
             SeriesConfigRepository seriesConfigRepository
     ) {
@@ -63,6 +70,7 @@ public class PostgresAdaptor implements DatabasePort {
         this.sweParMemberRepository = sweParMemberRepository;
         this.sweParActivityRepository = sweParActivityRepository;
         this.riksdagElectionRepository = riksdagElectionRepository;
+        this.localElectionRepository = localElectionRepository;
         this.scrapeRepository = scrapeRepository;
         this.seriesConfigRepository = seriesConfigRepository;
     }
@@ -147,6 +155,36 @@ public class PostgresAdaptor implements DatabasePort {
     @Override
     public Map<String, String> readOrganNames() {
         return riksdagElectionRepository.readOrganNames();
+    }
+
+    @Override
+    public Set<String> readLocalElectionSourceMd5s(LocalElectionType type) {
+        return localElectionRepository.readSourceMd5s(type);
+    }
+
+    @Override
+    public Integer writeLocalElectionResults(List<LocalElectionResult> results) {
+        return localElectionRepository.writeResults(results);
+    }
+
+    @Override
+    public Optional<Integer> readLatestLocalElectionYear(LocalElectionType type) {
+        return localElectionRepository.readLatestYear(type);
+    }
+
+    @Override
+    public List<LocalElectionResult> readLocalElectionResults(LocalElectionType type, int year) {
+        return localElectionRepository.readResults(type, year);
+    }
+
+    @Override
+    public Optional<LocalElectionResult> readLocalElectionResult(LocalElectionType type, int year, String areaCode) {
+        return localElectionRepository.readResult(type, year, areaCode);
+    }
+
+    @Override
+    public Optional<Governance> readGovernance(LocalElectionType type, int year, String areaCode) {
+        return localElectionRepository.readGovernance(type, year, areaCode);
     }
 
     private MacroSeries buildSeries(SeriesConfig params) {

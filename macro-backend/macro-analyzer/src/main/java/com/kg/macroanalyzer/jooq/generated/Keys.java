@@ -37,6 +37,9 @@ import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearGermany;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearNetherlands;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionArea;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionPartyResult;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalGovernance;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElection;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
@@ -87,6 +90,9 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearGerman
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearJapanRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearNetherlandsRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearUsaRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.LocalElectionAreaRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.LocalElectionPartyResultRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.LocalGovernanceRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.PolicyRateSwedenRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagElectionRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagElectionResultRecord;
@@ -157,6 +163,9 @@ public class Keys {
     public static final UniqueKey<IntGovBond_5YearJapanRecord> EURO_MARKET_5_YEAR_JAPAN_PKEY = Internal.createUniqueKey(IntGovBond_5YearJapan.INT_GOV_BOND_5_YEAR_JAPAN, DSL.name("euro_market_5_year_japan_pkey"), new TableField[] { IntGovBond_5YearJapan.INT_GOV_BOND_5_YEAR_JAPAN.ID }, true);
     public static final UniqueKey<IntGovBond_5YearNetherlandsRecord> EURO_MARKET_5_YEAR_NETHERLANDS_PKEY = Internal.createUniqueKey(IntGovBond_5YearNetherlands.INT_GOV_BOND_5_YEAR_NETHERLANDS, DSL.name("euro_market_5_year_netherlands_pkey"), new TableField[] { IntGovBond_5YearNetherlands.INT_GOV_BOND_5_YEAR_NETHERLANDS.ID }, true);
     public static final UniqueKey<IntGovBond_5YearUsaRecord> EURO_MARKET_5_YEAR_USA_PKEY = Internal.createUniqueKey(IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA, DSL.name("euro_market_5_year_usa_pkey"), new TableField[] { IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA.ID }, true);
+    public static final UniqueKey<LocalElectionAreaRecord> LOCAL_ELECTION_AREA_PKEY = Internal.createUniqueKey(LocalElectionArea.LOCAL_ELECTION_AREA, DSL.name("local_election_area_pkey"), new TableField[] { LocalElectionArea.LOCAL_ELECTION_AREA.ELECTION_YEAR, LocalElectionArea.LOCAL_ELECTION_AREA.ELECTION_TYPE, LocalElectionArea.LOCAL_ELECTION_AREA.AREA_CODE }, true);
+    public static final UniqueKey<LocalElectionPartyResultRecord> LOCAL_ELECTION_PARTY_RESULT_PKEY = Internal.createUniqueKey(LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT, DSL.name("local_election_party_result_pkey"), new TableField[] { LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT.ELECTION_YEAR, LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT.ELECTION_TYPE, LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT.AREA_CODE, LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT.PARTY_CODE }, true);
+    public static final UniqueKey<LocalGovernanceRecord> LOCAL_GOVERNANCE_PKEY = Internal.createUniqueKey(LocalGovernance.LOCAL_GOVERNANCE, DSL.name("local_governance_pkey"), new TableField[] { LocalGovernance.LOCAL_GOVERNANCE.ELECTION_YEAR, LocalGovernance.LOCAL_GOVERNANCE.ELECTION_TYPE, LocalGovernance.LOCAL_GOVERNANCE.AREA_CODE }, true);
     public static final UniqueKey<PolicyRateSwedenRecord> POLICY_RATE_SWEDEN_PKEY = Internal.createUniqueKey(PolicyRateSweden.POLICY_RATE_SWEDEN, DSL.name("policy_rate_sweden_pkey"), new TableField[] { PolicyRateSweden.POLICY_RATE_SWEDEN.ID }, true);
     public static final UniqueKey<RiksdagElectionRecord> RIKSDAG_ELECTION_PKEY = Internal.createUniqueKey(RiksdagElection.RIKSDAG_ELECTION, DSL.name("riksdag_election_pkey"), new TableField[] { RiksdagElection.RIKSDAG_ELECTION.YEAR }, true);
     public static final UniqueKey<RiksdagElectionResultRecord> RIKSDAG_ELECTION_RESULT_PKEY = Internal.createUniqueKey(RiksdagElectionResult.RIKSDAG_ELECTION_RESULT, DSL.name("riksdag_election_result_pkey"), new TableField[] { RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.YEAR, RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.PARTY_CODE }, true);
@@ -180,6 +189,7 @@ public class Keys {
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final ForeignKey<LocalElectionPartyResultRecord, LocalElectionAreaRecord> LOCAL_ELECTION_PARTY_RESULT__LOCAL_ELECTION_PARTY_RESULT_ELECTION_YEAR_ELECTION_TYPE_AR_FKEY = Internal.createForeignKey(LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT, DSL.name("local_election_party_result_election_year_election_type_ar_fkey"), new TableField[] { LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT.ELECTION_YEAR, LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT.ELECTION_TYPE, LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT.AREA_CODE }, Keys.LOCAL_ELECTION_AREA_PKEY, new TableField[] { LocalElectionArea.LOCAL_ELECTION_AREA.ELECTION_YEAR, LocalElectionArea.LOCAL_ELECTION_AREA.ELECTION_TYPE, LocalElectionArea.LOCAL_ELECTION_AREA.AREA_CODE }, true, ForeignKeyRule.CASCADE, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<RiksdagElectionResultRecord, RiksdagPartyRecord> RIKSDAG_ELECTION_RESULT__RIKSDAG_ELECTION_RESULT_PARTY_CODE_FKEY = Internal.createForeignKey(RiksdagElectionResult.RIKSDAG_ELECTION_RESULT, DSL.name("riksdag_election_result_party_code_fkey"), new TableField[] { RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.PARTY_CODE }, Keys.RIKSDAG_PARTY_PKEY, new TableField[] { RiksdagParty.RIKSDAG_PARTY.CODE }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<RiksdagElectionResultRecord, RiksdagElectionRecord> RIKSDAG_ELECTION_RESULT__RIKSDAG_ELECTION_RESULT_YEAR_FKEY = Internal.createForeignKey(RiksdagElectionResult.RIKSDAG_ELECTION_RESULT, DSL.name("riksdag_election_result_year_fkey"), new TableField[] { RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.YEAR }, Keys.RIKSDAG_ELECTION_PKEY, new TableField[] { RiksdagElection.RIKSDAG_ELECTION.YEAR }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
 }

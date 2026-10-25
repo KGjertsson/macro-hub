@@ -4,6 +4,7 @@ import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueKind;
+import com.kg.macroanalyzer.application.ports.driven.ConfigWithLocalElections;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
@@ -42,11 +43,13 @@ public class ScrapeServiceTest {
     ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberOfParliament> memberScrapeFlow;
     @Mock
     ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberActivity> memberActivityScrapeFlow;
+    @Mock
+    ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithLocalElections> localElectionScrapeFlow;
 
     @BeforeEach
     public void setUp() {
         seriesConfigList = TestSeriesConfigFactory.buildTestConfig();
-        scrapeService = new ScrapeService(databasePort, macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow);
+        scrapeService = new ScrapeService(databasePort, macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow);
         testJsonReader = new TestJsonReader();
     }
 
@@ -124,6 +127,25 @@ public class ScrapeServiceTest {
         assertEquals(List.of(ScrapeResult.SUCCESS), result);
         verify(memberActivityScrapeFlow).run(scrapeQueueItem);
         verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow);
+    }
+
+    @Test
+    void shouldRouteToLocalElectionScrapeFlow_whenElectionsQueued() {
+        // given
+        final var now = LocalDateTime.now();
+        final var municipal = ScrapeQueueItem.of("MunicipalElections");
+        final var region = ScrapeQueueItem.of("RegionElections");
+
+        // when
+        when(databasePort.getItemsToScrape(now)).thenReturn(List.of(municipal, region));
+        when(localElectionScrapeFlow.run(municipal)).thenReturn(ScrapeResult.SUCCESS);
+        when(localElectionScrapeFlow.run(region)).thenReturn(ScrapeResult.EMPTY);
+
+        final var result = scrapeService.scrapeFromQueue(now);
+
+        // then
+        assertEquals(List.of(ScrapeResult.SUCCESS, ScrapeResult.EMPTY), result);
+        verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow);
     }
 
 }

@@ -47,6 +47,7 @@ public record ScrapeQueueItem(
         return switch (name) {
             case "MembersOfParliament" -> ScrapeQueueKind.MEMBER_OF_PARLIAMENT;
             case "MembersOfParliamentActivity" -> ScrapeQueueKind.MEMBER_ACTIVITY;
+            case "MunicipalElections", "RegionElections" -> ScrapeQueueKind.LOCAL_ELECTION;
             default -> ScrapeQueueKind.MACRO_POINT;
         };
     }

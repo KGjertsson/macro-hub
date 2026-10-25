@@ -1,0 +1,171 @@
+{
+  "valtillfalle": "Val_2026",
+  "valklass": "ordinarie val",
+  "rakningstillfalle": "slutlig",
+  "valtyp": "KF",
+  "valdatum": "2026-09-13",
+  "tidigareValdatum": "2022-09-11",
+  "senasteUppdateringstid": "2026-09-25T15:12:42",
+  "antalUppdateringar": 44,
+  "valomrade": {
+    "namn": "Lund",
+    "kod": "1281",
+    "rapporteringsTid": "2026-09-24T14:59:32",
+    "totaltAntalMandat": 65,
+    "antalValdistriktRaknade": 85,
+    "antalValdistriktSomSkaRaknas": 85,
+    "lankTillProtokoll": "https://resultat.val.se/protokoll/protokoll_Val_2026_1281_KF.pdf",
+    "totaltAntalRoster": 89426,
+    "antalRostberattigade": 105382,
+    "valdeltagande": 84.86,
+    "antalRostberattigadeIRaknadeValdistrikt": 105382,
+    "valomradessparrProcent": 2.0,
+    "meddelandetext": "",
+    "valomradeskodForegaendeVal": [
+      "1281"
+    ],
+    "totaltAntalMandatForegaendeVal": 65,
+    "totaltAntalRosterForegaendeVal": 83089,
+    "antalRostberattigadeForegaendeVal": 99457,
+    "valdeltagandeForegaendeVal": 83.54,
+    "forandringTotaltAntalRoster": 6337,
+    "forandringValdeltagande": 1.32,
+    "forandringAntalRostberattigade": 5925,
+    "statusJamforelse": "Kan jämföras",
+    "rostfordelning": {
+      "rosterPaverkaMandat": {
+        "antalRoster": 88395,
+        "antalRosterForegaendeVal": 82213,
+        "forandringAntalRoster": 6182,
+        "partiRoster": [
+          {
+            "partibeteckning": "Moderaterna",
+            "partiforkortning": "M",
+            "partikod": "0001",
+            "fargkod": "#66BEE6",
+            "ordningsnummer": 1,
+            "antalRoster": 16996,
+            "andelRoster": 19.23,
+            "deltaMandatfordelning": "ja",
+            "antalRosterForegaendeVal": 11213,
+            "andelRosterForegaendeVal": 13.64,
+            "forandringAntalRoster": 5783,
+            "forandringAndelRoster": 5.59
+          },
+          {
+            "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+            "partiforkortning": "S",
+            "partikod": "0002",
+            "fargkod": "#FF0000",
+            "ordningsnummer": 5,
+            "antalRoster": 22102,
+            "andelRoster": 25.0,
+            "deltaMandatfordelning": "ja",
+            "antalRosterForegaendeVal": 19764,
+            "andelRosterForegaendeVal": 24.04,
+            "forandringAntalRoster": 2338,
+            "forandringAndelRoster": 0.96
+          }
+        ],
+        "rosterOvrigaPartier": {
+          "antalRoster": 0,
+          "andelRoster": 0.0,
+          "antalRosterForegaendeVal": null,
+          "andelRosterForegaendeVal": null,
+          "forandringAntalRoster": null,
+          "forandringAndelRoster": null
+        }
+      },
+      "rosterEjPaverkaMandat": {
+        "antalRoster": 1031,
+        "andelRosterAvTotaltAntalRoster": 1.15,
+        "antalRosterForegaendeVal": 876,
+        "andelRosterAvTotaltAntalRosterForegaendeVal": 1.05,
+        "forandringAntalRoster": 155,
+        "forandringAndelRosterAvTotaltAntalRoster": 0.1,
+        "rosterEjAnmaltDeltagande": {
+          "antalRoster": 49,
+          "andelRosterAvTotaltAntalRoster": 0.05,
+          "antalRosterForegaendeVal": 28,
+          "andelRosterAvTotaltAntalRosterForegaendeVal": 0.03,
+          "forandringAntalRoster": 21,
+          "forandringAndelRosterAvTotaltAntalRoster": 0.02
+        },
+        "blankaRoster": {
+          "antalRoster": 860,
+          "andelRosterAvTotaltAntalRoster": 0.96,
+          "antalRosterForegaendeVal": 761,
+          "andelRosterAvTotaltAntalRosterForegaendeVal": 0.92,
+          "forandringAntalRoster": 99,
+          "forandringAndelRosterAvTotaltAntalRoster": 0.05
+        },
+        "ovrigaOgiltiga": {
+          "antalRoster": 122,
+          "andelRosterAvTotaltAntalRoster": 0.14,
+          "antalRosterForegaendeVal": 87,
+          "andelRosterAvTotaltAntalRosterForegaendeVal": 0.1,
+          "forandringAntalRoster": 35,
+          "forandringAndelRosterAvTotaltAntalRoster": 0.03
+        }
+      }
+    },
+    "mandatfordelning": {
+      "partiLista": [
+        {
+          "partibeteckning": "Moderaterna",
+          "partikod": "0001",
+          "partiforkortning": "M",
+          "antalMandat": 13,
+          "antalMandatForegaendeVal": 9,
+          "forandringAntalMandat": 4
+        },
+        {
+          "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+          "partikod": "0002",
+          "partiforkortning": "S",
+          "antalMandat": 16,
+          "antalMandatForegaendeVal": 16,
+          "forandringAntalMandat": 0
+        }
+      ]
+    },
+    "valda": {
+      "partiLedamoterLista": [
+        {
+          "partibeteckning": "Moderaterna",
+          "partikod": "0001",
+          "partiforkortning": "M",
+          "partifarg": "#66BEE6",
+          "antalTommaStolar": 0,
+          "ledamoter": [
+            {
+              "invalsordning": 1,
+              "kandidatnummer": 42486,
+              "namn": "Rasmus Törnblom",
+              "valgrundId": 1,
+              "valgrundText": "Ledamoten är vald på personröster",
+              "ersattargrupp": "1"
+            }
+          ]
+        },
+        {
+          "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+          "partikod": "0002",
+          "partiforkortning": "S",
+          "partifarg": "#FF0000",
+          "antalTommaStolar": 0,
+          "ledamoter": [
+            {
+              "invalsordning": 1,
+              "kandidatnummer": 29840,
+              "namn": "Anders Roger Almgren",
+              "valgrundId": 1,
+              "valgrundText": "Ledamoten är vald på personröster",
+              "ersattargrupp": "1"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

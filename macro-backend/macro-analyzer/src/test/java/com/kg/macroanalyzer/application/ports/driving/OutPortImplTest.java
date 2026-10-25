@@ -12,6 +12,7 @@ import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
 import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
+import com.kg.macroanalyzer.application.services.localelection.LocalElectionService;
 import com.kg.macroanalyzer.application.services.parliament.ParliamentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,8 @@ public class OutPortImplTest {
     TimeFilterService timeFilterService;
     @Mock
     ParliamentService parliamentService;
+    @Mock
+    LocalElectionService localElectionService;
 
     @Test
     void shouldReturnAlignedBundle_whenInputListIsPresent() {
@@ -98,12 +101,13 @@ public class OutPortImplTest {
     }
 
     @Test
-    void shouldKeepParliamentConfigsOutOfChartList_butInFullList() {
+    void shouldKeepParliamentAndElectionConfigsOutOfChartList_butInFullList() {
         // given
         final var rate = SeriesConfig.builder().name("PolicyRateSweden").category("Ränta").build();
         final var members = SeriesConfig.builder().name("MembersOfParliament").category("Riksdagen").build();
-        when(databasePort.readSeriesConfigList()).thenReturn(List.of(rate, members));
-        final var outPort = new OutPortImpl(databasePort, alignmentService, timeFilterService, parliamentService);
+        final var elections = SeriesConfig.builder().name("MunicipalElections").category("Valmyndigheten").build();
+        when(databasePort.readSeriesConfigList()).thenReturn(List.of(rate, members, elections));
+        final var outPort = new OutPortImpl(databasePort, alignmentService, timeFilterService, parliamentService, localElectionService);
 
         // when
         final var chartList = outPort.getChartSeriesConfigList();
@@ -111,7 +115,7 @@ public class OutPortImplTest {
 
         // then
         assertEquals(List.of(rate), chartList);
-        assertEquals(List.of(rate, members), fullList);
+        assertEquals(List.of(rate, members, elections), fullList);
     }
 
 }

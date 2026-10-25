@@ -1,14 +1,10 @@
-import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import SwedenMap from '@/components/SwedenMap';
-import { RegionVotingData, getRegionCoalition } from '@/data/regionData';
-import { MapPin, Users } from 'lucide-react';
+import LocalElectionView from '@/components/LocalElectionView';
+import { MapPin } from 'lucide-react';
 
 const Regions = () => {
-  const [selectedRegion, setSelectedRegion] = useState<RegionVotingData | null>(null);
-
   return (
     <>
       <Helmet>
@@ -30,167 +26,23 @@ const Regions = () => {
                 Röstningsresultat per region
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Klicka på en region för att se detaljerade röstningsresultat för det länet.
+                Resultat i regionfullmäktigevalet för Sveriges 20 regioner. Kartan är färgad efter största parti.
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8 items-start">
-              <div className="bg-card rounded-2xl border border-border p-6 shadow-lg">
-                <SwedenMap 
-                  onRegionSelect={setSelectedRegion}
-                  selectedRegion={selectedRegion}
-                />
-              </div>
-
-              <div className="bg-card rounded-2xl border border-border p-6 shadow-lg">
-                {selectedRegion ? (
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: selectedRegion.winnerColor }}
-                      />
-                      <h2 className="text-2xl font-bold text-foreground">
-                        {selectedRegion.name}
-                      </h2>
-                    </div>
-                    
-                    <p className="text-muted-foreground">
-                      Vinnande parti: <span className="font-semibold text-foreground">{selectedRegion.winner}</span>
-                    </p>
-
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold text-foreground">Partifördelning</h3>
-                      {[...selectedRegion.votes]
-                        .sort((a, b) => b.percentage - a.percentage)
-                        .map((vote) => (
-                          <div key={vote.party} className="space-y-1">
-                            <div className="flex justify-between text-sm">
-                              <span className="font-medium text-foreground">{vote.party}</span>
-                              <span className="text-muted-foreground">{vote.percentage.toLocaleString('sv-SE')} %</span>
-                            </div>
-                            <div className="h-3 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all duration-500"
-                                style={{
-                                  width: `${Math.min(vote.percentage * 2.5, 100)}%`,
-                                  backgroundColor: vote.color
-                                }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
-                    <MapPin className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                    <h2 className="text-xl font-semibold text-foreground mb-2">
-                      Välj en region
-                    </h2>
-                    <p className="text-muted-foreground max-w-sm">
-                      Klicka på en region på kartan för att se detaljerad röstningsstatistik för det länet.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {selectedRegion && (
-              <div className="mt-12 bg-card rounded-2xl border border-border p-6 shadow-lg">
-                <div className="flex items-center gap-3 mb-4">
-                  <Users className="h-6 w-6 text-primary" />
-                  <h2 className="text-2xl font-bold text-foreground">
-                    Regionalt styre i {selectedRegion.name}
-                  </h2>
-                </div>
-                {(() => {
-                  const coalition = getRegionCoalition(selectedRegion.id);
-                  
-                  // Map full party names to abbreviations used in vote data
-                  const partyNameToAbbr: Record<string, string> = {
-                    "Socialdemokraterna": "S",
-                    "Moderaterna": "M",
-                    "Sverigedemokraterna": "SD",
-                    "Centerpartiet": "C",
-                    "Vänsterpartiet": "V",
-                    "Kristdemokraterna": "KD",
-                    "Liberalerna": "L",
-                    "Miljöpartiet": "MP",
-                  };
-                  
-                  // Calculate combined vote percentage for coalition parties
-                  const coalitionVotePercentage = coalition.parties.reduce((sum, party) => {
-                    const abbr = partyNameToAbbr[party.name];
-                    const voteData = selectedRegion.votes.find(v => v.party === abbr);
-                    return sum + (voteData?.percentage || 0);
-                  }, 0);
-                  
-                  // Include support parties if they exist
-                  const supportVotePercentage = coalition.supportParties?.reduce((sum, party) => {
-                    const abbr = partyNameToAbbr[party.name];
-                    const voteData = selectedRegion.votes.find(v => v.party === abbr);
-                    return sum + (voteData?.percentage || 0);
-                  }, 0) || 0;
-                  
-                  const totalCoalitionPercentage = coalitionVotePercentage + supportVotePercentage;
-                  
-                  return (
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                            {coalition.name}
-                          </div>
-                          <div className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-foreground text-sm font-semibold">
-                            {totalCoalitionPercentage.toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} % av rösterna
-                          </div>
-                        </div>
-                        <p className="text-muted-foreground leading-relaxed">
-                          {coalition.description}
-                        </p>
-                      </div>
-                      <div className="space-y-3">
-                        <h3 className="text-lg font-semibold text-foreground">Styrande partier</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {coalition.parties.map((party) => (
-                            <span 
-                              key={party.name}
-                              className="px-3 py-1.5 rounded-full text-sm font-medium"
-                              style={{ 
-                                backgroundColor: party.color, 
-                                color: party.textColor || '#fff' 
-                              }}
-                            >
-                              {party.name}
-                            </span>
-                          ))}
-                        </div>
-                        {coalition.supportParties && coalition.supportParties.length > 0 && (
-                          <>
-                            <h3 className="text-lg font-semibold text-foreground mt-4">Stödpartier</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {coalition.supportParties.map((party) => (
-                                <span 
-                                  key={party.name}
-                                  className="px-3 py-1.5 rounded-full text-sm font-medium"
-                                  style={{ 
-                                    backgroundColor: party.color, 
-                                    color: party.textColor || '#fff' 
-                                  }}
-                                >
-                                  {party.name}
-                                </span>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
+            <LocalElectionView
+              kind="regions"
+              topoUrl="/geo/lan.topo.json"
+              objectName="lan"
+              icon={<MapPin className="h-12 w-12" />}
+              labels={{
+                areaSingular: 'region',
+                searchPlaceholder: 'Sök region…',
+                pickTitle: 'Välj en region',
+                pickHint: 'Klicka på en region på kartan eller sök efter den för att se valresultatet i regionfullmäktigevalet. Gotland har inget regionfullmäktige; kommunen sköter regionens uppgifter.',
+                governanceTitle: name => `Regionalt styre i ${name}`,
+              }}
+            />
 
             <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-card rounded-xl border border-border p-4 text-center">

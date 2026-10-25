@@ -20,6 +20,11 @@ const Sources = () => {
       url: 'https://www.riksdagen.se',
     },
     {
+      name: 'Valmyndigheten',
+      description: 'Valresultat, mandatfördelning och valda ledamöter i kommun- och regionfullmäktigevalen.',
+      url: 'https://www.val.se',
+    },
+    {
       name: 'Konjunkturinstitutet',
       description: 'Prognoser och analyser av svensk ekonomi.',
       url: 'https://www.konj.se',

@@ -6,6 +6,9 @@ import com.kg.macroanalyzer.application.ports.driving.out.OutPort;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartData;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartDataWithLabels;
+import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
+import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
+import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
 import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -96,6 +99,50 @@ public class ExtractionAdaptor {
         log.info("Received GET macro-analyzer/parliament/members/%s".formatted(id));
 
         return outPort.getMemberOfParliament(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/municipalities/elections")
+    public ResponseEntity<List<LocalElectionSummaryDto>> getMunicipalityElections(
+            @RequestParam(name = "year", required = false) Integer year
+    ) {
+        log.info("Received GET macro-analyzer/municipalities/elections?year=%s".formatted(year));
+
+        return listResponse(outPort.getLocalElectionResults(LocalElectionType.KF, year));
+    }
+
+    @GetMapping("/municipalities/{code}")
+    public ResponseEntity<LocalElectionDetailDto> getMunicipality(
+            @PathVariable("code") String code,
+            @RequestParam(name = "year", required = false) Integer year
+    ) {
+        log.info("Received GET macro-analyzer/municipalities/%s?year=%s".formatted(code, year));
+
+        return detailResponse(outPort.getLocalElectionResult(LocalElectionType.KF, year, code));
+    }
+
+    @GetMapping("/regions/elections")
+    public ResponseEntity<List<LocalElectionSummaryDto>> getRegionElections(
+            @RequestParam(name = "year", required = false) Integer year
+    ) {
+        log.info("Received GET macro-analyzer/regions/elections?year=%s".formatted(year));
+
+        return listResponse(outPort.getLocalElectionResults(LocalElectionType.RF, year));
+    }
+
+    @GetMapping("/regions/{code}")
+    public ResponseEntity<LocalElectionDetailDto> getRegion(
+            @PathVariable("code") String code,
+            @RequestParam(name = "year", required = false) Integer year
+    ) {
+        log.info("Received GET macro-analyzer/regions/%s?year=%s".formatted(code, year));
+
+        return detailResponse(outPort.getLocalElectionResult(LocalElectionType.RF, year, code));
+    }
+
+    private static <T> ResponseEntity<T> detailResponse(Optional<T> detail) {
+        return detail
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

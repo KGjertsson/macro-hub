@@ -1,14 +1,18 @@
 package com.kg.macroanalyzer.application.ports.driving.out;
 
+import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartSeriesParam;
+import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
+import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
 import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
+import com.kg.macroanalyzer.application.services.localelection.LocalElectionService;
 import com.kg.macroanalyzer.application.services.parliament.ParliamentService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +20,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class OutPortImpl implements OutPort {
 
-    private static final String PARLIAMENT_CATEGORY = "Riksdagen";
+    private static final Set<String> NON_CHART_CATEGORIES = Set.of("Riksdagen", "Valmyndigheten");
 
     private final DatabasePort databasePort;
     private final AlignmentService alignmentService;
     private final TimeFilterService timeFilterService;
     private final ParliamentService parliamentService;
+    private final LocalElectionService localElectionService;
     private final List<SeriesConfig> seriesConfigList;
 
     @Autowired
@@ -33,12 +39,14 @@ public class OutPortImpl implements OutPort {
             DatabasePort databasePort,
             AlignmentService alignmentService,
             TimeFilterService timeFilterService,
-            ParliamentService parliamentService
+            ParliamentService parliamentService,
+            LocalElectionService localElectionService
     ) {
         this.databasePort = databasePort;
         this.alignmentService = alignmentService;
         this.timeFilterService = timeFilterService;
         this.parliamentService = parliamentService;
+        this.localElectionService = localElectionService;
         this.seriesConfigList = databasePort.readSeriesConfigList();
     }
 
@@ -57,11 +65,11 @@ public class OutPortImpl implements OutPort {
         return seriesConfigList;
     }
 
-    // Riksdagen scrapes are not time series, so they are kept out of the chart picker
+    // Riksdagen and Valmyndigheten scrapes are not time series, so they are kept out of the chart picker
     @Override
     public List<SeriesConfig> getChartSeriesConfigList() {
         return seriesConfigList.stream()
-                .filter(c -> !PARLIAMENT_CATEGORY.equals(c.category()))
+                .filter(c -> !NON_CHART_CATEGORIES.contains(c.category()))
                 .toList();
     }
 
@@ -88,6 +96,16 @@ public class OutPortImpl implements OutPort {
     @Override
     public Optional<MemberDetailDto> getMemberOfParliament(String id) {
         return parliamentService.getMember(id);
+    }
+
+    @Override
+    public List<LocalElectionSummaryDto> getLocalElectionResults(LocalElectionType type, Integer year) {
+        return localElectionService.getResults(type, year);
+    }
+
+    @Override
+    public Optional<LocalElectionDetailDto> getLocalElectionResult(LocalElectionType type, Integer year, String areaCode) {
+        return localElectionService.getResult(type, year, areaCode);
     }
 
     private Optional<List<MacroSeries>> readMacroSeries(

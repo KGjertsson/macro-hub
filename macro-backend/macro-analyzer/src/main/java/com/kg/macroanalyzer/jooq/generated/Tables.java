@@ -37,6 +37,9 @@ import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearGermany;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearNetherlands;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearUsa;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionArea;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionPartyResult;
+import com.kg.macroanalyzer.jooq.generated.tables.LocalGovernance;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElection;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
@@ -226,6 +229,21 @@ public class Tables {
      * The table <code>public.int_gov_bond_5_year_usa</code>.
      */
     public static final IntGovBond_5YearUsa INT_GOV_BOND_5_YEAR_USA = IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA;
+
+    /**
+     * The table <code>public.local_election_area</code>.
+     */
+    public static final LocalElectionArea LOCAL_ELECTION_AREA = LocalElectionArea.LOCAL_ELECTION_AREA;
+
+    /**
+     * The table <code>public.local_election_party_result</code>.
+     */
+    public static final LocalElectionPartyResult LOCAL_ELECTION_PARTY_RESULT = LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT;
+
+    /**
+     * The table <code>public.local_governance</code>.
+     */
+    public static final LocalGovernance LOCAL_GOVERNANCE = LocalGovernance.LOCAL_GOVERNANCE;
 
     /**
      * The table <code>public.policy_rate_sweden</code>.

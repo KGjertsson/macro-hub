@@ -1,5 +1,8 @@
 package com.kg.macroanalyzer.adaptors.http;
 
+import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
+import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
+import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
 import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
@@ -154,6 +157,57 @@ public class ExtractionAdaptorTest {
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(composition, response.getBody());
+    }
+
+    @Test
+    public void shouldReturnMunicipalityElections_whenScraped() {
+        // given
+        final var lund = LocalElectionSummaryDto.builder().code("1281").name("Lund").build();
+
+        // when
+        when(outPort.getLocalElectionResults(LocalElectionType.KF, null)).thenReturn(List.of(lund));
+        final var response = extractionAdaptor.getMunicipalityElections(null);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(List.of(lund), response.getBody());
+    }
+
+    @Test
+    public void shouldReturnNoContent_whenNoRegionElectionsScraped() {
+        // when
+        when(outPort.getLocalElectionResults(LocalElectionType.RF, null)).thenReturn(List.of());
+        final var response = extractionAdaptor.getRegionElections(null);
+
+        // then
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    public void shouldReturnRegionDetail_whenFound() {
+        // given
+        final var detail = LocalElectionDetailDto.builder()
+                .summary(LocalElectionSummaryDto.builder().code("12").name("Region Skåne").build())
+                .elected(List.of())
+                .build();
+
+        // when
+        when(outPort.getLocalElectionResult(LocalElectionType.RF, 2026, "12")).thenReturn(Optional.of(detail));
+        final var response = extractionAdaptor.getRegion("12", 2026);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(detail, response.getBody());
+    }
+
+    @Test
+    public void shouldReturnNotFound_whenMunicipalityUnknown() {
+        // when
+        when(outPort.getLocalElectionResult(LocalElectionType.KF, null, "9999")).thenReturn(Optional.empty());
+        final var response = extractionAdaptor.getMunicipality("9999", null);
+
+        // then
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
 }
