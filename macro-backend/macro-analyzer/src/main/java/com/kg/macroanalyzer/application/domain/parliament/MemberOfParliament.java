@@ -1,5 +1,9 @@
 package com.kg.macroanalyzer.application.domain.parliament;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 public record MemberOfParliament(
         String hangar_guid,
         String sourceid,
@@ -21,5 +25,32 @@ public record MemberOfParliament(
         PersonUppdrag personuppdrag,
         PersonUppgift personuppgift
 ) {
-}
 
+    public String fullName() {
+        return "%s %s".formatted(tilltalsnamn, efternamn).trim();
+    }
+
+    public List<Uppdrag> assignments() {
+        return Optional.ofNullable(personuppdrag)
+                .map(PersonUppdrag::uppdrag)
+                .orElse(List.of());
+    }
+
+    public List<Uppgift> details() {
+        return Optional.ofNullable(personuppgift)
+                .map(PersonUppgift::uppgift)
+                .orElse(List.of());
+    }
+
+    public List<Uppdrag> chamberAssignments() {
+        return assignments().stream()
+                .filter(Uppdrag::chamberAssignment)
+                .toList();
+    }
+
+    public boolean satInChamberDuring(LocalDate termStart, LocalDate termEnd) {
+        return chamberAssignments().stream()
+                .anyMatch(u -> u.overlaps(termStart, termEnd));
+    }
+
+}

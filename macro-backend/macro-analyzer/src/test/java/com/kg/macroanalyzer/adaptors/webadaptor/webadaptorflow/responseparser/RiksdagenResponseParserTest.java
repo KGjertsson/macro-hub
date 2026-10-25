@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responseparser;
 
+import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksdagenResponseParser;
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -92,4 +94,54 @@ public class RiksdagenResponseParserTest {
         // when && then
         assertThrows(ScrapeException.class, () -> parser.parse(invalidJson));
     }
+
+    @Test
+    void shouldParseRealResponse_withAssignmentListAndEmptyAssignments() throws ScrapeException {
+        // given
+        final var jsonResponse = new TestJsonReader().readResource("json/riksdagen/personlista_sample.json");
+
+        // when
+        final var result = parser.parse(jsonResponse).toList();
+
+        // then
+        assertEquals(2, result.size());
+        final var member = result.getFirst();
+        assertEquals("0588277881928", member.intressent_id());
+        assertEquals(3, member.assignments().size());
+        assertEquals("UbU", member.assignments().get(1).organ_kod());
+        assertEquals(2, member.details().size());
+        assertNull(result.get(1).personuppdrag());
+        assertTrue(result.get(1).assignments().isEmpty());
+    }
+
+    @Test
+    void shouldParseSingleAssignmentObject_asOneElementList() throws ScrapeException {
+        // given
+        String jsonResponse = """
+                {
+                  "personlista": {
+                    "person": {
+                      "intressent_id": "123",
+                      "unknown_field": "ignored",
+                      "personuppdrag": {
+                        "uppdrag": {"typ": "kammaruppdrag", "organ_kod": "kam", "from": "2022-09-26", "tom": ""}
+                      },
+                      "personuppgift": {
+                        "uppgift": {"kod": "HarBild", "uppgift": ["true"], "typ": "bilder"}
+                      }
+                    }
+                  }
+                }
+                """;
+
+        // when
+        final var result = parser.parse(jsonResponse).toList();
+
+        // then
+        assertEquals(1, result.size());
+        assertEquals(1, result.getFirst().assignments().size());
+        assertEquals("kam", result.getFirst().assignments().getFirst().organ_kod());
+        assertEquals(1, result.getFirst().details().size());
+    }
+
 }

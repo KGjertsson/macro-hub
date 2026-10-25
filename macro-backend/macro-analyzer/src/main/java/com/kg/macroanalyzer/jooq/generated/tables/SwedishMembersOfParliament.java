@@ -89,6 +89,12 @@ public class SwedishMembersOfParliament extends TableImpl<SwedishMembersOfParlia
      */
     public final TableField<SwedishMembersOfParliamentRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), SQLDataType.LOCALDATETIME(6).defaultValue(DSL.field(DSL.raw("now()"), SQLDataType.LOCALDATETIME)), this, "");
 
+    /**
+     * The column
+     * <code>public.swedish_members_of_parliament.intressent_id</code>.
+     */
+    public final TableField<SwedishMembersOfParliamentRecord, String> INTRESSENT_ID = createField(DSL.name("intressent_id"), SQLDataType.VARCHAR(64).nullable(false), this, "");
+
     private SwedishMembersOfParliament(Name alias, Table<SwedishMembersOfParliamentRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -139,6 +145,11 @@ public class SwedishMembersOfParliament extends TableImpl<SwedishMembersOfParlia
     @Override
     public UniqueKey<SwedishMembersOfParliamentRecord> getPrimaryKey() {
         return Keys.SWEDISH_MEMBERS_OF_PARLIAMENT_PKEY;
+    }
+
+    @Override
+    public List<UniqueKey<SwedishMembersOfParliamentRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.SWEDISH_MEMBERS_OF_PARLIAMENT_INTRESSENT_ID_KEY);
     }
 
     @Override

@@ -1,27 +1,48 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SeatDistribution from '@/components/SeatDistribution';
 import PoliticianCard from '@/components/PoliticianCard';
 import ParliamentBlog from '@/components/ParliamentBlog';
-import { parties, politicians, electionYears, getPartiesForYear } from '@/data/parliamentData';
+import { partyColor, useComposition, useElections, useParliamentMembers, useParties } from '@/api/parliament';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Building, Calendar, Search, Users } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowLeft, Building, Calendar, Loader2, Search, Users } from 'lucide-react';
+
+type SeatView = 'election' | 'current';
 
 const Parliament = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [partyFilter, setPartyFilter] = useState<string>('all');
-  const [selectedYear, setSelectedYear] = useState<number>(2022);
+  const [yearOverride, setYearOverride] = useState<number>();
+  const [seatView, setSeatView] = useState<SeatView>('election');
 
-  const yearParties = getPartiesForYear(selectedYear);
+  const { data: elections, isLoading: electionsLoading } = useElections();
+  const { data: composition } = useComposition();
+  const { data: parties } = useParties();
 
-  const filteredPoliticians = politicians.filter(politician => {
-    const matchesSearch = politician.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      politician.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      politician.constituency.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesParty = partyFilter === 'all' || politician.party === partyFilter;
+  // The newest election is the default term
+  const selectedYear = yearOverride ?? elections?.[0]?.year;
+  const election = elections?.find(e => e.year === selectedYear);
+  const isLatestTerm = selectedYear === elections?.[0]?.year;
+  const showCurrent = seatView === 'current' && isLatestTerm && !!composition;
+
+  const { data: members, isLoading: membersLoading } = useParliamentMembers(selectedYear);
+
+  const memberParties = useMemo(() => {
+    const codes = new Set((members ?? []).map(m => m.party).filter(Boolean));
+    return (parties ?? []).filter(p => codes.has(p.code));
+  }, [members, parties]);
+
+  const filteredPoliticians = (members ?? []).filter(member => {
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = member.name.toLowerCase().includes(query) ||
+      member.currentRole.toLowerCase().includes(query) ||
+      member.constituency.toLowerCase().includes(query);
+    const matchesParty = partyFilter === 'all' || member.party === partyFilter;
     return matchesSearch && matchesParty;
   });
 
@@ -57,24 +78,47 @@ const Parliament = () => {
               <Calendar className='w-5 h-5 text-muted-foreground' />
               <span className='text-sm font-medium'>Valår:</span>
             </div>
-            <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+            <Select
+              value={selectedYear?.toString()}
+              onValueChange={(v) => {
+                setYearOverride(parseInt(v));
+                setPartyFilter('all');
+              }}
+            >
               <SelectTrigger className='w-32 bg-card border-border/50'>
-                <SelectValue />
+                <SelectValue placeholder='–' />
               </SelectTrigger>
               <SelectContent>
-                {electionYears.map(year => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
+                {(elections ?? []).map(e => (
+                  <SelectItem key={e.year} value={e.year.toString()}>
+                    {e.year}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {isLatestTerm && composition && (
+              <Tabs value={seatView} onValueChange={(v) => setSeatView(v as SeatView)}>
+                <TabsList>
+                  <TabsTrigger value='election'>Valresultat</TabsTrigger>
+                  <TabsTrigger value='current'>Nuvarande fördelning</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
           </div>
         </section>
 
         {/* Seat Distribution */}
         <section className='mb-12 animate-fade-in'>
-          <SeatDistribution year={selectedYear} />
+          {electionsLoading && <Skeleton className='h-96 w-full rounded-xl' />}
+          {!electionsLoading && election && (
+            <SeatDistribution
+              title={showCurrent ? `Tjänstgörande ledamöter ${composition.asOf}` : `Valresultat ${election.year}`}
+              parties={showCurrent ? composition.parties : election.parties}
+            />
+          )}
+          {!electionsLoading && !election && (
+            <p className='text-center py-12 text-muted-foreground'>Inga valresultat tillgängliga</p>
+          )}
         </section>
 
         {/* Politicians Section */}
@@ -84,6 +128,11 @@ const Parliament = () => {
               <Users className='w-5 h-5 text-primary' />
             </div>
             <h2 className='text-2xl font-display font-semibold'>Members of Parliament</h2>
+            {members && (
+              <span className='text-sm text-muted-foreground'>
+                {filteredPoliticians.length} av {members.length}
+              </span>
+            )}
           </div>
 
           {/* Filters */}
@@ -103,8 +152,8 @@ const Parliament = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>All Parties</SelectItem>
-                {yearParties.map(party => (
-                  <SelectItem key={party.id} value={party.id}>
+                {memberParties.map(party => (
+                  <SelectItem key={party.code} value={party.code}>
                     <span className='flex items-center gap-2'>
                       <span
                         className='w-3 h-3 rounded-full'
@@ -120,18 +169,24 @@ const Parliament = () => {
 
           {/* Politicians Grid */}
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {filteredPoliticians.map((politician, index) => (
+            {filteredPoliticians.map((member, index) => (
               <div
-                key={politician.id}
+                key={member.id}
                 className='animate-fade-in'
-                style={{ animationDelay: `${index * 0.05}s` }}
+                style={{ animationDelay: `${Math.min(index, 20) * 0.03}s` }}
               >
-                <PoliticianCard politician={politician} />
+                <PoliticianCard member={member} partyColor={partyColor(parties, member.party)} />
               </div>
             ))}
           </div>
 
-          {filteredPoliticians.length === 0 && (
+          {membersLoading && (
+            <div className='flex justify-center py-12 text-muted-foreground'>
+              <Loader2 className='w-6 h-6 animate-spin' />
+            </div>
+          )}
+
+          {!membersLoading && filteredPoliticians.length === 0 && (
             <div className='text-center py-12 text-muted-foreground'>
               <Users className='w-12 h-12 mx-auto mb-4 opacity-50' />
               <p>No politicians found matching your criteria</p>

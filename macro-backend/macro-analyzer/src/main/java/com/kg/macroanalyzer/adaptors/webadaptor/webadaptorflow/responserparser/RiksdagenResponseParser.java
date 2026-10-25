@@ -20,9 +20,15 @@ public record RiksdagenResponseParser() implements ResponseParser<String, Stream
     @Override
     public Stream<MemberOfParliament> parse(String response) throws ScrapeException {
         try {
+            // Single assignments arrive as an object instead of a one-element list
             final var objectMapper = JsonMapper.builder()
-                    .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
                     .withCoercionConfig(LogicalType.POJO, config -> config.setCoercion(
+                            CoercionInputShape.EmptyString,
+                            CoercionAction.AsNull
+                    ))
+                    .withCoercionConfig(LogicalType.Collection, config -> config.setCoercion(
                             CoercionInputShape.EmptyString,
                             CoercionAction.AsNull
                     ))

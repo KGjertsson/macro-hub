@@ -4,6 +4,10 @@ import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
+import com.kg.macroanalyzer.application.domain.parliament.Election;
+import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
+import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
+import com.kg.macroanalyzer.application.domain.parliament.Party;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -28,6 +33,8 @@ public class PostgresAdaptor implements DatabasePort {
     FedRepository fedRepository;
     EurostatRepository eurostatRepository;
     SweParMemberRepository sweParMemberRepository;
+    SweParActivityRepository sweParActivityRepository;
+    RiksdagElectionRepository riksdagElectionRepository;
     ScrapeRepository scrapeRepository;
     SeriesConfigRepository seriesConfigRepository;
 
@@ -41,6 +48,8 @@ public class PostgresAdaptor implements DatabasePort {
             FedRepository fedRepository,
             EurostatRepository eurostatRepository,
             SweParMemberRepository sweParMemberRepository,
+            SweParActivityRepository sweParActivityRepository,
+            RiksdagElectionRepository riksdagElectionRepository,
             ScrapeRepository scrapeRepository,
             SeriesConfigRepository seriesConfigRepository
     ) {
@@ -52,6 +61,8 @@ public class PostgresAdaptor implements DatabasePort {
         this.fedRepository = fedRepository;
         this.eurostatRepository = eurostatRepository;
         this.sweParMemberRepository = sweParMemberRepository;
+        this.sweParActivityRepository = sweParActivityRepository;
+        this.riksdagElectionRepository = riksdagElectionRepository;
         this.scrapeRepository = scrapeRepository;
         this.seriesConfigRepository = seriesConfigRepository;
     }
@@ -101,6 +112,41 @@ public class PostgresAdaptor implements DatabasePort {
     @Override
     public void markAsDone(SeriesConfig seriesConfig) {
         scrapeRepository.markAsDone(seriesConfig.name());
+    }
+
+    @Override
+    public Integer writeMembersOfParliament(List<MemberOfParliament> membersOfParliament) {
+        return sweParMemberRepository.upsertMembers(membersOfParliament);
+    }
+
+    @Override
+    public List<MemberOfParliament> readMembersOfParliament() {
+        return sweParMemberRepository.readMembers();
+    }
+
+    @Override
+    public Integer writeMemberActivity(List<MemberActivity> memberActivity) {
+        return sweParActivityRepository.upsertActivity(memberActivity);
+    }
+
+    @Override
+    public List<MemberActivity> readMemberActivity() {
+        return sweParActivityRepository.readActivity();
+    }
+
+    @Override
+    public List<Party> readParties() {
+        return riksdagElectionRepository.readParties();
+    }
+
+    @Override
+    public List<Election> readElections() {
+        return riksdagElectionRepository.readElections();
+    }
+
+    @Override
+    public Map<String, String> readOrganNames() {
+        return riksdagElectionRepository.readOrganNames();
     }
 
     private MacroSeries buildSeries(SeriesConfig params) {
@@ -169,7 +215,6 @@ public class PostgresAdaptor implements DatabasePort {
                  "FEDVIX",
                  "FEDCPI" -> fedRepository.fedReader(name);
             case String str when str.startsWith("Debt") -> eurostatRepository.eurostatReader(name);
-            case "MembersOfParliament" -> sweParMemberRepository.reader();
             default -> throw new IllegalArgumentException(errorMsg);
         };
     }
@@ -230,7 +275,6 @@ public class PostgresAdaptor implements DatabasePort {
                  "FEDVIX",
                  "FEDCPI" -> fedRepository.fedWriter(name);
             case String str when str.startsWith("Debt") -> eurostatRepository.eurostatWriter(name);
-            case "MembersOfParliament" -> sweParMemberRepository.writer();
             default -> throw new IllegalArgumentException(errorMsg);
         };
     }

@@ -7,10 +7,12 @@ import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.OutPortImpl;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
+import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
 import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
+import com.kg.macroanalyzer.application.services.parliament.ParliamentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +41,8 @@ public class OutPortImplTest {
     AlignmentService alignmentService;
     @Mock
     TimeFilterService timeFilterService;
+    @Mock
+    ParliamentService parliamentService;
 
     @Test
     void shouldReturnAlignedBundle_whenInputListIsPresent() {
@@ -93,5 +97,21 @@ public class OutPortImplTest {
         assertTrue(response.isEmpty());
     }
 
+    @Test
+    void shouldKeepParliamentConfigsOutOfChartList_butInFullList() {
+        // given
+        final var rate = SeriesConfig.builder().name("PolicyRateSweden").category("Ränta").build();
+        final var members = SeriesConfig.builder().name("MembersOfParliament").category("Riksdagen").build();
+        when(databasePort.readSeriesConfigList()).thenReturn(List.of(rate, members));
+        final var outPort = new OutPortImpl(databasePort, alignmentService, timeFilterService, parliamentService);
+
+        // when
+        final var chartList = outPort.getChartSeriesConfigList();
+        final var fullList = outPort.getSeriesConfigList();
+
+        // then
+        assertEquals(List.of(rate), chartList);
+        assertEquals(List.of(rate, members), fullList);
+    }
 
 }

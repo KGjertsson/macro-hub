@@ -38,6 +38,10 @@ import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearJapan;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearNetherlands;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_5YearUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.PolicyRateSweden;
+import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElection;
+import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
+import com.kg.macroanalyzer.jooq.generated.tables.RiksdagOrgan;
+import com.kg.macroanalyzer.jooq.generated.tables.RiksdagParty;
 import com.kg.macroanalyzer.jooq.generated.tables.ScrapeActionQueue;
 import com.kg.macroanalyzer.jooq.generated.tables.SeriesConfiguration;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
@@ -48,6 +52,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_10Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_2Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_5Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Year;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishMemberActivity;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishMembersOfParliament;
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_3MonthDenmarkRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_3MonthEurRecord;
@@ -83,6 +88,10 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearJapanR
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearNetherlandsRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.IntGovBond_5YearUsaRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.PolicyRateSwedenRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagElectionRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagElectionResultRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagOrganRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagPartyRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ScrapeActionQueueRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SeriesConfigurationRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBill_12MonthRecord;
@@ -93,12 +102,15 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_2YearRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_5YearRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_7YearRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishMemberActivityRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishMembersOfParliamentRecord;
 
+import org.jooq.ForeignKey;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.Internal;
+import org.jooq.impl.QOM.ForeignKeyRule;
 
 
 /**
@@ -146,6 +158,10 @@ public class Keys {
     public static final UniqueKey<IntGovBond_5YearNetherlandsRecord> EURO_MARKET_5_YEAR_NETHERLANDS_PKEY = Internal.createUniqueKey(IntGovBond_5YearNetherlands.INT_GOV_BOND_5_YEAR_NETHERLANDS, DSL.name("euro_market_5_year_netherlands_pkey"), new TableField[] { IntGovBond_5YearNetherlands.INT_GOV_BOND_5_YEAR_NETHERLANDS.ID }, true);
     public static final UniqueKey<IntGovBond_5YearUsaRecord> EURO_MARKET_5_YEAR_USA_PKEY = Internal.createUniqueKey(IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA, DSL.name("euro_market_5_year_usa_pkey"), new TableField[] { IntGovBond_5YearUsa.INT_GOV_BOND_5_YEAR_USA.ID }, true);
     public static final UniqueKey<PolicyRateSwedenRecord> POLICY_RATE_SWEDEN_PKEY = Internal.createUniqueKey(PolicyRateSweden.POLICY_RATE_SWEDEN, DSL.name("policy_rate_sweden_pkey"), new TableField[] { PolicyRateSweden.POLICY_RATE_SWEDEN.ID }, true);
+    public static final UniqueKey<RiksdagElectionRecord> RIKSDAG_ELECTION_PKEY = Internal.createUniqueKey(RiksdagElection.RIKSDAG_ELECTION, DSL.name("riksdag_election_pkey"), new TableField[] { RiksdagElection.RIKSDAG_ELECTION.YEAR }, true);
+    public static final UniqueKey<RiksdagElectionResultRecord> RIKSDAG_ELECTION_RESULT_PKEY = Internal.createUniqueKey(RiksdagElectionResult.RIKSDAG_ELECTION_RESULT, DSL.name("riksdag_election_result_pkey"), new TableField[] { RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.YEAR, RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.PARTY_CODE }, true);
+    public static final UniqueKey<RiksdagOrganRecord> RIKSDAG_ORGAN_PKEY = Internal.createUniqueKey(RiksdagOrgan.RIKSDAG_ORGAN, DSL.name("riksdag_organ_pkey"), new TableField[] { RiksdagOrgan.RIKSDAG_ORGAN.CODE }, true);
+    public static final UniqueKey<RiksdagPartyRecord> RIKSDAG_PARTY_PKEY = Internal.createUniqueKey(RiksdagParty.RIKSDAG_PARTY, DSL.name("riksdag_party_pkey"), new TableField[] { RiksdagParty.RIKSDAG_PARTY.CODE }, true);
     public static final UniqueKey<ScrapeActionQueueRecord> SCRAPE_ACTION_QUEUE_PKEY = Internal.createUniqueKey(ScrapeActionQueue.SCRAPE_ACTION_QUEUE, DSL.name("scrape_action_queue_pkey"), new TableField[] { ScrapeActionQueue.SCRAPE_ACTION_QUEUE.ID }, true);
     public static final UniqueKey<SeriesConfigurationRecord> SERIES_CONFIGURATION_PKEY = Internal.createUniqueKey(SeriesConfiguration.SERIES_CONFIGURATION, DSL.name("series_configuration_pkey"), new TableField[] { SeriesConfiguration.SERIES_CONFIGURATION.ID }, true);
     public static final UniqueKey<SwedishGovernmentBill_12MonthRecord> SWEDISH_GOVERNMENT_BILL_12_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH, DSL.name("swedish_government_bill_12_month_pkey"), new TableField[] { SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH.ID }, true);
@@ -156,5 +172,14 @@ public class Keys {
     public static final UniqueKey<SwedishGovernmentBonds_2YearRecord> SWEDISH_GOVERNMENT_BONDS_2_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_2Year.SWEDISH_GOVERNMENT_BONDS_2_YEAR, DSL.name("swedish_government_bonds_2_month_pkey"), new TableField[] { SwedishGovernmentBonds_2Year.SWEDISH_GOVERNMENT_BONDS_2_YEAR.ID }, true);
     public static final UniqueKey<SwedishGovernmentBonds_5YearRecord> SWEDISH_GOVERNMENT_BONDS_5_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_5Year.SWEDISH_GOVERNMENT_BONDS_5_YEAR, DSL.name("swedish_government_bonds_5_month_pkey"), new TableField[] { SwedishGovernmentBonds_5Year.SWEDISH_GOVERNMENT_BONDS_5_YEAR.ID }, true);
     public static final UniqueKey<SwedishGovernmentBonds_7YearRecord> SWEDISH_GOVERNMENT_BONDS_7_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_7Year.SWEDISH_GOVERNMENT_BONDS_7_YEAR, DSL.name("swedish_government_bonds_7_month_pkey"), new TableField[] { SwedishGovernmentBonds_7Year.SWEDISH_GOVERNMENT_BONDS_7_YEAR.ID }, true);
+    public static final UniqueKey<SwedishMemberActivityRecord> SWEDISH_MEMBER_ACTIVITY_PKEY = Internal.createUniqueKey(SwedishMemberActivity.SWEDISH_MEMBER_ACTIVITY, DSL.name("swedish_member_activity_pkey"), new TableField[] { SwedishMemberActivity.SWEDISH_MEMBER_ACTIVITY.INTRESSENT_ID }, true);
+    public static final UniqueKey<SwedishMembersOfParliamentRecord> SWEDISH_MEMBERS_OF_PARLIAMENT_INTRESSENT_ID_KEY = Internal.createUniqueKey(SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT, DSL.name("swedish_members_of_parliament_intressent_id_key"), new TableField[] { SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT.INTRESSENT_ID }, true);
     public static final UniqueKey<SwedishMembersOfParliamentRecord> SWEDISH_MEMBERS_OF_PARLIAMENT_PKEY = Internal.createUniqueKey(SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT, DSL.name("swedish_members_of_parliament_pkey"), new TableField[] { SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT.ID }, true);
+
+    // -------------------------------------------------------------------------
+    // FOREIGN KEY definitions
+    // -------------------------------------------------------------------------
+
+    public static final ForeignKey<RiksdagElectionResultRecord, RiksdagPartyRecord> RIKSDAG_ELECTION_RESULT__RIKSDAG_ELECTION_RESULT_PARTY_CODE_FKEY = Internal.createForeignKey(RiksdagElectionResult.RIKSDAG_ELECTION_RESULT, DSL.name("riksdag_election_result_party_code_fkey"), new TableField[] { RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.PARTY_CODE }, Keys.RIKSDAG_PARTY_PKEY, new TableField[] { RiksdagParty.RIKSDAG_PARTY.CODE }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<RiksdagElectionResultRecord, RiksdagElectionRecord> RIKSDAG_ELECTION_RESULT__RIKSDAG_ELECTION_RESULT_YEAR_FKEY = Internal.createForeignKey(RiksdagElectionResult.RIKSDAG_ELECTION_RESULT, DSL.name("riksdag_election_result_year_fkey"), new TableField[] { RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.YEAR }, Keys.RIKSDAG_ELECTION_PKEY, new TableField[] { RiksdagElection.RIKSDAG_ELECTION.YEAR }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
 }

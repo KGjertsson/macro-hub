@@ -106,6 +106,22 @@ public class SwedishMembersOfParliamentRecord extends UpdatableRecordImpl<Swedis
         return (LocalDateTime) get(5);
     }
 
+    /**
+     * Setter for
+     * <code>public.swedish_members_of_parliament.intressent_id</code>.
+     */
+    public void setIntressentId(String value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for
+     * <code>public.swedish_members_of_parliament.intressent_id</code>.
+     */
+    public String getIntressentId() {
+        return (String) get(6);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -129,7 +145,7 @@ public class SwedishMembersOfParliamentRecord extends UpdatableRecordImpl<Swedis
     /**
      * Create a detached, initialised SwedishMembersOfParliamentRecord
      */
-    public SwedishMembersOfParliamentRecord(Integer id, UUID globalId, String memberName, JSONB memberData, LocalDateTime created, LocalDateTime updated) {
+    public SwedishMembersOfParliamentRecord(Integer id, UUID globalId, String memberName, JSONB memberData, LocalDateTime created, LocalDateTime updated, String intressentId) {
         super(SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT);
 
         setId(id);
@@ -138,6 +154,7 @@ public class SwedishMembersOfParliamentRecord extends UpdatableRecordImpl<Swedis
         setMemberData(memberData);
         setCreated(created);
         setUpdated(updated);
+        setIntressentId(intressentId);
         resetTouchedOnNotNull();
     }
 }

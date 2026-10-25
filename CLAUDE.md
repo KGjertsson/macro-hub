@@ -116,10 +116,21 @@ CronAdaptor ───────────→ InPort
 - `POST /macro-analyzer/enqueue?name={series}` — enqueue a series for scraping (202)
 - `POST /macro-analyzer/enqueue-all` — enqueue all series (202)
 - `POST /macro-analyzer/scrape-from-queue` — execute pending scrapes (200)
+- `GET /macro-analyzer/parliament/elections` — official seat results per election (newest first)
+- `GET /macro-analyzer/parliament/composition` — live seats per party from currently serving MPs
+- `GET /macro-analyzer/parliament/parties` — party names, colours, ideology
+- `GET /macro-analyzer/parliament/members?year={electionYear}` — members who sat in that term (default: latest)
+- `GET /macro-analyzer/parliament/members/{intressentId}` — member detail (assignments, biography, contact, votes, speeches, motions)
+
+### Riksdagen (parliament) data
+
+- `MembersOfParliament` scrape upserts every person from `data.riksdagen.se/personlista` (JSONB, keyed on `intressent_id`); `MembersOfParliamentActivity` then fetches voting totals, speeches and motions per member of the latest two terms (~600 members, ~7 min, throttled)
+- Election seat counts are curated in `riksdag_election_result` (Flyway seed from Valmyndigheten) because Riksdagen only stores each person's *current* party. Add a new election as a migration (rows in `riksdag_election` + `riksdag_election_result`)
+- Riksdagen configs (category `Riksdagen`) are excluded from `/series-config` so they don't appear in the chart picker
 
 ### Database
 
-PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V19). JOOQ generates type-safe table access. Key tables: `series_config`, `scrape_action_queue`, various rate/bond/economic indicator tables, `members_of_parliament` (JSONB).
+PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V22). JOOQ generates type-safe table access. Key tables: `series_config`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`.
 
 ## Testing
 

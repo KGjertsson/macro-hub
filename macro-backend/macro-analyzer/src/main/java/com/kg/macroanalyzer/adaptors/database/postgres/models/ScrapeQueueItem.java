@@ -44,9 +44,11 @@ public record ScrapeQueueItem(
     }
 
     private static ScrapeQueueKind resolveKind(String name) {
-        return name.equals("MembersOfParliament")
-                ? ScrapeQueueKind.MEMBER_OF_PARLIAMENT
-                : ScrapeQueueKind.MACRO_POINT;
+        return switch (name) {
+            case "MembersOfParliament" -> ScrapeQueueKind.MEMBER_OF_PARLIAMENT;
+            case "MembersOfParliamentActivity" -> ScrapeQueueKind.MEMBER_ACTIVITY;
+            default -> ScrapeQueueKind.MACRO_POINT;
+        };
     }
 
 }

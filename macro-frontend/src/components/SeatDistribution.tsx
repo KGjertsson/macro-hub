@@ -1,17 +1,15 @@
-import { getPartiesForYear } from '@/data/parliamentData';
+import { PartySeats } from '@/models/Parliament';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SeatDistributionProps {
-  year?: number;
+  title: string;
+  parties: PartySeats[];
 }
 
-const SeatDistribution = ({ year = 2022 }: SeatDistributionProps) => {
-  const totalSeats = 349;
-  const yearParties = getPartiesForYear(year);
-
-  // Sort parties by seats for distribution
-  const sortedParties = [...yearParties].sort((a, b) => b.seats - a.seats);
+const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
+  const sortedParties = parties.filter(p => p.seats > 0).sort((a, b) => b.seats - a.seats);
+  const totalSeats = sortedParties.reduce((sum, p) => sum + p.seats, 0);
 
   // Arrange seats in semicircle rows (hemicycle)
   const arrangeInHemicycle = () => {
@@ -85,7 +83,7 @@ const SeatDistribution = ({ year = 2022 }: SeatDistributionProps) => {
           y: pos.y,
           color: party.color,
           partyName: party.name,
-          partyShort: party.shortName
+          partyShort: party.code
         });
         seatIndex++;
       }
@@ -99,7 +97,7 @@ const SeatDistribution = ({ year = 2022 }: SeatDistributionProps) => {
   return (
     <Card className='glass-card'>
       <CardHeader className='text-center'>
-        <CardTitle className='text-2xl font-display'>Riksdagsledamöter {year}</CardTitle>
+        <CardTitle className='text-2xl font-display'>{title}</CardTitle>
         <p className='text-muted-foreground'>{totalSeats} Platser</p>
       </CardHeader>
       <CardContent>
@@ -157,15 +155,15 @@ const SeatDistribution = ({ year = 2022 }: SeatDistributionProps) => {
         {/* Legend */}
         <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-border/50'>
           {sortedParties.map(party => (
-            <div key={party.id} className='flex items-center gap-2 group cursor-pointer'>
+            <div key={party.code} className='flex items-center gap-2 group cursor-pointer'>
               <div
                 className='w-4 h-4 rounded-full flex-shrink-0 transition-transform group-hover:scale-125'
                 style={{ backgroundColor: party.color }}
               />
               <div className='min-w-0'>
-                <p className='text-sm font-medium truncate'>{party.shortName}</p>
+                <p className='text-sm font-medium truncate'>{party.code}</p>
                 <p className='text-xs text-muted-foreground'>
-                  {party.seats} seats ({((party.seats / totalSeats) * 100).toFixed(1)}%)
+                  {party.seats} platser ({((party.seats / totalSeats) * 100).toFixed(1)}%)
                 </p>
               </div>
             </div>

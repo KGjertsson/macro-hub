@@ -5,6 +5,7 @@ import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueKind;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
+import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
@@ -39,11 +40,13 @@ public class ScrapeServiceTest {
     ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMacroPoints> macroPointScrapeFlow;
     @Mock
     ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberOfParliament> memberScrapeFlow;
+    @Mock
+    ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberActivity> memberActivityScrapeFlow;
 
     @BeforeEach
     public void setUp() {
         seriesConfigList = TestSeriesConfigFactory.buildTestConfig();
-        scrapeService = new ScrapeService(databasePort, macroPointScrapeFlow, memberScrapeFlow);
+        scrapeService = new ScrapeService(databasePort, macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow);
         testJsonReader = new TestJsonReader();
     }
 
@@ -85,6 +88,42 @@ public class ScrapeServiceTest {
         assertTrue(result.isEmpty());
         verify(databasePort).getItemsToScrape(now);
         verifyNoInteractions(macroPointScrapeFlow);
+    }
+
+    @Test
+    void shouldRouteToMemberScrapeFlow_whenMembersOfParliamentQueued() {
+        // given
+        final var now = LocalDateTime.now();
+        final var scrapeQueueItem = ScrapeQueueItem.of("MembersOfParliament");
+
+        // when
+        when(databasePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
+        when(memberScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
+
+        final var result = scrapeService.scrapeFromQueue(now);
+
+        // then
+        assertEquals(List.of(ScrapeResult.SUCCESS), result);
+        verify(memberScrapeFlow).run(scrapeQueueItem);
+        verifyNoInteractions(macroPointScrapeFlow, memberActivityScrapeFlow);
+    }
+
+    @Test
+    void shouldRouteToMemberActivityScrapeFlow_whenMemberActivityQueued() {
+        // given
+        final var now = LocalDateTime.now();
+        final var scrapeQueueItem = ScrapeQueueItem.of("MembersOfParliamentActivity");
+
+        // when
+        when(databasePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
+        when(memberActivityScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
+
+        final var result = scrapeService.scrapeFromQueue(now);
+
+        // then
+        assertEquals(List.of(ScrapeResult.SUCCESS), result);
+        verify(memberActivityScrapeFlow).run(scrapeQueueItem);
+        verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow);
     }
 
 }

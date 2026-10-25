@@ -3,6 +3,7 @@ package com.kg.macroanalyzer.application.services.scrape;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueKind;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
+import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
@@ -23,16 +24,19 @@ public class ScrapeService {
     private final DatabasePort databasePort;
     private final ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMacroPoints> macroPointScrapeFlow;
     private final ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberOfParliament> memberScrapeFlow;
+    private final ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberActivity> memberActivityScrapeFlow;
 
     @Autowired
     public ScrapeService(
             DatabasePort databasePort,
             @Qualifier("macroPointScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMacroPoints> macroPointScrapeFlow,
-            @Qualifier("memberScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberOfParliament> memberScrapeFlow
+            @Qualifier("memberScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberOfParliament> memberScrapeFlow,
+            @Qualifier("memberActivityScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberActivity> memberActivityScrapeFlow
     ) {
         this.databasePort = databasePort;
         this.macroPointScrapeFlow = macroPointScrapeFlow;
         this.memberScrapeFlow = memberScrapeFlow;
+        this.memberActivityScrapeFlow = memberActivityScrapeFlow;
     }
 
     public List<ScrapeResult> scrapeFromQueue(LocalDateTime timeStamp) {
@@ -62,6 +66,9 @@ public class ScrapeService {
             }
             case MEMBER_OF_PARLIAMENT -> {
                 return memberScrapeFlow;
+            }
+            case MEMBER_ACTIVITY -> {
+                return memberActivityScrapeFlow;
             }
             default -> throw new IllegalArgumentException(
                     "Unsupported scrape queue kind: %s".formatted(scrapeQueueKind)

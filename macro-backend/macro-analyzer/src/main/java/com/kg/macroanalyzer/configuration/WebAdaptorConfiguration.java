@@ -2,9 +2,12 @@ package com.kg.macroanalyzer.configuration;
 
 import com.kg.macroanalyzer.adaptors.webadaptor.MacroPointWebAdaptor;
 import com.kg.macroanalyzer.adaptors.webadaptor.MembersOfParliamentWebAdaptor;
+import com.kg.macroanalyzer.adaptors.webadaptor.RiksdagenActivityWebAdaptor;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.MacroPointAdaptorFlowFactory;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
+import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
+import com.kg.macroanalyzer.application.ports.driven.MemberActivityRequest;
 import com.kg.macroanalyzer.application.ports.driven.WebPort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +38,11 @@ public class WebAdaptorConfiguration {
     @Bean("memberWebAdaptor")
     public WebPort<SeriesConfig, Stream<MemberOfParliament>> memberWebAdaptor() {
         return new MembersOfParliamentWebAdaptor();
+    }
+
+    @Bean("memberActivityWebAdaptor")
+    public WebPort<MemberActivityRequest, MemberActivity> memberActivityWebAdaptor() {
+        return new RiksdagenActivityWebAdaptor();
     }
 
 }

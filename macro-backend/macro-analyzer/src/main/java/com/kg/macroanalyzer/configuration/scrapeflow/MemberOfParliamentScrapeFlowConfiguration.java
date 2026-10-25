@@ -3,6 +3,7 @@ package com.kg.macroanalyzer.configuration.scrapeflow;
 import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
+import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driven.WebPort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.ScrapeFlow;
@@ -35,8 +36,8 @@ public class MemberOfParliamentScrapeFlowConfiguration {
     }
 
     @Bean("memberPersister")
-    public Persister<ConfigWithMemberOfParliament> persister() {
-        return new MemberOfParliamentPersister();
+    public Persister<ConfigWithMemberOfParliament> persister(DatabasePort databasePort) {
+        return new MemberOfParliamentPersister(databasePort);
     }
 
     @Bean("memberScrapeFlow")

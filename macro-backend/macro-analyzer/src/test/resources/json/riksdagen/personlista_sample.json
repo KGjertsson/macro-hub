@@ -1,0 +1,140 @@
+{
+  "personlista": {
+    "@systemdatum": "2026-10-25 13:33:18",
+    "@hits": "2",
+    "person": [
+      {
+        "hangar_guid": "896e1239-5acc-462a-b7ae-1cd833c8d193",
+        "sourceid": "45cb9ea6-369c-4f8a-95bb-ce9b7231dc38",
+        "intressent_id": "0588277881928",
+        "hangar_id": "5297100",
+        "fodd_ar": "1979",
+        "kon": "man",
+        "efternamn": "Abdukani",
+        "tilltalsnamn": "Mohamed",
+        "sorteringsnamn": "Abdukani,Mohamed",
+        "iort": "",
+        "parti": "MP",
+        "valkrets": "Södermanlands län",
+        "status": "Tjänstgörande riksdagsledamot",
+        "person_url_xml": "https://data.riksdagen.se/person/45cb9ea6-369c-4f8a-95bb-ce9b7231dc38",
+        "bild_url_80": "https://data.riksdagen.se/filarkiv/bilder/ledamot/45cb9ea6-369c-4f8a-95bb-ce9b7231dc38_80.jpg",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/45cb9ea6-369c-4f8a-95bb-ce9b7231dc38_192.jpg",
+        "bild_url_max": "https://data.riksdagen.se/filarkiv/bilder/ledamot/45cb9ea6-369c-4f8a-95bb-ce9b7231dc38_max.jpg",
+        "personuppdrag": {
+          "uppdrag": [
+            {
+              "organ_kod": "kam",
+              "roll_kod": "Riksdagsledamot",
+              "ordningsnummer": "323",
+              "status": "Tjänstgörande",
+              "typ": "kammaruppdrag",
+              "from": "2026-09-28 11:00:00",
+              "tom": "2030-09-23 10:59:00",
+              "uppgift": [
+                {}
+              ],
+              "intressent_id": "0588277881928",
+              "hangar_id": "5297100",
+              "sortering": "10",
+              "organ_sortering": "10",
+              "uppdrag_rollsortering": "60",
+              "uppdrag_statussortering": "10"
+            },
+            {
+              "organ_kod": "UbU",
+              "roll_kod": "Ledamot",
+              "ordningsnummer": "17",
+              "status": "",
+              "typ": "uppdrag",
+              "from": "2026-10-06 11:00:00",
+              "tom": "2030-09-23 10:59:00",
+              "uppgift": [
+                "Utbildningsutskottet"
+              ],
+              "intressent_id": "0588277881928",
+              "hangar_id": "5297100",
+              "sortering": "30",
+              "organ_sortering": "150",
+              "uppdrag_rollsortering": "90",
+              "uppdrag_statussortering": "90"
+            },
+            {
+              "organ_kod": "CU",
+              "roll_kod": "Suppleant",
+              "ordningsnummer": "7",
+              "status": "",
+              "typ": "uppdrag",
+              "from": "2026-10-06 11:00:00",
+              "tom": "2030-09-23 10:59:00",
+              "uppgift": [
+                "Civilutskottet"
+              ],
+              "intressent_id": "0588277881928",
+              "hangar_id": "5297100",
+              "sortering": "50",
+              "organ_sortering": "150",
+              "uppdrag_rollsortering": "90",
+              "uppdrag_statussortering": "90"
+            }
+          ]
+        },
+        "personuppgift": {
+          "uppgift": [
+            {
+              "kod": "HarBild",
+              "uppgift": [
+                "true"
+              ],
+              "typ": "bilder",
+              "intressent_id": "0588277881928",
+              "hangar_id": "5297100"
+            },
+            {
+              "kod": "Officiell e-postadress",
+              "uppgift": [
+                "mohamed.abdukani[på]riksdagen.se"
+              ],
+              "typ": "eadress",
+              "intressent_id": "0588277881928",
+              "hangar_id": "5297100"
+            }
+          ]
+        }
+      },
+      {
+        "hangar_guid": "58df9a58-d209-4c04-84d0-a3a17b045b27",
+        "sourceid": "3686465a-ae76-463f-be05-339e6f8f6037",
+        "intressent_id": "027237842426",
+        "hangar_id": "5297241",
+        "fodd_ar": "1979",
+        "kon": "man",
+        "efternamn": "Abadir",
+        "tilltalsnamn": "Hassan",
+        "sorteringsnamn": "Abadir,Hassan",
+        "iort": "",
+        "parti": "V",
+        "valkrets": "Jönköpings län",
+        "status": "Tillgänglig ersättare",
+        "person_url_xml": "https://data.riksdagen.se/person/3686465a-ae76-463f-be05-339e6f8f6037",
+        "bild_url_80": "https://data.riksdagen.se/filarkiv/bilder/ledamot/3686465a-ae76-463f-be05-339e6f8f6037_80.jpg",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/3686465a-ae76-463f-be05-339e6f8f6037_192.jpg",
+        "bild_url_max": "https://data.riksdagen.se/filarkiv/bilder/ledamot/3686465a-ae76-463f-be05-339e6f8f6037_max.jpg",
+        "personuppdrag": "",
+        "personuppgift": {
+          "uppgift": [
+            {
+              "kod": "HarBild",
+              "uppgift": [
+                "false"
+              ],
+              "typ": "bilder",
+              "intressent_id": "027237842426",
+              "hangar_id": "5297241"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

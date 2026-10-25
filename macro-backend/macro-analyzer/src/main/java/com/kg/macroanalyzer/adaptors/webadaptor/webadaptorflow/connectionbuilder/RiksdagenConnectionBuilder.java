@@ -10,13 +10,22 @@ import java.net.URISyntaxException;
 
 public record RiksdagenConnectionBuilder() implements ConnectionBuilder<SeriesConfig, HttpURLConnection> {
 
+    private static final int CONNECT_TIMEOUT_MS = 15_000;
+    private static final int READ_TIMEOUT_MS = 120_000;
+
     @Override
     public HttpURLConnection buildConnection(SeriesConfig seriesConfig) throws ScrapeException {
+        return open(seriesConfig.scrapeUrl());
+    }
+
+    public static HttpURLConnection open(String rawUrl) throws ScrapeException {
         try {
-            final var url = new URI(seriesConfig.scrapeUrl()).toURL();
+            final var url = new URI(rawUrl).toURL();
             final var connection = (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("GET");
+            connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            connection.setReadTimeout(READ_TIMEOUT_MS);
             connection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8");
             connection.setRequestProperty("Accept-Language", "en-US,en;q=0.7");
             connection.setRequestProperty("Connection", "keep-alive");

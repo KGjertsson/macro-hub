@@ -27,6 +27,7 @@ public class ScrapeRepository {
                 .from(SCRAPE_ACTION_QUEUE)
                 .where(SCRAPE_ACTION_QUEUE.SCRAPE_DATE.lessThan(now))
                 .and(SCRAPE_ACTION_QUEUE.STATUS.eq(0))
+                .orderBy(SCRAPE_ACTION_QUEUE.ID)
                 .fetch()
                 .map(ScrapeQueueItem::of);
     }
