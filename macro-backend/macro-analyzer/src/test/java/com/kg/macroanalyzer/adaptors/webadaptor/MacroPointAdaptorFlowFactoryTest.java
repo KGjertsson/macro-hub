@@ -58,7 +58,14 @@ public class MacroPointAdaptorFlowFactoryTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Int_something", "Euro_something", "PolicyRateSweden"})
+    @ValueSource(strings = {
+            "Int_something",
+            "Euro_something",
+            "PolicyRateSweden",
+            "UsdSekExchangeRate",
+            "GovernmentBondSweden2Year",
+            "GovernmentBillSweden3Month"
+    })
     void shouldBuildRiksbankenFlow_whenConfigNameIsRiksbankenCompatible(String name) {
         // given
         final var seriesConfig = SeriesConfig.builder().name(name).build();

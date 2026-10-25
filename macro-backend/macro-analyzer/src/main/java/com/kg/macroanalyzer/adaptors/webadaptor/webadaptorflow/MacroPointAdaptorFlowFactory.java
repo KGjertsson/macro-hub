@@ -45,7 +45,12 @@ public record MacroPointAdaptorFlowFactory(
     }
 
     private boolean isRiksbankenConfig(String name) {
-        return name.startsWith("Int") || name.startsWith("Euro") || name.equals("PolicyRateSweden");
+        return name.startsWith("Int")
+                || name.startsWith("Euro")
+                || name.startsWith("GovernmentBondSweden")
+                || name.startsWith("GovernmentBillSweden")
+                || name.equals("PolicyRateSweden")
+                || name.equals("UsdSekExchangeRate");
     }
 
 }
