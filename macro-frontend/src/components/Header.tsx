@@ -74,6 +74,8 @@ const Header = () => {
                         size='icon'
                         className='md:hidden'
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        aria-label={mobileMenuOpen ? 'Stäng meny' : 'Öppna meny'}
+                        aria-expanded={mobileMenuOpen}
                     >
                         <Menu className='h-5 w-5'/>
                     </Button>
@@ -82,18 +84,13 @@ const Header = () => {
                 {mobileMenuOpen && (
                     <div className='md:hidden py-4 border-t border-border/50 animate-slide-up'>
                         <nav className='flex flex-col gap-4'>
-                            <a href='/#indicators'
-                               className='text-sm text-muted-foreground hover:text-foreground transition-colors'>
-                                Indicators
-                            </a>
-                            <a href='/#charts'
-                               className='text-sm text-muted-foreground hover:text-foreground transition-colors'>
-                                Charts
-                            </a>
-                            <a href='/#insights'
-                               className='text-sm text-muted-foreground hover:text-foreground transition-colors'>
-                                Insights
-                            </a>
+                            <Link
+                                to='/macroindicator'
+                                className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
+                            >
+                                <LineChart className='h-4 w-4'/>
+                                Makroindikatorer
+                            </Link>
                             <Link
                                 to='/parliament'
                                 className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'

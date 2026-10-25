@@ -12,7 +12,7 @@ const Regions = () => {
   return (
     <>
       <Helmet>
-        <title>Regioner - Röstningsresultat per län | MacroVue</title>
+        <title>Regioner - Röstningsresultat per län | Macro Hub</title>
         <meta name="description" content="Utforska röstningsresultat för varje region i Sverige. Se hur olika län röstade i valet med interaktiv karta." />
       </Helmet>
       
@@ -61,19 +61,19 @@ const Regions = () => {
 
                     <div className="space-y-3">
                       <h3 className="text-lg font-semibold text-foreground">Partifördelning</h3>
-                      {selectedRegion.votes
+                      {[...selectedRegion.votes]
                         .sort((a, b) => b.percentage - a.percentage)
                         .map((vote) => (
                           <div key={vote.party} className="space-y-1">
                             <div className="flex justify-between text-sm">
                               <span className="font-medium text-foreground">{vote.party}</span>
-                              <span className="text-muted-foreground">{vote.percentage}%</span>
+                              <span className="text-muted-foreground">{vote.percentage.toLocaleString('sv-SE')} %</span>
                             </div>
                             <div className="h-3 bg-muted rounded-full overflow-hidden">
                               <div
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{
-                                  width: `${vote.percentage * 2.5}%`,
+                                  width: `${Math.min(vote.percentage * 2.5, 100)}%`,
                                   backgroundColor: vote.color
                                 }}
                               />
@@ -143,7 +143,7 @@ const Regions = () => {
                             {coalition.name}
                           </div>
                           <div className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-foreground text-sm font-semibold">
-                            {totalCoalitionPercentage.toFixed(1)}% av rösterna
+                            {totalCoalitionPercentage.toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} % av rösterna
                           </div>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
@@ -202,7 +202,7 @@ const Regions = () => {
                 <div className="text-sm text-muted-foreground">Riksdagspartier</div>
               </div>
               <div className="bg-card rounded-xl border border-border p-4 text-center">
-                <div className="text-3xl font-bold text-foreground">84.2%</div>
+                <div className="text-3xl font-bold text-foreground">84,2 %</div>
                 <div className="text-sm text-muted-foreground">Valdeltagande</div>
               </div>
               <div className="bg-card rounded-xl border border-border p-4 text-center">

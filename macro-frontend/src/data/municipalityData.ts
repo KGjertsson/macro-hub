@@ -22,7 +22,7 @@ export interface MunicipalityVotingData {
 export const getMunicipalityCoalition = (municipalityId: string): MunicipalityCoalition => {
   const coalitions: Record<string, MunicipalityCoalition> = {
     stockholm: {
-      name: "Grönblått styre",
+      name: "Rödgrönt styre",
       parties: [
         { name: "Socialdemokraterna", color: "#E8112d" },
         { name: "Miljöpartiet", color: "#83CF39" },
@@ -70,7 +70,7 @@ export const getMunicipalityCoalition = (municipalityId: string): MunicipalityCo
       description: "Västerås stad styrs av S med stöd av V."
     },
     orebro: {
-      name: "Rödgrönt styre",
+      name: "Socialdemokratiskt styre",
       parties: [
         { name: "Socialdemokraterna", color: "#E8112d" },
         { name: "Centerpartiet", color: "#009933" },
@@ -106,7 +106,7 @@ export const getMunicipalityCoalition = (municipalityId: string): MunicipalityCo
       description: "Jönköpings kommun styrs av M, KD och C."
     },
     norrkoping: {
-      name: "Rödgrönt styre",
+      name: "Socialdemokratiskt styre",
       parties: [
         { name: "Socialdemokraterna", color: "#E8112d" },
         { name: "Centerpartiet", color: "#009933" },

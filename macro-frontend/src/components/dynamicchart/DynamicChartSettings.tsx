@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { rootUrl, SAMPLE_STRATEGY, sampleStrategies, TIME_FRAME, timeWindows } from '@/models/Constants';
 import DynamicChartRenderComponent from '@/components/dynamicchart/DynamicChartRenderComponent';
 import { SeriesConfig } from '@/models/SeriesConfig';
@@ -36,36 +36,29 @@ const DynamicChartSettings = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [sample, setSample] = useState<SAMPLE_STRATEGY>(SAMPLE_STRATEGY.Month);
   const [timeFrame, setTimeFrame] = useState<TIME_FRAME>(TIME_FRAME.OneYear);
-  const [allSeriesConfigs, setAllSeriesConfigs] = useState<SeriesConfig[]>([]);
 
-  const fetchSeriesConfig = () =>
-    fetch(rootUrl + '/macro-analyzer/series-config', {
+  const fetchSeriesConfig = async (): Promise<SeriesConfig[]> => {
+    const res = await fetch(rootUrl + '/macro-analyzer/series-config', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then((res) => res.json());
+    });
+    if (res.status === 204) {
+      return [];
+    }
+    if (!res.ok) {
+      throw new Error(`servern svarade med status ${res.status}`);
+    }
+    return res.json();
+  };
 
-  const { isPending, error, data } = useQuery({
+  const { error, data } = useQuery({
     queryKey: ['seriesConfig'],
     queryFn: fetchSeriesConfig
   });
 
-  useEffect(() => {
-    if (!isPending && !error) {
-      console.log(data);
-      setAllSeriesConfigs(data);
-    }
-  }, [isPending, error, data]);
-
-  // No UI lib init needed; we use Tailwind/native elements
-
-  const filterSelectedGraphs = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const options = Array.from(event.target.selectedOptions).map((o) => o.value);
-    setSelectedItems(options);
-  };
+  const allSeriesConfigs = data ?? [];
 
   const setSampleFromEvent = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOption = SAMPLE_STRATEGY[e.target.value as keyof typeof SAMPLE_STRATEGY];
@@ -75,20 +68,6 @@ const DynamicChartSettings = () => {
   const setTimeWindowFromEvent = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOption = TIME_FRAME[e.target.value as keyof typeof TIME_FRAME];
     setTimeFrame(selectedOption);
-  };
-
-  const renderOptGroupByCategory = (category: string) => {
-    return (
-      <optgroup key={`grp-${category}`} label={category}>
-        {allSeriesConfigs
-          .filter((config) => config.category === category)
-          .map((config) => (
-            <option key={config.name} value={config.displayName}>
-              {config.displayName}
-            </option>
-          ))}
-      </optgroup>
-    );
   };
 
   const toggleDataSelection = (displayName: string) => {
@@ -115,6 +94,7 @@ const DynamicChartSettings = () => {
                     const isSelected = selectedItems.includes(config.displayName);
                     return (
                       <button
+                        type='button'
                         key={config.name}
                         onClick={() => toggleDataSelection(config.displayName)}
                         className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
@@ -179,6 +159,7 @@ const DynamicChartSettings = () => {
   return (
     <div>
       <p className='mb-2 text-sm text-muted-foreground'>Välj datatyp och upplösning för dynamisk rendering</p>
+      {error && <p className='mb-2 text-sm text-destructive'>Kunde inte hämta datatyper: {error.message}</p>}
       {dataSelectionComponent()}
       <div className='my-2' />
       {strategySelectionComponent()}

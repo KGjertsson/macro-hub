@@ -11,30 +11,33 @@ interface Props {
   timeFrame: TIME_FRAME;
 }
 
+type ChartLabel = number | string | number[];
+
+type ChartDataResponse = {
+  labels: ChartLabel[];
+  chartData: Dataset[];
+};
+
+// Dates arrive as arrays ([2024, 6] for months, [2024, 6, 1] for days) or as a plain year
+const formatLabel = (label: ChartLabel): string =>
+  Array.isArray(label)
+    ? label.map((part, index) => (index === 0 ? String(part) : String(part).padStart(2, '0'))).join('-')
+    : String(label);
+
 const DynamicChartRenderComponent = ({
   selectedItems,
   sampleStrategy,
   timeFrame
 }: Props) => {
-  const findDisplayName = (name: String) =>
-    selectedItems.filter((item) => item.name === name)[0].displayName;
+  const findDisplayName = (name: string) =>
+    selectedItems.find((item) => item.name === name)?.displayName ?? name;
 
   const formatDisplayName = (raw: Dataset[]): Dataset[] => {
-    return raw.map((d) => {
-      const displayName = findDisplayName(d.name);
-      return {
-        ...d,
-        name: displayName,
-      };
-    });
+    return raw.map((d) => ({
+      ...d,
+      name: findDisplayName(d.name),
+    }));
   };
-
-  const queryKey =
-    sampleStrategy +
-    '@' +
-    timeFrame +
-    '@' +
-    selectedItems.map((i: SeriesConfig) => i.name).join(',');
 
   const body = {
     strategy: sampleStrategy,
@@ -46,33 +49,45 @@ const DynamicChartRenderComponent = ({
     }),
   };
 
-  const fetchChartData = () =>
-    fetch(rootUrl + '/macro-analyzer/chart-data', {
+  // The backend answers 204 when the selected series have no data points
+  const fetchChartData = async (): Promise<ChartDataResponse | null> => {
+    const res = await fetch(rootUrl + '/macro-analyzer/chart-data', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
         'Content-Type': 'application/json',
       },
-    }).then((res) => res.json());
+    });
+    if (res.status === 204) {
+      return null;
+    }
+    if (!res.ok) {
+      throw new Error(`servern svarade med status ${res.status}`);
+    }
+    return res.json();
+  };
 
   const { isPending, error, data } = useQuery({
-    queryKey: [queryKey],
+    queryKey: ['chartData', sampleStrategy, timeFrame, selectedItems.map((i) => i.name)],
     queryFn: fetchChartData,
     enabled: selectedItems.length > 0,
   });
 
+  if (selectedItems.length === 0) {
+    return <p className='mt-6 text-sm text-muted-foreground'>Välj minst en datatyp för att visa en graf.</p>;
+  }
+
   if (isPending) return <div />;
 
-  if (error) return 'An error has occurred: ' + error.message;
+  if (error) return <p className='mt-6 text-sm text-destructive'>Ett fel uppstod: {error.message}</p>;
 
-  const labels =
-    sampleStrategy === SAMPLE_STRATEGY.Month
-      ? data.labels.map((label: String) => label[0] + '-' + label[1])
-      : data.labels;
+  if (!data) {
+    return <p className='mt-6 text-sm text-muted-foreground'>Ingen data finns för de valda datatyperna.</p>;
+  }
 
   const formattedData = {
     chartData: formatDisplayName(data.chartData),
-    labels: labels,
+    labels: data.labels.map(formatLabel),
   };
 
   return <DynamicChartComponent sampled={formattedData} />;

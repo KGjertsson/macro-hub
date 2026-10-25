@@ -6,32 +6,32 @@ import Footer from '@/components/Footer';
 
 const indicators = [
     {
-        title: 'US GDP Growth',
-        value: '2.8',
+        title: 'BNP-tillväxt USA',
+        value: '2,8',
         change: 0.3,
         unit: '%',
-        period: 'Q3 2024'
+        period: 'K3 2024'
     },
     {
-        title: 'Inflation Rate (CPI)',
-        value: '2.7',
+        title: 'Inflation USA (KPI)',
+        value: '2,7',
         change: -0.3,
         unit: '%',
-        period: 'Nov 2024'
+        period: 'nov 2024'
     },
     {
-        title: 'Unemployment Rate',
-        value: '4.2',
+        title: 'Arbetslöshet USA',
+        value: '4,2',
         change: 0.1,
         unit: '%',
-        period: 'Nov 2024'
+        period: 'nov 2024'
     },
     {
-        title: 'Fed Funds Rate',
-        value: '4.50',
+        title: 'Styrränta (Fed)',
+        value: '4,50',
         change: 0,
         unit: '%',
-        period: 'Dec 2024'
+        period: 'dec 2024'
     }
 ];
 
@@ -51,15 +51,15 @@ const Index = () => {
 
                         <h1 className='text-4xl md:text-6xl font-bold tracking-tight mb-6 opacity-0 animate-fade-in-up'
                             style={{animationDelay: '100ms'}}>
-                            Global Macro
+                            Global makroekonomisk
                             <br/>
-                            <span className='text-gradient'>Economic Dashboard</span>
+                            <span className='text-gradient'>översikt</span>
                         </h1>
 
                         <p className='text-lg text-muted-foreground opacity-0 animate-fade-in-up'
                            style={{animationDelay: '200ms'}}>
-                            Track key economic indicators, visualize trends, and stay informed
-                            with real-time macroeconomic data from around the world.
+                            Följ viktiga ekonomiska indikatorer, visualisera trender och håll dig uppdaterad
+                            med makroekonomisk data från hela världen.
                         </p>
                     </div>
 

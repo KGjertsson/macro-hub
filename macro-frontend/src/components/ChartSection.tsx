@@ -1,4 +1,4 @@
-import {Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis} from "recharts";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 const gdpData = [
@@ -11,42 +11,42 @@ const gdpData = [
 ];
 
 const inflationData = [
-    {month: "Jan", value: 3.1},
-    {month: "Feb", value: 3.2},
-    {month: "Mar", value: 3.5},
-    {month: "Apr", value: 3.4},
-    {month: "May", value: 3.3},
-    {month: "Jun", value: 3.0},
-    {month: "Jul", value: 2.9},
-    {month: "Aug", value: 2.5},
-    {month: "Sep", value: 2.4},
-    {month: "Oct", value: 2.6},
-    {month: "Nov", value: 2.7},
-    {month: "Dec", value: 2.9},
+    {month: "jan", value: 3.1},
+    {month: "feb", value: 3.2},
+    {month: "mar", value: 3.5},
+    {month: "apr", value: 3.4},
+    {month: "maj", value: 3.3},
+    {month: "jun", value: 3.0},
+    {month: "jul", value: 2.9},
+    {month: "aug", value: 2.5},
+    {month: "sep", value: 2.4},
+    {month: "okt", value: 2.6},
+    {month: "nov", value: 2.7},
+    {month: "dec", value: 2.9},
 ];
 
 const unemploymentData = [
-    {month: "Jan", value: 3.7},
-    {month: "Feb", value: 3.9},
-    {month: "Mar", value: 3.8},
-    {month: "Apr", value: 3.9},
-    {month: "May", value: 4.0},
-    {month: "Jun", value: 4.1},
-    {month: "Jul", value: 4.3},
-    {month: "Aug", value: 4.2},
-    {month: "Sep", value: 4.1},
-    {month: "Oct", value: 4.1},
-    {month: "Nov", value: 4.2},
-    {month: "Dec", value: 4.1},
+    {month: "jan", value: 3.7},
+    {month: "feb", value: 3.9},
+    {month: "mar", value: 3.8},
+    {month: "apr", value: 3.9},
+    {month: "maj", value: 4.0},
+    {month: "jun", value: 4.1},
+    {month: "jul", value: 4.3},
+    {month: "aug", value: 4.2},
+    {month: "sep", value: 4.1},
+    {month: "okt", value: 4.1},
+    {month: "nov", value: 4.2},
+    {month: "dec", value: 4.1},
 ];
 
-const CustomTooltip = ({active, payload, label}: any) => {
+const CustomTooltip = ({active, payload, label}: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
         return (
             <div className="glass-card rounded-lg p-3 border border-border">
                 <p className="text-sm text-muted-foreground">{label}</p>
                 <p className="text-lg font-mono font-bold text-primary">
-                    {payload[0].value.toFixed(2)}
+                    {payload[0].value?.toLocaleString("sv-SE", {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                 </p>
             </div>
         );
@@ -60,10 +60,10 @@ const ChartSection = () => {
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12 opacity-0 animate-fade-in-up" style={{animationDelay: "200ms"}}>
                     <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                        Economic <span className="text-gradient">Trends</span>
+                        Ekonomiska <span className="text-gradient">trender</span>
                     </h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
-                        Visualize key macroeconomic indicators over time with interactive charts
+                        Visualisera viktiga makroekonomiska indikatorer över tid med interaktiva diagram
                     </p>
                 </div>
 
@@ -71,7 +71,7 @@ const ChartSection = () => {
                     <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8 bg-muted/50">
                         <TabsTrigger value="gdp"
                                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                            GDP
+                            BNP
                         </TabsTrigger>
                         <TabsTrigger value="inflation"
                                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -79,15 +79,15 @@ const ChartSection = () => {
                         </TabsTrigger>
                         <TabsTrigger value="unemployment"
                                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                            Unemployment
+                            Arbetslöshet
                         </TabsTrigger>
                     </TabsList>
 
                     <div className="glass-card rounded-2xl p-6 md:p-8">
                         <TabsContent value="gdp" className="mt-0">
                             <div className="mb-6">
-                                <h3 className="text-xl font-semibold mb-2">US Gross Domestic Product</h3>
-                                <p className="text-sm text-muted-foreground">Annual GDP in trillion USD (2019-2024)</p>
+                                <h3 className="text-xl font-semibold mb-2">USA:s bruttonationalprodukt</h3>
+                                <p className="text-sm text-muted-foreground">Årlig BNP i biljoner USD (2019–2024)</p>
                             </div>
                             <div className="h-[400px]">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -101,7 +101,7 @@ const ChartSection = () => {
                                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
                                         <XAxis dataKey="year" stroke="hsl(var(--muted-foreground))" fontSize={12}/>
                                         <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12}
-                                               tickFormatter={(v) => `$${v}T`}/>
+                                               tickFormatter={(v) => `${v.toLocaleString("sv-SE")} bn`}/>
                                         <Tooltip content={<CustomTooltip/>}/>
                                         <Area
                                             type="monotone"
@@ -117,8 +117,8 @@ const ChartSection = () => {
 
                         <TabsContent value="inflation" className="mt-0">
                             <div className="mb-6">
-                                <h3 className="text-xl font-semibold mb-2">Consumer Price Index (CPI)</h3>
-                                <p className="text-sm text-muted-foreground">Monthly inflation rate % (2024)</p>
+                                <h3 className="text-xl font-semibold mb-2">Konsumentprisindex (KPI)</h3>
+                                <p className="text-sm text-muted-foreground">Inflationstakt per månad i % (2024)</p>
                             </div>
                             <div className="h-[400px]">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -126,7 +126,7 @@ const ChartSection = () => {
                                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
                                         <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12}/>
                                         <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12}
-                                               tickFormatter={(v) => `${v}%`}/>
+                                               tickFormatter={(v) => `${v.toLocaleString("sv-SE")} %`}/>
                                         <Tooltip content={<CustomTooltip/>}/>
                                         <Line
                                             type="monotone"
@@ -143,8 +143,8 @@ const ChartSection = () => {
 
                         <TabsContent value="unemployment" className="mt-0">
                             <div className="mb-6">
-                                <h3 className="text-xl font-semibold mb-2">Unemployment Rate</h3>
-                                <p className="text-sm text-muted-foreground">Monthly unemployment % (2024)</p>
+                                <h3 className="text-xl font-semibold mb-2">Arbetslöshet</h3>
+                                <p className="text-sm text-muted-foreground">Arbetslöshet per månad i % (2024)</p>
                             </div>
                             <div className="h-[400px]">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -158,7 +158,7 @@ const ChartSection = () => {
                                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
                                         <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12}/>
                                         <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12}
-                                               tickFormatter={(v) => `${v}%`}/>
+                                               tickFormatter={(v) => `${v.toLocaleString("sv-SE")} %`}/>
                                         <Tooltip content={<CustomTooltip/>}/>
                                         <Area
                                             type="monotone"

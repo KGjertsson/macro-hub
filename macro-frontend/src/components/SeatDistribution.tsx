@@ -98,7 +98,7 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
     <Card className='glass-card'>
       <CardHeader className='text-center'>
         <CardTitle className='text-2xl font-display'>{title}</CardTitle>
-        <p className='text-muted-foreground'>{totalSeats} Platser</p>
+        <p className='text-muted-foreground'>{totalSeats} mandat</p>
       </CardHeader>
       <CardContent>
         <div className='flex justify-center'>
@@ -163,7 +163,7 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
               <div className='min-w-0'>
                 <p className='text-sm font-medium truncate'>{party.code}</p>
                 <p className='text-xs text-muted-foreground'>
-                  {party.seats} platser ({((party.seats / totalSeats) * 100).toFixed(1)}%)
+                  {party.seats} mandat ({((party.seats / totalSeats) * 100).toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %)
                 </p>
               </div>
             </div>

@@ -38,11 +38,11 @@ const formatPeriod = (a: Assignment) => `${a.from ?? '?'} – ${a.current ? 'på
 const NotFound = () => (
   <div className='text-center py-20'>
     <User className='w-16 h-16 mx-auto mb-4 text-muted-foreground' />
-    <h1 className='text-2xl font-bold mb-2'>Politician Not Found</h1>
-    <p className='text-muted-foreground mb-6'>The requested profile could not be found.</p>
+    <h1 className='text-2xl font-bold mb-2'>Ledamoten hittades inte</h1>
+    <p className='text-muted-foreground mb-6'>Den efterfrågade profilen kunde inte hittas.</p>
     <Link to='/parliament' className='inline-flex items-center gap-2 text-primary hover:underline'>
       <ArrowLeft className='w-4 h-4' />
-      Back to Parliament
+      Tillbaka till riksdagen
     </Link>
   </div>
 );
@@ -73,7 +73,7 @@ const PoliticianDetail = () => {
     return (
       <div className='min-h-screen bg-background'>
         <Header />
-        <main className='container mx-auto px-4 py-20 flex justify-center text-muted-foreground'>
+        <main className='container mx-auto px-4 pt-36 pb-20 flex justify-center text-muted-foreground'>
           <Loader2 className='w-8 h-8 animate-spin' />
         </main>
         <Footer />
@@ -85,7 +85,7 @@ const PoliticianDetail = () => {
     return (
       <div className='min-h-screen bg-background'>
         <Header />
-        <main className='container mx-auto px-4 py-8'>
+        <main className='container mx-auto px-4 pt-24 pb-12'>
           <NotFound />
         </main>
         <Footer />
@@ -113,13 +113,13 @@ const PoliticianDetail = () => {
     <div className='min-h-screen bg-background'>
       <Header />
 
-      <main className='container mx-auto px-4 py-8'>
+      <main className='container mx-auto px-4 pt-24 pb-12'>
         <Link
           to='/parliament'
           className='inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6'
         >
           <ArrowLeft className='w-4 h-4' />
-          Back to Parliament
+          Tillbaka till riksdagen
         </Link>
 
         {/* Profile Header */}
@@ -164,7 +164,7 @@ const PoliticianDetail = () => {
                         {party.name}
                       </span>
                     )}
-                    {member.birthYear && (
+                    {member.birthYear != null && (
                       <span className='flex items-center gap-2'>
                         <User className='w-4 h-4' />
                         Född {member.birthYear}{member.residence ? `, ${member.residence}` : ''}
@@ -190,7 +190,7 @@ const PoliticianDetail = () => {
               {votes && totalVotes > 0 ? (
                 <>
                   <div className='flex items-baseline gap-2 mb-4'>
-                    <span className='text-3xl font-bold' style={{ color }}>{summary.attendancePct}%</span>
+                    <span className='text-3xl font-bold' style={{ color }}>{summary.attendancePct ?? '–'} %</span>
                     <span className='text-sm text-muted-foreground'>närvaro i {totalVotes} voteringar</span>
                   </div>
                   <div className='flex h-3 rounded-full overflow-hidden mb-4'>
@@ -311,13 +311,13 @@ const PoliticianDetail = () => {
                   </a>
                 )}
               </div>
-              {member.biography.map(entry => (
-                <div key={entry.label}>
+              {member.biography.map((entry, index) => (
+                <div key={index}>
                   <p className='text-sm font-medium text-muted-foreground mb-1'>{entry.label}</p>
                   <p className='text-sm whitespace-pre-line'>{entry.text}</p>
                 </div>
               ))}
-              {member.biography.length === 0 && !member.contact.email && (
+              {member.biography.length === 0 && !member.contact.email && !member.contact.phone && !member.contact.website && (
                 <p className='text-sm text-muted-foreground'>Ingen biografi tillgänglig.</p>
               )}
             </CardContent>
@@ -329,13 +329,13 @@ const PoliticianDetail = () => {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <Users className='w-5 h-5 text-primary' />
-                  Party Information
+                  Partiinformation
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
                   <div className='p-4 rounded-lg bg-secondary/30 border border-border/50'>
-                    <p className='text-sm text-muted-foreground mb-1'>Party Name</p>
+                    <p className='text-sm text-muted-foreground mb-1'>Parti</p>
                     <p className='font-semibold flex items-center gap-2'>
                       <span className='w-3 h-3 rounded-full' style={{ backgroundColor: color }} />
                       {party.name}
@@ -348,7 +348,7 @@ const PoliticianDetail = () => {
                     <p className='font-semibold text-2xl' style={{ color }}>{partySeats ?? '–'}</p>
                   </div>
                   <div className='p-4 rounded-lg bg-secondary/30 border border-border/50'>
-                    <p className='text-sm text-muted-foreground mb-1'>Ideology</p>
+                    <p className='text-sm text-muted-foreground mb-1'>Ideologi</p>
                     <p className='font-semibold'>{party.ideology ?? '–'}</p>
                   </div>
                 </div>

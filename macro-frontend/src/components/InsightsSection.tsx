@@ -4,24 +4,24 @@ import {Badge} from "@/components/ui/badge";
 
 const insights = [
     {
-        title: "Fed Rate Decision",
-        description: "Federal Reserve maintains rates at 4.25-4.50% range, signaling potential cuts in 2025.",
+        title: "Fed:s räntebesked",
+        description: "Federal Reserve behåller räntan i intervallet 4,25–4,50 % och signalerar möjliga sänkningar under 2025.",
         type: "neutral",
-        date: "Dec 18, 2024",
+        date: "18 dec 2024",
         icon: TrendingUp,
     },
     {
-        title: "Labor Market Resilience",
-        description: "Employment remains strong with 227K jobs added in November, exceeding expectations.",
+        title: "Motståndskraftig arbetsmarknad",
+        description: "Sysselsättningen är fortsatt stark med 227 000 nya jobb i november, över förväntningarna.",
         type: "positive",
-        date: "Dec 6, 2024",
+        date: "6 dec 2024",
         icon: CheckCircle,
     },
     {
-        title: "Inflation Watch",
-        description: "Core PCE inflation at 2.8% remains above Fed's 2% target, requiring continued vigilance.",
+        title: "Inflationsbevakning",
+        description: "Kärninflationen enligt PCE på 2,8 % ligger kvar över Fed:s mål på 2 %, vilket kräver fortsatt vaksamhet.",
         type: "warning",
-        date: "Nov 27, 2024",
+        date: "27 nov 2024",
         icon: AlertTriangle,
     },
 ];
@@ -32,10 +32,10 @@ const InsightsSection = () => {
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12 opacity-0 animate-fade-in-up" style={{animationDelay: "100ms"}}>
                     <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                        Market <span className="text-gradient">Insights</span>
+                        Marknads<span className="text-gradient">insikter</span>
                     </h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
-                        Stay informed with the latest economic developments and analysis
+                        Håll dig uppdaterad med den senaste ekonomiska utvecklingen och analysen
                     </p>
                 </div>
 
@@ -70,7 +70,7 @@ const InsightsSection = () => {
                                 </p>
                                 <div
                                     className="mt-4 flex items-center text-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span>Read more</span>
+                                    <span>Läs mer</span>
                                     <ArrowRight
                                         className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform"/>
                                 </div>

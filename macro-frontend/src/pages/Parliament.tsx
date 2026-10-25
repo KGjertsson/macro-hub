@@ -50,12 +50,12 @@ const Parliament = () => {
     <div className='min-h-screen bg-background'>
       <Header />
 
-      <main className='container mx-auto px-4 py-8'>
+      <main className='container mx-auto px-4 pt-24 pb-12'>
         {/* Back link */}
         <Link to='/'
               className='inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6'>
           <ArrowLeft className='w-4 h-4' />
-          Back to Dashboard
+          Tillbaka till startsidan
         </Link>
 
         {/* Hero Section */}
@@ -66,7 +66,7 @@ const Parliament = () => {
             </div>
             <div>
               <h1 className='text-3xl md:text-4xl font-display font-bold'>Sveriges riksdag</h1>
-              <p className='text-muted-foreground'>Riksdagens komposition och medlemmar</p>
+              <p className='text-muted-foreground'>Riksdagens sammansättning och ledamöter</p>
             </div>
           </div>
         </section>
@@ -127,7 +127,7 @@ const Parliament = () => {
             <div className='p-2 rounded-lg bg-secondary/50'>
               <Users className='w-5 h-5 text-primary' />
             </div>
-            <h2 className='text-2xl font-display font-semibold'>Members of Parliament</h2>
+            <h2 className='text-2xl font-display font-semibold'>Riksdagsledamöter</h2>
             {members && (
               <span className='text-sm text-muted-foreground'>
                 {filteredPoliticians.length} av {members.length}
@@ -140,7 +140,7 @@ const Parliament = () => {
             <div className='relative flex-1 max-w-md'>
               <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground' />
               <Input
-                placeholder='Search by name, role, or constituency...'
+                placeholder='Sök på namn, roll eller valkrets...'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className='pl-10 bg-card border-border/50'
@@ -148,10 +148,10 @@ const Parliament = () => {
             </div>
             <Select value={partyFilter} onValueChange={setPartyFilter}>
               <SelectTrigger className='w-full md:w-48 bg-card border-border/50'>
-                <SelectValue placeholder='Filter by party' />
+                <SelectValue placeholder='Filtrera på parti' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>All Parties</SelectItem>
+                <SelectItem value='all'>Alla partier</SelectItem>
                 {memberParties.map(party => (
                   <SelectItem key={party.code} value={party.code}>
                     <span className='flex items-center gap-2'>
@@ -186,10 +186,10 @@ const Parliament = () => {
             </div>
           )}
 
-          {!membersLoading && filteredPoliticians.length === 0 && (
+          {!membersLoading && members && filteredPoliticians.length === 0 && (
             <div className='text-center py-12 text-muted-foreground'>
               <Users className='w-12 h-12 mx-auto mb-4 opacity-50' />
-              <p>No politicians found matching your criteria</p>
+              <p>Inga ledamöter matchar dina sökkriterier</p>
             </div>
           )}
         </section>

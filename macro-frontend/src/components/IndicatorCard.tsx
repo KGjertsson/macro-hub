@@ -10,7 +10,7 @@ interface IndicatorCardProps {
     delay?: string;
 }
 
-const IndicatorCard = ({title, value, change, unit = "%", period = "YoY", delay = "0"}: IndicatorCardProps) => {
+const IndicatorCard = ({title, value, change, unit = "%", period = "årstakt", delay = "0"}: IndicatorCardProps) => {
     const isPositive = change > 0;
     const isNeutral = change === 0;
 
@@ -33,7 +33,7 @@ const IndicatorCard = ({title, value, change, unit = "%", period = "YoY", delay 
                     !isPositive && !isNeutral && "bg-destructive/10 text-destructive"
                 )}>
                     <TrendIcon className="h-3 w-3"/>
-                    <span>{isPositive ? "+" : ""}{change.toFixed(2)}{unit}</span>
+                    <span>{isPositive ? "+" : ""}{change.toLocaleString("sv-SE", {minimumFractionDigits: 2, maximumFractionDigits: 2})}{unit}</span>
                 </div>
             </div>
 
@@ -47,7 +47,7 @@ const IndicatorCard = ({title, value, change, unit = "%", period = "YoY", delay 
                     <div
                         className={cn(
                             "h-full rounded-full transition-all duration-1000",
-                            isPositive ? "bg-success" : "bg-destructive"
+                            isNeutral ? "bg-muted-foreground" : isPositive ? "bg-success" : "bg-destructive"
                         )}
                         style={{width: `${Math.min(Math.abs(change) * 10, 100)}%`}}
                     />

@@ -9,11 +9,11 @@ const ParliamentBlog = () => {
 
     const getCategoryColor = (category: string) => {
         const colors: Record<string, string> = {
-            'Analysis': 'bg-primary/20 text-primary',
-            'Profile': 'bg-chart-2/20 text-chart-2',
-            'News': 'bg-chart-3/20 text-chart-3',
-            'Explainer': 'bg-chart-4/20 text-chart-4',
-            'Feature': 'bg-chart-5/20 text-chart-5'
+            'Analys': 'bg-primary/20 text-primary',
+            'Profil': 'bg-chart-2/20 text-chart-2',
+            'Nyheter': 'bg-chart-3/20 text-chart-3',
+            'Förklaring': 'bg-chart-4/20 text-chart-4',
+            'Reportage': 'bg-chart-5/20 text-chart-5'
         };
         return colors[category] || 'bg-muted text-muted-foreground';
     };
@@ -25,8 +25,8 @@ const ParliamentBlog = () => {
                     <Sparkles className='w-5 h-5 text-primary'/>
                 </div>
                 <div>
-                    <h2 className='text-2xl font-display font-semibold'>Parliament Insights</h2>
-                    <p className='text-sm text-muted-foreground'>Stories and analysis from the Riksdag</p>
+                    <h2 className='text-2xl font-display font-semibold'>Riksdagsinsikter</h2>
+                    <p className='text-sm text-muted-foreground'>Berättelser och analyser från riksdagen</p>
                 </div>
             </div>
 
@@ -42,7 +42,7 @@ const ParliamentBlog = () => {
                                     {featuredPost.category}
                                 </Badge>
                                 <Badge variant='outline' className='border-primary/50 text-primary'>
-                                    Featured
+                                    Utvald
                                 </Badge>
                             </div>
 
@@ -63,7 +63,7 @@ const ParliamentBlog = () => {
                   </span>
                                     <span className='flex items-center gap-1'>
                     <Calendar className='w-4 h-4'/>
-                                        {new Date(featuredPost.date).toLocaleDateString('en-US', {
+                                        {new Date(featuredPost.date).toLocaleDateString('sv-SE', {
                                             month: 'short',
                                             day: 'numeric',
                                             year: 'numeric'
@@ -73,7 +73,7 @@ const ParliamentBlog = () => {
 
                                 <span
                                     className='flex items-center gap-1 text-primary text-sm font-medium group-hover:gap-2 transition-all'>
-                  Read more
+                  Läs mer
                   <ArrowRight className='w-4 h-4'/>
                 </span>
                             </div>
@@ -104,7 +104,7 @@ const ParliamentBlog = () => {
 
                                 <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                                     <Calendar className='w-3 h-3'/>
-                                    {new Date(post.date).toLocaleDateString('en-US', {
+                                    {new Date(post.date).toLocaleDateString('sv-SE', {
                                         month: 'short',
                                         day: 'numeric'
                                     })}
@@ -139,7 +139,7 @@ const ParliamentBlog = () => {
                             </div>
 
                             <div className='flex flex-col justify-between items-end text-xs text-muted-foreground'>
-                                <span>{new Date(post.date).toLocaleDateString('en-US', {
+                                <span>{new Date(post.date).toLocaleDateString('sv-SE', {
                                     month: 'short',
                                     day: 'numeric'
                                 })}</span>

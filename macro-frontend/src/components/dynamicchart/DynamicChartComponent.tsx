@@ -34,6 +34,7 @@ const DynamicChartComponent = ({ sampled }: Props) => {
       style={{ width: '1000px', height: '1000px' }}
       options={{
         responsive: true,
+        locale: 'sv-SE',
         plugins: {
           legend: {
             position: 'top'
