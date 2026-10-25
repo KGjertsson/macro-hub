@@ -20,6 +20,17 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
 - `mvnw` is not committed as executable; run it as `sh ./mvnw ...` (or `chmod +x mvnw`).
 - Docker must be running for Postgres and for `mvn test` (TestContainers).
 
+### Starting the local stack (in this order)
+
+Both the backend and Vite want port 8080, and the frontend calls the backend at `http://localhost:8080`, so the order matters.
+
+1. **Check what is already running:** `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|31274)'`. If an older backend holds 8080, it must be restarted to serve new code.
+2. **Postgres** (from repo root): `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:31274`.
+3. **Backend** (from `macro-backend/macro-analyzer/`, so `.env` is picked up): `SPRING_DATASOURCE_PASSWORD=macropassword JAVA_HOME=~/.sdkman/candidates/java/current sh ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`. Wait until it serves requests on 8080 (e.g. `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/macro-analyzer/series-config` returns 200) before starting Vite. Flyway migrations run on startup.
+4. **Frontend** (from `macro-frontend/`): `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run dev`. With 8080 taken, Vite falls back to **8081**; open `http://localhost:8081`.
+
+If Vite starts first it takes 8080 and the backend fails with "Port 8080 was already in use".
+
 ### Backend (from `macro-backend/macro-analyzer/`)
 
 ```bash
