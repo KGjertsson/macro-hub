@@ -68,7 +68,7 @@ npm run preview    # serve the production build
 - shadcn-ui components live in `src/components/ui/` (configured via `components.json`)
 - Backend base URL is hardcoded as `rootUrl = 'http://localhost:8080'` in `src/models/Constants.ts`; it calls `/macro-analyzer/series-config` and `/macro-analyzer/chart-data`
 - **Port clash:** `vite.config.ts` also sets the dev server to port 8080. Start the backend first so Vite falls back to the next free port (8081); if Vite starts first, Spring Boot fails to bind. Backend CORS allows all origins.
-- Both `package-lock.json` and `bun.lockb` are present
+- Package manager is npm; `package-lock.json` is the only lockfile (don't add `bun.lockb`/`yarn.lock`)
 
 ### Docker (from repo root)
 
