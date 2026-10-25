@@ -12,6 +12,13 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
 
 ## Build & Test Commands
 
+### Toolchain requirements
+
+- **JDK 21** for the backend. Newer JDKs (e.g. 25) break Lombok annotation processing and the build fails with many `cannot find symbol` errors (`log`, getters/builders). If the default `java` isn't 21, set `JAVA_HOME` to a JDK 21 for Maven commands.
+- **Node 20.19+ or 22.12+** for the frontend (Vite 7). Node 18 fails with `crypto.hash is not a function`.
+- `mvnw` is not committed as executable; run it as `sh ./mvnw ...` (or `chmod +x mvnw`).
+- Docker must be running for Postgres and for `mvn test` (TestContainers).
+
 ### Backend (from `macro-backend/macro-analyzer/`)
 
 ```bash
@@ -31,8 +38,10 @@ mvn test -Dtest=ExtractionAdaptorTest#shouldReturnOk_whenValidBundleRetrieved
 mvn -P jooq-codegen generate-sources
 
 # Run locally against the Docker Postgres (dev profile points at localhost:31274)
-SPRING_DATASOURCE_PASSWORD=macropassword ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+SPRING_DATASOURCE_PASSWORD=macropassword sh ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+A fresh database has series configs but no data points (`chart-data` returns 204). Populate it with `POST /macro-analyzer/enqueue-all` followed by `POST /macro-analyzer/scrape-from-queue`.
 
 Flyway migrations run automatically on application startup (`flyway-core` on the classpath; there is no Flyway Maven plugin).
 
