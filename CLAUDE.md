@@ -53,6 +53,8 @@ Flyway migrations run automatically on application startup via `spring-boot-star
 - `application-test.properties` — TestContainers datasource
 - `prod` profile (used by the Dockerfile and `docker-compose-all.yml`) has no properties file; config comes from env vars
 - Riksbanken and Fed scrapes require `riksbanken.prod.subscription.key` / `fed.prod.subscription.key` (env: `RIKSBANKEN_PROD_SUBSCRIPTION_KEY`, `FED_PROD_SUBSCRIPTION_KEY`)
+  - Locally, put them in `macro-backend/macro-analyzer/.env` (copy `.env.example`; gitignored). Spring loads it via `spring.config.import=optional:file:.env[.properties]`, relative to the working directory, so run the app from `macro-analyzer/`
+  - For `docker-compose-all.yml`, pass `--env-file macro-backend/macro-analyzer/.env`
 
 ### Frontend (from `macro-frontend/`)
 
