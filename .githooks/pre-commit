@@ -1,0 +1,14 @@
+#!/bin/sh
+# Block commits that stage .env files (secrets). .env.example is allowed.
+# Enable with: git config core.hooksPath .githooks
+
+blocked=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '(^|/)\.env(\..+)?$' \
+  | grep -vE '(^|/)\.env\.example$')
+
+if [ -n "$blocked" ]; then
+  echo "pre-commit: refusing to commit .env files (they contain secrets):" >&2
+  echo "$blocked" | sed 's/^/  /' >&2
+  echo "Unstage with: git restore --staged <file>" >&2
+  exit 1
+fi
