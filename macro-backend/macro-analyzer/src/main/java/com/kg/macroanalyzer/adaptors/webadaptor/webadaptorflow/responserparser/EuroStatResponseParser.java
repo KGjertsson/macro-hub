@@ -1,11 +1,12 @@
 package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -33,15 +34,15 @@ public record EuroStatResponseParser() implements ResponseParser<String, Stream<
                                     .date(timeLabels.get(Integer.parseInt(entry.getKey())))
                                     .build()
                     );
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new ScrapeException("Failed to parse Eurostat JSON response: " + e.getMessage());
         }
     }
 
     private ObjectMapper createObjectMapper() {
-        final var objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
+        return JsonMapper.builder()
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
     }
 
     public record EurostatDataset(

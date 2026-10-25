@@ -1,13 +1,14 @@
 package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +27,7 @@ public record FedResponseParser() implements ResponseParser<String, Stream<Macro
 
             return scrapedResponse.observations.stream()
                     .flatMap(Observation::toMacroPoint);
-        } catch (JsonProcessingException jsonProcessingException) {
+        } catch (JacksonException jsonProcessingException) {
             final var msgRaw = "Caught exception while parsing response from FED's API: %s";
             final var msgFormatted = String.format(msgRaw, jsonProcessingException.getMessage());
             log.error(msgFormatted);
@@ -37,10 +38,10 @@ public record FedResponseParser() implements ResponseParser<String, Stream<Macro
 
 
     private ObjectMapper createObjectMapper() {
-        final var objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        return objectMapper;
+        return JsonMapper.builder()
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                .build();
     }
 
     private record ScrapedResponse(

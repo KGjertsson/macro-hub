@@ -4,7 +4,6 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
-import com.kg.macroanalyzer.jooq.generated.tables.Category;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthEur;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthGb;
@@ -49,18 +48,14 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_10Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_2Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_5Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Year;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishMembersOfParliament;
 
 
 /**
  * Convenience access to all tables in public.
  */
-@SuppressWarnings({ "all", "unchecked", "rawtypes" })
+@SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class Tables {
-
-    /**
-     * The table <code>public.category</code>.
-     */
-    public static final Category CATEGORY = Category.CATEGORY;
 
     /**
      * The table <code>public.euro_market_3_month_denmark</code>.
@@ -281,4 +276,9 @@ public class Tables {
      * The table <code>public.swedish_government_bonds_7_year</code>.
      */
     public static final SwedishGovernmentBonds_7Year SWEDISH_GOVERNMENT_BONDS_7_YEAR = SwedishGovernmentBonds_7Year.SWEDISH_GOVERNMENT_BONDS_7_YEAR;
+
+    /**
+     * The table <code>public.swedish_members_of_parliament</code>.
+     */
+    public static final SwedishMembersOfParliament SWEDISH_MEMBERS_OF_PARLIAMENT = SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT;
 }

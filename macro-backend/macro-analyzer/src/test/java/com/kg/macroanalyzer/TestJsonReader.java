@@ -1,12 +1,10 @@
 package com.kg.macroanalyzer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.temporal.Temporal;
@@ -24,20 +22,16 @@ public class TestJsonReader {
     }
 
     private Stream<MacroSeries> readMacroSeriesList(File file) {
-        final var mapper = new ObjectMapper();
         final var module = new SimpleModule();
-        mapper.registerModule(new JavaTimeModule());
         module.addAbstractTypeMapping(Temporal.class, LocalDate.class);
-        mapper.registerModule(module);
-        try {
-            final var classType = mapper.getTypeFactory()
-                    .constructCollectionType(List.class, MacroSeries.class);
-            final List<MacroSeries> macroSeriesList = mapper.readValue(file, classType);
+        final var mapper = JsonMapper.builder()
+                .addModule(module)
+                .build();
+        final var classType = mapper.getTypeFactory()
+                .constructCollectionType(List.class, MacroSeries.class);
+        final List<MacroSeries> macroSeriesList = mapper.readValue(file, classType);
 
-            return macroSeriesList.stream();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return macroSeriesList.stream();
     }
 
 }

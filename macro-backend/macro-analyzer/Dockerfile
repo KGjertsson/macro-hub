@@ -1,8 +1,8 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:22-jdk
+# Use an official Java 25 runtime as a parent image
+FROM eclipse-temurin:25-jre
 
 # Copy the application JAR file into the container
-COPY target/macro-analyzer-0.0.1-SNAPSHOT.jar /macro-analyzer.jar
+COPY target/macro-analyzer-1.0.0.jar /macro-analyzer.jar
 
 # Set environment variables
 ENV SPRING_PROFILES_ACTIVE=prod

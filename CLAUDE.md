@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 macro-hub visualizes macro-economic trends from multiple data sources (Riksbanken, Eurostat, Federal Reserve, Swedish Parliament). It consists of:
 
-- **macro-backend/macro-analyzer/** — Java 21 / Spring Boot 3.2.3 backend
+- **macro-backend/macro-analyzer/** — Java 25 / Spring Boot 4.1.2 backend
 - **macro-frontend/** — Vite + React 18 + TypeScript + shadcn-ui dashboard (formerly the separate `macro-view-hub` repo, merged in via `git subtree`)
 - **macro-backend/macro-infra/** — Docker Compose files (`docker/`) and microk8s manifests (`k8s/`)
 
@@ -14,7 +14,8 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
 
 ### Toolchain requirements
 
-- **JDK 21** for the backend. Newer JDKs (e.g. 25) break Lombok annotation processing and the build fails with many `cannot find symbol` errors (`log`, getters/builders). If the default `java` isn't 21, set `JAVA_HOME` to a JDK 21 for Maven commands.
+- **JDK 25** for the backend (installed via SDKMAN). If `java -version` isn't 25 (e.g. an IDE exported an older `JAVA_HOME`), set `JAVA_HOME=~/.sdkman/candidates/java/current` for Maven commands.
+- Lombok is registered under `annotationProcessorPaths` in the compiler plugin because JDK 23+ no longer runs annotation processors found on the classpath; without it the build fails with `cannot find symbol` errors (`log`, getters/builders).
 - **Node 20.19+ or 22.12+** for the frontend (Vite 7). Node 18 fails with `crypto.hash is not a function`.
 - `mvnw` is not committed as executable; run it as `sh ./mvnw ...` (or `chmod +x mvnw`).
 - Docker must be running for Postgres and for `mvn test` (TestContainers).
@@ -43,7 +44,7 @@ SPRING_DATASOURCE_PASSWORD=macropassword sh ./mvnw spring-boot:run -Dspring-boot
 
 A fresh database has series configs but no data points (`chart-data` returns 204). Populate it with `POST /macro-analyzer/enqueue-all` followed by `POST /macro-analyzer/scrape-from-queue`.
 
-Flyway migrations run automatically on application startup (`flyway-core` on the classpath; there is no Flyway Maven plugin).
+Flyway migrations run automatically on application startup via `spring-boot-starter-flyway` (Boot 4 no longer auto-configures Flyway from `flyway-core` alone; there is no Flyway Maven plugin).
 
 ### Configuration profiles
 
@@ -102,6 +103,7 @@ CronAdaptor ───────────→ InPort
 - **`application/domain/`** — Core domain: `MacroSeries`, `MacroPoint`, `AlignedBundle`, parliament models. Uses Java records for value objects.
 - **`application/services/`** — `ScrapeService` uses Strategy pattern with `ScrapeQueueKind` to route to the correct `ScrapeFlow`. Other services: `EnqueueService`, `TimeFilterService`, `AlignmentService`, `LabelGenerationService`.
 - **`configuration/`** — Spring `@Configuration` beans for CORS, Jackson, schedulers, scrape flows, JDBC.
+  - Jackson 3 (`tools.jackson`) is used throughout. `CorsConfiguration` has `@EnableWebMvc`, which disables Boot's MVC auto-config, so `JacksonConfiguration` registers its `JsonMapper` with MVC explicitly. It keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
 - **`jooq/generated/`** — Auto-generated JOOQ classes (do not edit manually).
 
 ### REST API Endpoints

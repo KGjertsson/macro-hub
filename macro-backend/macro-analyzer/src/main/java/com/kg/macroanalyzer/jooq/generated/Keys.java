@@ -4,7 +4,6 @@
 package com.kg.macroanalyzer.jooq.generated;
 
 
-import com.kg.macroanalyzer.jooq.generated.tables.Category;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthEur;
 import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_3MonthGb;
@@ -49,7 +48,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_10Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_2Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_5Year;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBonds_7Year;
-import com.kg.macroanalyzer.jooq.generated.tables.records.CategoryRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.SwedishMembersOfParliament;
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_3MonthDenmarkRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_3MonthEurRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.EuroMarket_3MonthGbRecord;
@@ -94,6 +93,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_2YearRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_5YearRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishGovernmentBonds_7YearRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.SwedishMembersOfParliamentRecord;
 
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
@@ -105,15 +105,13 @@ import org.jooq.impl.Internal;
  * A class modelling foreign key relationships and constraints of tables in
  * public.
  */
-@SuppressWarnings({ "all", "unchecked", "rawtypes" })
+@SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class Keys {
 
     // -------------------------------------------------------------------------
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final UniqueKey<CategoryRecord> CATEGORY_NAME_KEY = Internal.createUniqueKey(Category.CATEGORY, DSL.name("category_name_key"), new TableField[] { Category.CATEGORY.NAME }, true);
-    public static final UniqueKey<CategoryRecord> CATEGORY_PKEY = Internal.createUniqueKey(Category.CATEGORY, DSL.name("category_pkey"), new TableField[] { Category.CATEGORY.ID }, true);
     public static final UniqueKey<EuroMarket_3MonthDenmarkRecord> EURO_MARKET_3_MONTH_DENMARK_PKEY = Internal.createUniqueKey(EuroMarket_3MonthDenmark.EURO_MARKET_3_MONTH_DENMARK, DSL.name("euro_market_3_month_denmark_pkey"), new TableField[] { EuroMarket_3MonthDenmark.EURO_MARKET_3_MONTH_DENMARK.ID }, true);
     public static final UniqueKey<EuroMarket_3MonthEurRecord> EURO_MARKET_3_MONTH_EUR_PKEY = Internal.createUniqueKey(EuroMarket_3MonthEur.EURO_MARKET_3_MONTH_EUR, DSL.name("euro_market_3_month_eur_pkey"), new TableField[] { EuroMarket_3MonthEur.EURO_MARKET_3_MONTH_EUR.ID }, true);
     public static final UniqueKey<EuroMarket_3MonthGbRecord> EURO_MARKET_3_MONTH_GB_PKEY = Internal.createUniqueKey(EuroMarket_3MonthGb.EURO_MARKET_3_MONTH_GB, DSL.name("euro_market_3_month_gb_pkey"), new TableField[] { EuroMarket_3MonthGb.EURO_MARKET_3_MONTH_GB.ID }, true);
@@ -158,4 +156,5 @@ public class Keys {
     public static final UniqueKey<SwedishGovernmentBonds_2YearRecord> SWEDISH_GOVERNMENT_BONDS_2_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_2Year.SWEDISH_GOVERNMENT_BONDS_2_YEAR, DSL.name("swedish_government_bonds_2_month_pkey"), new TableField[] { SwedishGovernmentBonds_2Year.SWEDISH_GOVERNMENT_BONDS_2_YEAR.ID }, true);
     public static final UniqueKey<SwedishGovernmentBonds_5YearRecord> SWEDISH_GOVERNMENT_BONDS_5_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_5Year.SWEDISH_GOVERNMENT_BONDS_5_YEAR, DSL.name("swedish_government_bonds_5_month_pkey"), new TableField[] { SwedishGovernmentBonds_5Year.SWEDISH_GOVERNMENT_BONDS_5_YEAR.ID }, true);
     public static final UniqueKey<SwedishGovernmentBonds_7YearRecord> SWEDISH_GOVERNMENT_BONDS_7_MONTH_PKEY = Internal.createUniqueKey(SwedishGovernmentBonds_7Year.SWEDISH_GOVERNMENT_BONDS_7_YEAR, DSL.name("swedish_government_bonds_7_month_pkey"), new TableField[] { SwedishGovernmentBonds_7Year.SWEDISH_GOVERNMENT_BONDS_7_YEAR.ID }, true);
+    public static final UniqueKey<SwedishMembersOfParliamentRecord> SWEDISH_MEMBERS_OF_PARLIAMENT_PKEY = Internal.createUniqueKey(SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT, DSL.name("swedish_members_of_parliament_pkey"), new TableField[] { SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT.ID }, true);
 }
