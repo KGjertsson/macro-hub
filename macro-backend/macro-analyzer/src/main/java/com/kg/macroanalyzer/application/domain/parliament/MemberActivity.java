@@ -11,6 +11,7 @@ public record MemberActivity(
         int votesNo,
         int votesAbsent,
         int votesAbstain,
+        List<SessionVotes> votesBySession,
         int speechCount,
         int motionCount,
         List<ParliamentDocument> recentSpeeches,

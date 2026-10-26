@@ -161,6 +161,20 @@ public class SwedishMemberActivityRecord extends UpdatableRecordImpl<SwedishMemb
         return (LocalDateTime) get(9);
     }
 
+    /**
+     * Setter for <code>public.swedish_member_activity.votes_by_session</code>.
+     */
+    public void setVotesBySession(JSONB value) {
+        set(10, value);
+    }
+
+    /**
+     * Getter for <code>public.swedish_member_activity.votes_by_session</code>.
+     */
+    public JSONB getVotesBySession() {
+        return (JSONB) get(10);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -184,7 +198,7 @@ public class SwedishMemberActivityRecord extends UpdatableRecordImpl<SwedishMemb
     /**
      * Create a detached, initialised SwedishMemberActivityRecord
      */
-    public SwedishMemberActivityRecord(String intressentId, Integer votesYes, Integer votesNo, Integer votesAbsent, Integer votesAbstain, Integer speechCount, Integer motionCount, JSONB recentSpeeches, JSONB recentMotions, LocalDateTime updated) {
+    public SwedishMemberActivityRecord(String intressentId, Integer votesYes, Integer votesNo, Integer votesAbsent, Integer votesAbstain, Integer speechCount, Integer motionCount, JSONB recentSpeeches, JSONB recentMotions, LocalDateTime updated, JSONB votesBySession) {
         super(SwedishMemberActivity.SWEDISH_MEMBER_ACTIVITY);
 
         setIntressentId(intressentId);
@@ -197,6 +211,7 @@ public class SwedishMemberActivityRecord extends UpdatableRecordImpl<SwedishMemb
         setRecentSpeeches(recentSpeeches);
         setRecentMotions(recentMotions);
         setUpdated(updated);
+        setVotesBySession(votesBySession);
         resetTouchedOnNotNull();
     }
 }

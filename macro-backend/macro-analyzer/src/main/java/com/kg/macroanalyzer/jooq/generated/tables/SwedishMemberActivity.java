@@ -102,6 +102,11 @@ public class SwedishMemberActivity extends TableImpl<SwedishMemberActivityRecord
      */
     public final TableField<SwedishMemberActivityRecord, LocalDateTime> UPDATED = createField(DSL.name("updated"), SQLDataType.LOCALDATETIME(6).defaultValue(DSL.field(DSL.raw("now()"), SQLDataType.LOCALDATETIME)), this, "");
 
+    /**
+     * The column <code>public.swedish_member_activity.votes_by_session</code>.
+     */
+    public final TableField<SwedishMemberActivityRecord, JSONB> VOTES_BY_SESSION = createField(DSL.name("votes_by_session"), SQLDataType.JSONB.nullable(false).defaultValue(DSL.field(DSL.raw("'[]'::jsonb"), SQLDataType.JSONB)), this, "");
+
     private SwedishMemberActivity(Name alias, Table<SwedishMemberActivityRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

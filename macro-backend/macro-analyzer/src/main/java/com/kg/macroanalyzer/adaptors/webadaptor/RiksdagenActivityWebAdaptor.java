@@ -36,7 +36,7 @@ public class RiksdagenActivityWebAdaptor implements WebPort<MemberActivityReques
         final var iid = URLEncoder.encode(request.intressentId(), StandardCharsets.UTF_8);
 
         final var votes = fetchWithRetry(voteFlow,
-                "%s/voteringlista/?iid=%s&utformat=json&gruppering=namn&sz=10".formatted(base, iid));
+                "%s/voteringlista/?iid=%s&utformat=json&gruppering=rm&sz=500".formatted(base, iid));
         final var speeches = fetchWithRetry(speechFlow,
                 "%s/anforandelista/?iid=%s&utformat=json&sz=%d".formatted(base, iid, MAX_SPEECHES));
         final var motions = fetchWithRetry(motionFlow,
@@ -49,6 +49,7 @@ public class RiksdagenActivityWebAdaptor implements WebPort<MemberActivityReques
                 .votesNo(votes.no())
                 .votesAbsent(votes.absent())
                 .votesAbstain(votes.abstain())
+                .votesBySession(votes.bySession())
                 .speechCount(speeches.total())
                 .motionCount(motions.total())
                 .recentSpeeches(speeches.recent())

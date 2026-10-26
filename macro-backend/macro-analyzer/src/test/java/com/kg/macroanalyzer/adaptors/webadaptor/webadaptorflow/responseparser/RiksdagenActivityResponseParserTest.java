@@ -5,6 +5,7 @@ import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.R
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksdagenVoteResponseParser;
 import com.kg.macroanalyzer.application.domain.parliament.DocumentPage;
 import com.kg.macroanalyzer.application.domain.parliament.ParliamentDocument;
+import com.kg.macroanalyzer.application.domain.parliament.SessionVotes;
 import com.kg.macroanalyzer.application.domain.parliament.VoteTotals;
 import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import org.junit.jupiter.api.Test;
@@ -17,11 +18,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class RiksdagenActivityResponseParserTest {
 
     @Test
-    void shouldParseVoteTotals_whenMemberHasVoted() throws ScrapeException {
+    void shouldParseVotesPerSession_andSumThemIntoTotals() throws ScrapeException {
+        // given
+        final var response = """
+                {"voteringlista": {"@antal": "2", "votering": [
+                  {"rm": "2025/26", "Ja": "573", "Nej": "1", "Frånvarande": "223", "Avstår": ""},
+                  {"rm": "2024/25", "Ja": "525", "Nej": "2", "Frånvarande": "125", "Avstår": "3"}
+                ]}}
+                """;
+
+        // when
+        final var result = new RiksdagenVoteResponseParser().parse(response);
+
+        // then
+        assertEquals(new VoteTotals(1098, 3, 348, 3, List.of(
+                new SessionVotes("2024/25", 525, 2, 125, 3),
+                new SessionVotes("2025/26", 573, 1, 223, 0)
+        )), result);
+    }
+
+    @Test
+    void shouldParseSingleSession_whenVoteringIsAnObject() throws ScrapeException {
         // given
         final var response = """
                 {"voteringlista": {"@antal": "1", "votering": {
-                  "namn": "Sillén, Anna (M)", "Ja": "2171", "Nej": "11", "Frånvarande": "427", "Avstår": "1"
+                  "rm": "2026/27", "Ja": "", "Nej": "1", "Frånvarande": "", "Avstår": ""
                 }}}
                 """;
 
@@ -29,7 +50,7 @@ public class RiksdagenActivityResponseParserTest {
         final var result = new RiksdagenVoteResponseParser().parse(response);
 
         // then
-        assertEquals(new VoteTotals(2171, 11, 427, 1), result);
+        assertEquals(new VoteTotals(0, 1, 0, 0, List.of(new SessionVotes("2026/27", 0, 1, 0, 0))), result);
     }
 
     @Test

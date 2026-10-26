@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.application.services.parliament;
 
 import com.kg.macroanalyzer.application.domain.parliament.Election;
 import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
+import com.kg.macroanalyzer.application.domain.parliament.SessionVotes;
 import com.kg.macroanalyzer.application.domain.parliament.Party;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.parliament.MemberSummaryDto;
@@ -173,6 +174,7 @@ public class ParliamentServiceTest {
         )));
         when(databasePort.readMemberActivity()).thenReturn(List.of(MemberActivity.builder()
                 .intressentId("1").votesYes(90).votesNo(5).votesAbsent(5).speechCount(12).motionCount(3)
+                .votesBySession(List.of(new SessionVotes("2026/27", 90, 5, 5, 0)))
                 .recentSpeeches(List.of()).recentMotions(List.of())
                 .build()));
 
@@ -187,6 +189,7 @@ public class ParliamentServiceTest {
         assertTrue(result.assignments().getFirst().current());
         assertEquals(95.0, result.summary().attendancePct());
         assertEquals(12, result.speechCount());
+        assertEquals(List.of(new SessionVotes("2026/27", 90, 5, 5, 0)), result.votesBySession());
         assertEquals(1980, result.birthYear());
     }
 

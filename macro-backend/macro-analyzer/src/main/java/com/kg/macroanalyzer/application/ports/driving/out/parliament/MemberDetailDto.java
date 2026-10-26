@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.application.ports.driving.out.parliament;
 
 import com.kg.macroanalyzer.application.domain.parliament.ParliamentDocument;
+import com.kg.macroanalyzer.application.domain.parliament.SessionVotes;
 import lombok.Builder;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public record MemberDetailDto(
         List<AssignmentDto> assignments,
         List<BiographyEntryDto> biography,
         VotesDto votes,
+        List<SessionVotes> votesBySession,
         Integer speechCount,
         Integer motionCount,
         List<ParliamentDocument> recentSpeeches,

@@ -124,6 +124,7 @@ public class ParliamentService {
                         .toList())
                 .votes(activity.map(a -> new VotesDto(a.votesYes(), a.votesNo(), a.votesAbsent(), a.votesAbstain()))
                         .orElse(null))
+                .votesBySession(activity.map(MemberActivity::votesBySession).orElse(List.of()))
                 .speechCount(activity.map(MemberActivity::speechCount).orElse(null))
                 .motionCount(activity.map(MemberActivity::motionCount).orElse(null))
                 .recentSpeeches(activity.map(MemberActivity::recentSpeeches).orElse(List.of()))

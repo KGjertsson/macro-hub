@@ -3,9 +3,11 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { MemberAvatar } from '@/components/PoliticianCard';
 import { useElections, useMember, useParties } from '@/api/parliament';
-import { Assignment, ParliamentDocument } from '@/models/Parliament';
+import { Assignment, ParliamentDocument, voteOutcomes } from '@/models/Parliament';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import VotesOverTimeChart from '@/components/VotesOverTimeChart';
+import { textColorOn } from '@/lib/utils';
 import {
   ArrowLeft,
   BookOpen,
@@ -102,12 +104,10 @@ const PoliticianDetail = () => {
   const earlierAssignments = member.assignments.filter(a => !a.current);
   const votes = member.votes;
   const totalVotes = votes ? votes.yes + votes.no + votes.absent + votes.abstain : 0;
-  const voteSegments = votes ? [
-    { label: 'Ja', value: votes.yes, color: '#16a34a' },
-    { label: 'Nej', value: votes.no, color: '#dc2626' },
-    { label: 'Avstår', value: votes.abstain, color: '#ca8a04' },
-    { label: 'Frånvarande', value: votes.absent, color: '#9ca3af' },
-  ] : [];
+  const voteSegments = votes
+    ? voteOutcomes.map(o => ({ label: o.label, value: votes[o.key], color: o.color }))
+    : [];
+  const votesBySession = member.votesBySession ?? [];
 
   return (
     <div className='min-h-screen bg-background'>
@@ -139,7 +139,7 @@ const PoliticianDetail = () => {
                   <div className='flex flex-wrap items-center gap-3 mb-2'>
                     <h1 className='text-3xl md:text-4xl font-display font-bold'>{summary.name}</h1>
                     {summary.party && (
-                      <Badge className='text-sm px-3 py-1' style={{ backgroundColor: color, color: '#fff' }}>
+                      <Badge className='text-sm px-3 py-1' style={{ backgroundColor: color, color: textColorOn(color) }}>
                         {summary.party}
                       </Badge>
                     )}
@@ -206,6 +206,11 @@ const PoliticianDetail = () => {
                       </span>
                     ))}
                   </div>
+                  {votesBySession.length > 1 && (
+                    <div className='mt-6 pt-6 border-t border-border/50'>
+                      <VotesOverTimeChart sessions={votesBySession} />
+                    </div>
+                  )}
                 </>
               ) : (
                 <p className='text-sm text-muted-foreground'>Ingen voteringsstatistik tillgänglig.</p>

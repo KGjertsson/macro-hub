@@ -7,7 +7,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLocalElectionDetail, useLocalElections } from '@/api/localElections';
 import { LocalElectionDetail, LocalElectionKind, LocalElectionSummary, LocalPartyResult } from '@/models/LocalElection';
-import { cn } from '@/lib/utils';
+import { cn, textColorOn } from '@/lib/utils';
 
 export interface LocalElectionLabels {
   areaSingular: string;
@@ -157,7 +157,7 @@ const ResultPanel = ({ summary }: { summary: LocalElectionSummary }) => {
 };
 
 const PartyChip = ({ name, color }: { name: string; color: string }) => (
-  <span className="px-3 py-1.5 rounded-full text-sm font-medium text-white" style={{ backgroundColor: color }}>
+  <span className="px-3 py-1.5 rounded-full text-sm font-medium" style={{ backgroundColor: color, color: textColorOn(color) }}>
     {name}
   </span>
 );
