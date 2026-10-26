@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -48,15 +47,15 @@ public class ScrapeService {
         this.localElectionScrapeFlow = localElectionScrapeFlow;
     }
 
-    public Optional<List<ScrapeResult>> scrapeFromQueue(LocalDateTime timeStamp) {
+    public ScrapeRun scrapeFromQueue(LocalDateTime timeStamp) {
         if (!scrapeLock.tryLock()) {
             log.info("Scrape already in progress, skipping");
 
-            return Optional.empty();
+            return new ScrapeRun.AlreadyRunning();
         }
 
         try {
-            return Optional.of(fetchItemsToScrape(timeStamp)
+            return new ScrapeRun.Completed(fetchItemsToScrape(timeStamp)
                     .map(this::scrape)
                     .toList());
         } finally {

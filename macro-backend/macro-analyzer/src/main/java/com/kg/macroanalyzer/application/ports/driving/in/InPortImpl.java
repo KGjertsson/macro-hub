@@ -2,14 +2,12 @@ package com.kg.macroanalyzer.application.ports.driving.in;
 
 import com.kg.macroanalyzer.application.exceptions.EnqueueException;
 import com.kg.macroanalyzer.application.services.enqueue.EnqueueService;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
+import com.kg.macroanalyzer.application.services.scrape.ScrapeRun;
 import com.kg.macroanalyzer.application.services.scrape.ScrapeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class InPortImpl implements InPort {
@@ -34,7 +32,7 @@ public class InPortImpl implements InPort {
     }
 
     @Override
-    public Optional<List<ScrapeResult>> scrapeFromQueue(LocalDateTime timeStamp) {
+    public ScrapeRun scrapeFromQueue(LocalDateTime timeStamp) {
         return scrapeService.scrapeFromQueue(timeStamp);
     }
 

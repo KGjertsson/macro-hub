@@ -20,13 +20,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
@@ -73,7 +73,7 @@ public class ScrapeServiceTest {
         when(databasePort.getItemsToScrape(now)).thenReturn(items);
         when(macroPointScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
 
-        final var result = scrapeService.scrapeFromQueue(now).orElseThrow();
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertEquals(1, result.size());
@@ -90,7 +90,7 @@ public class ScrapeServiceTest {
         // when
         when(databasePort.getItemsToScrape(now)).thenReturn(emptyList());
 
-        final var result = scrapeService.scrapeFromQueue(now).orElseThrow();
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertTrue(result.isEmpty());
@@ -108,7 +108,7 @@ public class ScrapeServiceTest {
         when(databasePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
         when(memberScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
 
-        final var result = scrapeService.scrapeFromQueue(now).orElseThrow();
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertEquals(List.of(ScrapeResult.SUCCESS), result);
@@ -126,7 +126,7 @@ public class ScrapeServiceTest {
         when(databasePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
         when(memberActivityScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
 
-        final var result = scrapeService.scrapeFromQueue(now).orElseThrow();
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertEquals(List.of(ScrapeResult.SUCCESS), result);
@@ -146,7 +146,7 @@ public class ScrapeServiceTest {
         when(localElectionScrapeFlow.run(municipal)).thenReturn(ScrapeResult.SUCCESS);
         when(localElectionScrapeFlow.run(region)).thenReturn(ScrapeResult.EMPTY);
 
-        final var result = scrapeService.scrapeFromQueue(now).orElseThrow();
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertEquals(List.of(ScrapeResult.SUCCESS, ScrapeResult.EMPTY), result);
@@ -175,8 +175,8 @@ public class ScrapeServiceTest {
         releaseFirstScrape.countDown();
 
         // then
-        assertEquals(Optional.empty(), concurrentResult);
-        assertEquals(Optional.of(List.of(ScrapeResult.SUCCESS)), firstScrape.get(5, TimeUnit.SECONDS));
+        assertEquals(new ScrapeRun.AlreadyRunning(), concurrentResult);
+        assertEquals(new ScrapeRun.Completed(List.of(ScrapeResult.SUCCESS)), firstScrape.get(5, TimeUnit.SECONDS));
         verify(databasePort, times(1)).getItemsToScrape(now);
         verify(localElectionScrapeFlow, times(1)).run(scrapeQueueItem);
     }
@@ -193,7 +193,11 @@ public class ScrapeServiceTest {
 
         // then
         assertThrows(RuntimeException.class, () -> scrapeService.scrapeFromQueue(now));
-        assertEquals(Optional.of(emptyList()), scrapeService.scrapeFromQueue(now));
+        assertEquals(new ScrapeRun.Completed(emptyList()), scrapeService.scrapeFromQueue(now));
+    }
+
+    private static List<ScrapeResult> completedResults(ScrapeRun run) {
+        return assertInstanceOf(ScrapeRun.Completed.class, run).results();
     }
 
 }
