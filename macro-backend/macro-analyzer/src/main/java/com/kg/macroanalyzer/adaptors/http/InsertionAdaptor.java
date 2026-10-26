@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.adaptors.http;
 
 import com.kg.macroanalyzer.application.ports.driving.in.InPort;
 import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
+import com.kg.macroanalyzer.application.services.scrape.ScrapeRun;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,10 +62,17 @@ public class InsertionAdaptor {
 
         try {
             final var timeStamp = LocalDateTime.now(ZoneOffset.UTC);
-            final var scrapeResult = inPort.scrapeFromQueue(timeStamp);
-            logScrapeResult(scrapeResult);
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            return switch (inPort.scrapeFromQueue(timeStamp)) {
+                case ScrapeRun.Completed(var results) -> {
+                    logScrapeResult(results);
+                    yield new ResponseEntity<>(HttpStatus.OK);
+                }
+                case ScrapeRun.AlreadyRunning() -> {
+                    log.info("Scrape already in progress, rejecting request");
+                    yield new ResponseEntity<>(HttpStatus.CONFLICT);
+                }
+            };
         } catch (Throwable t) {
             log.error("Received unexpected error when attempting to scrape from queue", t);
 

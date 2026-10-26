@@ -20,9 +20,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -68,7 +73,7 @@ public class ScrapeServiceTest {
         when(databasePort.getItemsToScrape(now)).thenReturn(items);
         when(macroPointScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
 
-        final var result = scrapeService.scrapeFromQueue(now);
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertEquals(1, result.size());
@@ -85,7 +90,7 @@ public class ScrapeServiceTest {
         // when
         when(databasePort.getItemsToScrape(now)).thenReturn(emptyList());
 
-        final var result = scrapeService.scrapeFromQueue(now);
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertTrue(result.isEmpty());
@@ -103,7 +108,7 @@ public class ScrapeServiceTest {
         when(databasePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
         when(memberScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
 
-        final var result = scrapeService.scrapeFromQueue(now);
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertEquals(List.of(ScrapeResult.SUCCESS), result);
@@ -121,7 +126,7 @@ public class ScrapeServiceTest {
         when(databasePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
         when(memberActivityScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
 
-        final var result = scrapeService.scrapeFromQueue(now);
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertEquals(List.of(ScrapeResult.SUCCESS), result);
@@ -141,11 +146,58 @@ public class ScrapeServiceTest {
         when(localElectionScrapeFlow.run(municipal)).thenReturn(ScrapeResult.SUCCESS);
         when(localElectionScrapeFlow.run(region)).thenReturn(ScrapeResult.EMPTY);
 
-        final var result = scrapeService.scrapeFromQueue(now);
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
         assertEquals(List.of(ScrapeResult.SUCCESS, ScrapeResult.EMPTY), result);
         verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow);
+    }
+
+    @Test
+    void shouldSkipScrape_whenAnotherScrapeIsInProgress() throws Exception {
+        // given
+        final var now = LocalDateTime.now();
+        final var scrapeQueueItem = ScrapeQueueItem.of("MunicipalElections");
+        final var firstScrapeStarted = new CountDownLatch(1);
+        final var releaseFirstScrape = new CountDownLatch(1);
+
+        // when
+        when(databasePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
+        when(localElectionScrapeFlow.run(scrapeQueueItem)).thenAnswer(invocation -> {
+            firstScrapeStarted.countDown();
+            releaseFirstScrape.await(5, TimeUnit.SECONDS);
+            return ScrapeResult.SUCCESS;
+        });
+
+        final var firstScrape = CompletableFuture.supplyAsync(() -> scrapeService.scrapeFromQueue(now));
+        assertTrue(firstScrapeStarted.await(5, TimeUnit.SECONDS));
+        final var concurrentResult = scrapeService.scrapeFromQueue(now);
+        releaseFirstScrape.countDown();
+
+        // then
+        assertEquals(new ScrapeRun.AlreadyRunning(), concurrentResult);
+        assertEquals(new ScrapeRun.Completed(List.of(ScrapeResult.SUCCESS)), firstScrape.get(5, TimeUnit.SECONDS));
+        verify(databasePort, times(1)).getItemsToScrape(now);
+        verify(localElectionScrapeFlow, times(1)).run(scrapeQueueItem);
+    }
+
+    @Test
+    void shouldAllowNextScrape_whenPreviousScrapeFailed() {
+        // given
+        final var now = LocalDateTime.now();
+
+        // when
+        when(databasePort.getItemsToScrape(now))
+                .thenThrow(new RuntimeException("db down"))
+                .thenReturn(emptyList());
+
+        // then
+        assertThrows(RuntimeException.class, () -> scrapeService.scrapeFromQueue(now));
+        assertEquals(new ScrapeRun.Completed(emptyList()), scrapeService.scrapeFromQueue(now));
+    }
+
+    private static List<ScrapeResult> completedResults(ScrapeRun run) {
+        return assertInstanceOf(ScrapeRun.Completed.class, run).results();
     }
 
 }

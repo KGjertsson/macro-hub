@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.adaptors.cron;
 
 import com.kg.macroanalyzer.application.ports.driving.in.InPort;
+import com.kg.macroanalyzer.application.services.scrape.ScrapeRun;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,8 +28,10 @@ public class CronScrapeAdaptor {
         try {
             final var timeStamp = LocalDateTime.now(ZoneOffset.UTC);
 
-            inPort.scrapeFromQueue(timeStamp);
-            log.info("Scrape completed");
+            switch (inPort.scrapeFromQueue(timeStamp)) {
+                case ScrapeRun.Completed completed -> log.info("Scrape completed");
+                case ScrapeRun.AlreadyRunning() -> log.info("Cron: scrape already in progress, skipping this run");
+            }
         } catch (Throwable t) {
             log.error("Received unexpected error when attempting to scrape items from queue", t);
         }
