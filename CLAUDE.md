@@ -92,10 +92,13 @@ npm run preview    # serve the production build
 # Dependencies only (PostgreSQL on localhost:31274)
 docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up
 
-# Full stack (PostgreSQL + backend on :8080) — build the image first:
+# Full stack (PostgreSQL + backend on :8080 + frontend on :8081) — build the backend image first:
 #   (cd macro-backend/macro-analyzer && ./mvnw clean package && docker build -t macro-analyzer .)
-docker compose -f macro-backend/macro-infra/docker/docker-compose-all.yml up
+# The frontend image is built by compose (add --build after frontend changes)
+docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up
 ```
+
+- The frontend container (`macro-frontend/Dockerfile`) builds with Node 22 and serves `dist/` with nginx; `nginx.conf` falls back to `index.html` for `BrowserRouter` routes. It replaces the Vite dev server on 8081, so stop Vite first
 
 ## Architecture
 

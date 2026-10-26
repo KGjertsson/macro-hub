@@ -35,5 +35,14 @@ services:
     ports:
       - "8080:8080"
 
+  macro-frontend:
+    build: ../../../macro-frontend
+    image: macro-frontend:latest
+    container_name: macrohub-macro-frontend
+    depends_on:
+      - macro-analyzer
+    ports:
+      - "8081:80"
+
 volumes:
   pgdata:
