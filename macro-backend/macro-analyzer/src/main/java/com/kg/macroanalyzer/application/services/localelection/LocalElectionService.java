@@ -5,6 +5,7 @@ import com.kg.macroanalyzer.application.domain.localelection.Governance;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.localelection.LocalPartyResult;
+import com.kg.macroanalyzer.application.domain.parliament.Party;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,22 +33,28 @@ public class LocalElectionService {
 
     public List<LocalElectionSummaryDto> getResults(LocalElectionType type, Integer year) {
         return resolveYear(type, year)
-                .map(y -> databasePort.readLocalElectionResults(type, y).stream()
-                        .map(LocalElectionService::toSummary)
-                        .toList())
+                .map(y -> {
+                    final var colors = partyColors();
+                    return databasePort.readLocalElectionResults(type, y).stream()
+                            .map(result -> toSummary(result, colors))
+                            .toList();
+                })
                 .orElse(List.of());
     }
 
     public Optional<LocalElectionDetailDto> getResult(LocalElectionType type, Integer year, String areaCode) {
         return resolveYear(type, year)
                 .flatMap(y -> databasePort.readLocalElectionResult(type, y, areaCode)
-                        .map(result -> LocalElectionDetailDto.builder()
-                                .summary(toSummary(result))
-                                .elected(electedByParty(result))
-                                .governance(databasePort.readGovernance(type, y, areaCode)
-                                        .map(LocalElectionService::toGovernance)
-                                        .orElse(null))
-                                .build()));
+                        .map(result -> {
+                            final var colors = partyColors();
+                            return LocalElectionDetailDto.builder()
+                                    .summary(toSummary(result, colors))
+                                    .elected(electedByParty(result, colors))
+                                    .governance(databasePort.readGovernance(type, y, areaCode)
+                                            .map(LocalElectionService::toGovernance)
+                                            .orElse(null))
+                                    .build();
+                        }));
     }
 
     private Optional<Integer> resolveYear(LocalElectionType type, Integer year) {
@@ -55,7 +63,14 @@ public class LocalElectionService {
                 : databasePort.readLatestLocalElectionYear(type);
     }
 
-    private static LocalElectionSummaryDto toSummary(LocalElectionResult result) {
+    // Riksdag parties use the app's own palette so a party has the same colour on every page;
+    // Valmyndigheten's own colours (e.g. blue for SD) are only kept for local parties
+    private Map<String, String> partyColors() {
+        return databasePort.readParties().stream()
+                .collect(Collectors.toMap(Party::code, Party::color, (a, b) -> a));
+    }
+
+    private static LocalElectionSummaryDto toSummary(LocalElectionResult result, Map<String, String> colors) {
         final var parties = result.parties().stream()
                 .sorted(Comparator.comparingInt(LocalPartyResult::votes).reversed())
                 .toList();
@@ -69,13 +84,13 @@ public class LocalElectionService {
                 .totalSeats(result.totalSeats())
                 .turnout(result.turnout())
                 .largestParty(largest.map(LocalPartyResult::abbreviation).orElse(null))
-                .largestPartyColor(largest.map(LocalElectionService::colorOf).orElse(UNKNOWN_PARTY_COLOR))
+                .largestPartyColor(largest.map(p -> colorOf(p, colors)).orElse(UNKNOWN_PARTY_COLOR))
                 .parties(parties.stream()
                         .map(p -> LocalPartyResultDto.builder()
                                 .code(p.code())
                                 .abbreviation(p.abbreviation())
                                 .name(p.name())
-                                .color(colorOf(p))
+                                .color(colorOf(p, colors))
                                 .votes(p.votes())
                                 .voteShare(p.voteShare())
                                 .seats(p.seats())
@@ -85,7 +100,7 @@ public class LocalElectionService {
     }
 
     // Parties are ordered by seats so the largest groups come first
-    private static List<ElectedPartyDto> electedByParty(LocalElectionResult result) {
+    private static List<ElectedPartyDto> electedByParty(LocalElectionResult result, Map<String, String> colors) {
         final var partiesByCode = result.parties().stream()
                 .collect(Collectors.toMap(LocalPartyResult::code, Function.identity(), (a, b) -> a));
         final var membersByParty = result.elected().stream()
@@ -101,7 +116,7 @@ public class LocalElectionService {
                             .partyCode(e.getKey())
                             .abbreviation(first.partyAbbreviation())
                             .name(party.map(LocalPartyResult::name).orElse(first.partyAbbreviation()))
-                            .color(party.map(LocalElectionService::colorOf).orElse(UNKNOWN_PARTY_COLOR))
+                            .color(party.map(p -> colorOf(p, colors)).orElse(UNKNOWN_PARTY_COLOR))
                             .members(e.getValue().stream()
                                     .map(m -> ElectedMemberDto.builder()
                                             .name(m.name())
@@ -124,7 +139,11 @@ public class LocalElectionService {
                 .build();
     }
 
-    private static String colorOf(LocalPartyResult party) {
+    private static String colorOf(LocalPartyResult party, Map<String, String> colors) {
+        final var riksdagColor = colors.get(party.abbreviation());
+        if (riksdagColor != null) {
+            return riksdagColor;
+        }
         return party.color() == null || party.color().isBlank() ? UNKNOWN_PARTY_COLOR : party.color();
     }
 

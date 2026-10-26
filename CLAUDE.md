@@ -154,7 +154,7 @@ CronAdaptor ───────────→ InPort
 
 ### Database
 
-PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V23). JOOQ generates type-safe table access. Key tables: `series_config`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`.
+PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V24). JOOQ generates type-safe table access. Key tables: `series_config`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`.
 
 ## Testing
 

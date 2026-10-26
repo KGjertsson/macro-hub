@@ -5,6 +5,7 @@ import com.kg.macroanalyzer.application.domain.localelection.Governance;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.localelection.LocalPartyResult;
+import com.kg.macroanalyzer.application.domain.parliament.Party;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.ElectedMemberDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.GovernanceDto;
@@ -52,6 +53,20 @@ public class LocalElectionServiceTest {
         assertEquals("#E8112D", summary.largestPartyColor());
         assertEquals(List.of("S", "M", "LL"), summary.parties().stream().map(p -> p.abbreviation()).toList());
         assertEquals("#9CA3AF", summary.parties().get(2).color());
+    }
+
+    @Test
+    void shouldUseRiksdagPartyColour_overValmyndighetensColour() {
+        // when
+        when(databasePort.readParties()).thenReturn(List.of(
+                new Party("M", "Moderaterna", "#52BDEC", "Liberal Conservatism", true)
+        ));
+        when(databasePort.readLocalElectionResults(LocalElectionType.KF, 2026)).thenReturn(List.of(lund()));
+        final var summary = service.getResults(LocalElectionType.KF, 2026).getFirst();
+
+        // then
+        assertEquals("#52BDEC", summary.parties().get(1).color());
+        assertEquals("#E8112D", summary.parties().get(0).color());
     }
 
     @Test
