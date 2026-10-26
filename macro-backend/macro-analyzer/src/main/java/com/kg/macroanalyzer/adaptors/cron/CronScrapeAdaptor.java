@@ -27,8 +27,11 @@ public class CronScrapeAdaptor {
         try {
             final var timeStamp = LocalDateTime.now(ZoneOffset.UTC);
 
-            inPort.scrapeFromQueue(timeStamp);
-            log.info("Scrape completed");
+            inPort.scrapeFromQueue(timeStamp)
+                    .ifPresentOrElse(
+                            results -> log.info("Scrape completed"),
+                            () -> log.info("Cron: scrape already in progress, skipping this run")
+                    );
         } catch (Throwable t) {
             log.error("Received unexpected error when attempting to scrape items from queue", t);
         }

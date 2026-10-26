@@ -62,7 +62,12 @@ public class InsertionAdaptor {
         try {
             final var timeStamp = LocalDateTime.now(ZoneOffset.UTC);
             final var scrapeResult = inPort.scrapeFromQueue(timeStamp);
-            logScrapeResult(scrapeResult);
+            if (scrapeResult.isEmpty()) {
+                log.info("Scrape already in progress, rejecting request");
+
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            logScrapeResult(scrapeResult.get());
 
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Throwable t) {

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InPortImpl implements InPort {
@@ -33,7 +34,7 @@ public class InPortImpl implements InPort {
     }
 
     @Override
-    public List<ScrapeResult> scrapeFromQueue(LocalDateTime timeStamp) {
+    public Optional<List<ScrapeResult>> scrapeFromQueue(LocalDateTime timeStamp) {
         return scrapeService.scrapeFromQueue(timeStamp);
     }
 

@@ -5,6 +5,7 @@ import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface InPort {
 
@@ -12,6 +13,6 @@ public interface InPort {
 
     void enqueueAll();
 
-    List<ScrapeResult> scrapeFromQueue(LocalDateTime timeStamp);
+    Optional<List<ScrapeResult>> scrapeFromQueue(LocalDateTime timeStamp);
 
 }

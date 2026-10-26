@@ -16,11 +16,16 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
 @Slf4j
 @Service
 public class ScrapeService {
+
+    // Serialises the cron job and manual scrapes; a second caller would re-scrape items still pending in the queue
+    private final ReentrantLock scrapeLock = new ReentrantLock();
 
     private final DatabasePort databasePort;
     private final ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMacroPoints> macroPointScrapeFlow;
@@ -43,10 +48,20 @@ public class ScrapeService {
         this.localElectionScrapeFlow = localElectionScrapeFlow;
     }
 
-    public List<ScrapeResult> scrapeFromQueue(LocalDateTime timeStamp) {
-        return fetchItemsToScrape(timeStamp)
-                .map(this::scrape)
-                .toList();
+    public Optional<List<ScrapeResult>> scrapeFromQueue(LocalDateTime timeStamp) {
+        if (!scrapeLock.tryLock()) {
+            log.info("Scrape already in progress, skipping");
+
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(fetchItemsToScrape(timeStamp)
+                    .map(this::scrape)
+                    .toList());
+        } finally {
+            scrapeLock.unlock();
+        }
     }
 
     private Stream<ScrapeQueueItem> fetchItemsToScrape(LocalDateTime timeStamp) {

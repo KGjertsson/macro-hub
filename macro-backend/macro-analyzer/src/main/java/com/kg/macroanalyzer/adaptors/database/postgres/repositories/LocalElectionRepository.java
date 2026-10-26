@@ -62,8 +62,19 @@ public class LocalElectionRepository {
             tx.deleteFrom(LOCAL_ELECTION_PARTY_RESULT)
                     .where(areaCondition(result.year(), result.type(), result.areaCode()))
                     .execute();
-            tx.batchInsert(result.parties().stream()
+            // Upsert so a concurrent write of the same area cannot fail on the primary key
+            tx.batch(result.parties().stream()
                             .map(p -> partyRecord(result, p))
+                            .map(record -> tx.insertInto(LOCAL_ELECTION_PARTY_RESULT)
+                                    .set(record)
+                                    .onConflict(
+                                            LOCAL_ELECTION_PARTY_RESULT.ELECTION_YEAR,
+                                            LOCAL_ELECTION_PARTY_RESULT.ELECTION_TYPE,
+                                            LOCAL_ELECTION_PARTY_RESULT.AREA_CODE,
+                                            LOCAL_ELECTION_PARTY_RESULT.PARTY_CODE
+                                    )
+                                    .doUpdate()
+                                    .set(record))
                             .toList())
                     .execute();
         }));
