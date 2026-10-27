@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Ship a change the user has already agreed on. An implementer sub-agent builds it and opens a PR, an independent reviewer sub-agent reviews it, and the PR is admin-merged. Do not use while the change is still being discussed or designed.
+description: Ship a change the user has already agreed on. An implementer sub-agent builds it and opens a PR, an independent reviewer sub-agent reviews it, and the PR is merged once CI passes. Do not use while the change is still being discussed or designed.
 ---
 
 # Ship an agreed change
