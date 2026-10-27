@@ -28,3 +28,14 @@ $MAPSHAPER "$WORK_DIR"/lan/*.shp \
   -simplify 60% keep-shapes \
   -rename-layers lan \
   -o "$OUT_DIR/lan.topo.json" format=topojson quantization=1e5
+
+# Riksdag valkretsar are whole kommuner (scripts/valkretsar.csv), so they are dissolved from the kommun layer
+$MAPSHAPER "$WORK_DIR"/kommun/*.shp \
+  -rename-fields code=KnKod,name=KnNamn \
+  -join scripts/valkretsar.csv keys=code,kommunkod string-fields=kommunkod,valkretskod \
+  -dissolve valkretskod copy-fields=valkretsnamn \
+  -rename-fields code=valkretskod,name=valkretsnamn \
+  -proj wgs84 \
+  -simplify 60% keep-shapes \
+  -rename-layers valkretsar \
+  -o "$OUT_DIR/valkretsar.topo.json" format=topojson quantization=1e5
