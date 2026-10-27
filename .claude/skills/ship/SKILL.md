@@ -54,3 +54,4 @@ From the repo root of the main clone:
    - Frontend: `docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build --no-deps macro-frontend`
    - Backend: from `macro-backend/macro-analyzer/`, run `sh ./mvnw clean package && docker build -t macro-analyzer .`. Then, from the repo root, run the same compose command with `up -d --no-deps macro-analyzer`.
 3. Check with curl that each restarted service responds: `http://localhost:8081` for the frontend, `http://localhost:8080/macro-analyzer/series-config` for the backend.
+4. Once the change is in `main`, stop the implementer and reviewer sub-agents with TaskStop so none linger. Spawn fresh ones for the next change.
