@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
@@ -54,6 +56,24 @@ public class LocalElectionRepositoryTest {
         assertEquals(List.of("S", "M"), stockholm.parties().stream().map(p -> p.abbreviation()).toList());
         assertEquals(2, stockholm.elected().size());
         assertTrue(repository.readGovernance(LocalElectionType.RD, 2026, "01").isEmpty());
+    }
+
+    @Test
+    void shouldWriteNoArea_whenOneAreaOfTheFileFails() throws ScrapeException {
+        // given
+        final var response = new TestJsonReader().readResource("json/valmyndigheten/mandatfordelning_00_RD_sample.json");
+        final var parsed = new ValmyndighetenResultResponseParser().parse(response).stream()
+                .map(r -> r.toBuilder().year(2030).sourceMd5("partialpartialpartialpartial0000").build())
+                .toList();
+        // area_name is NOT NULL, so the second valkrets fails after the first has been written
+        final var results = List.of(parsed.getFirst(), parsed.get(1).toBuilder().areaName(null).build());
+
+        // when
+        assertThrows(RuntimeException.class, () -> repository.writeResults(results));
+
+        // then
+        assertEquals(List.of(), repository.readResults(LocalElectionType.RD, 2030));
+        assertFalse(repository.readSourceMd5s(LocalElectionType.RD).contains("partialpartialpartialpartial0000"));
     }
 
     @Test
