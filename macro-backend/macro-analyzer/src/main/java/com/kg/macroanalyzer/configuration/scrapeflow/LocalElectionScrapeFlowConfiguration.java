@@ -34,7 +34,7 @@ public class LocalElectionScrapeFlowConfiguration {
     @Bean("localElectionScraper")
     public Scraper<ConfigWithLocalElections> scraper(
             WebPort<LocalElectionIndexRequest, List<LocalElectionFile>> localElectionIndexWebPort,
-            WebPort<LocalElectionFile, LocalElectionResult> localElectionWebPort,
+            WebPort<LocalElectionFile, List<LocalElectionResult>> localElectionWebPort,
             @Value("${valmyndigheten.delay-ms:200}") long delayMs
     ) {
         return new LocalElectionScraper(localElectionIndexWebPort, localElectionWebPort, delayMs);

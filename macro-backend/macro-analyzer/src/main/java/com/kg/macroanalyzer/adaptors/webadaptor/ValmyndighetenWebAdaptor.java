@@ -9,20 +9,24 @@ import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.LocalElectionFile;
 import com.kg.macroanalyzer.application.ports.driven.WebPort;
 
-// Each zip also holds a much larger per-district vote file, which is skipped
-public class ValmyndighetenWebAdaptor implements WebPort<LocalElectionFile, LocalElectionResult> {
+import java.util.List;
 
-    private final WebAdaptorFlow<String, LocalElectionResult> flow = new WebAdaptorFlow<>(
+// Each zip also holds a much larger per-district vote file, which is skipped
+public class ValmyndighetenWebAdaptor implements WebPort<LocalElectionFile, List<LocalElectionResult>> {
+
+    private final WebAdaptorFlow<String, List<LocalElectionResult>> flow = new WebAdaptorFlow<>(
             new ValmyndighetenConnectionBuilder(),
             new ZipEntryGetter("mandatfordelning"),
             new ValmyndighetenResultResponseParser()
     );
 
     @Override
-    public LocalElectionResult fetch(LocalElectionFile file) throws ScrapeException {
-        return ValmyndighetenRetry.fetch(flow, file.url()).toBuilder()
-                .sourceMd5(file.md5())
-                .build();
+    public List<LocalElectionResult> fetch(LocalElectionFile file) throws ScrapeException {
+        return ValmyndighetenRetry.fetch(flow, file.url()).stream()
+                .map(result -> result.toBuilder()
+                        .sourceMd5(file.md5())
+                        .build())
+                .toList();
     }
 
 }

@@ -34,7 +34,7 @@ public class LocalElectionScraperTest {
     @Mock
     WebPort<LocalElectionIndexRequest, List<LocalElectionFile>> indexWebPort;
     @Mock
-    WebPort<LocalElectionFile, LocalElectionResult> resultWebPort;
+    WebPort<LocalElectionFile, List<LocalElectionResult>> resultWebPort;
 
     @BeforeEach
     void setUp() {
@@ -53,7 +53,7 @@ public class LocalElectionScraperTest {
         // when
         when(indexWebPort.fetch(new LocalElectionIndexRequest(BASE_URL, LocalElectionType.KF)))
                 .thenReturn(List.of(unchanged, changed, broken));
-        when(resultWebPort.fetch(changed)).thenReturn(lund);
+        when(resultWebPort.fetch(changed)).thenReturn(List.of(lund));
         when(resultWebPort.fetch(broken)).thenThrow(new ScrapeException("429"));
         final var result = scraper.scrape(input);
 
@@ -61,6 +61,23 @@ public class LocalElectionScraperTest {
         assertTrue(result.isPresent());
         assertEquals(List.of(lund), result.get().results());
         verify(resultWebPort, never()).fetch(unchanged);
+    }
+
+    @Test
+    void shouldKeepEveryArea_whenOneFileHoldsSeveral() throws ScrapeException {
+        // given
+        final var file = new LocalElectionFile("00", BASE_URL + "/rd.zip", "md5-rd");
+        final var stockholm = LocalElectionResult.builder().areaCode("01").build();
+        final var gotland = LocalElectionResult.builder().areaCode("09").build();
+
+        // when
+        when(indexWebPort.fetch(any())).thenReturn(List.of(file));
+        when(resultWebPort.fetch(file)).thenReturn(List.of(stockholm, gotland));
+        final var result = scraper.scrape(input(Set.of()));
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(List.of(stockholm, gotland), result.get().results());
     }
 
     @Test

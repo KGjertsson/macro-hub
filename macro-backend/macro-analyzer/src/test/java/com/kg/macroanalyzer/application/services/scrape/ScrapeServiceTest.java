@@ -140,16 +140,18 @@ public class ScrapeServiceTest {
         final var now = LocalDateTime.now();
         final var municipal = ScrapeQueueItem.of("MunicipalElections");
         final var region = ScrapeQueueItem.of("RegionElections");
+        final var parliament = ScrapeQueueItem.of("ParliamentElections");
 
         // when
-        when(databasePort.getItemsToScrape(now)).thenReturn(List.of(municipal, region));
+        when(databasePort.getItemsToScrape(now)).thenReturn(List.of(municipal, region, parliament));
         when(localElectionScrapeFlow.run(municipal)).thenReturn(ScrapeResult.SUCCESS);
         when(localElectionScrapeFlow.run(region)).thenReturn(ScrapeResult.EMPTY);
+        when(localElectionScrapeFlow.run(parliament)).thenReturn(ScrapeResult.SUCCESS);
 
         final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
-        assertEquals(List.of(ScrapeResult.SUCCESS, ScrapeResult.EMPTY), result);
+        assertEquals(List.of(ScrapeResult.SUCCESS, ScrapeResult.EMPTY, ScrapeResult.SUCCESS), result);
         verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow);
     }
 

@@ -141,6 +141,25 @@ public class ExtractionAdaptor {
         return detailResponse(outPort.getLocalElectionResult(LocalElectionType.RF, year, code));
     }
 
+    @GetMapping("/constituencies/elections")
+    public ResponseEntity<List<LocalElectionSummaryDto>> getConstituencyElections(
+            @RequestParam(name = "year", required = false) Integer year
+    ) {
+        log.info("Received GET macro-analyzer/constituencies/elections?year=%s".formatted(year));
+
+        return listResponse(outPort.getLocalElectionResults(LocalElectionType.RD, year));
+    }
+
+    @GetMapping("/constituencies/{code}")
+    public ResponseEntity<LocalElectionDetailDto> getConstituency(
+            @PathVariable("code") String code,
+            @RequestParam(name = "year", required = false) Integer year
+    ) {
+        log.info("Received GET macro-analyzer/constituencies/%s?year=%s".formatted(code, year));
+
+        return detailResponse(outPort.getLocalElectionResult(LocalElectionType.RD, year, code));
+    }
+
     private static <T> ResponseEntity<T> detailResponse(Optional<T> detail) {
         return detail
                 .map(ResponseEntity::ok)

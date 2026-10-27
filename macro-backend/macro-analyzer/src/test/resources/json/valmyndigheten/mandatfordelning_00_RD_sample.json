@@ -1,0 +1,201 @@
+{
+  "valtillfalle": "Val_2026",
+  "valklass": "ordinarie val",
+  "rakningstillfalle": "slutlig",
+  "valtyp": "RD",
+  "valdatum": "2026-09-13",
+  "valomrade": {
+    "namn": "Riket",
+    "kod": "00",
+    "totaltAntalMandat": 349,
+    "totaltAntalFastaMandat": 310,
+    "totaltAntalUtjamningsMandat": 39,
+    "totaltAntalRoster": 6834413,
+    "antalRostberattigade": 8051355,
+    "valdeltagande": 84.89,
+    "valkretsLista": [
+      {
+        "namnValkrets": "Stockholms kommun",
+        "kod": "01",
+        "totaltAntalFastaMandat": 29,
+        "antalRostberattigade": 765741,
+        "totaltAntalRoster": 657346,
+        "valdeltagande": 85.84,
+        "rostfordelning": {
+          "rosterPaverkaMandat": {
+            "antalRoster": 652543,
+            "partiRoster": [
+              {
+                "partibeteckning": "Moderaterna",
+                "partiforkortning": "M",
+                "partikod": "0001",
+                "fargkod": "#66BEE6",
+                "antalRoster": 124639,
+                "andelRoster": 19.1
+              },
+              {
+                "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+                "partiforkortning": "S",
+                "partikod": "0002",
+                "fargkod": "#FF0000",
+                "antalRoster": 171898,
+                "andelRoster": 26.34
+              }
+            ]
+          }
+        },
+        "mandatfordelning": {
+          "partiLista": [
+            {
+              "partibeteckning": "Moderaterna",
+              "partikod": "0001",
+              "partiforkortning": "M",
+              "antalMandat": 6,
+              "antalFastaMandat": 6,
+              "antalUtjamningsmandat": 0,
+              "antalMandatForegaendeVal": 6,
+              "antalFastaMandatForegaendeVal": 6,
+              "antalUtjamningsMandatForegaendeVal": 0,
+              "forandringAntalMandat": 0
+            },
+            {
+              "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+              "partikod": "0002",
+              "partiforkortning": "S",
+              "antalMandat": 9,
+              "antalFastaMandat": 8,
+              "antalUtjamningsmandat": 1,
+              "antalMandatForegaendeVal": 9,
+              "antalFastaMandatForegaendeVal": 8,
+              "antalUtjamningsMandatForegaendeVal": 1,
+              "forandringAntalMandat": 0
+            }
+          ]
+        },
+        "valda": {
+          "partiLedamoterLista": [
+            {
+              "partibeteckning": "Moderaterna",
+              "partikod": "0001",
+              "partiforkortning": "M",
+              "partifarg": "#66BEE6",
+              "ledamoter": [
+                {
+                  "invalsordning": 1,
+                  "kandidatnummer": 4249,
+                  "namn": "Carl Nordblom",
+                  "valgrundText": "Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"
+                }
+              ]
+            },
+            {
+              "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+              "partikod": "0002",
+              "partiforkortning": "S",
+              "partifarg": "#FF0000",
+              "ledamoter": [
+                {
+                  "invalsordning": 1,
+                  "kandidatnummer": 3791,
+                  "namn": "Anders Ygeman",
+                  "valgrundText": "Ledamoten är vald på personröster"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "namnValkrets": "Gotlands län",
+        "kod": "09",
+        "totaltAntalFastaMandat": 2,
+        "antalRostberattigade": 48457,
+        "totaltAntalRoster": 42094,
+        "valdeltagande": 86.87,
+        "rostfordelning": {
+          "rosterPaverkaMandat": {
+            "antalRoster": 41526,
+            "partiRoster": [
+              {
+                "partibeteckning": "Moderaterna",
+                "partiforkortning": "M",
+                "partikod": "0001",
+                "fargkod": "#66BEE6",
+                "antalRoster": 7599,
+                "andelRoster": 18.3
+              },
+              {
+                "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+                "partiforkortning": "S",
+                "partikod": "0002",
+                "fargkod": "#FF0000",
+                "antalRoster": 12920,
+                "andelRoster": 31.11
+              }
+            ]
+          }
+        },
+        "mandatfordelning": {
+          "partiLista": [
+            {
+              "partibeteckning": "Moderaterna",
+              "partikod": "0001",
+              "partiforkortning": "M",
+              "antalMandat": 1,
+              "antalFastaMandat": 1,
+              "antalUtjamningsmandat": 0,
+              "antalMandatForegaendeVal": 1,
+              "antalFastaMandatForegaendeVal": 1,
+              "antalUtjamningsMandatForegaendeVal": 0,
+              "forandringAntalMandat": 0
+            },
+            {
+              "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+              "partikod": "0002",
+              "partiforkortning": "S",
+              "antalMandat": 1,
+              "antalFastaMandat": 1,
+              "antalUtjamningsmandat": 0,
+              "antalMandatForegaendeVal": 1,
+              "antalFastaMandatForegaendeVal": 1,
+              "antalUtjamningsMandatForegaendeVal": 0,
+              "forandringAntalMandat": 0
+            }
+          ]
+        },
+        "valda": {
+          "partiLedamoterLista": [
+            {
+              "partibeteckning": "Moderaterna",
+              "partikod": "0001",
+              "partiforkortning": "M",
+              "partifarg": "#66BEE6",
+              "ledamoter": [
+                {
+                  "invalsordning": 1,
+                  "kandidatnummer": 34458,
+                  "namn": "Jesper Skalberg Karlsson",
+                  "valgrundText": "Ledamoten är vald på personröster"
+                }
+              ]
+            },
+            {
+              "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+              "partikod": "0002",
+              "partiforkortning": "S",
+              "partifarg": "#FF0000",
+              "ledamoter": [
+                {
+                  "invalsordning": 1,
+                  "kandidatnummer": 44199,
+                  "namn": "Meit Fohlin",
+                  "valgrundText": "Ledamoten är vald på personröster"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

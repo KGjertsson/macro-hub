@@ -21,6 +21,7 @@ public class ValmyndighetenIndexResponseParserTest {
             c47e5b211e79c7c4544ea3742248a5b1  ./s/kf/Val_2026_slutlig_1281_KF.zip
             9ff3844df68b368a1c7afbb1e484f5c3  ./s/rf/Val_2026_slutlig_12_RF.zip
             8162d2cd73ecd0a24ef21632f272dfb2  ./s/rd/Val_2026_slutlig_00_RD.zip
+            0d6f1e2b3c4a59687a8b9c0d1e2f3a4b  ./p/rd/Val_2026_preliminar_00_RD.zip
             """;
 
     @Test
@@ -43,6 +44,17 @@ public class ValmyndighetenIndexResponseParserTest {
         // then
         assertEquals(List.of(
                 new LocalElectionFile("12", BASE_URL + "/s/rf/Val_2026_slutlig_12_RF.zip", "9ff3844df68b368a1c7afbb1e484f5c3")
+        ), files);
+    }
+
+    @Test
+    void shouldKeepFinalRiksdagFile_only() throws ScrapeException {
+        // when
+        final var files = new ValmyndighetenIndexResponseParser(BASE_URL, LocalElectionType.RD).parse(INDEX);
+
+        // then
+        assertEquals(List.of(
+                new LocalElectionFile("00", BASE_URL + "/s/rd/Val_2026_slutlig_00_RD.zip", "8162d2cd73ecd0a24ef21632f272dfb2")
         ), files);
     }
 
