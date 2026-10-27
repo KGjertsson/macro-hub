@@ -1,4 +1,4 @@
-export type LocalElectionKind = 'municipalities' | 'regions';
+export type LocalElectionKind = 'municipalities' | 'regions' | 'constituencies';
 
 export interface LocalPartyResult {
   code: string;

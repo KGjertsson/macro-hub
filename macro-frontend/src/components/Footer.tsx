@@ -24,6 +24,7 @@ const Footer = () => {
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link to="/macroindicator" className="hover:text-foreground transition-colors">Makroindikatorer</Link></li>
                             <li><Link to="/parliament" className="hover:text-foreground transition-colors">Riksdagen</Link></li>
+                            <li><Link to="/constituencies" className="hover:text-foreground transition-colors">Valkretsar</Link></li>
                             <li><Link to="/regions" className="hover:text-foreground transition-colors">Regioner</Link></li>
                             <li><Link to="/municipalities" className="hover:text-foreground transition-colors">Kommuner</Link></li>
                         </ul>
