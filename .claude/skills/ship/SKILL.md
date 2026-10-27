@@ -42,7 +42,7 @@ If blocking findings remain after 3 fix rounds, stop and bring the disagreement 
 
 ## 6. Merge
 
-On LGTM, merge without asking: `gh pr merge <n> --admin --squash --delete-branch --match-head-commit <sha>`. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
+On LGTM, first remove the sub-agents' worktrees (`git worktree remove <dir>`), or `--delete-branch` fails on the branch still checked out there. Then merge without asking: `gh pr merge <n> --admin --squash --delete-branch --match-head-commit <sha>`. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
 
 ## 7. After merge
 
@@ -50,6 +50,7 @@ From the repo root of the main clone:
 
 1. Run `git pull` on `main`.
 2. Rebuild and restart only the containers the change affects, and only if step 1 found them running. Never start containers that weren't running.
+   - If the backend or frontend runs outside Docker (`spring-boot:run` or Vite; check `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081)'`), don't restart it. Tell the user it keeps serving the old code until they restart it.
    - Frontend: `docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build --no-deps macro-frontend`
    - Backend: from `macro-backend/macro-analyzer/`, run `sh ./mvnw clean package && docker build -t macro-analyzer .`. Then, from the repo root, run the same compose command with `up -d --no-deps macro-analyzer`.
 3. Check with curl that each restarted service responds: `http://localhost:8081` for the frontend, `http://localhost:8080/macro-analyzer/series-config` for the backend.

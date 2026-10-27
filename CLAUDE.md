@@ -165,7 +165,7 @@ PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1â€
 
 ## Workflow
 
-Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent reviews it, then it is merged. `main` is protected: changes need a PR, and the owner merges with `gh pr merge --admin`.
+Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent reviews it, then it is merged with `gh pr merge --admin` once the reviewer says LGTM. `main` is protected: every change needs a PR.
 
 ## Commit Convention
 
