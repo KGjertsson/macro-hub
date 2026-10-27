@@ -30,9 +30,11 @@ public class ValmyndighetenResultResponseParserTest {
         final var response = new TestJsonReader().readResource("json/valmyndigheten/mandatfordelning_1281_KF_sample.json");
 
         // when
-        final var result = parser.parse(response);
+        final var results = parser.parse(response);
 
         // then
+        assertEquals(1, results.size());
+        final var result = results.getFirst();
         assertEquals(2026, result.year());
         assertEquals(LocalElectionType.KF, result.type());
         assertEquals("1281", result.areaCode());
@@ -77,7 +79,7 @@ public class ValmyndighetenResultResponseParserTest {
                 """;
 
         // when
-        final var result = parser.parse(response);
+        final var result = parser.parse(response).getFirst();
 
         // then
         assertEquals("12", result.lanCode());
@@ -85,6 +87,43 @@ public class ValmyndighetenResultResponseParserTest {
         assertEquals(149, result.parties().getFirst().seats());
         assertEquals(List.of(), result.elected());
         assertEquals(null, result.turnout());
+    }
+
+    @Test
+    void shouldParseEveryValkrets_whenRiksdagFile() throws ScrapeException {
+        // given
+        final var response = new TestJsonReader().readResource("json/valmyndigheten/mandatfordelning_00_RD_sample.json");
+
+        // when
+        final var results = parser.parse(response);
+
+        // then
+        assertEquals(2, results.size());
+        final var stockholm = results.getFirst();
+        assertEquals(2026, stockholm.year());
+        assertEquals(LocalElectionType.RD, stockholm.type());
+        assertEquals("01", stockholm.areaCode());
+        assertEquals("Stockholms kommun", stockholm.areaName());
+        assertEquals("01", stockholm.lanCode());
+        // 6 + 9 seats, one of them an utjämningsmandat
+        assertEquals(15, stockholm.totalSeats());
+        assertEquals(new BigDecimal("85.84"), stockholm.turnout());
+        assertEquals(765741, stockholm.eligibleVoters());
+        assertEquals(657346, stockholm.totalVotes());
+        assertEquals(List.of(
+                new LocalPartyResult("0001", "M", "Moderaterna", "#66BEE6", 124639, new BigDecimal("19.1"), 6),
+                new LocalPartyResult("0002", "S", "Arbetarepartiet-Socialdemokraterna", "#FF0000", 171898, new BigDecimal("26.34"), 9)
+        ), stockholm.parties());
+        assertEquals(List.of(
+                new ElectedMember("Carl Nordblom", "0001", "M", 1, "Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"),
+                new ElectedMember("Anders Ygeman", "0002", "S", 1, "Ledamoten är vald på personröster")
+        ), stockholm.elected());
+
+        final var gotland = results.get(1);
+        assertEquals("09", gotland.areaCode());
+        assertEquals("Gotlands län", gotland.areaName());
+        assertEquals("09", gotland.lanCode());
+        assertEquals(2, gotland.totalSeats());
     }
 
     @Test

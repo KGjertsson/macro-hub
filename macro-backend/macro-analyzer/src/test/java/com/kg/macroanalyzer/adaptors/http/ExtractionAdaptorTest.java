@@ -201,6 +201,37 @@ public class ExtractionAdaptorTest {
     }
 
     @Test
+    public void shouldReturnConstituencyElections_whenScraped() {
+        // given
+        final var gotland = LocalElectionSummaryDto.builder().code("09").name("Gotlands län").build();
+
+        // when
+        when(outPort.getLocalElectionResults(LocalElectionType.RD, null)).thenReturn(List.of(gotland));
+        final var response = extractionAdaptor.getConstituencyElections(null);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(List.of(gotland), response.getBody());
+    }
+
+    @Test
+    public void shouldReturnConstituencyDetail_whenFound() {
+        // given
+        final var detail = LocalElectionDetailDto.builder()
+                .summary(LocalElectionSummaryDto.builder().code("01").name("Stockholms kommun").build())
+                .elected(List.of())
+                .build();
+
+        // when
+        when(outPort.getLocalElectionResult(LocalElectionType.RD, null, "01")).thenReturn(Optional.of(detail));
+        final var response = extractionAdaptor.getConstituency("01", null);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(detail, response.getBody());
+    }
+
+    @Test
     public void shouldReturnNotFound_whenMunicipalityUnknown() {
         // when
         when(outPort.getLocalElectionResult(LocalElectionType.KF, null, "9999")).thenReturn(Optional.empty());

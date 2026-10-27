@@ -57,7 +57,7 @@ public class WebAdaptorConfiguration {
     }
 
     @Bean("localElectionWebAdaptor")
-    public WebPort<LocalElectionFile, LocalElectionResult> localElectionWebAdaptor() {
+    public WebPort<LocalElectionFile, List<LocalElectionResult>> localElectionWebAdaptor() {
         return new ValmyndighetenWebAdaptor();
     }
 

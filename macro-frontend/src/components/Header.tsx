@@ -1,4 +1,4 @@
-import {BarChart3, BookOpen, Building2, Landmark, LineChart, MapPin, Menu} from 'lucide-react';
+import {BarChart3, BookOpen, Building2, Landmark, LineChart, MapPin, Menu, Vote} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useState} from 'react';
 import {Link, useLocation} from 'react-router-dom';
@@ -7,6 +7,7 @@ const Header = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
     const isParliamentPage = location.pathname.startsWith('/parliament');
+    const isConstituenciesPage = location.pathname === '/constituencies';
     const isRegionsPage = location.pathname === '/regions';
     const isMunicipalitiesPage = location.pathname === '/municipalities';
 
@@ -39,6 +40,15 @@ const Header = () => {
                         >
                             <Landmark className='h-4 w-4'/>
                             Riksdagen
+                        </Link>
+                        <Link
+                            to='/constituencies'
+                            className={`text-sm transition-colors flex items-center gap-1.5 ${
+                                isConstituenciesPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <Vote className='h-4 w-4'/>
+                            Valkretsar
                         </Link>
                         <Link
                             to='/regions'
@@ -97,6 +107,13 @@ const Header = () => {
                             >
                                 <Landmark className='h-4 w-4'/>
                                 Riksdagen
+                            </Link>
+                            <Link
+                                to='/constituencies'
+                                className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
+                            >
+                                <Vote className='h-4 w-4'/>
+                                Valkretsar
                             </Link>
                             <Link
                                 to='/regions'

@@ -2,10 +2,11 @@ package com.kg.macroanalyzer.application.domain.localelection;
 
 import java.util.Optional;
 
-// KF = kommunfullmäktige, RF = regionfullmäktige, matching Valmyndigheten's file suffixes
+// KF = kommunfullmäktige, RF = regionfullmäktige, RD = riksdag (per valkrets), matching Valmyndigheten's file suffixes
 public enum LocalElectionType {
     KF("MunicipalElections"),
-    RF("RegionElections");
+    RF("RegionElections"),
+    RD("ParliamentElections");
 
     private final String configName;
 

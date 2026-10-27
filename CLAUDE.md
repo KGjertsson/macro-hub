@@ -80,7 +80,7 @@ npm run preview    # serve the production build
 ```
 
 - Uses Recharts for charts, TanStack Query, React Router; `@/` aliases `src/`
-- Kommun/region maps (`ChoroplethMap`) render `public/geo/kommuner.topo.json` and `lan.topo.json` with d3-geo. They are generated from SCB's CC0 boundary shapefiles by `scripts/build-geo.sh` (run from `macro-frontend/`; needs network and `npx`), and the outputs are committed
+- Kommun/region/valkrets maps (`ChoroplethMap`) render `public/geo/kommuner.topo.json`, `lan.topo.json` and `valkretsar.topo.json` with d3-geo. They are generated from SCB's CC0 boundary shapefiles by `scripts/build-geo.sh` (run from `macro-frontend/`; needs network and `npx`), and the outputs are committed. Valkretsar are dissolved from the kommun layer via `scripts/valkretsar.csv` (kommunkod → valkrets); update it if the valkrets division changes
 - shadcn-ui components live in `src/components/ui/` (configured via `components.json`)
 - Backend base URL is hardcoded as `rootUrl = 'http://localhost:8080'` in `src/models/Constants.ts`; it calls `/macro-analyzer/series-config` and `/macro-analyzer/chart-data`
 - **Port clash:** `vite.config.ts` also sets the dev server to port 8080. Start the backend first so Vite falls back to the next free port (8081); if Vite starts first, Spring Boot fails to bind. Backend CORS allows all origins.
@@ -136,8 +136,8 @@ CronAdaptor ───────────→ InPort
 - `GET /macro-analyzer/parliament/parties` — party names, colours, ideology
 - `GET /macro-analyzer/parliament/members?year={electionYear}` — members who sat in that term (default: latest)
 - `GET /macro-analyzer/parliament/members/{intressentId}` — member detail (assignments, biography, contact, votes, speeches, motions)
-- `GET /macro-analyzer/municipalities/elections?year=` / `GET /macro-analyzer/regions/elections?year=` — per kommun/region: seats, turnout, votes and seats per party (default: latest year)
-- `GET /macro-analyzer/municipalities/{kommunkod}` / `GET /macro-analyzer/regions/{länskod}` — the same plus elected members and curated governance
+- `GET /macro-analyzer/municipalities/elections?year=` / `GET /macro-analyzer/regions/elections?year=` / `GET /macro-analyzer/constituencies/elections?year=` — per kommun/region/Riksdag valkrets: seats, turnout, votes and seats per party (default: latest year)
+- `GET /macro-analyzer/municipalities/{kommunkod}` / `GET /macro-analyzer/regions/{länskod}` / `GET /macro-analyzer/constituencies/{valkretskod}` — the same plus elected members and curated governance (none for valkretsar)
 
 ### Riksdagen (parliament) data
 
@@ -145,16 +145,17 @@ CronAdaptor ───────────→ InPort
 - Election seat counts are curated in `riksdag_election_result` (Flyway seed from Valmyndigheten) because Riksdagen only stores each person's *current* party. Add a new election as a migration (rows in `riksdag_election` + `riksdag_election_result`)
 - Riksdagen configs (category `Riksdagen`) are excluded from `/series-config` so they don't appear in the chart picker
 
-### Kommun and region elections (Valmyndigheten)
+### Kommun, region and Riksdag elections (Valmyndigheten)
 
 - `MunicipalElections` (KF) and `RegionElections` (RF) scrape the final results from `resultat.val.se`: `index.md5` lists one zip per kommun/region, and only the `mandatfordelning` JSON inside each is parsed (votes, seats, elected members). First run downloads ~310 zips (~1.5 min); later runs skip files whose md5 is unchanged, so corrected files are picked up automatically
+- `ParliamentElections` (RD) uses the same pipeline, but its single zip (`s/rd/..._00_RD.zip`) holds all 29 valkretsar under `valkretsLista`, so the parser returns one area per valkrets (area code `01`..`29`, Gotland is `09`). Valkrets seats include the utjämningsmandat assigned to that valkrets (they sum to 349). The ~200 MB per-district `rostfordelning` file in the zip is streamed past, not parsed
 - `scrape_url` (`.../resultatfiler/val2026`) selects the election; point it at the next election's folder with a migration. Gotland has no regionfullmäktige
 - Who governs (`local_governance`) has no open data source and starts empty; add rows by migration (party abbreviations as in the results). The frontend only shows the "styre" section where a row exists
 - Configs use category `Valmyndigheten` and are also kept out of `/series-config`
 
 ### Database
 
-PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V25). JOOQ generates type-safe table access. Key tables: `series_config`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`.
+PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V26). JOOQ generates type-safe table access. Key tables: `series_config`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`.
 
 ## Testing
 

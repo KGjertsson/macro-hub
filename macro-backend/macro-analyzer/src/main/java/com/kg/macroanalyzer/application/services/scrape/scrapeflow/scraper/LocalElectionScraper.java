@@ -15,7 +15,7 @@ import java.util.Optional;
 @Slf4j
 public record LocalElectionScraper(
         WebPort<LocalElectionIndexRequest, List<LocalElectionFile>> indexWebPort,
-        WebPort<LocalElectionFile, LocalElectionResult> resultWebPort,
+        WebPort<LocalElectionFile, List<LocalElectionResult>> resultWebPort,
         long delayBetweenFilesMs
 ) implements Scraper<ConfigWithLocalElections> {
 
@@ -42,7 +42,7 @@ public record LocalElectionScraper(
         final var results = new ArrayList<LocalElectionResult>();
         for (final var file : changedFiles) {
             try {
-                results.add(resultWebPort.fetch(file));
+                results.addAll(resultWebPort.fetch(file));
             } catch (ScrapeException e) {
                 log.error("Caught ScrapeException for area=%s: %s".formatted(file.areaCode(), e.getMessage()));
             }

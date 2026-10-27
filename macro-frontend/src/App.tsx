@@ -12,6 +12,7 @@ import Sources from './pages/Sources';
 import Contact from './pages/Contact';
 import Regions from './pages/Regions';
 import Municipalities from './pages/Municipalities';
+import Constituencies from './pages/Constituencies';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path='/macroindicator' element={<MacroIndicator />} />
             <Route path='/regions' element={<Regions />} />
             <Route path='/municipalities' element={<Municipalities />} />
+            <Route path='/constituencies' element={<Constituencies />} />
             <Route path='/sources' element={<Sources />} />
             <Route path='/contact' element={<Contact />} />
             <Route path='/parliament/politician/:id' element={<PoliticianDetail />} />

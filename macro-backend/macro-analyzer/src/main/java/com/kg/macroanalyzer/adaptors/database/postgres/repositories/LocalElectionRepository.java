@@ -49,37 +49,43 @@ public class LocalElectionRepository {
                 .fetch(LOCAL_ELECTION_AREA.SOURCE_MD5));
     }
 
-    // Each area is replaced as a whole so parties that lost all votes in a corrected file disappear
+    // Each area is replaced as a whole so parties that lost all votes in a corrected file disappear.
+    // All areas are written in one transaction: the Riksdag file's 29 valkretsar share one md5, so a partial
+    // write would leave that md5 stored and the missing valkretsar would never be re-fetched
     public Integer writeResults(List<LocalElectionResult> results) {
-        results.forEach(result -> dslContext.transaction(configuration -> {
+        dslContext.transaction(configuration -> {
             final var tx = DSL.using(configuration);
-            tx.insertInto(LOCAL_ELECTION_AREA)
-                    .set(areaRecord(result))
-                    .onConflict(LOCAL_ELECTION_AREA.ELECTION_YEAR, LOCAL_ELECTION_AREA.ELECTION_TYPE, LOCAL_ELECTION_AREA.AREA_CODE)
-                    .doUpdate()
-                    .set(areaRecord(result))
-                    .execute();
-            tx.deleteFrom(LOCAL_ELECTION_PARTY_RESULT)
-                    .where(areaCondition(result.year(), result.type(), result.areaCode()))
-                    .execute();
-            // Upsert so a concurrent write of the same area cannot fail on the primary key
-            tx.batch(result.parties().stream()
-                            .map(p -> partyRecord(result, p))
-                            .map(record -> tx.insertInto(LOCAL_ELECTION_PARTY_RESULT)
-                                    .set(record)
-                                    .onConflict(
-                                            LOCAL_ELECTION_PARTY_RESULT.ELECTION_YEAR,
-                                            LOCAL_ELECTION_PARTY_RESULT.ELECTION_TYPE,
-                                            LOCAL_ELECTION_PARTY_RESULT.AREA_CODE,
-                                            LOCAL_ELECTION_PARTY_RESULT.PARTY_CODE
-                                    )
-                                    .doUpdate()
-                                    .set(record))
-                            .toList())
-                    .execute();
-        }));
+            results.forEach(result -> writeResult(tx, result));
+        });
 
         return results.size();
+    }
+
+    private static void writeResult(DSLContext tx, LocalElectionResult result) {
+        tx.insertInto(LOCAL_ELECTION_AREA)
+                .set(areaRecord(result))
+                .onConflict(LOCAL_ELECTION_AREA.ELECTION_YEAR, LOCAL_ELECTION_AREA.ELECTION_TYPE, LOCAL_ELECTION_AREA.AREA_CODE)
+                .doUpdate()
+                .set(areaRecord(result))
+                .execute();
+        tx.deleteFrom(LOCAL_ELECTION_PARTY_RESULT)
+                .where(areaCondition(result.year(), result.type(), result.areaCode()))
+                .execute();
+        // Upsert so a concurrent write of the same area cannot fail on the primary key
+        tx.batch(result.parties().stream()
+                        .map(p -> partyRecord(result, p))
+                        .map(record -> tx.insertInto(LOCAL_ELECTION_PARTY_RESULT)
+                                .set(record)
+                                .onConflict(
+                                        LOCAL_ELECTION_PARTY_RESULT.ELECTION_YEAR,
+                                        LOCAL_ELECTION_PARTY_RESULT.ELECTION_TYPE,
+                                        LOCAL_ELECTION_PARTY_RESULT.AREA_CODE,
+                                        LOCAL_ELECTION_PARTY_RESULT.PARTY_CODE
+                                )
+                                .doUpdate()
+                                .set(record))
+                        .toList())
+                .execute();
     }
 
     public Optional<Integer> readLatestYear(LocalElectionType type) {
