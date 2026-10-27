@@ -34,6 +34,8 @@ const BORDER_COLOR = 'hsl(var(--foreground) / 0.45)';
 const MAX_ZOOM = 16;
 const ZOOM_STEP = 2;
 const WHEEL_HINT_MS = 1500;
+// Largest zoom step (as a power of two) per wheel event, so one mouse-wheel notch is about 1.4×
+const MAX_WHEEL_DELTA = 0.5;
 const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
 
 // SWEREF 99 TM is a transverse Mercator centred on 15°E, so the map keeps the familiar shape of Sweden
@@ -85,12 +87,27 @@ const ChoroplethMap = ({ topoUrl, objectName, colorByCode, nameByCode, selectedC
       .clickDistance(4)
       // A plain wheel scrolls the page; only Ctrl/⌘ + wheel (and trackpad pinch, which sets ctrlKey) zooms
       .filter(event => (event.type === 'wheel' ? event.ctrlKey || event.metaKey : !event.ctrlKey) && !event.button)
+      // d3's default boosts Ctrl + wheel tenfold for trackpad pinch, which made each mouse-wheel notch zoom 4×
+      .wheelDelta(event => {
+        const unit = event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002;
+        const delta = -event.deltaY * unit * (event.ctrlKey || event.metaKey ? 10 : 1);
+        return Math.max(-MAX_WHEEL_DELTA, Math.min(MAX_WHEEL_DELTA, delta));
+      })
       .on('zoom', event => {
         zoomGroupRef.current?.setAttribute('transform', event.transform.toString());
       });
+    // d3 skips preventDefault once the zoom limit is reached, and the browser would then zoom the whole page
+    const preventPageZoom = (event: globalThis.WheelEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+      }
+    };
+    const svgElement = svgRef.current;
+    svgElement.addEventListener('wheel', preventPageZoom, { passive: false });
     svg.call(behavior).call(behavior.transform, zoomIdentity);
     zoomRef.current = behavior;
     return () => {
+      svgElement.removeEventListener('wheel', preventPageZoom);
       svg.on('.zoom', null);
       zoomRef.current = null;
     };
@@ -188,13 +205,13 @@ const ChoroplethMap = ({ topoUrl, objectName, colorByCode, nameByCode, selectedC
           </g>
         </svg>
         <div className="absolute top-2 right-2 flex flex-col gap-1">
-          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Zooma in" onClick={() => scaleBy(ZOOM_STEP)}>
+          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Zooma in" title="Zooma in" onClick={() => scaleBy(ZOOM_STEP)}>
             <Plus className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Zooma ut" onClick={() => scaleBy(1 / ZOOM_STEP)}>
+          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Zooma ut" title="Zooma ut" onClick={() => scaleBy(1 / ZOOM_STEP)}>
             <Minus className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Återställ" onClick={resetZoom}>
+          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Återställ zoom" title="Återställ zoom" onClick={resetZoom}>
             <Maximize className="h-4 w-4" />
           </Button>
         </div>
