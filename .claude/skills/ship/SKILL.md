@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Ship a change the user has already agreed on. An implementer sub-agent builds it and opens a PR, an independent reviewer sub-agent reviews it, and the PR is admin-merged. Do not use while the change is still being discussed or designed.
+description: Ship a change the user has already agreed on. An implementer sub-agent builds it and opens a PR, an independent reviewer sub-agent reviews it, and the PR is merged once CI passes. Do not use while the change is still being discussed or designed.
 ---
 
 # Ship an agreed change
@@ -19,8 +19,8 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 - Work in your own git worktree under your scratchpad directory, on a feature branch from an up-to-date `origin/main`: `git -C <repo> fetch && git -C <repo> worktree add <dir> -b <branch> origin/main`. A ruleset blocks direct pushes to `main`.
 - Before every push, run the checks for what you changed:
   - Backend: `JAVA_HOME=~/.sdkman/candidates/java/current mvn test` from `macro-backend/macro-analyzer/`, with Docker running.
-  - Frontend: `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run build` and `npm run lint` from `macro-frontend/`. Lint already has errors on `main`, so compare against `main` and add no new ones.
-- Use conventional commits that end with the Co-Authored-By line. Open the PR with `gh pr create` and end its body with the Claude Code line.
+  - Frontend: `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run build` and `npm run lint` from `macro-frontend/`. Lint must exit 0, as CI enforces.
+- Use conventional commits that end with the Co-Authored-By line. Open the PR with `gh pr create` and end its body with the Claude Code line. Wait for CI with `gh pr checks <n> --watch` and fix any failing job.
 - Don't merge. Stay available for review rounds.
 
 ## 3. Reviewer (fresh named sub-agent)
@@ -42,7 +42,7 @@ If blocking findings remain after 3 fix rounds, stop and bring the disagreement 
 
 ## 6. Merge
 
-On LGTM, first remove the sub-agents' worktrees (`git worktree remove <dir>`), or `--delete-branch` fails on the branch still checked out there. Then merge without asking: `gh pr merge <n> --admin --squash --delete-branch --match-head-commit <sha>`. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
+On LGTM, first remove the sub-agents' worktrees (`git worktree remove <dir>`), or `--delete-branch` fails on the branch still checked out there. Check that the `frontend` and `backend` CI checks pass on the head commit (`gh pr checks <n>`); `main` requires them. Then merge without asking: `gh pr merge <n> --squash --delete-branch --match-head-commit <sha>`. Don't use `--admin`; if a check fails, send it back to the implementer. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
 
 ## 7. After merge
 
