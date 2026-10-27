@@ -163,6 +163,10 @@ PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1â€
 - Test fixtures in `src/test/resources/json/`
 - `@ActiveProfiles("test")` activates `application-test.properties`
 
+## Workflow
+
+Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent reviews it, then it is merged. `main` is protected: changes need a PR, and the owner merges with `gh pr merge --admin`.
+
 ## Commit Convention
 
 Follows conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `config:`, `chore:`, `docs:`
