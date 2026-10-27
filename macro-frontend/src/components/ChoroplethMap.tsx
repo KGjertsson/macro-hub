@@ -1,9 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { MouseEvent, WheelEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { geoPath, geoTransverseMercator } from 'd3-geo';
+import { select } from 'd3-selection';
+import { zoom, zoomIdentity } from 'd3-zoom';
+import type { ZoomBehavior } from 'd3-zoom';
+import { Maximize, Minus, Plus } from 'lucide-react';
 import { feature } from 'topojson-client';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { GeometryCollection, Topology } from 'topojson-specification';
+import { Button } from '@/components/ui/button';
 
 interface AreaProperties {
   code: string;
@@ -25,6 +31,12 @@ const WIDTH = 450;
 const NO_DATA_COLOR = 'hsl(var(--muted))';
 // Light enough to separate neighbours that share a party colour
 const BORDER_COLOR = 'hsl(var(--foreground) / 0.45)';
+const MAX_ZOOM = 16;
+const ZOOM_STEP = 2;
+const WHEEL_HINT_MS = 1500;
+// Largest zoom step (as a power of two) per wheel event, so one mouse-wheel notch is about 1.4×
+const MAX_WHEEL_DELTA = 0.5;
+const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
 
 // SWEREF 99 TM is a transverse Mercator centred on 15°E, so the map keeps the familiar shape of Sweden
 const projection = () => geoTransverseMercator().rotate([-15, 0]);
@@ -46,7 +58,12 @@ const useAreas = (topoUrl: string, objectName: string) =>
 
 const ChoroplethMap = ({ topoUrl, objectName, colorByCode, nameByCode, selectedCode, onSelect, ariaLabel }: ChoroplethMapProps) => {
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
+  const [showWheelHint, setShowWheelHint] = useState(false);
   const { data: areas, isError } = useAreas(topoUrl, objectName);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const zoomGroupRef = useRef<SVGGElement>(null);
+  const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const wheelHintTimeout = useRef<ReturnType<typeof setTimeout>>();
 
   const layout = useMemo(() => {
     if (!areas) {
@@ -57,6 +74,46 @@ const ChoroplethMap = ({ topoUrl, objectName, colorByCode, nameByCode, selectedC
     const [, [, maxY]] = path.bounds(areas);
     return { path, height: Math.ceil(maxY) };
   }, [areas]);
+
+  useEffect(() => {
+    if (!layout || !svgRef.current) {
+      return;
+    }
+    const svg = select(svgRef.current);
+    const behavior = zoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, MAX_ZOOM])
+      .translateExtent([[0, 0], [WIDTH, layout.height]])
+      // Hand jitter during a click should not count as a pan, which would swallow the selection
+      .clickDistance(4)
+      // A plain wheel scrolls the page; only Ctrl/⌘ + wheel (and trackpad pinch, which sets ctrlKey) zooms
+      .filter(event => (event.type === 'wheel' ? event.ctrlKey || event.metaKey : !event.ctrlKey) && !event.button)
+      // d3's default boosts Ctrl + wheel tenfold for trackpad pinch, which made each mouse-wheel notch zoom 4×
+      .wheelDelta(event => {
+        const unit = event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002;
+        const delta = -event.deltaY * unit * (event.ctrlKey || event.metaKey ? 10 : 1);
+        return Math.max(-MAX_WHEEL_DELTA, Math.min(MAX_WHEEL_DELTA, delta));
+      })
+      .on('zoom', event => {
+        zoomGroupRef.current?.setAttribute('transform', event.transform.toString());
+      });
+    // d3 skips preventDefault once the zoom limit is reached, and the browser would then zoom the whole page
+    const preventPageZoom = (event: globalThis.WheelEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+      }
+    };
+    const svgElement = svgRef.current;
+    svgElement.addEventListener('wheel', preventPageZoom, { passive: false });
+    svg.call(behavior).call(behavior.transform, zoomIdentity);
+    zoomRef.current = behavior;
+    return () => {
+      svgElement.removeEventListener('wheel', preventPageZoom);
+      svg.on('.zoom', null);
+      zoomRef.current = null;
+    };
+  }, [layout]);
+
+  useEffect(() => () => clearTimeout(wheelHintTimeout.current), []);
 
   if (isError) {
     return <p className="text-sm text-muted-foreground text-center py-12">Kartan kunde inte laddas.</p>;
@@ -79,12 +136,34 @@ const ChoroplethMap = ({ topoUrl, objectName, colorByCode, nameByCode, selectedC
   const highlighted = areas.features.find(f => f.properties.code === (hoveredCode ?? selectedCode));
   const nameOf = (area: Feature<Geometry, AreaProperties>) => nameByCode[area.properties.code] ?? area.properties.name;
 
-  const handleClick = (area: Feature<Geometry, AreaProperties>) => {
+  const handleClick = (event: MouseEvent, area: Feature<Geometry, AreaProperties>) => {
     const code = area.properties.code;
-    if (!colorByCode[code]) {
+    // The second click of a double-click zooms in rather than deselecting
+    if (!colorByCode[code] || event.detail > 1) {
       return;
     }
     onSelect(selectedCode === code ? null : code);
+  };
+
+  const handleWheel = (event: WheelEvent) => {
+    if (event.ctrlKey || event.metaKey) {
+      return;
+    }
+    setShowWheelHint(true);
+    clearTimeout(wheelHintTimeout.current);
+    wheelHintTimeout.current = setTimeout(() => setShowWheelHint(false), WHEEL_HINT_MS);
+  };
+
+  const scaleBy = (factor: number) => {
+    if (zoomRef.current && svgRef.current) {
+      zoomRef.current.scaleBy(select(svgRef.current), factor);
+    }
+  };
+
+  const resetZoom = () => {
+    if (zoomRef.current && svgRef.current) {
+      zoomRef.current.transform(select(svgRef.current), zoomIdentity);
+    }
   };
 
   return (
@@ -92,33 +171,59 @@ const ChoroplethMap = ({ topoUrl, objectName, colorByCode, nameByCode, selectedC
       <p className="h-6 text-center text-sm font-medium text-foreground" aria-live="polite">
         {highlighted ? nameOf(highlighted) : ' '}
       </p>
-      <svg
-        viewBox={`0 0 ${WIDTH} ${layout.height}`}
-        className="w-full h-auto max-h-[70vh]"
-        role="img"
-        aria-label={ariaLabel}
-        style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' }}
-      >
-        {ordered.map(area => {
-          const code = area.properties.code;
-          const isSelected = selectedCode === code;
-          return (
-            <path
-              key={code}
-              d={layout.path(area) ?? undefined}
-              fill={fillFor(code)}
-              stroke={isSelected ? 'hsl(var(--foreground))' : BORDER_COLOR}
-              strokeWidth={isSelected ? 1.5 : 0.6}
-              className={colorByCode[code] ? 'cursor-pointer transition-colors duration-200' : undefined}
-              onMouseEnter={() => setHoveredCode(code)}
-              onMouseLeave={() => setHoveredCode(null)}
-              onClick={() => handleClick(area)}
-            >
-              <title>{nameOf(area)}</title>
-            </path>
-          );
-        })}
-      </svg>
+      <div className="relative">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${WIDTH} ${layout.height}`}
+          className="w-full h-auto max-h-[70vh]"
+          role="img"
+          aria-label={ariaLabel}
+          style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' }}
+          onWheel={handleWheel}
+        >
+          <g ref={zoomGroupRef}>
+            {ordered.map(area => {
+              const code = area.properties.code;
+              const isSelected = selectedCode === code;
+              return (
+                <path
+                  key={code}
+                  d={layout.path(area) ?? undefined}
+                  fill={fillFor(code)}
+                  stroke={isSelected ? 'hsl(var(--foreground))' : BORDER_COLOR}
+                  strokeWidth={isSelected ? 1.5 : 0.6}
+                  vectorEffect="non-scaling-stroke"
+                  className={colorByCode[code] ? 'cursor-pointer transition-colors duration-200' : undefined}
+                  onMouseEnter={() => setHoveredCode(code)}
+                  onMouseLeave={() => setHoveredCode(null)}
+                  onClick={event => handleClick(event, area)}
+                >
+                  <title>{nameOf(area)}</title>
+                </path>
+              );
+            })}
+          </g>
+        </svg>
+        <div className="absolute top-2 right-2 flex flex-col gap-1">
+          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Zooma in" title="Zooma in" onClick={() => scaleBy(ZOOM_STEP)}>
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Zooma ut" title="Zooma ut" onClick={() => scaleBy(1 / ZOOM_STEP)}>
+            <Minus className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" className="h-8 w-8" aria-label="Återställ zoom" title="Återställ zoom" onClick={resetZoom}>
+            <Maximize className="h-4 w-4" />
+          </Button>
+        </div>
+        <div
+          className={`pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-background/60 transition-opacity duration-300 ${showWheelHint ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden="true"
+        >
+          <p className="rounded-md bg-foreground/80 px-3 py-1.5 text-sm font-medium text-background">
+            Håll {IS_MAC ? '⌘' : 'Ctrl'} för att zooma
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
