@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 @Service
 public class ParliamentService {
 
-    private static final String SERVING_STATUS_PREFIX = "Tjänstgörande";
+    // Matches e.g. "Tjänstgörande ersättare" and "Förste vice talman (tjänstgörande riksdagsledamot)", but not "Tjänstledig"
+    private static final String SERVING_STATUS_MARKER = "tjänstgörande";
     private static final String SERVING_ASSIGNMENT_STATUS = "Tjänstgörande";
     private static final String UNKNOWN_PARTY_COLOR = "#9CA3AF";
     private static final String COMMITTEE_MEMBER_ROLE = "Ledamot";
@@ -65,13 +66,17 @@ public class ParliamentService {
 
     public CompositionDto getComposition() {
         final var seats = databasePort.readMembersOfParliament().stream()
-                .filter(m -> m.status() != null && m.status().startsWith(SERVING_STATUS_PREFIX))
+                .filter(m -> isServing(m.status()))
                 .collect(Collectors.groupingBy(m -> Objects.requireNonNullElse(m.parti(), ""), Collectors.summingInt(m -> 1)));
 
         return CompositionDto.builder()
                 .asOf(today().toString())
                 .parties(toPartySeats(seats, partiesByCode()))
                 .build();
+    }
+
+    private static boolean isServing(String status) {
+        return status != null && status.toLowerCase(Locale.ROOT).contains(SERVING_STATUS_MARKER);
     }
 
     public List<MemberSummaryDto> getMembers(Integer year) {

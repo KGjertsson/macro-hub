@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import SeatDistribution from '@/components/SeatDistribution';
 import PoliticianCard from '@/components/PoliticianCard';
 import ParliamentBlog from '@/components/ParliamentBlog';
-import { partyColor, useComposition, useElections, useParliamentMembers, useParties } from '@/api/parliament';
+import { partyColor, seatLabel, useComposition, useElections, useParliamentMembers, useParties } from '@/api/parliament';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -31,6 +31,16 @@ const Parliament = () => {
   const election = elections?.find(e => e.year === selectedYear);
   const isLatestTerm = selectedYear === elections?.[0]?.year;
   const showCurrent = seatView === 'current' && isLatestTerm && !!composition;
+
+  // The current view only exists for the latest term, so it is compared with the latest election
+  const seatChanges = useMemo(() => {
+    if (!composition || !election) return [];
+    const parties = [...election.parties, ...composition.parties.filter(c => !election.parties.some(e => e.code === c.code))];
+    const seats = (list: typeof parties, code: string) => list.find(p => p.code === code)?.seats ?? 0;
+    return parties
+      .map(party => ({ party, diff: seats(composition.parties, party.code) - seats(election.parties, party.code) }))
+      .filter(c => c.diff !== 0);
+  }, [composition, election]);
 
   const { data: members, isLoading: membersLoading } = useParliamentMembers(selectedYear);
 
@@ -125,7 +135,8 @@ const Parliament = () => {
                     <p>
                       <strong>Nuvarande fördelning</strong> räknar de ledamöter som sitter i riksdagen i dag och det
                       parti de tillhör nu. Den kan skilja sig från valresultatet när en ledamot lämnar sitt parti och
-                      blir partilös (politisk vilde).
+                      blir partilös (politisk vilde). Statsråd och tjänstlediga ledamöter ersätts av en ersättare från
+                      samma parti, så de påverkar inte fördelningen.
                     </p>
                   </PopoverContent>
                 </Popover>
@@ -142,6 +153,28 @@ const Parliament = () => {
               title={showCurrent ? `Tjänstgörande ledamöter ${composition.asOf}` : `Valresultat ${election.year}`}
               parties={showCurrent ? composition.parties : election.parties}
             />
+          )}
+          {!electionsLoading && election && showCurrent && (
+            <p className='mt-4 text-sm text-muted-foreground'>
+              {seatChanges.length === 0 ? (
+                `Samma fördelning som efter valet ${election.year}.`
+              ) : (
+                <>
+                  Skillnad mot valet {election.year}:{' '}
+                  {seatChanges.map(({ party, diff }, index) => (
+                    <span key={party.code}>
+                      {index > 0 && ' · '}
+                      <span className='inline-flex items-center gap-1.5'>
+                        <span className='w-2.5 h-2.5 rounded-full' style={{ backgroundColor: party.color }} />
+                        <span className='font-medium text-foreground'>
+                          {seatLabel(party)} {diff > 0 ? `+${diff}` : `−${-diff}`}
+                        </span>
+                      </span>
+                    </span>
+                  ))}
+                </>
+              )}
+            </p>
           )}
           {!electionsLoading && !election && (
             <p className='text-center py-12 text-muted-foreground'>Inga valresultat tillgängliga</p>

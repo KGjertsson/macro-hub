@@ -1,3 +1,4 @@
+import { seatLabel } from '@/api/parliament';
 import { PartySeats } from '@/models/Parliament';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -161,7 +162,7 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
                 style={{ backgroundColor: party.color }}
               />
               <div className='min-w-0'>
-                <p className='text-sm font-medium truncate'>{party.code}</p>
+                <p className='text-sm font-medium truncate'>{seatLabel(party)}</p>
                 <p className='text-xs text-muted-foreground'>
                   {party.seats} mandat ({((party.seats / totalSeats) * 100).toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %)
                 </p>
