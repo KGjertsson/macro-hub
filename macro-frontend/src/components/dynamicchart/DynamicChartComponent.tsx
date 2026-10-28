@@ -19,6 +19,14 @@ const numberFormat = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 2 }
 // Rates are published with up to three decimals
 const valueFormat = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 3 });
 
+// Percentage-point changes always carry a sign: +4,70 / −0,25
+const changeFormat = new Intl.NumberFormat('sv-SE', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  signDisplay: 'exceptZero'
+});
+const changeTickFormat = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 2, signDisplay: 'exceptZero' });
+
 const formatValue = (value: number, unit?: string) =>
   unit ? `${valueFormat.format(value)} ${unit}` : valueFormat.format(value);
 
@@ -45,7 +53,7 @@ const swatchFor = ({ color, dashed }: SeriesStyle) => {
 interface Props {
   labels: string[];
   series: ChartSeries[];
-  // Series are rebased to 100 and share one axis
+  // Series are rebased to 100 on the left axis, percentage series show their change in percentage points
   indexed: boolean;
   // Units in the order their axes are assigned: the first goes left, the rest share the right axis
   units: string[];
@@ -55,14 +63,32 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
   const textColor = themeColor('--muted-foreground');
   const gridColor = themeColor('--border');
 
-  const axisFor = (unit: string | undefined) => (indexed || units.indexOf(unit ?? '') <= 0 ? 'y' : 'y1');
+  const hasIndex = indexed && series.some((s) => s.indexKind === 'index');
+  const hasChange = indexed && series.some((s) => s.indexKind === 'change');
 
-  const scale = (position: 'left' | 'right', title: string, drawGrid: boolean) => ({
+  // In index mode the index axis is on the left; the percentage-point axis goes right, or left when it is alone
+  const axisFor = (s: ChartSeries) =>
+    indexed
+      ? (s.indexKind === 'change' && hasIndex ? 'y1' : 'y')
+      : (units.indexOf(s.config.unit ?? '') <= 0 ? 'y' : 'y1');
+
+  const scale = (
+    position: 'left' | 'right',
+    title: string,
+    drawGrid: boolean,
+    // Index mode marks the start level (100, or 0 p.e.) with a stronger grid line
+    reference?: number,
+    format: Intl.NumberFormat = numberFormat
+  ) => ({
     type: 'linear' as const,
     position,
     title: { display: true, text: title, color: textColor },
-    ticks: { color: textColor, callback: (value: number | string) => numberFormat.format(Number(value)) },
-    grid: { color: gridColor, display: drawGrid },
+    ticks: { color: textColor, callback: (value: number | string) => format.format(Number(value)) },
+    grid: {
+      display: drawGrid || reference !== undefined,
+      color: (context: { tick?: { value: number } }) =>
+        context.tick?.value === reference ? textColor : drawGrid ? gridColor : 'transparent'
+    },
     border: { color: gridColor }
   });
 
@@ -75,14 +101,23 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
     borderWidth: 2,
     pointRadius: 0,
     pointHoverRadius: 4,
-    yAxisID: axisFor(s.config.unit)
+    yAxisID: axisFor(s)
   }));
 
-  const scales: NonNullable<ChartOptions<'line'>['scales']> = {
-    y: scale('left', indexed ? 'Index (start = 100)' : (units[0] ?? ''), true)
-  };
-  if (!indexed && units.length > 1) {
-    scales.y1 = scale('right', units.slice(1).join(' / '), false);
+  const changeTitle = 'Förändring (procentenheter)';
+  const scales: NonNullable<ChartOptions<'line'>['scales']> = {};
+  if (!indexed) {
+    scales.y = scale('left', units[0] ?? '', true);
+    if (units.length > 1) {
+      scales.y1 = scale('right', units.slice(1).join(' / '), false);
+    }
+  } else if (hasIndex) {
+    scales.y = scale('left', 'Index (start = 100)', true, 100);
+    if (hasChange) {
+      scales.y1 = scale('right', changeTitle, false, 0, changeTickFormat);
+    }
+  } else {
+    scales.y = scale('left', changeTitle, true, 0, changeTickFormat);
   }
 
   return (
@@ -106,6 +141,9 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
                 label: (context) => {
                   const s = series[context.datasetIndex];
                   const value = formatValue(s.rawValues[context.dataIndex] as number, s.config.unit);
+                  if (s.indexKind === 'change') {
+                    return `${s.config.displayName}: ${changeFormat.format(context.parsed.y)} p.e. (${value})`;
+                  }
                   return indexed
                     ? `${s.config.displayName}: ${numberFormat.format(context.parsed.y)} (${value})`
                     : `${s.config.displayName}: ${value}`;

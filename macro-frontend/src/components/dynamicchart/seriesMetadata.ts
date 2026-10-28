@@ -20,10 +20,14 @@ export type SeriesStyle = {
 export type ChartSeries = {
   config: SeriesConfig;
   style: SeriesStyle;
-  // Plotted values: the raw values, or rebased to 100 in index mode
+  // Plotted values: the raw values, or in index mode rebased to 100 / the change in percentage points
   values: (number | null)[];
   rawValues: (number | null)[];
+  // Set in index mode: how values were derived from rawValues
+  indexKind?: IndexKind;
 };
+
+export type IndexKind = 'index' | 'change';
 
 // Past the palette the hues repeat, so the second round is drawn dashed to stay distinguishable
 export const styleForSlot = (slot: number): SeriesStyle => ({
@@ -171,4 +175,34 @@ export const rebaseToIndex = (values: (number | null)[]): (number | null)[] | nu
   const start = values.find((v) => v !== null);
   if (start === undefined || start === null || start <= 0) return null;
   return values.map((v) => (v === null ? null : (v / start) * 100));
+};
+
+const firstValue = (values: (number | null)[]) => values.find((v) => v !== null) ?? null;
+
+// Change since the first non-null value in the window, so the series starts at 0
+export const changeSinceStart = (values: (number | null)[]): (number | null)[] | null => {
+  const start = firstValue(values);
+  if (start === null) return null;
+  return values.map((v) => (v === null ? null : v - start));
+};
+
+// Rates and shares (unit "%" or "% av BNP") are compared in percentage points rather than indexed:
+// a rate going 0,3 % → 5 % is not "index 1 700", and a negative start can't be indexed at all
+export const isPercentUnit = (unit: string | undefined) => (unit ?? '').startsWith('%');
+
+// Index mode: percentage series become the change in percentage points, the rest are rebased to 100.
+// Series that can't be indexed (start at or below zero) are returned separately instead of plotted
+export const toIndexMode = (series: ChartSeries[]): { plotted: ChartSeries[]; notIndexable: ChartSeries[] } => {
+  const plotted: ChartSeries[] = [];
+  const notIndexable: ChartSeries[] = [];
+  series.forEach((s) => {
+    const indexKind: IndexKind = isPercentUnit(s.config.unit) ? 'change' : 'index';
+    const values = indexKind === 'change' ? changeSinceStart(s.rawValues) : rebaseToIndex(s.rawValues);
+    if (values) {
+      plotted.push({ ...s, values, indexKind });
+    } else {
+      notIndexable.push(s);
+    }
+  });
+  return { plotted, notIndexable };
 };
