@@ -5,7 +5,7 @@ import DynamicChartComponent from '@/components/dynamicchart/DynamicChartCompone
 import { Skeleton } from '@/components/ui/skeleton';
 import { SeriesConfig } from '@/models/SeriesConfig';
 import { Dataset } from '@/models/Dataset';
-import { ChartSeries, rebaseToIndex, SeriesStyle } from '@/components/dynamicchart/seriesMetadata';
+import { ChartSeries, SeriesStyle, toIndexMode } from '@/components/dynamicchart/seriesMetadata';
 
 interface Props {
   selectedItems: SeriesConfig[];
@@ -97,17 +97,7 @@ const DynamicChartRenderComponent = ({
   const withoutData = series.filter((s) => s.values.every((v) => v === null));
   const withData = series.filter((s) => !withoutData.includes(s));
 
-  const notIndexable: ChartSeries[] = [];
-  const plotted = indexed
-    ? withData.flatMap((s) => {
-      const rebased = rebaseToIndex(s.values);
-      if (!rebased) {
-        notIndexable.push(s);
-        return [];
-      }
-      return [{ ...s, values: rebased }];
-    })
-    : withData;
+  const { plotted, notIndexable } = indexed ? toIndexMode(withData) : { plotted: withData, notIndexable: [] };
 
   // Axes only for units that have something to draw, in the order the series were added
   const units = Array.from(new Set(
@@ -120,6 +110,12 @@ const DynamicChartRenderComponent = ({
         <Hint>
           De valda serierna har {units.length} olika enheter, men grafen har bara två axlar: {units.slice(1).join(', ')} delar
           den högra. Slå på ”Index = 100 vid start” för att jämföra utvecklingen på en gemensam axel.
+        </Hint>
+      )}
+      {indexed && plotted.some((s) => s.indexKind === 'change') && (
+        <Hint>
+          Serier i procent indexeras inte utan visas som förändring i procentenheter (p.e.) sedan start
+          {plotted.some((s) => s.indexKind === 'index') ? ', på den högra axeln' : ''}.
         </Hint>
       )}
       {withoutData.length > 0 && (
