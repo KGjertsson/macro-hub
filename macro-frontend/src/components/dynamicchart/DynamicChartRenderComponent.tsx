@@ -93,9 +93,13 @@ const DynamicChartRenderComponent = ({
     return config ? [{ config, style: styles[config.name], values: dataset.values, rawValues: dataset.values }] : [];
   });
 
+  // A series with no data points in the window still keeps its chip, but is noted instead of plotted
+  const withoutData = series.filter((s) => s.values.every((v) => v === null));
+  const withData = series.filter((s) => !withoutData.includes(s));
+
   const notIndexable: ChartSeries[] = [];
   const plotted = indexed
-    ? series.flatMap((s) => {
+    ? withData.flatMap((s) => {
       const rebased = rebaseToIndex(s.values);
       if (!rebased) {
         notIndexable.push(s);
@@ -103,9 +107,12 @@ const DynamicChartRenderComponent = ({
       }
       return [{ ...s, values: rebased }];
     })
-    : series;
+    : withData;
 
-  const units = Array.from(new Set(selectedItems.map((item) => item.unit ?? '')));
+  // Axes only for units that have something to draw, in the order the series were added
+  const units = Array.from(new Set(
+    selectedItems.filter((item) => withData.some((s) => s.config === item)).map((item) => item.unit ?? '')
+  ));
 
   return (
     <div className='flex flex-col gap-3'>
@@ -115,18 +122,23 @@ const DynamicChartRenderComponent = ({
           den högra. Slå på ”Index = 100 vid start” för att jämföra utvecklingen på en gemensam axel.
         </Hint>
       )}
+      {withoutData.length > 0 && (
+        <Hint>Ingen data i perioden: {withoutData.map((s) => s.config.displayName).join(', ')}.</Hint>
+      )}
       {notIndexable.length > 0 && (
         <Hint>
           Kan inte indexeras eftersom startvärdet är noll eller negativt, visas inte:{' '}
           {notIndexable.map((s) => s.config.displayName).join(', ')}.
         </Hint>
       )}
-      <DynamicChartComponent
-        labels={data.labels.map(formatLabel)}
-        series={plotted}
-        indexed={indexed}
-        units={units}
-      />
+      {plotted.length > 0 && (
+        <DynamicChartComponent
+          labels={data.labels.map(formatLabel)}
+          series={plotted}
+          indexed={indexed}
+          units={units}
+        />
+      )}
     </div>
   );
 };

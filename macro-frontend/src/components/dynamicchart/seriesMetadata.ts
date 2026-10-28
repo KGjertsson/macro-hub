@@ -154,8 +154,8 @@ export const buildPickerGroups = (configs: SeriesConfig[]): PickerGroup[] => {
   );
 };
 
-// Rebases a series to 100 at its first value in the window. A start at or below zero has no
-// meaningful index (e.g. a negative policy rate), so such series give null
+// Rebases a series to 100 at its first non-null value in the window (series are null before their
+// own start). A start at or below zero has no meaningful index (e.g. a negative policy rate), so such series give null
 export const rebaseToIndex = (values: (number | null)[]): (number | null)[] | null => {
   const start = values.find((v) => v !== null);
   if (start === undefined || start === null || start <= 0) return null;

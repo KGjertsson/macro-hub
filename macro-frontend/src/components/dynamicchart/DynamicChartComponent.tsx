@@ -57,7 +57,6 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
     borderWidth: 2,
     pointRadius: 0,
     pointHoverRadius: 4,
-    spanGaps: true,
     yAxisID: axisFor(s.config.unit)
   }));
 
@@ -79,12 +78,12 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
           plugins: {
             legend: { display: false },
             tooltip: {
+              // Series are null outside their own date range; leave them out instead of listing a blank
+              filter: (item) => item.parsed.y !== null && !Number.isNaN(item.parsed.y),
               callbacks: {
                 label: (context) => {
                   const s = series[context.datasetIndex];
-                  const raw = s.rawValues[context.dataIndex];
-                  if (raw === null) return `${s.config.displayName}: –`;
-                  const value = formatValue(raw, s.config.unit);
+                  const value = formatValue(s.rawValues[context.dataIndex] as number, s.config.unit);
                   return indexed
                     ? `${s.config.displayName}: ${numberFormat.format(context.parsed.y)} (${value})`
                     : `${s.config.displayName}: ${value}`;
