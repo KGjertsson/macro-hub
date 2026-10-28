@@ -9,10 +9,12 @@ import org.springframework.test.context.ActiveProfiles;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,7 +45,7 @@ public class ChartSeriesConfigIntegrationTest {
         final var configs = outPort.getChartSeriesConfigList();
 
         // then
-        assertEquals(110, configs.size());
+        assertEquals(108, configs.size());
         configs.forEach(c -> {
             assertNotNull(c.unit(), c.name());
             assertNotNull(c.subcategory(), c.name());
@@ -128,6 +130,108 @@ public class ChartSeriesConfigIntegrationTest {
         assertTrue(json.contains("\"subcategory\":\"Statsobligation\""), json);
         assertTrue(json.contains("\"country\":\"Sverige\""), json);
         assertTrue(json.contains("\"maturityMonths\":120"), json);
+    }
+
+    @Test
+    void shouldHaveNoEmptyPathSegment_inAnyScrapeUrl() {
+        // when
+        final var configs = outPort.getSeriesConfigList();
+
+        // then
+        configs.stream()
+                .filter(c -> c.scrapeUrl() != null)
+                .forEach(c -> assertFalse(c.scrapeUrl().contains("Observations//"), c.name()));
+        assertEquals(
+                "https://api.riksbank.se/swea/v1/Observations/EUDP3MGBP/1979-12-19",
+                find(configs, "EuroMarketRateGB3Month").scrapeUrl()
+        );
+    }
+
+    @Test
+    void shouldScrapeTheSixMonthSeries_forJapanSixMonth() {
+        // when
+        final var japan6Month = find(outPort.getSeriesConfigList(), "EuroMarketRateJapan6Month");
+
+        // then
+        assertEquals("https://api.riksbank.se/swea/v1/Observations/EUDP6MJPY/1979-11-29", japan6Month.scrapeUrl());
+    }
+
+    @Test
+    void shouldNotHaveTheOldEuroAreaComposition() {
+        // when
+        final var names = outPort.getSeriesConfigList().stream()
+                .map(SeriesConfig::name)
+                .toList();
+
+        // then
+        assertFalse(names.contains("DebtMioEurEa19"));
+        assertFalse(names.contains("DebtPcGdpEa19"));
+        assertTrue(names.contains("DebtMioEurEa20"));
+        assertTrue(names.contains("DebtPcGdpEa20"));
+    }
+
+    @Test
+    void shouldUseOneCountryLabel_forTheEuroArea() {
+        // when
+        final var euroArea = outPort.getChartSeriesConfigList().stream()
+                .filter(c -> c.country() != null && c.country().startsWith("Euroområdet"))
+                .toList();
+
+        // then
+        assertEquals(Set.of("Euroområdet"), euroArea.stream().map(SeriesConfig::country).collect(Collectors.toSet()));
+        assertEquals(
+                Set.of("Räntor", "Statsobligationer", "Statsskuld"),
+                euroArea.stream().map(SeriesConfig::category).collect(Collectors.toSet())
+        );
+        assertEquals("Statsskuld i % av BNP, Euroområdet (EA20)", find(euroArea, "DebtPcGdpEa20").displayName());
+    }
+
+    @Test
+    void shouldMatchTheCountry_toTheEurostatGeoCode() {
+        // given
+        final var countryByGeo = Map.ofEntries(
+                Map.entry("at", "Österrike"),
+                Map.entry("be", "Belgien"),
+                Map.entry("bg", "Bulgarien"),
+                Map.entry("cy", "Cypern"),
+                Map.entry("cz", "Tjeckien"),
+                Map.entry("de", "Tyskland"),
+                Map.entry("dk", "Danmark"),
+                Map.entry("ea20", "Euroområdet"),
+                Map.entry("ee", "Estland"),
+                Map.entry("el", "Grekland"),
+                Map.entry("es", "Spanien"),
+                Map.entry("eu27_2020", "Europeiska unionen (EU27)"),
+                Map.entry("fi", "Finland"),
+                Map.entry("fr", "Frankrike"),
+                Map.entry("hr", "Kroatien"),
+                Map.entry("hu", "Ungern"),
+                Map.entry("ie", "Irland"),
+                Map.entry("it", "Italien"),
+                Map.entry("lt", "Litauen"),
+                Map.entry("lu", "Luxemburg"),
+                Map.entry("lv", "Lettland"),
+                Map.entry("mt", "Malta"),
+                Map.entry("nl", "Nederländerna"),
+                Map.entry("pl", "Polen"),
+                Map.entry("pt", "Portugal"),
+                Map.entry("ro", "Rumänien"),
+                Map.entry("se", "Sverige"),
+                Map.entry("si", "Slovenien"),
+                Map.entry("sk", "Slovakien")
+        );
+
+        // when
+        final var debt = outPort.getChartSeriesConfigList().stream()
+                .filter(c -> c.category().equals("Statsskuld"))
+                .toList();
+
+        // then
+        assertEquals(2 * countryByGeo.size(), debt.size());
+        debt.forEach(c -> {
+            final var geo = c.scrapeUrl().substring(c.scrapeUrl().indexOf("&geo=") + "&geo=".length());
+            assertEquals(countryByGeo.get(geo), c.country(), c.name());
+        });
     }
 
     private static SeriesConfig find(List<SeriesConfig> configs, String name) {
