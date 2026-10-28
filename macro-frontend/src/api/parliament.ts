@@ -52,5 +52,5 @@ export const useMember = (id: string | undefined) =>
 export const partyColor = (parties: Party[] | undefined, code: string) =>
   parties?.find(p => p.code === code)?.color ?? '#9CA3AF';
 
-// Members without a party have the code "-", so they are labelled by name
-export const seatLabel = (party: PartySeats) => (party.code === '-' ? party.name : party.code);
+// Members without a party share the code "-"; together they are shown as "Partilösa"
+export const seatLabel = (party: PartySeats) => (party.code === '-' ? 'Partilösa' : party.code);

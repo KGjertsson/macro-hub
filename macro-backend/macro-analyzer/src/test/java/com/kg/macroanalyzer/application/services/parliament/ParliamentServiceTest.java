@@ -115,7 +115,7 @@ public class ParliamentServiceTest {
         when(databasePort.readParties()).thenReturn(List.of(
                 new Party("S", "Socialdemokraterna", "#E8112d", "Social Democracy", true),
                 new Party("M", "Moderaterna", "#52BDEC", "Liberal Conservatism", true),
-                new Party("-", "Partilösa", "#9CA3AF", null, false)
+                new Party("-", "Politisk vilde", "#9CA3AF", null, false)
         ));
         when(databasePort.readMembersOfParliament()).thenReturn(List.of(
                 member("1", "S", "Förste vice talman (tjänstgörande riksdagsledamot)", List.of()),
@@ -140,7 +140,7 @@ public class ParliamentServiceTest {
         assertEquals(List.of(
                 new PartySeats("S", "Socialdemokraterna", "#E8112d", 4),
                 new PartySeats("M", "Moderaterna", "#52BDEC", 3),
-                new PartySeats("-", "Partilösa", "#9CA3AF", 1)
+                new PartySeats("-", "Politisk vilde", "#9CA3AF", 1)
         ), result.parties());
     }
 
