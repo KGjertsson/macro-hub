@@ -79,7 +79,9 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
     // Index mode marks the start level (100, or 0 p.e.) with a stronger grid line
     reference?: number,
     format: Intl.NumberFormat = numberFormat,
-    range?: AxisRange
+    range?: AxisRange,
+    // Labels below this value are left blank (the grid line stays)
+    labelsFrom?: number
   ) => ({
     type: 'linear' as const,
     position,
@@ -89,7 +91,8 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
     ticks: {
       color: textColor,
       stepSize: range?.stepSize,
-      callback: (value: number | string) => format.format(Number(value))
+      callback: (value: number | string) =>
+        labelsFrom !== undefined && Number(value) < labelsFrom ? '' : format.format(Number(value))
     },
     grid: {
       display: drawGrid || reference !== undefined,
@@ -120,11 +123,14 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
     }
   } else if (hasIndex && hasChange) {
     // Both baselines (100 and 0 p.e.) at the same height, so every line starts from one common line
+    const indexValues = series.filter((s) => s.indexKind === 'index').flatMap((s) => s.values);
     const [indexRange, changeRange] = alignBaselines([
-      { baseline: 100, values: series.filter((s) => s.indexKind === 'index').flatMap((s) => s.values) },
+      { baseline: 100, values: indexValues },
       { baseline: 0, values: series.filter((s) => s.indexKind === 'change').flatMap((s) => s.values) }
     ]);
-    scales.y = scale('left', 'Index (start = 100)', true, 100, numberFormat, indexRange);
+    // Alignment can stretch the index axis below 0; label those ticks only if an index series gets there
+    const indexBelowZero = indexValues.some((v) => v !== null && v < 0);
+    scales.y = scale('left', 'Index (start = 100)', true, 100, numberFormat, indexRange, indexBelowZero ? undefined : 0);
     scales.y1 = scale('right', changeTitle, false, undefined, changeTickFormat, changeRange);
   } else if (hasIndex) {
     scales.y = scale('left', 'Index (start = 100)', true, 100);
