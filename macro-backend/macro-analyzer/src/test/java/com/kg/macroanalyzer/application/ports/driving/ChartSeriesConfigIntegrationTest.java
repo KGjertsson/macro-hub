@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
+package com.kg.macroanalyzer.application.ports.driving;
 
 import com.kg.macroanalyzer.application.ports.driving.out.OutPort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class SeriesConfigRepositoryTest {
+public class ChartSeriesConfigIntegrationTest {
 
     @Autowired
     OutPort outPort;
@@ -51,18 +51,27 @@ public class SeriesConfigRepositoryTest {
     }
 
     @Test
-    void shouldHaveCountryAndMaturity_forEveryRate() {
+    void shouldHaveCountry_forEveryRateAndBond() {
         // when
-        final var rates = outPort.getChartSeriesConfigList().stream()
+        final var ratesAndBonds = outPort.getChartSeriesConfigList().stream()
+                .filter(c -> Set.of("Räntor", "Statsobligationer").contains(c.category()))
+                .toList();
+
+        // then
+        assertEquals(39, ratesAndBonds.size());
+        ratesAndBonds.forEach(c -> assertNotNull(c.country(), c.name()));
+    }
+
+    @Test
+    void shouldHaveMaturity_forEveryRateWithATerm() {
+        // when
+        final var termRates = outPort.getChartSeriesConfigList().stream()
                 .filter(c -> Set.of("Euromarknadsränta", "Statsobligation", "Statsskuldväxel").contains(c.subcategory()))
                 .toList();
 
         // then
-        assertEquals(37, rates.size());
-        rates.forEach(c -> {
-            assertNotNull(c.country(), c.name());
-            assertNotNull(c.maturityMonths(), c.name());
-        });
+        assertEquals(37, termRates.size());
+        termRates.forEach(c -> assertNotNull(c.maturityMonths(), c.name()));
     }
 
     @Test
@@ -75,13 +84,23 @@ public class SeriesConfigRepositoryTest {
         // then
         assertEquals("Statsskuld", nominal.category());
         assertEquals("Nominell", nominal.subcategory());
-        assertEquals("M€", nominal.unit());
+        assertEquals("mn EUR", nominal.unit());
         assertEquals("Statsskuld", pctGdp.category());
         assertEquals("Andel av BNP", pctGdp.subcategory());
         assertEquals("% av BNP", pctGdp.unit());
         assertEquals("Österrike", pctGdp.country());
         assertEquals("Statsskuld i % av BNP, Österrike", pctGdp.displayName());
         assertNull(pctGdp.maturityMonths());
+    }
+
+    @Test
+    void shouldQuoteTheExchangeRate_inSekPerUsd() {
+        // when
+        final var usdSek = find(outPort.getSeriesConfigList(), "UsdSekExchangeRate");
+
+        // then
+        assertEquals("Valuta", usdSek.category());
+        assertEquals("SEK/USD", usdSek.unit());
     }
 
     @Test

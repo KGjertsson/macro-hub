@@ -43,7 +43,7 @@ FROM (VALUES
     ('EuroMarketRateNorway6Month',   '%', 'Euromarknadsränta', 'Norge',           6),
     ('EuroMarketRateUsa6Month',      '%', 'Euromarknadsränta', 'USA',             6),
     -- Valuta
-    ('UsdSekExchangeRate',           'SEK', 'Växelkurs',       NULL,              NULL),
+    ('UsdSekExchangeRate',           'SEK/USD', 'Växelkurs',       NULL,              NULL),
     -- Statsobligationer
     ('GovernmentBillSweden1Month',   '%', 'Statsskuldväxel',   'Sverige',         1),
     ('GovernmentBillSweden3Month',   '%', 'Statsskuldväxel',   'Sverige',         3),
@@ -72,10 +72,10 @@ FROM (VALUES
     ('IntGovBondsUsa10Year',         '%', 'Statsobligation',   'USA',             120),
     -- Nyckeltal USA (FRED)
     ('FEDUnemploymentRate',          '%',        'Arbetsmarknad', 'USA', NULL), -- UNRATE: percent
-    ('FEDGPD',                       'Mdr USD',  'BNP',           'USA', NULL), -- FYGDP: billions of dollars
-    ('FEDTotalPublicDebt',           'MUSD',     'Statsfinanser', 'USA', NULL), -- GFDEBTN: millions of dollars
+    ('FEDGPD',                       'mdr USD',  'BNP',           'USA', NULL), -- FYGDP: billions of dollars
+    ('FEDTotalPublicDebt',           'mn USD',   'Statsfinanser', 'USA', NULL), -- GFDEBTN: millions of dollars
     ('FEDPublicDebtAsGDPPercentage', '% av BNP', 'Statsfinanser', 'USA', NULL), -- GFDEGDQ188S: percent of GDP
-    ('FEDSurplusOrDeficit',          'MUSD',     'Statsfinanser', 'USA', NULL), -- FYFSD: millions of dollars
+    ('FEDSurplusOrDeficit',          'mn USD',   'Statsfinanser', 'USA', NULL), -- FYFSD: millions of dollars
     ('FEDSPX500',                    'punkter',  'Aktieindex',    'USA', NULL), -- SP500: index points
     ('FEDDJ',                        'punkter',  'Aktieindex',    'USA', NULL), -- DJIA: index points
     ('FEDN100',                      'punkter',  'Aktieindex',    'USA', NULL), -- NASDAQ100: index points
@@ -86,7 +86,7 @@ WHERE s.name = m.name;
 
 -- Statsskuld (Eurostat gov_10dd_edpt1): the area is the geo code in the series name
 UPDATE series_configuration s
-SET unit        = CASE WHEN s.name LIKE 'DebtMioEur%' THEN 'M€' ELSE '% av BNP' END,
+SET unit        = CASE WHEN s.name LIKE 'DebtMioEur%' THEN 'mn EUR' ELSE '% av BNP' END,
     subcategory = CASE WHEN s.name LIKE 'DebtMioEur%' THEN 'Nominell' ELSE 'Andel av BNP' END,
     country     = g.country
 FROM (VALUES
