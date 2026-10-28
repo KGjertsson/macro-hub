@@ -166,7 +166,7 @@ PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1â€
 
 ## Workflow
 
-Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent reviews it, then it is merged once the reviewer says LGTM. `main` is protected: every change needs a PR, and the `frontend` and `backend` jobs in `.github/workflows/ci.yml` (build, lint, `mvn test`) must pass. No approval is required.
+Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent (Fable, or Opus when Fable credits run out) reviews it, then it is merged once the reviewer says LGTM. `main` is protected: every change needs a PR, and the `frontend` and `backend` jobs in `.github/workflows/ci.yml` (build, lint, `mvn test`) must pass. No approval is required.
 
 ## Commit Convention
 
