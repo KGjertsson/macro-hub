@@ -11,7 +11,7 @@ import {
   Tooltip
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { ChartSeries } from '@/components/dynamicchart/seriesMetadata';
+import { ChartSeries, SeriesStyle } from '@/components/dynamicchart/seriesMetadata';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
@@ -25,6 +25,22 @@ const formatValue = (value: number, unit?: string) =>
 // Canvas can't read CSS variables, so resolve the theme tokens (stored as "H S% L%") once per render
 const themeColor = (token: string) =>
   `hsl(${getComputedStyle(document.documentElement).getPropertyValue(token).trim()})`;
+
+// Tooltip swatch: a short line sample like the series chips, so a dashed series isn't shown as the
+// same filled square as the solid series sharing its hue. An SVG image stays sharp on high-DPI canvases
+const swatchCache = new Map<string, HTMLImageElement>();
+const swatchFor = ({ color, dashed }: SeriesStyle) => {
+  const key = `${color}:${dashed}`;
+  let image = swatchCache.get(key);
+  if (!image) {
+    const dash = dashed ? " stroke-dasharray='4 2'" : '';
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='16' height='12'><line x1='0' y1='6' x2='16' y2='6' stroke='${color}' stroke-width='3'${dash}/></svg>`;
+    image = new Image(16, 12);
+    image.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    swatchCache.set(key, image);
+  }
+  return image;
+};
 
 interface Props {
   labels: string[];
@@ -82,7 +98,11 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
             tooltip: {
               // Series are null outside their own date range; leave them out instead of listing a blank
               filter: (item) => item.parsed.y !== null && !Number.isNaN(item.parsed.y),
+              usePointStyle: true,
+              boxWidth: 16,
+              boxPadding: 4,
               callbacks: {
+                labelPointStyle: (context) => ({ pointStyle: swatchFor(series[context.datasetIndex].style), rotation: 0 }),
                 label: (context) => {
                   const s = series[context.datasetIndex];
                   const value = formatValue(s.rawValues[context.dataIndex] as number, s.config.unit);
