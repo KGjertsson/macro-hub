@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { rootUrl } from '@/models/Constants';
-import { Composition, ElectionResult, MemberDetail, MemberSummary, Party } from '@/models/Parliament';
+import { Composition, ElectionResult, MemberDetail, MemberSummary, Party, PartySeats } from '@/models/Parliament';
 
 const baseUrl = `${rootUrl}/macro-analyzer/parliament`;
 
@@ -51,3 +51,6 @@ export const useMember = (id: string | undefined) =>
 
 export const partyColor = (parties: Party[] | undefined, code: string) =>
   parties?.find(p => p.code === code)?.color ?? '#9CA3AF';
+
+// Members without a party have the code "-", so they are labelled by name
+export const seatLabel = (party: PartySeats) => (party.code === '-' ? party.name : party.code);
