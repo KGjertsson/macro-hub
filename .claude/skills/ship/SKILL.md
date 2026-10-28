@@ -25,6 +25,7 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 
 ## 3. Reviewer (fresh named sub-agent)
 
+- Spawn it with `model: "fable"`. If that spawn (or a later re-review message) fails because Fable credits or usage limits are exhausted, or the model is unavailable, spawn a fresh reviewer with `model: "opus"` and the same brief, and tell the user the review ran on Opus.
 - Brief it with the PR number, the stated intent and the agreed requirements. Leave out the implementer's reasoning and your own opinions.
 - It reviews `gh pr diff <n>` and reads surrounding code for context.
 - If it builds, it uses its own worktree. It never checks out branches in the main clone.
