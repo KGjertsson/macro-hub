@@ -22,12 +22,15 @@ public class UniqueMacroPointCollector implements Collector<MacroPoint, List<Mac
     @Override
     public BiConsumer<List<MacroPoint>, MacroPoint> accumulator() {
         return (acc, element) -> {
-            final var elementAlreadyExists = acc.stream()
+            final var existingIndex = acc.stream()
                     .map(MacroPoint::date)
                     .toList()
-                    .contains(element.date());
-            if (!elementAlreadyExists) {
+                    .indexOf(element.date());
+            if (existingIndex < 0) {
                 acc.add(element);
+            } else if (acc.get(existingIndex).value() == null && element.value() != null) {
+                // A period where the series starts part-way through takes its first observation, not the padding
+                acc.set(existingIndex, element);
             }
         };
     }

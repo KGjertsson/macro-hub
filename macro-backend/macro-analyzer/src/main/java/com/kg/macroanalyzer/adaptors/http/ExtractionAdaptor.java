@@ -234,8 +234,8 @@ public class ExtractionAdaptor {
         }
 
         public ChartData build(MacroSeries macroSeries) {
-            this.index = this.index + 1;
             final var color = colorSelectionStrategy.pickColor(index);
+            this.index = this.index + 1;
 
             return ChartData.builder()
                     .values(macroSeries.getValues())
