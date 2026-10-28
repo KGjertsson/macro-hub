@@ -40,6 +40,17 @@ const countryRank = (country: string) => (country === 'Sverige' ? 0 : isAggregat
 export const compareCountries = (a: string, b: string) =>
   countryRank(a) - countryRank(b) || a.localeCompare(b, 'sv-SE');
 
+const CATEGORY_ORDER = ['Räntor', 'Statsobligationer', 'Statsskuld', 'Valuta', 'Nyckeltal USA'];
+
+const categoryRank = (category: string) =>
+  CATEGORY_ORDER.includes(category) ? CATEGORY_ORDER.indexOf(category) : CATEGORY_ORDER.length;
+
+// The known categories in a fixed order, any others after them alphabetically
+export const orderedCategories = (configs: SeriesConfig[]) =>
+  Array.from(new Set(configs.map((c) => c.category))).sort(
+    (a, b) => categoryRank(a) - categoryRank(b) || a.localeCompare(b, 'sv-SE')
+  );
+
 export const formatMaturity = (months: number) =>
   months < 12 ? `${months} mån` : `${months / 12} år`;
 

@@ -22,8 +22,8 @@ interface Props {
 }
 
 // The chips double as the chart legend
-const SeriesChips = ({ selected, styles, onRemove }: Props) => (
-  <ul aria-label='Valda serier' className='contents'>
+const SeriesChips = ({ selected, styles, onRemove }: Props) => selected.length === 0 ? null : (
+  <ul aria-label='Valda serier' className='flex min-w-0 basis-full flex-wrap items-center gap-2 sm:flex-1 sm:basis-0 sm:pt-0.5'>
     {selected.map((config) => (
       <li
         key={config.name}

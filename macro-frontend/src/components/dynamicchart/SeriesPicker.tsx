@@ -8,7 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { SeriesConfig } from '@/models/SeriesConfig';
 import SeriesCategoryPane from '@/components/dynamicchart/SeriesCategoryPane';
-import { matchesAllWords } from '@/components/dynamicchart/seriesMetadata';
+import { matchesAllWords, orderedCategories } from '@/components/dynamicchart/seriesMetadata';
 
 interface Props {
   configs: SeriesConfig[];
@@ -22,8 +22,10 @@ interface ContentProps extends Props {
 
 const PickerContent = ({ configs, selectedNames, onToggle, stacked }: ContentProps) => {
   const [search, setSearch] = useState('');
-  const categories = Array.from(new Set(configs.map((c) => c.category)));
-  const [activeCategory, setActiveCategory] = useState(categories[0]);
+  const categories = orderedCategories(configs);
+  // Undefined until a category is clicked, so the first one is shown even if the configs arrive after opening
+  const [clickedCategory, setActiveCategory] = useState<string>();
+  const activeCategory = clickedCategory ?? categories[0];
   const isSelected = (name: string) => selectedNames.includes(name);
 
   return (
@@ -42,10 +44,14 @@ const PickerContent = ({ configs, selectedNames, onToggle, stacked }: ContentPro
                 key={config.name}
                 value={config.displayName}
                 onSelect={() => onToggle(config.name)}
+                aria-checked={isSelected(config.name)}
                 className='gap-2'
               >
                 <Check className={cn('h-4 w-4 shrink-0', isSelected(config.name) ? 'opacity-100' : 'opacity-0')} />
-                <span className='flex-1'>{config.displayName}</span>
+                <span className='flex-1'>
+                  {config.displayName}
+                  {isSelected(config.name) && <span className='sr-only'>, vald</span>}
+                </span>
                 <span className='text-xs text-muted-foreground'>{config.category}</span>
               </CommandItem>
             ))}

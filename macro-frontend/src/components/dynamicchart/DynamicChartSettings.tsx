@@ -51,7 +51,7 @@ const DynamicChartSettings = () => {
   return (
     <div className='flex flex-col gap-4'>
       {error && <p className='text-sm text-destructive'>Kunde inte hämta serier: {error.message}</p>}
-      <div className='flex flex-wrap items-center gap-2'>
+      <div className='flex flex-wrap items-start gap-2'>
         <SeriesPicker configs={allSeriesConfigs} selectedNames={selectedNames} onToggle={toggleSeries} />
         <SeriesChips selected={selectedItems} styles={styles} onRemove={toggleSeries} />
       </div>

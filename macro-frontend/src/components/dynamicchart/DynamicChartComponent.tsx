@@ -16,9 +16,11 @@ import { ChartSeries } from '@/components/dynamicchart/seriesMetadata';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
 const numberFormat = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 2 });
+// Rates are published with up to three decimals
+const valueFormat = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 3 });
 
 const formatValue = (value: number, unit?: string) =>
-  unit ? `${numberFormat.format(value)} ${unit}` : numberFormat.format(value);
+  unit ? `${valueFormat.format(value)} ${unit}` : valueFormat.format(value);
 
 // Canvas can't read CSS variables, so resolve the theme tokens (stored as "H S% L%") once per render
 const themeColor = (token: string) =>
