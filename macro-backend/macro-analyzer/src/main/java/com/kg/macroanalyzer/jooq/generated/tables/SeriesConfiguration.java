@@ -93,6 +93,26 @@ public class SeriesConfiguration extends TableImpl<SeriesConfigurationRecord> {
      */
     public final TableField<SeriesConfigurationRecord, String> CATEGORY = createField(DSL.name("category"), SQLDataType.VARCHAR(200), this, "");
 
+    /**
+     * The column <code>public.series_configuration.unit</code>.
+     */
+    public final TableField<SeriesConfigurationRecord, String> UNIT = createField(DSL.name("unit"), SQLDataType.VARCHAR(50), this, "");
+
+    /**
+     * The column <code>public.series_configuration.subcategory</code>.
+     */
+    public final TableField<SeriesConfigurationRecord, String> SUBCATEGORY = createField(DSL.name("subcategory"), SQLDataType.VARCHAR(100), this, "");
+
+    /**
+     * The column <code>public.series_configuration.country</code>.
+     */
+    public final TableField<SeriesConfigurationRecord, String> COUNTRY = createField(DSL.name("country"), SQLDataType.VARCHAR(100), this, "");
+
+    /**
+     * The column <code>public.series_configuration.maturity_months</code>.
+     */
+    public final TableField<SeriesConfigurationRecord, Integer> MATURITY_MONTHS = createField(DSL.name("maturity_months"), SQLDataType.INTEGER, this, "");
+
     private SeriesConfiguration(Name alias, Table<SeriesConfigurationRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

@@ -33,6 +33,10 @@ erDiagram
         datetime updated
         string scrape_url
         string category
+        string unit
+        string subcategory
+        string country
+        integer maturity_months
     }
     
     MACRO_SERIES {
