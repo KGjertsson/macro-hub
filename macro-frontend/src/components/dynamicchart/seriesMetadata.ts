@@ -169,15 +169,15 @@ export const buildPickerGroups = (configs: SeriesConfig[]): PickerGroup[] => {
   );
 };
 
+const firstValue = (values: (number | null)[]) => values.find((v) => v !== null) ?? null;
+
 // Rebases a series to 100 at its first non-null value in the window (series are null before their
 // own start). A start at or below zero has no meaningful index (e.g. a negative policy rate), so such series give null
 export const rebaseToIndex = (values: (number | null)[]): (number | null)[] | null => {
-  const start = values.find((v) => v !== null);
-  if (start === undefined || start === null || start <= 0) return null;
+  const start = firstValue(values);
+  if (start === null || start <= 0) return null;
   return values.map((v) => (v === null ? null : (v / start) * 100));
 };
-
-const firstValue = (values: (number | null)[]) => values.find((v) => v !== null) ?? null;
 
 // Change since the first non-null value in the window, so the series starts at 0
 export const changeSinceStart = (values: (number | null)[]): (number | null)[] | null => {
@@ -216,6 +216,15 @@ const niceStepAtLeast = (min: number) => {
 
 export type AxisRange = { min: number; max: number; stepSize: number };
 
+// Decimals needed to write a tick step exactly (0,25 → 2, 2,5 → 1, 50 → 0)
+export const stepDecimals = (stepSize: number) => {
+  let decimals = 0;
+  while (decimals < 10 && Math.abs(Math.round(stepSize * 10 ** decimals) - stepSize * 10 ** decimals) > 1e-6) {
+    decimals++;
+  }
+  return decimals;
+};
+
 // Scales for axes that each have a baseline (index 100, change 0) so all baselines sit at the same height.
 // Every axis gets its own nice step but the same number of steps below and above its baseline; the split
 // that leaves the least empty space wins
@@ -233,6 +242,11 @@ export const alignBaselines = (axes: { baseline: number; values: (number | null)
     return { baseline, below: baseline - low, above: high - baseline };
   });
 
+  // Nothing moves away from its baseline: keep the baselines mid-axis instead of on the bottom border
+  if (extents.every((e) => e.below === 0 && e.above === 0)) {
+    return extents.map(({ baseline }) => ({ min: baseline - 2, max: baseline + 2, stepSize: 1 }));
+  }
+
   let best: { ranges: AxisRange[]; waste: number } | null = null;
   for (let intervals = 4; intervals <= 10; intervals++) {
     for (let stepsBelow = 0; stepsBelow <= intervals; stepsBelow++) {
@@ -242,7 +256,9 @@ export const alignBaselines = (axes: { baseline: number; values: (number | null)
         const stepSize = niceStepAtLeast(
           Math.max(stepsBelow ? below / stepsBelow : 0, stepsAbove ? above / stepsAbove : 0)
         );
-        return { min: baseline - stepsBelow * stepSize, max: baseline + stepsAbove * stepSize, stepSize };
+        // Rounded to the step's decimals so the ticks (and the baseline tick) carry no float noise
+        const round = (value: number) => Number(value.toFixed(stepDecimals(stepSize)));
+        return { min: round(baseline - stepsBelow * stepSize), max: round(baseline + stepsAbove * stepSize), stepSize };
       });
       const waste = ranges.reduce(
         (sum, r, i) => sum + 1 - (extents[i].below + extents[i].above) / (r.max - r.min),

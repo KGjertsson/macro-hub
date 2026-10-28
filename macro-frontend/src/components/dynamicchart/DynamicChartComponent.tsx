@@ -11,7 +11,7 @@ import {
   Tooltip
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { alignBaselines, AxisRange, ChartSeries, SeriesStyle } from '@/components/dynamicchart/seriesMetadata';
+import { alignBaselines, AxisRange, ChartSeries, SeriesStyle, stepDecimals } from '@/components/dynamicchart/seriesMetadata';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
@@ -25,7 +25,6 @@ const changeFormat = new Intl.NumberFormat('sv-SE', {
   maximumFractionDigits: 2,
   signDisplay: 'exceptZero'
 });
-const changeTickFormat = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 2, signDisplay: 'exceptZero' });
 
 const formatValue = (value: number, unit?: string) =>
   unit ? `${valueFormat.format(value)} ${unit}` : valueFormat.format(value);
@@ -72,35 +71,50 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
       ? (s.indexKind === 'change' && hasIndex ? 'y1' : 'y')
       : (units.indexOf(s.config.unit ?? '') <= 0 ? 'y' : 'y1');
 
+  type ScaleOptions = {
+    drawGrid?: boolean;
+    // Index mode marks the start level (100, or 0 p.e.) with a stronger grid line
+    reference?: number;
+    // Percentage-point changes are labelled with a sign
+    signed?: boolean;
+    range?: AxisRange;
+    // Labels below this value are left blank (the grid line stays)
+    labelsFrom?: number;
+  };
+
   const scale = (
     position: 'left' | 'right',
     title: string,
-    drawGrid: boolean,
-    // Index mode marks the start level (100, or 0 p.e.) with a stronger grid line
-    reference?: number,
-    format: Intl.NumberFormat = numberFormat,
-    range?: AxisRange,
-    // Labels below this value are left blank (the grid line stays)
-    labelsFrom?: number
-  ) => ({
-    type: 'linear' as const,
-    position,
-    min: range?.min,
-    max: range?.max,
-    title: { display: true, text: title, color: textColor },
-    ticks: {
-      color: textColor,
-      stepSize: range?.stepSize,
-      callback: (value: number | string) =>
-        labelsFrom !== undefined && Number(value) < labelsFrom ? '' : format.format(Number(value))
-    },
-    grid: {
-      display: drawGrid || reference !== undefined,
-      color: (context: { tick?: { value: number } }) =>
-        context.tick?.value === reference ? textColor : drawGrid ? gridColor : 'transparent'
-    },
-    border: { color: gridColor }
-  });
+    { drawGrid = false, reference, signed = false, range, labelsFrom }: ScaleOptions = {}
+  ) => {
+    // Fixed steps get as many decimals as the step needs, so neighbouring ticks never share a label
+    const format = new Intl.NumberFormat('sv-SE', {
+      maximumFractionDigits: range ? stepDecimals(range.stepSize) : 2,
+      signDisplay: signed ? 'exceptZero' : 'auto'
+    });
+    return {
+      type: 'linear' as const,
+      position,
+      min: range?.min,
+      max: range?.max,
+      title: { display: true, text: title, color: textColor },
+      ticks: {
+        color: textColor,
+        stepSize: range?.stepSize,
+        callback: (value: number | string) =>
+          labelsFrom !== undefined && Number(value) < labelsFrom ? '' : format.format(Number(value))
+      },
+      grid: {
+        display: drawGrid,
+        // Tolerant compare: tick values can carry float noise (0 as 6e-17)
+        color: (context: { tick?: { value: number } }) =>
+          reference !== undefined && context.tick && Math.abs(context.tick.value - reference) < 1e-9
+            ? textColor
+            : gridColor
+      },
+      border: { color: gridColor }
+    };
+  };
 
   const datasets: ChartDataset<'line', (number | null)[]>[] = series.map((s) => ({
     data: s.values,
@@ -117,9 +131,9 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
   const changeTitle = 'Förändring (procentenheter)';
   const scales: NonNullable<ChartOptions<'line'>['scales']> = {};
   if (!indexed) {
-    scales.y = scale('left', units[0] ?? '', true);
+    scales.y = scale('left', units[0] ?? '', { drawGrid: true });
     if (units.length > 1) {
-      scales.y1 = scale('right', units.slice(1).join(' / '), false);
+      scales.y1 = scale('right', units.slice(1).join(' / '));
     }
   } else if (hasIndex && hasChange) {
     // Both baselines (100 and 0 p.e.) at the same height, so every line starts from one common line
@@ -130,12 +144,17 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
     ]);
     // Alignment can stretch the index axis below 0; label those ticks only if an index series gets there
     const indexBelowZero = indexValues.some((v) => v !== null && v < 0);
-    scales.y = scale('left', 'Index (start = 100)', true, 100, numberFormat, indexRange, indexBelowZero ? undefined : 0);
-    scales.y1 = scale('right', changeTitle, false, undefined, changeTickFormat, changeRange);
+    scales.y = scale('left', 'Index (start = 100)', {
+      drawGrid: true,
+      reference: 100,
+      range: indexRange,
+      labelsFrom: indexBelowZero ? undefined : 0
+    });
+    scales.y1 = scale('right', changeTitle, { signed: true, range: changeRange });
   } else if (hasIndex) {
-    scales.y = scale('left', 'Index (start = 100)', true, 100);
+    scales.y = scale('left', 'Index (start = 100)', { drawGrid: true, reference: 100 });
   } else {
-    scales.y = scale('left', changeTitle, true, 0, changeTickFormat);
+    scales.y = scale('left', changeTitle, { drawGrid: true, reference: 0, signed: true });
   }
 
   return (
