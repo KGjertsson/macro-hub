@@ -110,6 +110,41 @@ public class ParliamentServiceTest {
     }
 
     @Test
+    void shouldCountDeputySpeakersAndPartilosa_butNotMembersOnLeave_forComposition() {
+        // given
+        when(databasePort.readParties()).thenReturn(List.of(
+                new Party("S", "Socialdemokraterna", "#E8112d", "Social Democracy", true),
+                new Party("M", "Moderaterna", "#52BDEC", "Liberal Conservatism", true),
+                new Party("-", "Partilösa", "#9CA3AF", null, false)
+        ));
+        when(databasePort.readMembersOfParliament()).thenReturn(List.of(
+                member("1", "S", "Förste vice talman (tjänstgörande riksdagsledamot)", List.of()),
+                member("2", "M", "Andre vice talman (tjänstgörande riksdagsledamot)", List.of()),
+                member("3", "M", "Tredje vice talman (tjänstgörande riksdagsledamot)", List.of()),
+                member("4", "S", "Tjänstgörande riksdagsledamot", List.of()),
+                member("5", "S", "Tjänstgörande ersättare", List.of()),
+                member("6", "S", "Tjänstgörande statsrådsersättare", List.of()),
+                member("7", "M", "Tjänstgörande talmansersättare", List.of()),
+                member("8", "-", "Tjänstgörande riksdagsledamot", List.of()),
+                member("9", "S", "Tjänstledig riksdagsledamot", List.of()),
+                member("10", "S", "Tidigare riksdagsledamot", List.of()),
+                member("11", "M", "Avgången riksdagsledamot", List.of()),
+                member("12", "M", "Tillgänglig ersättare", List.of()),
+                member("13", "-", "Tidigare ersättare", List.of())
+        ));
+
+        // when
+        final var result = parliamentService.getComposition();
+
+        // then
+        assertEquals(List.of(
+                new PartySeats("S", "Socialdemokraterna", "#E8112d", 4),
+                new PartySeats("M", "Moderaterna", "#52BDEC", 3),
+                new PartySeats("-", "Partilösa", "#9CA3AF", 1)
+        ), result.parties());
+    }
+
+    @Test
     void shouldPreferMinisterRole_overCommitteeChair() {
         // given
         when(databasePort.readMembersOfParliament()).thenReturn(List.of(member("1", "M", "Tjänstledig riksdagsledamot", List.of(
