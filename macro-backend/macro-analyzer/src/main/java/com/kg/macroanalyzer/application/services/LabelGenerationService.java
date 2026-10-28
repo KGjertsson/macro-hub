@@ -35,12 +35,22 @@ public class LabelGenerationService {
     ) {
         return macroSeriesList.stream()
                 .map(macroSeries -> macroSeries.macroPoints().isEmpty()
-                        ? macroSeries
+                        ? emptyOnLabels(macroSeries, paddedLabels)
                         : alignToLabels(fillGapsInSeries(macroSeries), paddedLabels))
                 .toList();
     }
 
-    // A series without points in the time frame stays empty; the chart pads it with nulls
+    // A series without points in the time frame gets a null for every label
+    private MacroSeries emptyOnLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
+        final var newPoints = paddedLabels.stream()
+                .map(label -> MacroPoint.builder().date(label).build())
+                .toList();
+
+        return macroSeries.toBuilder()
+                .macroPoints(newPoints)
+                .build();
+    }
+
     private MacroSeries alignToLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
         final var macroPoints = macroSeries.macroPoints();
         final var startDate = LocalDate.from(macroPoints.getFirst().date());
@@ -104,18 +114,15 @@ public class LabelGenerationService {
             List<MacroPoint> macroPoints
     ) {
         final var currentDate = fullLabels.get(index);
+        final var beforeFirstPoint = index < startDateIndexInFull;
+        final var afterLastPoint = (index - startDateIndexInFull) >= macroPoints.size();
 
-        if (index < startDateIndexInFull) {
+        // Outside the series' own range there is no observation, so the value is null
+        if (beforeFirstPoint || afterLastPoint) {
             return MacroPoint.builder()
                     .date(currentDate)
-                    .value(0.0)
                     .build();
-        } else if ((index - startDateIndexInFull) >= macroPoints.size()) {
-            return MacroPoint.builder()
-                    .date(currentDate)
-                    .value(macroPoints.getLast().value())
-                    .build();
-        }  else {
+        } else {
             return macroPoints.get(index - startDateIndexInFull);
         }
     }

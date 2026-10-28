@@ -109,6 +109,28 @@ public class ChartDataPipelineTest {
     }
 
     @Test
+    public void shouldSendNullOutsideSeriesRange_whenSeriesSpanDifferentPeriods() {
+        // given
+        final var long_ = series(
+                "long",
+                LocalDate.of(2020, 1, 1), LocalDate.of(2020, 2, 1), LocalDate.of(2020, 3, 1),
+                LocalDate.of(2020, 4, 1), LocalDate.of(2020, 5, 1)
+        );
+        final var short_ = series("short", LocalDate.of(2020, 2, 15), LocalDate.of(2020, 3, 10));
+
+        // when
+        final var chartData = chartData(
+                List.of(long_, short_),
+                StrategyFactory.Strategy.MONTH,
+                TimeFilterStrategyFactory.TimeFrame.ALL
+        );
+
+        // then
+        assertEquals(List.of(1.0, 2.0, 3.0, 4.0, 5.0), chartData.get(0).values());
+        assertEquals(Arrays.asList(null, 1.0, 1.0, null, null), chartData.get(1).values());
+    }
+
+    @Test
     public void shouldAssignColors_whenMoreSeriesThanPaletteColors() {
         // given
         final var macroSeries = IntStream.range(0, 12)

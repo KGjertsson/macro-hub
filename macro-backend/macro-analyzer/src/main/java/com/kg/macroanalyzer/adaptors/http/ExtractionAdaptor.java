@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -199,7 +198,7 @@ public class ExtractionAdaptor {
         return Optional.ofNullable(alignedBundle)
                 .map(b -> {
                     final var labels = b.labels();
-                    final var chartData = buildChartDataList(b.macroSeries(), labels.size());
+                    final var chartData = buildChartDataList(b.macroSeries());
 
                     return ChartDataWithLabels.builder()
                             .labels(labels)
@@ -208,8 +207,8 @@ public class ExtractionAdaptor {
                 });
     }
 
-    private List<ChartData> buildChartDataList(List<MacroSeries> macroSeriesList, int labelCount) {
-        final var chartDataFactory = new ChartDataFactory(labelCount);
+    private List<ChartData> buildChartDataList(List<MacroSeries> macroSeriesList) {
+        final var chartDataFactory = new ChartDataFactory();
 
         return macroSeriesList.stream()
                 .map(chartDataFactory::build)
@@ -228,11 +227,9 @@ public class ExtractionAdaptor {
 
     private class ChartDataFactory {
 
-        private final int labelCount;
         private Integer index;
 
-        public ChartDataFactory(int labelCount) {
-            this.labelCount = labelCount;
+        public ChartDataFactory() {
             this.index = 0;
         }
 
@@ -241,17 +238,10 @@ public class ExtractionAdaptor {
             this.index = this.index + 1;
 
             return ChartData.builder()
-                    .values(valuesAlignedToLabels(macroSeries))
+                    .values(macroSeries.getValues())
                     .name(macroSeries.name())
                     .color(color)
                     .build();
-        }
-
-        // A series without data in the time frame is sent as nulls, one per label
-        private List<Double> valuesAlignedToLabels(MacroSeries macroSeries) {
-            return macroSeries.macroPoints().isEmpty()
-                    ? Collections.nCopies(labelCount, null)
-                    : macroSeries.getValues();
         }
 
     }
