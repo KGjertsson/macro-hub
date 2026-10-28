@@ -1,41 +1,16 @@
-import React, { useState } from 'react';
-import { rootUrl, SAMPLE_STRATEGY, sampleStrategies, TIME_FRAME, timeWindows } from '@/models/Constants';
+import React from 'react';
+import { rootUrl } from '@/models/Constants';
 import DynamicChartRenderComponent from '@/components/dynamicchart/DynamicChartRenderComponent';
+import ChartControls from '@/components/dynamicchart/ChartControls';
+import SeriesChips from '@/components/dynamicchart/SeriesChips';
+import SeriesPicker from '@/components/dynamicchart/SeriesPicker';
+import { useChartSearchParams } from '@/components/dynamicchart/useChartSearchParams';
+import { useSeriesStyles } from '@/components/dynamicchart/useSeriesStyles';
 import { SeriesConfig } from '@/models/SeriesConfig';
 import { useQuery } from '@tanstack/react-query';
 
-type SampleStrategyDisplay = {
-  Day: string;
-  Month: string;
-  Year: string;
-};
-
-const sampleStrategyDisplay: SampleStrategyDisplay = {
-  Day: 'Dag',
-  Month: 'Månad',
-  Year: 'År'
-};
-
-type TimeFrameDisplay = {
-  All: string,
-  OneYear: string,
-  FiveYear: string,
-  TenYear: string,
-  OneMonth: string
-};
-
-const timeFrameDisplay: TimeFrameDisplay = {
-  All: 'Allt',
-  OneYear: 'Ett år',
-  FiveYear: 'Fem år',
-  TenYear: 'Tio år',
-  OneMonth: 'En månad'
-};
-
 const DynamicChartSettings = () => {
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [sample, setSample] = useState<SAMPLE_STRATEGY>(SAMPLE_STRATEGY.Month);
-  const [timeFrame, setTimeFrame] = useState<TIME_FRAME>(TIME_FRAME.OneYear);
+  const [state, update] = useChartSearchParams();
 
   const fetchSeriesConfig = async (): Promise<SeriesConfig[]> => {
     const res = await fetch(rootUrl + '/macro-analyzer/series-config', {
@@ -60,118 +35,43 @@ const DynamicChartSettings = () => {
 
   const allSeriesConfigs = data ?? [];
 
-  const setSampleFromEvent = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOption = SAMPLE_STRATEGY[e.target.value as keyof typeof SAMPLE_STRATEGY];
-    setSample(selectedOption);
-  };
+  // In the order they were added; names the backend doesn't know are ignored
+  const selectedItems = state.series.flatMap((name) => allSeriesConfigs.filter((config) => config.name === name));
+  const selectedNames = selectedItems.map((config) => config.name);
+  const styles = useSeriesStyles(selectedNames);
 
-  const setTimeWindowFromEvent = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOption = TIME_FRAME[e.target.value as keyof typeof TIME_FRAME];
-    setTimeFrame(selectedOption);
-  };
-
-  const toggleDataSelection = (displayName: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(displayName)
-        ? prev.filter((item) => item !== displayName)
-        : [...prev, displayName]
-    );
-  };
-
-  const dataSelectionComponent = () => {
-    const categories = Array.from(new Set(allSeriesConfigs.map((c) => c.category)));
-    return (
-      <div className='w-full'>
-        <label className='block text-sm font-medium mb-2'>Datatyp</label>
-        <div className='border border-border rounded-md p-3 max-h-64 overflow-y-auto bg-card'>
-          {categories.map((category) => (
-            <div key={category} className='mb-3 last:mb-0'>
-              <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2'>{category}</p>
-              <div className='flex flex-wrap gap-2'>
-                {allSeriesConfigs
-                  .filter((config) => config.category === category)
-                  .map((config) => {
-                    const isSelected = selectedItems.includes(config.displayName);
-                    return (
-                      <button
-                        type='button'
-                        key={config.name}
-                        onClick={() => toggleDataSelection(config.displayName)}
-                        className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
-                          isSelected
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-background border-border hover:bg-muted'
-                        }`}
-                      >
-                        {config.displayName}
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className='text-xs text-muted-foreground mt-1'>Klicka för att välja/avvälja datatyper.</p>
-      </div>
-    );
-  };
-
-  const strategySelectionComponent = () => {
-    return (
-      <div className='w-full'>
-        <label htmlFor='resolution-select' className='block text-sm font-medium mb-1'>Upplösning</label>
-        <select
-          id='resolution-select'
-          value={SAMPLE_STRATEGY[sample]}
-          onChange={setSampleFromEvent}
-          className='block w-full rounded-md border border-border bg-card text-foreground p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
-        >
-          {sampleStrategies.map((s) => (
-            <option key={s} value={s} className='bg-card text-foreground'>
-              {sampleStrategyDisplay[s as keyof SampleStrategyDisplay]}
-            </option>
-          ))}
-        </select>
-      </div>
-    );
-  };
-
-  const timeFrameSelectionComponent = () => {
-    return (
-      <div className='w-full'>
-        <label htmlFor='timeframe-select' className='block text-sm font-medium mb-1'>Tidsram</label>
-        <select
-          id='timeframe-select'
-          value={TIME_FRAME[timeFrame]}
-          onChange={setTimeWindowFromEvent}
-          className='block w-full rounded-md border border-border bg-card text-foreground p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
-        >
-          {timeWindows.map((timeWindow) => (
-            <option key={timeWindow} value={timeWindow} className='bg-card text-foreground'>
-              {timeFrameDisplay[timeWindow as keyof TimeFrameDisplay]}
-            </option>
-          ))}
-        </select>
-      </div>
-    );
+  const toggleSeries = (name: string) => {
+    update({
+      series: selectedNames.includes(name)
+        ? selectedNames.filter((selected) => selected !== name)
+        : [...selectedNames, name]
+    });
   };
 
   return (
-    <div>
-      <p className='mb-2 text-sm text-muted-foreground'>Välj datatyp och upplösning för dynamisk rendering</p>
-      {error && <p className='mb-2 text-sm text-destructive'>Kunde inte hämta datatyper: {error.message}</p>}
-      {dataSelectionComponent()}
-      <div className='my-2' />
-      {strategySelectionComponent()}
-      <div className='my-2' />
-      {timeFrameSelectionComponent()}
-      <DynamicChartRenderComponent
-        selectedItems={allSeriesConfigs.filter((d) =>
-          selectedItems.includes(d.displayName)
-        )}
-        sampleStrategy={sample}
-        timeFrame={timeFrame}
+    <div className='flex flex-col gap-4'>
+      {error && <p className='text-sm text-destructive'>Kunde inte hämta serier: {error.message}</p>}
+      <div className='flex flex-wrap items-center gap-2'>
+        <SeriesPicker configs={allSeriesConfigs} selectedNames={selectedNames} onToggle={toggleSeries} />
+        <SeriesChips selected={selectedItems} styles={styles} onRemove={toggleSeries} />
+      </div>
+      <ChartControls
+        timeFrame={state.timeFrame}
+        sampleStrategy={state.sampleStrategy}
+        indexed={state.indexed}
+        onTimeFrameChange={(timeFrame) => update({ timeFrame })}
+        onSampleStrategyChange={(sampleStrategy) => update({ sampleStrategy })}
+        onIndexedChange={(indexed) => update({ indexed })}
       />
+      {data && (
+        <DynamicChartRenderComponent
+          selectedItems={selectedItems}
+          styles={styles}
+          sampleStrategy={state.sampleStrategy}
+          timeFrame={state.timeFrame}
+          indexed={state.indexed}
+        />
+      )}
     </div>
   );
 };
