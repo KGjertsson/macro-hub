@@ -133,6 +133,62 @@ public class SeriesConfigurationRecord extends UpdatableRecordImpl<SeriesConfigu
         return (String) get(7);
     }
 
+    /**
+     * Setter for <code>public.series_configuration.unit</code>.
+     */
+    public void setUnit(String value) {
+        set(8, value);
+    }
+
+    /**
+     * Getter for <code>public.series_configuration.unit</code>.
+     */
+    public String getUnit() {
+        return (String) get(8);
+    }
+
+    /**
+     * Setter for <code>public.series_configuration.subcategory</code>.
+     */
+    public void setSubcategory(String value) {
+        set(9, value);
+    }
+
+    /**
+     * Getter for <code>public.series_configuration.subcategory</code>.
+     */
+    public String getSubcategory() {
+        return (String) get(9);
+    }
+
+    /**
+     * Setter for <code>public.series_configuration.country</code>.
+     */
+    public void setCountry(String value) {
+        set(10, value);
+    }
+
+    /**
+     * Getter for <code>public.series_configuration.country</code>.
+     */
+    public String getCountry() {
+        return (String) get(10);
+    }
+
+    /**
+     * Setter for <code>public.series_configuration.maturity_months</code>.
+     */
+    public void setMaturityMonths(Integer value) {
+        set(11, value);
+    }
+
+    /**
+     * Getter for <code>public.series_configuration.maturity_months</code>.
+     */
+    public Integer getMaturityMonths() {
+        return (Integer) get(11);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -156,7 +212,7 @@ public class SeriesConfigurationRecord extends UpdatableRecordImpl<SeriesConfigu
     /**
      * Create a detached, initialised SeriesConfigurationRecord
      */
-    public SeriesConfigurationRecord(Integer id, UUID globalId, String name, String displayName, LocalDateTime created, LocalDateTime updated, String scrapeUrl, String category) {
+    public SeriesConfigurationRecord(Integer id, UUID globalId, String name, String displayName, LocalDateTime created, LocalDateTime updated, String scrapeUrl, String category, String unit, String subcategory, String country, Integer maturityMonths) {
         super(SeriesConfiguration.SERIES_CONFIGURATION);
 
         setId(id);
@@ -167,6 +223,10 @@ public class SeriesConfigurationRecord extends UpdatableRecordImpl<SeriesConfigu
         setUpdated(updated);
         setScrapeUrl(scrapeUrl);
         setCategory(category);
+        setUnit(unit);
+        setSubcategory(subcategory);
+        setCountry(country);
+        setMaturityMonths(maturityMonths);
         resetTouchedOnNotNull();
     }
 }

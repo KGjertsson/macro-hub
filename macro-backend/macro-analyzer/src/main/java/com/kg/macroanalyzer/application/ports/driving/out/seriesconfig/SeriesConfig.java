@@ -7,6 +7,10 @@ public record SeriesConfig(
         String name,
         String displayName,
         String scrapeUrl,
-        String category
+        String category,
+        String unit,
+        String subcategory,
+        String country,
+        Integer maturityMonths
 ) {
 }

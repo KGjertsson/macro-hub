@@ -103,7 +103,7 @@ public class OutPortImplTest {
     @Test
     void shouldKeepParliamentAndElectionConfigsOutOfChartList_butInFullList() {
         // given
-        final var rate = SeriesConfig.builder().name("PolicyRateSweden").category("Ränta").build();
+        final var rate = SeriesConfig.builder().name("PolicyRateSweden").category("Räntor").build();
         final var members = SeriesConfig.builder().name("MembersOfParliament").category("Riksdagen").build();
         final var elections = SeriesConfig.builder().name("MunicipalElections").category("Valmyndigheten").build();
         when(databasePort.readSeriesConfigList()).thenReturn(List.of(rate, members, elections));
