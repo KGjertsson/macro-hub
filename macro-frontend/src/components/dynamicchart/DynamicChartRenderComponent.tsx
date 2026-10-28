@@ -1,14 +1,18 @@
 import React from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { rootUrl, SAMPLE_STRATEGY, TIME_FRAME } from '@/models/Constants';
 import DynamicChartComponent from '@/components/dynamicchart/DynamicChartComponent';
-import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SeriesConfig } from '@/models/SeriesConfig';
 import { Dataset } from '@/models/Dataset';
+import { ChartSeries, rebaseToIndex, SeriesStyle } from '@/components/dynamicchart/seriesMetadata';
 
 interface Props {
   selectedItems: SeriesConfig[];
+  styles: Record<string, SeriesStyle>;
   sampleStrategy: SAMPLE_STRATEGY;
   timeFrame: TIME_FRAME;
+  indexed: boolean;
 }
 
 type ChartLabel = number | string | number[];
@@ -24,21 +28,17 @@ const formatLabel = (label: ChartLabel): string =>
     ? label.map((part, index) => (index === 0 ? String(part) : String(part).padStart(2, '0'))).join('-')
     : String(label);
 
+const Hint = ({ children }: { children: React.ReactNode }) => (
+  <p className='text-sm text-muted-foreground'>{children}</p>
+);
+
 const DynamicChartRenderComponent = ({
   selectedItems,
+  styles,
   sampleStrategy,
-  timeFrame
+  timeFrame,
+  indexed
 }: Props) => {
-  const findDisplayName = (name: string) =>
-    selectedItems.find((item) => item.name === name)?.displayName ?? name;
-
-  const formatDisplayName = (raw: Dataset[]): Dataset[] => {
-    return raw.map((d) => ({
-      ...d,
-      name: findDisplayName(d.name),
-    }));
-  };
-
   const body = {
     strategy: sampleStrategy,
     timeFrame: timeFrame,
@@ -71,26 +71,76 @@ const DynamicChartRenderComponent = ({
     queryKey: ['chartData', sampleStrategy, timeFrame, selectedItems.map((i) => i.name)],
     queryFn: fetchChartData,
     enabled: selectedItems.length > 0,
+    // Keep showing the previous chart while a changed selection loads
+    placeholderData: keepPreviousData,
   });
 
   if (selectedItems.length === 0) {
-    return <p className='mt-6 text-sm text-muted-foreground'>Välj minst en datatyp för att visa en graf.</p>;
+    return <Hint>Välj minst en serie med ”Lägg till serie” för att visa en graf.</Hint>;
   }
 
-  if (isPending) return <div />;
+  if (isPending) return <Skeleton className='h-[min(60vh,560px)] min-h-[320px] w-full' />;
 
-  if (error) return <p className='mt-6 text-sm text-destructive'>Ett fel uppstod: {error.message}</p>;
+  if (error) return <p className='text-sm text-destructive'>Ett fel uppstod: {error.message}</p>;
 
   if (!data) {
-    return <p className='mt-6 text-sm text-muted-foreground'>Ingen data finns för de valda datatyperna.</p>;
+    return <Hint>Ingen data finns för de valda serierna i den valda tidsramen.</Hint>;
   }
 
-  const formattedData = {
-    chartData: formatDisplayName(data.chartData),
-    labels: data.labels.map(formatLabel),
-  };
+  // While a new selection loads the response may still be the previous one, so match by name
+  const series: ChartSeries[] = data.chartData.flatMap((dataset) => {
+    const config = selectedItems.find((item) => item.name === dataset.name);
+    return config ? [{ config, style: styles[config.name], values: dataset.values, rawValues: dataset.values }] : [];
+  });
 
-  return <DynamicChartComponent sampled={formattedData} />;
+  // A series with no data points in the window still keeps its chip, but is noted instead of plotted
+  const withoutData = series.filter((s) => s.values.every((v) => v === null));
+  const withData = series.filter((s) => !withoutData.includes(s));
+
+  const notIndexable: ChartSeries[] = [];
+  const plotted = indexed
+    ? withData.flatMap((s) => {
+      const rebased = rebaseToIndex(s.values);
+      if (!rebased) {
+        notIndexable.push(s);
+        return [];
+      }
+      return [{ ...s, values: rebased }];
+    })
+    : withData;
+
+  // Axes only for units that have something to draw, in the order the series were added
+  const units = Array.from(new Set(
+    selectedItems.filter((item) => withData.some((s) => s.config === item)).map((item) => item.unit ?? '')
+  ));
+
+  return (
+    <div className='flex flex-col gap-3'>
+      {!indexed && units.length > 2 && (
+        <Hint>
+          De valda serierna har {units.length} olika enheter, men grafen har bara två axlar: {units.slice(1).join(', ')} delar
+          den högra. Slå på ”Index = 100 vid start” för att jämföra utvecklingen på en gemensam axel.
+        </Hint>
+      )}
+      {withoutData.length > 0 && (
+        <Hint>Ingen data i perioden: {withoutData.map((s) => s.config.displayName).join(', ')}.</Hint>
+      )}
+      {notIndexable.length > 0 && (
+        <Hint>
+          Kan inte indexeras eftersom startvärdet är noll eller negativt, visas inte:{' '}
+          {notIndexable.map((s) => s.config.displayName).join(', ')}.
+        </Hint>
+      )}
+      {plotted.length > 0 && (
+        <DynamicChartComponent
+          labels={data.labels.map(formatLabel)}
+          series={plotted}
+          indexed={indexed}
+          units={units}
+        />
+      )}
+    </div>
+  );
 };
 
 export default DynamicChartRenderComponent;

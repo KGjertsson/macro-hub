@@ -1,16 +1,11 @@
 export const rootUrl: string = 'http://localhost:8080';
 
+// Sent to /chart-data as ordinals, so the order must match the backend's enums
 export enum SAMPLE_STRATEGY {
   Day,
   Month,
   Year,
 }
-
-export const sampleStrategies = [
-  SAMPLE_STRATEGY[SAMPLE_STRATEGY.Day],
-  SAMPLE_STRATEGY[SAMPLE_STRATEGY.Month],
-  SAMPLE_STRATEGY[SAMPLE_STRATEGY.Year]
-];
 
 export enum TIME_FRAME {
   All,
@@ -19,11 +14,3 @@ export enum TIME_FRAME {
   TenYear,
   OneMonth
 }
-
-export const timeWindows = [
-  TIME_FRAME[TIME_FRAME.All],
-  TIME_FRAME[TIME_FRAME.OneYear],
-  TIME_FRAME[TIME_FRAME.FiveYear],
-  TIME_FRAME[TIME_FRAME.TenYear],
-  TIME_FRAME[TIME_FRAME.OneMonth]
-];
