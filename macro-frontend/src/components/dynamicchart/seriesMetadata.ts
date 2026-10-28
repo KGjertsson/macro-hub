@@ -206,3 +206,51 @@ export const toIndexMode = (series: ChartSeries[]): { plotted: ChartSeries[]; no
   });
   return { plotted, notIndexable };
 };
+
+// The smallest "nice" tick step (1, 2, 2,5 or 5 × 10^n) of at least `min`
+const niceStepAtLeast = (min: number) => {
+  if (!(min > 0)) return 1;
+  const magnitude = 10 ** Math.floor(Math.log10(min));
+  return ([1, 2, 2.5, 5, 10].find((m) => m * magnitude >= min - 1e-9 * magnitude) as number) * magnitude;
+};
+
+export type AxisRange = { min: number; max: number; stepSize: number };
+
+// Scales for axes that each have a baseline (index 100, change 0) so all baselines sit at the same height.
+// Every axis gets its own nice step but the same number of steps below and above its baseline; the split
+// that leaves the least empty space wins
+export const alignBaselines = (axes: { baseline: number; values: (number | null)[] }[]): AxisRange[] => {
+  const extents = axes.map(({ baseline, values }) => {
+    // A loop rather than Math.min(...values): daily series over all years are too long to spread
+    let low = baseline;
+    let high = baseline;
+    values.forEach((v) => {
+      if (v !== null) {
+        low = Math.min(low, v);
+        high = Math.max(high, v);
+      }
+    });
+    return { baseline, below: baseline - low, above: high - baseline };
+  });
+
+  let best: { ranges: AxisRange[]; waste: number } | null = null;
+  for (let intervals = 4; intervals <= 10; intervals++) {
+    for (let stepsBelow = 0; stepsBelow <= intervals; stepsBelow++) {
+      const stepsAbove = intervals - stepsBelow;
+      if (extents.some((e) => (e.below > 0 && stepsBelow === 0) || (e.above > 0 && stepsAbove === 0))) continue;
+      const ranges = extents.map(({ baseline, below, above }) => {
+        const stepSize = niceStepAtLeast(
+          Math.max(stepsBelow ? below / stepsBelow : 0, stepsAbove ? above / stepsAbove : 0)
+        );
+        return { min: baseline - stepsBelow * stepSize, max: baseline + stepsAbove * stepSize, stepSize };
+      });
+      const waste = ranges.reduce(
+        (sum, r, i) => sum + 1 - (extents[i].below + extents[i].above) / (r.max - r.min),
+        0
+      );
+      // Strictly better only, so ties keep the fewer intervals
+      if (!best || waste < best.waste - 1e-9) best = { ranges, waste };
+    }
+  }
+  return (best as { ranges: AxisRange[] }).ranges;
+};

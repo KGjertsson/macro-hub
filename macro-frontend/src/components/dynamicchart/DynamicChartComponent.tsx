@@ -11,7 +11,7 @@ import {
   Tooltip
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { ChartSeries, SeriesStyle } from '@/components/dynamicchart/seriesMetadata';
+import { alignBaselines, AxisRange, ChartSeries, SeriesStyle } from '@/components/dynamicchart/seriesMetadata';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
@@ -78,12 +78,19 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
     drawGrid: boolean,
     // Index mode marks the start level (100, or 0 p.e.) with a stronger grid line
     reference?: number,
-    format: Intl.NumberFormat = numberFormat
+    format: Intl.NumberFormat = numberFormat,
+    range?: AxisRange
   ) => ({
     type: 'linear' as const,
     position,
+    min: range?.min,
+    max: range?.max,
     title: { display: true, text: title, color: textColor },
-    ticks: { color: textColor, callback: (value: number | string) => format.format(Number(value)) },
+    ticks: {
+      color: textColor,
+      stepSize: range?.stepSize,
+      callback: (value: number | string) => format.format(Number(value))
+    },
     grid: {
       display: drawGrid || reference !== undefined,
       color: (context: { tick?: { value: number } }) =>
@@ -111,11 +118,16 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
     if (units.length > 1) {
       scales.y1 = scale('right', units.slice(1).join(' / '), false);
     }
+  } else if (hasIndex && hasChange) {
+    // Both baselines (100 and 0 p.e.) at the same height, so every line starts from one common line
+    const [indexRange, changeRange] = alignBaselines([
+      { baseline: 100, values: series.filter((s) => s.indexKind === 'index').flatMap((s) => s.values) },
+      { baseline: 0, values: series.filter((s) => s.indexKind === 'change').flatMap((s) => s.values) }
+    ]);
+    scales.y = scale('left', 'Index (start = 100)', true, 100, numberFormat, indexRange);
+    scales.y1 = scale('right', changeTitle, false, undefined, changeTickFormat, changeRange);
   } else if (hasIndex) {
     scales.y = scale('left', 'Index (start = 100)', true, 100);
-    if (hasChange) {
-      scales.y1 = scale('right', changeTitle, false, 0, changeTickFormat);
-    }
   } else {
     scales.y = scale('left', changeTitle, true, 0, changeTickFormat);
   }
