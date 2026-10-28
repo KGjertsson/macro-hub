@@ -6,11 +6,13 @@ import SeatDistribution from '@/components/SeatDistribution';
 import PoliticianCard from '@/components/PoliticianCard';
 import ParliamentBlog from '@/components/ParliamentBlog';
 import { partyColor, useComposition, useElections, useParliamentMembers, useParties } from '@/api/parliament';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Building, Calendar, Loader2, Search, Users } from 'lucide-react';
+import { ArrowLeft, Building, Calendar, Info, Loader2, Search, Users } from 'lucide-react';
 
 type SeatView = 'election' | 'current';
 
@@ -73,7 +75,7 @@ const Parliament = () => {
 
         {/* Year Selection */}
         <section className='mb-6'>
-          <div className='flex items-center gap-4'>
+          <div className='flex flex-wrap items-center gap-4'>
             <div className='flex items-center gap-2'>
               <Calendar className='w-5 h-5 text-muted-foreground' />
               <span className='text-sm font-medium'>Valår:</span>
@@ -97,12 +99,37 @@ const Parliament = () => {
               </SelectContent>
             </Select>
             {isLatestTerm && composition && (
-              <Tabs value={seatView} onValueChange={(v) => setSeatView(v as SeatView)}>
-                <TabsList>
-                  <TabsTrigger value='election'>Valresultat</TabsTrigger>
-                  <TabsTrigger value='current'>Nuvarande fördelning</TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <div className='flex items-center gap-1'>
+                <Tabs value={seatView} onValueChange={(v) => setSeatView(v as SeatView)}>
+                  <TabsList>
+                    <TabsTrigger value='election'>Valresultat</TabsTrigger>
+                    <TabsTrigger value='current'>Nuvarande fördelning</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 shrink-0 text-muted-foreground'
+                      aria-label='Om valresultat och nuvarande fördelning'
+                    >
+                      <Info className='w-4 h-4' />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className='w-80 space-y-2 text-sm'>
+                    <p>
+                      <strong>Valresultat</strong> visar hur riksdagens 349 mandat fördelades efter valet, enligt
+                      Valmyndighetens slutliga resultat.
+                    </p>
+                    <p>
+                      <strong>Nuvarande fördelning</strong> räknar de ledamöter som sitter i riksdagen i dag och det
+                      parti de tillhör nu. Den kan skilja sig från valresultatet när en ledamot lämnar sitt parti och
+                      blir partilös (politisk vilde).
+                    </p>
+                  </PopoverContent>
+                </Popover>
+              </div>
             )}
           </div>
         </section>

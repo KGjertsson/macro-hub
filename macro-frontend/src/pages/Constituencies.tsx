@@ -25,8 +25,12 @@ const Constituencies = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
                 Röstningsresultat per valkrets
               </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Resultat i riksdagsvalet för Sveriges 29 valkretsar. Kartan är färgad efter största parti.
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                En valkrets är det område där rösterna räknas och riksdagens mandat fördelas. Sverige har 29 valkretsar.
+                De flesta är ett län, men Stockholms, Skåne och Västra Götalands län är uppdelade, och Stockholms, Malmö
+                och Göteborgs kommuner är egna valkretsar. 310 av riksdagens 349 mandat är fasta valkretsmandat som
+                fördelas efter rösterna i varje valkrets. De 39 utjämningsmandaten fördelas så att partiernas mandat i
+                hela landet speglar deras röstandel. Kartan är färgad efter största parti.
               </p>
             </div>
 
