@@ -34,22 +34,26 @@ public class LabelGenerationService {
             List<LocalDate> paddedLabels
     ) {
         return macroSeriesList.stream()
-                .map(this::fillGapsInSeries)
-                .map(macroSeries -> {
-                    final var macroPoints = macroSeries.macroPoints();
-                    final var startDate = LocalDate.from(macroPoints.getFirst().date());
-                    final var startDateIndexInFull = paddedLabels.indexOf(startDate);
-
-                    final var newPoints = IntStream.range(0, paddedLabels.size())
-                            .mapToObj(index -> pointFromLabel(index, startDateIndexInFull, paddedLabels, macroPoints))
-                            .toList();
-
-                    return MacroSeries.builder()
-                            .name(macroSeries.name())
-                            .macroPoints(newPoints)
-                            .build();
-                })
+                .map(macroSeries -> macroSeries.macroPoints().isEmpty()
+                        ? macroSeries
+                        : alignToLabels(fillGapsInSeries(macroSeries), paddedLabels))
                 .toList();
+    }
+
+    // A series without points in the time frame stays empty; the chart pads it with nulls
+    private MacroSeries alignToLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
+        final var macroPoints = macroSeries.macroPoints();
+        final var startDate = LocalDate.from(macroPoints.getFirst().date());
+        final var startDateIndexInFull = paddedLabels.indexOf(startDate);
+
+        final var newPoints = IntStream.range(0, paddedLabels.size())
+                .mapToObj(index -> pointFromLabel(index, startDateIndexInFull, paddedLabels, macroPoints))
+                .toList();
+
+        return MacroSeries.builder()
+                .name(macroSeries.name())
+                .macroPoints(newPoints)
+                .build();
     }
 
     private MacroSeries fillGapsInSeries(MacroSeries macroSeries) {

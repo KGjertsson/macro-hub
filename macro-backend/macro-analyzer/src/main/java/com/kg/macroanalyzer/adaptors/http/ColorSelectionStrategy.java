@@ -15,8 +15,9 @@ public class ColorSelectionStrategy {
             "rgb(110,53,44)"
     );
 
+    // Cycles through the palette, so any number of series gets a colour (index is zero-based)
     public String pickColor(Integer index) {
-        return PRE_DEFINED_COLORS.get(PRE_DEFINED_COLORS.size() % index);
+        return PRE_DEFINED_COLORS.get(Math.floorMod(index, PRE_DEFINED_COLORS.size()));
     }
 
 }

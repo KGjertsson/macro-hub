@@ -16,9 +16,13 @@ public abstract class ValidatingStrategy implements SampleStrategy {
             return Optional.empty();
         }
 
-        final var referenceSize = macroSeriesList.getFirst().macroPoints().size();
-        final var withUnexpectedDimensions = macroSeriesList.stream()
+        // Series without points in the time frame are allowed alongside aligned ones
+        final var nonEmptyPoints = macroSeriesList.stream()
                 .map(MacroSeries::macroPoints)
+                .filter(macroPoints -> !macroPoints.isEmpty())
+                .toList();
+        final var referenceSize = nonEmptyPoints.isEmpty() ? 0 : nonEmptyPoints.getFirst().size();
+        final var withUnexpectedDimensions = nonEmptyPoints.stream()
                 .filter(macroPoints -> macroPoints.size() != referenceSize)
                 .count();
         final var hasDifferentDimensions = withUnexpectedDimensions > 0;

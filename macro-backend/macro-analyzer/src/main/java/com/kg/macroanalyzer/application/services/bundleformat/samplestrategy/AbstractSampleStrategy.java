@@ -23,8 +23,12 @@ public abstract class AbstractSampleStrategy extends ValidatingStrategy {
         final var sampledSeries = macroSeriesList.stream()
                 .map(this::runSamplingOnSeries)
                 .toList();
-        final var labels = sampledSeries.getFirst()
-                .macroPoints().stream()
+        final var labels = sampledSeries.stream()
+                .map(MacroSeries::macroPoints)
+                .filter(macroPoints -> !macroPoints.isEmpty())
+                .findFirst()
+                .orElse(List.of())
+                .stream()
                 .map(MacroPoint::date)
                 .toList();
 
