@@ -19,7 +19,16 @@ download() {
   layer=$1
   query="service=WFS&version=2.0.0&request=GetFeature&typeNames=stat:$layer"
   curl -sSf -o "$WORK_DIR/$layer.json" "$WFS_URL?$query&outputFormat=application/json&srsName=EPSG:4326"
-  expected=$(curl -sSf "$WFS_URL?$query&resultType=hits" | sed -n 's/.*numberMatched="\([0-9]*\)".*/\1/p')
+  # Fetched to a file first: in a command substitution piped into sed, a curl failure would be masked
+  if ! curl -sSf -o "$WORK_DIR/$layer.hits.xml" "$WFS_URL?$query&resultType=hits"; then
+    echo "$layer: WFS hit-count request failed" >&2
+    exit 1
+  fi
+  expected=$(sed -n 's/.*numberMatched="\([0-9]*\)".*/\1/p' "$WORK_DIR/$layer.hits.xml")
+  if [ -z "$expected" ]; then
+    echo "$layer: no numberMatched in the WFS hit-count response" >&2
+    exit 1
+  fi
   node -e '
     const [file, expected] = process.argv.slice(1);
     const n = JSON.parse(require("fs").readFileSync(file)).features.length;
