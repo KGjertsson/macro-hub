@@ -3,6 +3,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import Index from './pages/Index';
 import Parliament from './pages/Parliament';
@@ -14,6 +15,9 @@ import Regions from './pages/Regions';
 import Municipalities from './pages/Municipalities';
 import Constituencies from './pages/Constituencies';
 import NotFound from './pages/NotFound';
+
+// MapLibre is about 1 MB, so the map page and its dependencies load only when visited
+const RegionalStatistics = lazy(() => import('./pages/RegionalStatistics'));
 
 const queryClient = new QueryClient();
 
@@ -34,6 +38,14 @@ const App = () => (
             <Route path='/sources' element={<Sources />} />
             <Route path='/contact' element={<Contact />} />
             <Route path='/parliament/politician/:id' element={<PoliticianDetail />} />
+            <Route
+              path='/omraden'
+              element={
+                <Suspense fallback={<div className='min-h-screen bg-background' />}>
+                  <RegionalStatistics />
+                </Suspense>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path='*' element={<NotFound />} />
           </Routes>

@@ -1,4 +1,4 @@
-import {BarChart3, BookOpen, Building2, Landmark, LineChart, MapPin, Menu, Vote} from 'lucide-react';
+import {BarChart3, BookOpen, Building2, Landmark, LineChart, MapPin, MapPinned, Menu, Vote} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useState} from 'react';
 import {Link, useLocation} from 'react-router-dom';
@@ -10,6 +10,7 @@ const Header = () => {
     const isConstituenciesPage = location.pathname === '/constituencies';
     const isRegionsPage = location.pathname === '/regions';
     const isMunicipalitiesPage = location.pathname === '/municipalities';
+    const isRegionalStatisticsPage = location.pathname === '/omraden';
 
     return (
         <header className='fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl'>
@@ -67,6 +68,15 @@ const Header = () => {
                         >
                             <Building2 className='h-4 w-4'/>
                             Kommuner
+                        </Link>
+                        <Link
+                            to='/omraden'
+                            className={`text-sm transition-colors flex items-center gap-1.5 ${
+                                isRegionalStatisticsPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <MapPinned className='h-4 w-4'/>
+                            Områden
                         </Link>
                     </nav>
 
@@ -128,6 +138,13 @@ const Header = () => {
                             >
                                 <Building2 className='h-4 w-4'/>
                                 Kommuner
+                            </Link>
+                            <Link
+                                to='/omraden'
+                                className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
+                            >
+                                <MapPinned className='h-4 w-4'/>
+                                Områden
                             </Link>
                             <Link
                                 to='/sources'

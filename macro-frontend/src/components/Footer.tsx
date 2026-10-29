@@ -27,6 +27,7 @@ const Footer = () => {
                             <li><Link to="/constituencies" className="hover:text-foreground transition-colors">Valkretsar</Link></li>
                             <li><Link to="/regions" className="hover:text-foreground transition-colors">Regioner</Link></li>
                             <li><Link to="/municipalities" className="hover:text-foreground transition-colors">Kommuner</Link></li>
+                            <li><Link to="/omraden" className="hover:text-foreground transition-colors">Områden</Link></li>
                         </ul>
                     </div>
 
