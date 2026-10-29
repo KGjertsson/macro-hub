@@ -3,7 +3,6 @@ package com.kg.macroanalyzer.adaptors.http;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
-import com.kg.macroanalyzer.application.domain.scb.ScbLevel;
 import com.kg.macroanalyzer.application.ports.driving.out.OutPort;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartData;
@@ -11,8 +10,6 @@ import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartDataWit
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
 import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
-import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalIndicatorDto;
-import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalValuesDto;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,31 +158,6 @@ public class ExtractionAdaptor {
         log.info("Received GET macro-analyzer/constituencies/%s?year=%s".formatted(code, year));
 
         return detailResponse(outPort.getLocalElectionResult(LocalElectionType.RD, year, code));
-    }
-
-    @GetMapping("/regional-statistics/indicators")
-    public ResponseEntity<List<RegionalIndicatorDto>> getRegionalIndicators() {
-        log.info("Received GET macro-analyzer/regional-statistics/indicators");
-
-        return ResponseEntity.ok(outPort.getRegionalIndicators());
-    }
-
-    @GetMapping("/regional-statistics/values")
-    public ResponseEntity<RegionalValuesDto> getRegionalValues(
-            @RequestParam(name = "indicator") String indicator,
-            @RequestParam(name = "level") String level,
-            @RequestParam(name = "year", required = false) Integer year
-    ) {
-        log.info("Received GET macro-analyzer/regional-statistics/values?indicator=%s&level=%s&year=%s"
-                .formatted(indicator, level, year));
-        final var scbLevel = ScbLevel.fromLabel(level);
-        if (scbLevel.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        return outPort.getRegionalValues(indicator, scbLevel.get(), year)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.noContent().build());
     }
 
     private static <T> ResponseEntity<T> detailResponse(Optional<T> detail) {

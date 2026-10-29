@@ -8,13 +8,8 @@ import com.kg.macroanalyzer.application.domain.parliament.Election;
 import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
 import com.kg.macroanalyzer.application.domain.parliament.Party;
-import com.kg.macroanalyzer.application.domain.scb.GeoVersion;
-import com.kg.macroanalyzer.application.domain.scb.ScbAvailability;
-import com.kg.macroanalyzer.application.domain.scb.ScbIndicator;
-import com.kg.macroanalyzer.application.domain.scb.ScbIndicatorResult;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,21 +48,5 @@ public interface DatabasePort {
     Optional<LocalElectionResult> readLocalElectionResult(LocalElectionType type, int year, String areaCode);
 
     Optional<Governance> readGovernance(LocalElectionType type, int year, String areaCode);
-
-    List<ScbIndicator> readScbIndicators();
-
-    Map<String, Instant> readScbTableStamps();
-
-    Set<String> readScbIndicatorsWithData();
-
-    Integer writeScbIndicatorResult(ScbIndicatorResult result);
-
-    void writeScbTableStamps(Map<String, Instant> stamps, Set<String> droppedTables);
-
-    List<ScbAvailability> readScbAvailability();
-
-    List<ScbAvailability> readScbAvailability(String indicatorId);
-
-    Map<String, Double> readScbValues(String indicatorId, GeoVersion geoVersion, int year);
 
 }

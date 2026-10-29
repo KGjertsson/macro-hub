@@ -3,20 +3,16 @@ package com.kg.macroanalyzer.application.ports.driving.out;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
-import com.kg.macroanalyzer.application.domain.scb.ScbLevel;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartSeriesParam;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
 import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
-import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalIndicatorDto;
-import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalValuesDto;
 import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.application.services.localelection.LocalElectionService;
 import com.kg.macroanalyzer.application.services.parliament.ParliamentService;
-import com.kg.macroanalyzer.application.services.regionalstatistics.RegionalStatisticsService;
 import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.NonNull;
@@ -37,7 +33,6 @@ public class OutPortImpl implements OutPort {
     private final TimeFilterService timeFilterService;
     private final ParliamentService parliamentService;
     private final LocalElectionService localElectionService;
-    private final RegionalStatisticsService regionalStatisticsService;
     private final List<SeriesConfig> seriesConfigList;
 
     @Autowired
@@ -47,15 +42,13 @@ public class OutPortImpl implements OutPort {
             AlignmentService alignmentService,
             TimeFilterService timeFilterService,
             ParliamentService parliamentService,
-            LocalElectionService localElectionService,
-            RegionalStatisticsService regionalStatisticsService
+            LocalElectionService localElectionService
     ) {
         this.databasePort = databasePort;
         this.alignmentService = alignmentService;
         this.timeFilterService = timeFilterService;
         this.parliamentService = parliamentService;
         this.localElectionService = localElectionService;
-        this.regionalStatisticsService = regionalStatisticsService;
         this.seriesConfigList = seriesConfigPort.readSeriesConfigList();
     }
 
@@ -115,16 +108,6 @@ public class OutPortImpl implements OutPort {
     @Override
     public Optional<LocalElectionDetailDto> getLocalElectionResult(LocalElectionType type, Integer year, String areaCode) {
         return localElectionService.getResult(type, year, areaCode);
-    }
-
-    @Override
-    public List<RegionalIndicatorDto> getRegionalIndicators() {
-        return regionalStatisticsService.getIndicators();
-    }
-
-    @Override
-    public Optional<RegionalValuesDto> getRegionalValues(String indicatorId, ScbLevel level, Integer year) {
-        return regionalStatisticsService.getValues(indicatorId, level, year);
     }
 
     private Optional<List<MacroSeries>> readMacroSeries(

@@ -1,10 +1,6 @@
 package com.kg.macroanalyzer.adaptors.http;
 
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
-import com.kg.macroanalyzer.application.domain.scb.ScbLevel;
-import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.AvailabilityDto;
-import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalIndicatorDto;
-import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalValuesDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
 import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
@@ -28,12 +24,10 @@ import org.springframework.http.HttpStatus;
 import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -245,63 +239,6 @@ public class ExtractionAdaptorTest {
 
         // then
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
-    public void shouldReturnIndicators() {
-        // given
-        final var indicator = RegionalIndicatorDto.builder()
-                .id("population")
-                .availability(Map.of("DeSO", List.of(new AvailabilityDto(2025, "DeSO2025")), "RegSO", List.of()))
-                .build();
-
-        // when
-        when(outPort.getRegionalIndicators()).thenReturn(List.of(indicator));
-        final var response = extractionAdaptor.getRegionalIndicators();
-
-        // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(List.of(indicator), response.getBody());
-    }
-
-    @Test
-    public void shouldReturnRegionalValues_whenFound() {
-        // given
-        final var values = RegionalValuesDto.builder()
-                .indicator("population")
-                .level("DeSO")
-                .year(2025)
-                .geoVersion("DeSO2025")
-                .values(Map.of("0114A0010", 1565.0))
-                .build();
-
-        // when
-        when(outPort.getRegionalValues("population", ScbLevel.DESO, null)).thenReturn(Optional.of(values));
-        final var response = extractionAdaptor.getRegionalValues("population", "DeSO", null);
-
-        // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(values, response.getBody());
-    }
-
-    @Test
-    public void shouldReturnNoContent_whenNoRegionalValues() {
-        // when
-        when(outPort.getRegionalValues("population", ScbLevel.REGSO, 2010)).thenReturn(Optional.empty());
-        final var response = extractionAdaptor.getRegionalValues("population", "RegSO", 2010);
-
-        // then
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    public void shouldReturnBadRequest_whenLevelUnknown() {
-        // when
-        final var response = extractionAdaptor.getRegionalValues("population", "Kommun", null);
-
-        // then
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        verifyNoInteractions(outPort);
     }
 
 }
