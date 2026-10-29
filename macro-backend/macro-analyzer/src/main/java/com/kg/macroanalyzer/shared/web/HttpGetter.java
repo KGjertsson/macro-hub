@@ -1,7 +1,5 @@
 package com.kg.macroanalyzer.shared.web;
 
-import com.kg.macroanalyzer.shared.web.ScrapeException;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 

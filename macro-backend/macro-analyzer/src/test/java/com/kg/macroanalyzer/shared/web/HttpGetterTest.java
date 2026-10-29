@@ -1,6 +1,5 @@
 package com.kg.macroanalyzer.shared.web;
 
-import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

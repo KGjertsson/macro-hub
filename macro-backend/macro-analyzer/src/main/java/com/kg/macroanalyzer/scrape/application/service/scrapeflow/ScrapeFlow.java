@@ -1,10 +1,6 @@
 package com.kg.macroanalyzer.scrape.application.service.scrapeflow;
 
 import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Preparer;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
 
 public record ScrapeFlow<Input, Config, Data>(
         Preparer<Input, Config> preparer,

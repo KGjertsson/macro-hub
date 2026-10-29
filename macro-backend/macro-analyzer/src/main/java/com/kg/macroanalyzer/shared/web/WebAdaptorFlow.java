@@ -1,10 +1,5 @@
 package com.kg.macroanalyzer.shared.web;
 
-import com.kg.macroanalyzer.shared.web.ConnectionBuilder;
-import com.kg.macroanalyzer.shared.web.Getter;
-import com.kg.macroanalyzer.shared.web.ResponseParser;
-import com.kg.macroanalyzer.shared.web.ScrapeException;
-
 import java.net.HttpURLConnection;
 
 public record WebAdaptorFlow<Config, Response>(
