@@ -41,10 +41,10 @@ mvn clean package
 mvn test
 
 # Run a single test class
-mvn test -Dtest=ExtractionAdaptorTest
+mvn test -Dtest=MacroSeriesControllerTest
 
 # Run a single test method
-mvn test -Dtest=ExtractionAdaptorTest#shouldReturnOk_whenValidBundleRetrieved
+mvn test -Dtest=MacroSeriesControllerTest#shouldReturnOk_whenValidBundleRetrieved
 
 # Generate JOOQ model from database schema
 mvn -P jooq-codegen generate-sources
@@ -114,13 +114,18 @@ CronAdaptor ───────────→ InPort
 
 ### Package structure (`com.kg.macroanalyzer`)
 
-The backend is moving from packages by layer to packages by domain. Modules (`scrape`, `regionalstatistics`, `parliament` and `election` so far) use `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; code not yet moved still sits in the layer packages below.
+The backend is organised by domain. Every module (`scrape`, `macroseries`, `regionalstatistics`, `parliament`, `election`) uses `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; besides them there is only `shared/`, the generated jOOQ model and `MacroAnalyzerApplication` in the root package.
 
 - **`scrape/`** — the scrape core, independent of the data sources:
   - `domain/` — `ScrapeQueueItem`, `ScrapeQueueKind`, `SeriesConfig` (every scrape flow's config)
   - `application/port/in/` — `InPort` (enqueue, enqueue-all, scrape-from-queue); `application/port/out/` — `ScrapeQueuePort` (queue reads/writes, `markAsDone`) and `SeriesConfigPort`
-  - `application/service/` — `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `KindedScrapeFlow`. Each domain contributes one `KindedScrapeFlow` bean per `ScrapeQueueKind` (from each module's `adaptors/config/`, or the `*ScrapeFlowConfiguration` classes in `configuration/scrapeflow/` for code not yet moved); `ScrapeService` routes queue items by kind and fails at startup if a kind has no flow or more than one
+  - `application/service/` — `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `KindedScrapeFlow`. Each domain contributes one `KindedScrapeFlow` bean per `ScrapeQueueKind` (from each module's `adaptors/config/`); `ScrapeService` routes queue items by kind and fails at startup if a kind has no flow or more than one
   - `adaptors/http/` — `InsertionAdaptor` (enqueue/scrape endpoints); `adaptors/cron/` — `CronScrapeAdaptor` drains the queue every 60s, `CronEnqueueAdaptor` enqueues all series every minute during the 22:00 hour; `adaptors/postgres/` — queue and series-config repositories; `adaptors/config/` — preparer, series-config list and scheduler beans
+- **`macroseries/`** — chart time series (Riksbanken, Fed and Eurostat rates, bonds, bills, exchange rates and key figures):
+  - `domain/` — `MacroSeries`, `MacroPoint`, `AlignedBundle`, `InvalidBundleDimensionException`
+  - `application/port/in/` — `MacroSeriesQueries` (aligned chart data, chart series configs) and its DTOs (`BuildChartDataParams`, `ChartSeriesParam`, `ChartData`, `ChartDataWithLabels`); `application/port/out/` — `MacroSeriesRepositoryPort` and the scrape payload `ConfigWithMacroPoints`
+  - `application/service/` — `MacroSeriesService` (keeps the Riksdagen, Valmyndigheten and SCB configs out of the chart list), `LabelGenerationService`, in `bundleformat/` `TimeFilterService`, `AlignmentService` and the sample and time-filter strategies, and in `scrape/` `ExistingMacroPointFinder`, `MacroPointScraper` and `MacroPointPersister`
+  - `adaptors/http/` — `MacroSeriesController` (`/series-config`, `/chart-data`) and `ColorSelectionStrategy`; `adaptors/postgres/` — `MacroSeriesPostgresAdaptor` and the per-table rate, bond, bill, exchange-rate, Fed and Eurostat repositories; `adaptors/web/` — `MacroPointWebAdaptor` and `MacroPointAdaptorFlowFactory`, which routes to the Riksbanken, Fed or Eurostat connection builder and response parser; `adaptors/config/` — the web adaptor bean (with the Riksbanken/Fed subscription keys) and the scrape flow
 - **`regionalstatistics/`** — SCB DeSO/RegSO statistics, the first domain module:
   - `domain/` — `GeoVersion`, `ScbLevel`, `ScbIndicator`, `ScbValues` and the other SCB value types
   - `application/port/in/` — `RegionalStatisticsQueries` (indicators and values) and its DTOs; `application/port/out/` — `RegionalStatisticsRepositoryPort`, the scrape payload `ConfigWithScbIndicators` and the SCB web requests
@@ -137,14 +142,6 @@ The backend is moving from packages by layer to packages by domain. Modules (`sc
   - `application/service/` — `LocalElectionService` (party colours come from parliament's `PartyDirectory`), and in `scrape/` `ExistingLocalElectionFinder`, `LocalElectionScraper` and `LocalElectionPersister`
   - `adaptors/http/` — `ElectionController` (`/municipalities/*`, `/regions/*`, `/constituencies/*`); `adaptors/postgres/` — `ElectionPostgresAdaptor` and `LocalElectionRepository`; `adaptors/web/` — the Valmyndigheten index and result web adaptors, retry, connection builder and parsers; `adaptors/config/` — the Valmyndigheten web beans and the scrape flow
 - **`shared/`** — used by every module, depends on none of them: `config/` (CORS, Jackson, JDBC, Flyway catalog version) and `web/` (`WebPort`, `ScrapeException`, `WebAdaptorFlow`, `ConnectionBuilder`/`Getter`/`ResponseParser`, `HttpGetter`, `ZipEntryGetter`, `HttpResponses`)
-- **`adaptors/http/`** — `ExtractionAdaptor` handles series config and chart data.
-- **`adaptors/database/postgres/`** — `PostgresAdaptor` implements `DatabasePort` using JOOQ. Contains per-table repositories.
-- **`adaptors/webadaptor/`** — Source-specific web adaptors, connection builders and response parsers. `MacroPointAdaptorFlowFactory` routes to the correct connection builder and response parser per data source.
-- **`application/ports/driving/`** — `OutPort` (read operations).
-- **`application/ports/driven/`** — `DatabasePort` and the `ConfigWithMacroPoints` scrape payload.
-- **`application/domain/`** — Core domain: `MacroSeries`, `MacroPoint`, `AlignedBundle`. Uses Java records for value objects.
-- **`application/services/`** — Domain services (`TimeFilterService`, `AlignmentService`, `LabelGenerationService`) and, in `scrape/scrapeflow/`, the macro point finder, scraper and persister.
-- **`configuration/`** — `WebAdaptorConfiguration` and `scrapeflow/MacroPointScrapeFlowConfiguration`.
   - Jackson 3 (`tools.jackson`) is used throughout. `CorsConfiguration` (in `shared/config/`) has `@EnableWebMvc`, which disables Boot's MVC auto-config, so `JacksonConfiguration` registers its `JsonMapper` with MVC explicitly. It keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
 - **`jooq/generated/`** — Auto-generated JOOQ classes (do not edit manually).
 
@@ -197,7 +194,7 @@ Chart series in `series_configuration` carry picker metadata (V27), returned by 
 
 - JUnit 5 + Mockito for unit tests
 - TestContainers (PostgreSQL) for integration tests — Docker must be running for `mvn test`
-- `ArchitectureTest` (ArchUnit) checks the module boundaries: modules and `shared` don't depend on the legacy `adaptors`/`application`/`configuration` packages, `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; today `election` → `parliament`). Add a module to `MODULES` (and to `DOMAIN_MODULES` for a business domain) once it has moved out of the layer packages
+- `ArchitectureTest` (ArchUnit) checks the module boundaries: every class outside the root package lives in a module, `shared` or `jooq.generated` (so no layer-first package can come back), `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; today `election` → `parliament`). Add a new module to `MODULES` (and to `DOMAIN_MODULES` for a business domain)
 - Test fixtures in `src/test/resources/json/`
 - `@ActiveProfiles("test")` activates `application-test.properties`
 

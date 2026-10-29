@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer;
 
-import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
+import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
