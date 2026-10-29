@@ -2,9 +2,12 @@ package com.kg.macroanalyzer.application.services.bundleformat.samplestrategy;
 
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -12,45 +15,43 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-public class UniqueMacroPointCollector implements Collector<MacroPoint, List<MacroPoint>, List<MacroPoint>> {
+// Keeps the first point per date in encounter order; keyed by date so each point is handled in constant time
+public class UniqueMacroPointCollector implements Collector<MacroPoint, Map<Temporal, MacroPoint>, List<MacroPoint>> {
 
     @Override
-    public Supplier<List<MacroPoint>> supplier() {
-        return ArrayList::new;
+    public Supplier<Map<Temporal, MacroPoint>> supplier() {
+        return LinkedHashMap::new;
     }
 
     @Override
-    public BiConsumer<List<MacroPoint>, MacroPoint> accumulator() {
-        return (acc, element) -> {
-            final var existingIndex = acc.stream()
-                    .map(MacroPoint::date)
-                    .toList()
-                    .indexOf(element.date());
-            if (existingIndex < 0) {
-                acc.add(element);
-            } else if (acc.get(existingIndex).value() == null && element.value() != null) {
-                // A period where the series starts part-way through takes its first observation, not the padding
-                acc.set(existingIndex, element);
-            }
+    public BiConsumer<Map<Temporal, MacroPoint>, MacroPoint> accumulator() {
+        return (acc, element) -> acc.merge(element.date(), element, UniqueMacroPointCollector::pick);
+    }
+
+    @Override
+    public BinaryOperator<Map<Temporal, MacroPoint>> combiner() {
+        return (left, right) -> {
+            right.forEach((date, point) -> left.merge(date, point, UniqueMacroPointCollector::pick));
+            return left;
         };
     }
 
     @Override
-    public BinaryOperator<List<MacroPoint>> combiner() {
-        return (list1, list2) -> {
-            list1.addAll(list2);
-            return list1;
-        };
-    }
-
-    @Override
-    public Function<List<MacroPoint>, List<MacroPoint>> finisher() {
-        return Function.identity();
+    public Function<Map<Temporal, MacroPoint>, List<MacroPoint>> finisher() {
+        return acc -> new ArrayList<>(acc.values());
     }
 
     @Override
     public Set<Characteristics> characteristics() {
         return Collections.emptySet();
+    }
+
+    // Replacing a value in a LinkedHashMap keeps the key's position, so the earlier point's slot is reused
+    private static MacroPoint pick(MacroPoint existing, MacroPoint incoming) {
+        // A period where the series starts part-way through takes its first observation, not the padding
+        return existing.value() == null && incoming.value() != null
+                ? incoming
+                : existing;
     }
 
 }
