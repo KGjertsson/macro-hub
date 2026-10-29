@@ -29,7 +29,8 @@ import java.util.stream.Stream;
 
 // Fetches every indicator whose SCB tables changed since the last scrape, or that has no data yet. Each source
 // is fetched once per area division version, chunked by year to stay within SCB's cell limit. A failed indicator
-// is skipped, and the stamps of its tables are not stored so that it is fetched again next time
+// is skipped and the table that failed is reported, so the persister can drop its stamp and the indicator is
+// fetched again next time
 @Slf4j
 public record ScbRegionalScraper(
         WebPort<ScbMetadataRequest, ScbTableMetadata> metadataWebPort,
@@ -44,7 +45,6 @@ public record ScbRegionalScraper(
         final var run = new Run(config.seriesConfig().scrapeUrl(), sharedSources(config.indicators()));
         final var results = new ArrayList<ScbIndicatorResult>();
         final var failedTables = new HashSet<String>();
-        var failedCount = 0;
         for (final var indicator : config.indicators()) {
             try {
                 final var metadata = run.metadata(indicator.tables());
@@ -59,20 +59,18 @@ public record ScbRegionalScraper(
                         .values(ScbValues.toAreaValues(run.values(indicator, metadata)))
                         .build());
                 log.info("Fetched SCB indicator %s".formatted(indicator.id()));
-            } catch (ScrapeException e) {
+            } catch (TableException e) {
                 log.error("Caught ScrapeException for SCB indicator %s: %s".formatted(indicator.id(), e.getMessage()));
-                failedTables.addAll(indicator.tables());
-                failedCount++;
+                failedTables.add(e.table());
             }
         }
-        if (results.isEmpty() && failedCount > 0) {
+        if (results.isEmpty() && !failedTables.isEmpty()) {
             return Optional.empty();
         }
 
         return Optional.of(config.toBuilder()
-                .results(results.stream()
-                        .map(result -> withoutStamps(result, failedTables))
-                        .toList())
+                .results(results)
+                .failedTables(failedTables)
                 .build());
     }
 
@@ -84,16 +82,6 @@ public record ScbRegionalScraper(
         return config.indicatorsWithData().contains(indicator.id())
                 && metadata.values().stream()
                 .allMatch(m -> m.updated().equals(config.tableStamps().get(m.table())));
-    }
-
-    // A table shared with an indicator that failed keeps its old stamp, or that indicator would be skipped next time
-    private static ScbIndicatorResult withoutStamps(ScbIndicatorResult result, Set<String> failedTables) {
-        final var stamps = new HashMap<>(result.tableStamps());
-        stamps.keySet().removeAll(failedTables);
-
-        return result.toBuilder()
-                .tableStamps(stamps)
-                .build();
     }
 
     // Sources used by more than one indicator (e.g. the total population as denominator) are kept for the whole run
@@ -110,12 +98,28 @@ public record ScbRegionalScraper(
     private record SourceVersion(ScbSource source, GeoVersion version) {
     }
 
+    // Names the table a failure came from, so only that table's stamp has to be dropped
+    private static final class TableException extends ScrapeException {
+
+        private final String table;
+
+        private TableException(String table, String message) {
+            super(message);
+            this.table = table;
+        }
+
+        private String table() {
+            return table;
+        }
+
+    }
+
     private final class Run {
 
         private final String baseUrl;
         private final Set<ScbSource> sharedSources;
         private final Map<String, ScbTableMetadata> metadataByTable = new HashMap<>();
-        private final Set<String> failedTables = new HashSet<>();
+        private final Set<String> failedMetadata = new HashSet<>();
         private final Map<SourceVersion, Map<ScbSlice, Map<String, Double>>> sharedValues = new HashMap<>();
 
         private Run(String baseUrl, Set<ScbSource> sharedSources) {
@@ -123,7 +127,7 @@ public record ScbRegionalScraper(
             this.sharedSources = sharedSources;
         }
 
-        private Map<String, ScbTableMetadata> metadata(Set<String> tables) throws ScrapeException {
+        private Map<String, ScbTableMetadata> metadata(Set<String> tables) throws TableException {
             final var metadata = new LinkedHashMap<String, ScbTableMetadata>();
             for (final var table : tables) {
                 metadata.put(table, metadata(table));
@@ -133,9 +137,9 @@ public record ScbRegionalScraper(
         }
 
         // A table whose metadata could not be fetched is not asked for again in the same run
-        private ScbTableMetadata metadata(String table) throws ScrapeException {
-            if (failedTables.contains(table)) {
-                throw new ScrapeException("Metadata for %s could not be fetched earlier in this run".formatted(table));
+        private ScbTableMetadata metadata(String table) throws TableException {
+            if (failedMetadata.contains(table)) {
+                throw new TableException(table, "Metadata for %s could not be fetched earlier in this run".formatted(table));
             }
             final var cached = metadataByTable.get(table);
             if (cached != null) {
@@ -147,15 +151,15 @@ public record ScbRegionalScraper(
 
                 return fetched;
             } catch (ScrapeException e) {
-                failedTables.add(table);
-                throw e;
+                failedMetadata.add(table);
+                throw new TableException(table, e.getMessage());
             }
         }
 
         private Map<ScbSlice, Map<String, Double>> values(
                 ScbIndicator indicator,
                 Map<String, ScbTableMetadata> metadata
-        ) throws ScrapeException {
+        ) throws TableException {
             final var numerator = merge(indicator.numerator(), indicator.geoVersions(), metadata);
             if (indicator.denominator().isEmpty()) {
                 return ScbValues.scale(numerator, indicator.multiplier());
@@ -170,7 +174,7 @@ public record ScbRegionalScraper(
                 List<ScbSource> sources,
                 List<GeoVersion> versions,
                 Map<String, ScbTableMetadata> metadata
-        ) throws ScrapeException {
+        ) throws TableException {
             final var merged = new HashMap<ScbSlice, Map<String, Double>>();
             for (final var source : sources) {
                 final var tableMetadata = metadata.get(source.table());
@@ -187,7 +191,7 @@ public record ScbRegionalScraper(
                 ScbSource source,
                 GeoVersion version,
                 ScbTableMetadata metadata
-        ) throws ScrapeException {
+        ) throws TableException {
             final var key = new SourceVersion(source, version);
             final var cached = sharedValues.get(key);
             if (cached != null) {
@@ -205,7 +209,7 @@ public record ScbRegionalScraper(
                 ScbSource source,
                 GeoVersion version,
                 ScbTableMetadata metadata
-        ) throws ScrapeException {
+        ) throws TableException {
             final var values = new HashMap<ScbSlice, Map<String, Double>>();
             if (metadata.regionCodes().stream().noneMatch(version::matches)) {
                 return values;
@@ -216,7 +220,7 @@ public record ScbRegionalScraper(
             final var cellsPerYear = regionCount * source.cellsPerAreaAndYear();
             for (final var years : ScbValues.yearChunks(metadata.years(), cellsPerYear, maxCells)) {
                 final var request = new ScbDataRequest(baseUrl, source.table(), version.wildcard(), years, source.selection());
-                ScbValues.slices(dataWebPort.fetch(request)).forEach((slice, byArea) -> {
+                ScbValues.slices(fetchData(request)).forEach((slice, byArea) -> {
                     if (slice.geoVersion() == version) {
                         values.put(slice, byArea);
                     }
@@ -226,8 +230,16 @@ public record ScbRegionalScraper(
             return values;
         }
 
+        private ScbTableValues fetchData(ScbDataRequest request) throws TableException {
+            try {
+                return dataWebPort.fetch(request);
+            } catch (ScrapeException e) {
+                throw new TableException(request.table(), e.getMessage());
+            }
+        }
+
         // An unselected dimension would fall back to SCB's default code, so a selection must name every dimension
-        private static void validateSelection(ScbSource source, ScbTableMetadata metadata) throws ScrapeException {
+        private static void validateSelection(ScbSource source, ScbTableMetadata metadata) throws TableException {
             for (final var entry : metadata.codes().entrySet()) {
                 final var dimension = entry.getKey();
                 if (dimension.equals(ScbTableMetadata.REGION) || dimension.equals(ScbTableMetadata.TIME)) {
@@ -235,16 +247,16 @@ public record ScbRegionalScraper(
                 }
                 final var selected = source.selection().get(dimension);
                 if (selected == null || selected.isEmpty()) {
-                    throw new ScrapeException("%s: no codes selected for %s".formatted(source.table(), dimension));
+                    throw new TableException(source.table(), "%s: no codes selected for %s".formatted(source.table(), dimension));
                 }
                 final var unknown = selected.stream().filter(code -> !entry.getValue().contains(code)).toList();
                 if (!unknown.isEmpty()) {
-                    throw new ScrapeException("%s: unknown %s codes %s".formatted(source.table(), dimension, unknown));
+                    throw new TableException(source.table(), "%s: unknown %s codes %s".formatted(source.table(), dimension, unknown));
                 }
             }
             for (final var dimension : source.selection().keySet()) {
                 if (!metadata.codes().containsKey(dimension)) {
-                    throw new ScrapeException("%s has no dimension %s".formatted(source.table(), dimension));
+                    throw new TableException(source.table(), "%s has no dimension %s".formatted(source.table(), dimension));
                 }
             }
         }

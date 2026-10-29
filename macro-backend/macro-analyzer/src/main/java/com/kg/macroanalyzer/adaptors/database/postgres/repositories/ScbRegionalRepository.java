@@ -73,8 +73,7 @@ public class ScbRegionalRepository {
                 .fetch(SCB_INDICATOR.ID));
     }
 
-    // The indicator is replaced as a whole, together with the stamps of the tables it was fetched from, so a
-    // failed write leaves both the old values and the old stamps
+    // The indicator is replaced as a whole, so a failed write leaves the old values
     public Integer writeIndicatorResult(ScbIndicatorResult result) {
         final var indicatorId = result.indicator().id();
         dslContext.transaction(configuration -> {
@@ -86,7 +85,20 @@ public class ScbRegionalRepository {
             for (int i = 0; i < values.size(); i += INSERT_BATCH_SIZE) {
                 insertValues(tx, indicatorId, values.subList(i, Math.min(values.size(), i + INSERT_BATCH_SIZE)));
             }
-            result.tableStamps().forEach((table, updated) -> tx.insertInto(SCB_TABLE_STATE)
+        });
+
+        return result.values().size();
+    }
+
+    public void writeTableStamps(Map<String, Instant> stamps, Set<String> droppedTables) {
+        dslContext.transaction(configuration -> {
+            final var tx = DSL.using(configuration);
+            if (!droppedTables.isEmpty()) {
+                tx.deleteFrom(SCB_TABLE_STATE)
+                        .where(SCB_TABLE_STATE.TABLE_ID.in(droppedTables))
+                        .execute();
+            }
+            stamps.forEach((table, updated) -> tx.insertInto(SCB_TABLE_STATE)
                     .set(SCB_TABLE_STATE.TABLE_ID, table)
                     .set(SCB_TABLE_STATE.UPDATED, updated.atOffset(ZoneOffset.UTC))
                     .onConflict(SCB_TABLE_STATE.TABLE_ID)
@@ -94,8 +106,6 @@ public class ScbRegionalRepository {
                     .set(SCB_TABLE_STATE.UPDATED, updated.atOffset(ZoneOffset.UTC))
                     .execute());
         });
-
-        return result.values().size();
     }
 
     private static void insertValues(DSLContext tx, String indicatorId, List<ScbAreaValue> values) {

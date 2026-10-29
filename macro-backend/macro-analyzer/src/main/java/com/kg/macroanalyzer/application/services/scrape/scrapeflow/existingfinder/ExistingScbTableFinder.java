@@ -6,6 +6,7 @@ import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesCon
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 // Stored table stamps let the scraper skip indicators whose SCB tables have not been updated since the last scrape
 public record ExistingScbTableFinder(
@@ -20,6 +21,7 @@ public record ExistingScbTableFinder(
                 .tableStamps(databasePort.readScbTableStamps())
                 .indicatorsWithData(databasePort.readScbIndicatorsWithData())
                 .results(List.of())
+                .failedTables(Set.of())
                 .build());
     }
 

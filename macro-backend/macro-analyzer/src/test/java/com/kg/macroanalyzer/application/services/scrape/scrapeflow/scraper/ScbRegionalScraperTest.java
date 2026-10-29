@@ -148,7 +148,7 @@ public class ScbRegionalScraperTest {
     }
 
     @Test
-    void shouldSkipAFailedIndicator_andKeepTheOldStampOfTablesItShares() throws ScrapeException {
+    void shouldSkipAFailedIndicator_andReportTheTableThatFailed() throws ScrapeException {
         // given
         final var population = indicator("population", List.of(TOTAL), List.of(), ScbLevel.DESO);
         final var share65 = indicator("share_65_plus", List.of(OLDER_65), List.of(TOTAL), ScbLevel.DESO);
@@ -167,7 +167,49 @@ public class ScbRegionalScraperTest {
         // then
         final var results = result.orElseThrow().results();
         assertEquals(List.of("population"), results.stream().map(r -> r.indicator().id()).toList());
-        assertEquals(Map.of(), results.getFirst().tableStamps());
+        assertEquals(Map.of("TAB6574", UPDATED), results.getFirst().tableStamps());
+        assertEquals(Set.of("TAB6574"), result.get().failedTables());
+    }
+
+    @Test
+    void shouldReportOnlyTheFailedTable_notEveryTableOfTheFailedIndicator() throws ScrapeException {
+        // given
+        final var population = indicator("population", List.of(TOTAL), List.of(), ScbLevel.DESO);
+        final var cars = indicator("cars_per_1000", List.of(source("TAB6589", "totalt")), List.of(TOTAL), ScbLevel.DESO);
+
+        // when
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6574"))).thenReturn(metadata("TAB6574", UPDATED));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6589"))).thenReturn(metadata("TAB6589", UPDATED));
+        when(dataWebPort.fetch(any())).thenAnswer(invocation -> {
+            final ScbDataRequest request = invocation.getArgument(0);
+            if (request.table().equals("TAB6589")) {
+                throw new ScrapeException("HTTP 404");
+            }
+            return values(Map.of("0114A0010", 1000.0));
+        });
+        final var result = scraper.scrape(input(List.of(population, cars), Map.of(), Set.of()));
+
+        // then
+        assertEquals(List.of("population"), result.orElseThrow().results().stream().map(r -> r.indicator().id()).toList());
+        assertEquals(Set.of("TAB6589"), result.get().failedTables());
+        assertEquals(Map.of("TAB6574", UPDATED), result.get().results().getFirst().tableStamps());
+    }
+
+    @Test
+    void shouldReportTheTable_whoseMetadataFailed() throws ScrapeException {
+        // given
+        final var population = indicator("population", List.of(TOTAL), List.of(), ScbLevel.DESO);
+        final var cars = indicator("cars_per_1000", List.of(source("TAB6589", "totalt")), List.of(TOTAL), ScbLevel.DESO);
+
+        // when
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6574"))).thenReturn(metadata("TAB6574", UPDATED));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6589"))).thenThrow(new ScrapeException("HTTP 404"));
+        when(dataWebPort.fetch(any())).thenReturn(values(Map.of("0114A0010", 1000.0)));
+        final var result = scraper.scrape(input(List.of(population, cars), Map.of(), Set.of()));
+
+        // then
+        assertEquals(Set.of("TAB6589"), result.orElseThrow().failedTables());
+        assertEquals(1, result.get().results().size());
     }
 
     @Test

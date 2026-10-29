@@ -41,6 +41,7 @@ public class ExistingScbTableFinderTest {
         assertEquals(stamps, result.tableStamps());
         assertEquals(Set.of("population"), result.indicatorsWithData());
         assertEquals(List.of(), result.results());
+        assertEquals(Set.of(), result.failedTables());
     }
 
 }

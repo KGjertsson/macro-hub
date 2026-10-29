@@ -216,6 +216,11 @@ public class PostgresAdaptor implements DatabasePort {
     }
 
     @Override
+    public void writeScbTableStamps(Map<String, Instant> stamps, Set<String> droppedTables) {
+        scbRegionalRepository.writeTableStamps(stamps, droppedTables);
+    }
+
+    @Override
     public List<ScbAvailability> readScbAvailability() {
         return scbRegionalRepository.readAvailability();
     }

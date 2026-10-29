@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 
 public class ScbDataWebAdaptor implements WebPort<ScbDataRequest, ScbTableValues> {
 
-    private final ScbRateLimiter rateLimiter;
+    private final ScbRetry retry;
 
     public ScbDataWebAdaptor(ScbRateLimiter rateLimiter) {
-        this.rateLimiter = rateLimiter;
+        this.retry = new ScbRetry(rateLimiter);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class ScbDataWebAdaptor implements WebPort<ScbDataRequest, ScbTableValues
                 new ScbDataResponseParser(request.table())
         );
 
-        return ScbRetry.fetch(flow, url(request), rateLimiter);
+        return retry.fetch(flow, url(request));
     }
 
     // Codes such as "1+2", "ÄG/ANDEL" and the "?" wildcard must be encoded; the commas between codes must not

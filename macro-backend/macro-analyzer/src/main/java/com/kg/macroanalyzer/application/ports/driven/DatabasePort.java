@@ -74,6 +74,8 @@ public interface DatabasePort {
 
     Integer writeScbIndicatorResult(ScbIndicatorResult result);
 
+    void writeScbTableStamps(Map<String, Instant> stamps, Set<String> droppedTables);
+
     List<ScbAvailability> readScbAvailability();
 
     List<ScbAvailability> readScbAvailability(String indicatorId);

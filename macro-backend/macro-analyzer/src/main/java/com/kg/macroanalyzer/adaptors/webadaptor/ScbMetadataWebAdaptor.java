@@ -11,10 +11,10 @@ import com.kg.macroanalyzer.application.ports.driven.WebPort;
 
 public class ScbMetadataWebAdaptor implements WebPort<ScbMetadataRequest, ScbTableMetadata> {
 
-    private final ScbRateLimiter rateLimiter;
+    private final ScbRetry retry;
 
     public ScbMetadataWebAdaptor(ScbRateLimiter rateLimiter) {
-        this.rateLimiter = rateLimiter;
+        this.retry = new ScbRetry(rateLimiter);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class ScbMetadataWebAdaptor implements WebPort<ScbMetadataRequest, ScbTab
                 new ScbMetadataResponseParser(request.table())
         );
 
-        return ScbRetry.fetch(flow, url(request), rateLimiter);
+        return retry.fetch(flow, url(request));
     }
 
     static String url(ScbMetadataRequest request) {

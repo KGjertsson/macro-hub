@@ -62,7 +62,19 @@ public class ScbRegionalRepositoryTest {
     }
 
     @Test
-    void shouldReplaceTheIndicator_andStoreStamps_whenWrittenTwice() {
+    void shouldUpsertStamps_andDropTheGivenTables() {
+        // when
+        repository.writeTableStamps(Map.of("TAB0001", Instant.parse("2025-01-01T00:00:00Z"), "TAB0002", UPDATED), Set.of());
+        repository.writeTableStamps(Map.of("TAB0001", UPDATED), Set.of("TAB0002"));
+
+        // then
+        final var stamps = repository.readTableStamps();
+        assertEquals(UPDATED, stamps.get("TAB0001"));
+        assertFalse(stamps.containsKey("TAB0002"));
+    }
+
+    @Test
+    void shouldReplaceTheIndicator_whenWrittenTwice() {
         // given
         final var indicator = indicator("households");
         final var many = IntStream.range(0, 12_000)
@@ -91,7 +103,8 @@ public class ScbRegionalRepositoryTest {
         assertEquals(Map.of("0114A0010", 12.5), repository.readValues("households", GeoVersion.DESO_2025, 2024));
         assertEquals(Map.of("0114R001", 0.0), repository.readValues("households", GeoVersion.REGSO_2025, 2024));
         assertEquals(Map.of(), repository.readValues("households", GeoVersion.DESO_2018, 2023));
-        assertEquals(UPDATED, repository.readTableStamps().get("TAB6568"));
+        // Stamps are written separately, once every indicator of the run is stored
+        assertFalse(repository.readTableStamps().containsKey("TAB6568"));
         assertTrue(repository.readIndicatorsWithData().contains("households"));
         assertFalse(repository.readIndicatorsWithData().contains("turnout_region"));
     }

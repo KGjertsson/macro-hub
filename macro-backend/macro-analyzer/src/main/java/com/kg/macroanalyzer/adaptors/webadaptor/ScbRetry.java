@@ -5,21 +5,34 @@ import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import lombok.extern.slf4j.Slf4j;
 
 // Some of SCB's API servers intermittently answer "Non-existent table" (as 404 or 400) for tables that exist, so every
-// failure is retried, a little longer each attempt. A 429 waits out the 10 second rate limit window
+// failure is retried, a little longer each attempt. A 429 waits out the 10 second rate limit window.
+// An interrupted thread stops retrying
 @Slf4j
 final class ScbRetry {
 
-    private static final int ATTEMPTS = 8;
-    private static final long BASE_DELAY_MS = 1_000;
-    private static final long MAX_DELAY_MS = 5_000;
-    private static final long RATE_LIMIT_DELAY_MS = 10_000;
+    static final int ATTEMPTS = 8;
+    static final long BASE_DELAY_MS = 1_000;
+    static final long MAX_DELAY_MS = 5_000;
+    static final long RATE_LIMIT_DELAY_MS = 10_000;
 
-    private ScbRetry() {
+    private final ScbRateLimiter rateLimiter;
+    private final Sleeper sleeper;
+
+    ScbRetry(ScbRateLimiter rateLimiter) {
+        this(rateLimiter, Sleeper.THREAD);
     }
 
-    static <T> T fetch(WebAdaptorFlow<String, T> flow, String url, ScbRateLimiter rateLimiter) throws ScrapeException {
+    ScbRetry(ScbRateLimiter rateLimiter, Sleeper sleeper) {
+        this.rateLimiter = rateLimiter;
+        this.sleeper = sleeper;
+    }
+
+    <T> T fetch(WebAdaptorFlow<String, T> flow, String url) throws ScrapeException {
         ScrapeException lastException = null;
         for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new ScrapeException("Interrupted before calling SCB for " + url);
+            }
             rateLimiter.acquire();
             try {
                 return flow.fetch(url);
@@ -27,7 +40,7 @@ final class ScbRetry {
                 lastException = e;
                 log.warn("Attempt %d failed for %s: %s".formatted(attempt, url, abbreviate(e.getMessage())));
                 if (attempt < ATTEMPTS) {
-                    sleep(isRateLimited(e) ? RATE_LIMIT_DELAY_MS : Math.min(MAX_DELAY_MS, BASE_DELAY_MS * attempt));
+                    Sleeper.sleepOrStop(sleeper, backoffMs(e, attempt));
                 }
             }
         }
@@ -35,12 +48,8 @@ final class ScbRetry {
         throw lastException;
     }
 
-    static void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    private static long backoffMs(ScrapeException e, int attempt) {
+        return isRateLimited(e) ? RATE_LIMIT_DELAY_MS : Math.min(MAX_DELAY_MS, BASE_DELAY_MS * attempt);
     }
 
     private static boolean isRateLimited(ScrapeException e) {
