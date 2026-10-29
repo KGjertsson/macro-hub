@@ -67,6 +67,7 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
   const onSelectRef = useRef(onSelect);
   const selectedRef = useRef(selectedCode);
   const hoveredRef = useRef<string | null>(null);
+  const popupRef = useRef<maplibregl.Popup | null>(null);
   dataRef.current = data;
   onSelectRef.current = onSelect;
   selectedRef.current = selectedCode;
@@ -100,6 +101,7 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
     };
 
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 8, className: 'regional-map-popup' });
+    popupRef.current = popup;
 
     map.on('load', () => {
       const layers = map.getStyle().layers;
@@ -182,6 +184,7 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
       popup.remove();
       map.remove();
       mapRef.current = null;
+      popupRef.current = null;
       setReady(false);
     };
   }, []);
@@ -192,6 +195,13 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
     if (!ready || !map || !geometry) {
       return;
     }
+    // The hovered area may not exist in the new geometry, and the popup would show its old name until the next mousemove
+    if (hoveredRef.current) {
+      map.setFeatureState({ source: SOURCE, id: hoveredRef.current }, { hover: false });
+      hoveredRef.current = null;
+    }
+    popupRef.current?.remove();
+    map.getCanvas().style.cursor = '';
     (map.getSource(SOURCE) as GeoJSONSource).setData(geometry.collection);
   }, [ready, geometry]);
 
