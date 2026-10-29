@@ -10,10 +10,6 @@ import com.kg.macroanalyzer.application.domain.parliament.Election;
 import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
 import com.kg.macroanalyzer.application.domain.parliament.Party;
-import com.kg.macroanalyzer.application.domain.scb.GeoVersion;
-import com.kg.macroanalyzer.application.domain.scb.ScbAvailability;
-import com.kg.macroanalyzer.application.domain.scb.ScbIndicator;
-import com.kg.macroanalyzer.application.domain.scb.ScbIndicatorResult;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
@@ -21,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +39,6 @@ public class PostgresAdaptor implements DatabasePort {
     SweParActivityRepository sweParActivityRepository;
     RiksdagElectionRepository riksdagElectionRepository;
     LocalElectionRepository localElectionRepository;
-    ScbRegionalRepository scbRegionalRepository;
 
     @Autowired
     public PostgresAdaptor(
@@ -58,8 +52,7 @@ public class PostgresAdaptor implements DatabasePort {
             SweParMemberRepository sweParMemberRepository,
             SweParActivityRepository sweParActivityRepository,
             RiksdagElectionRepository riksdagElectionRepository,
-            LocalElectionRepository localElectionRepository,
-            ScbRegionalRepository scbRegionalRepository
+            LocalElectionRepository localElectionRepository
     ) {
         this.euroMarketRateRepo = euroMarketRateRepo;
         this.exchangeRateRepo = exchangeRateRepo;
@@ -72,7 +65,6 @@ public class PostgresAdaptor implements DatabasePort {
         this.sweParActivityRepository = sweParActivityRepository;
         this.riksdagElectionRepository = riksdagElectionRepository;
         this.localElectionRepository = localElectionRepository;
-        this.scbRegionalRepository = scbRegionalRepository;
     }
 
     @Override
@@ -158,46 +150,6 @@ public class PostgresAdaptor implements DatabasePort {
     @Override
     public Optional<Governance> readGovernance(LocalElectionType type, int year, String areaCode) {
         return localElectionRepository.readGovernance(type, year, areaCode);
-    }
-
-    @Override
-    public List<ScbIndicator> readScbIndicators() {
-        return scbRegionalRepository.readIndicators();
-    }
-
-    @Override
-    public Map<String, Instant> readScbTableStamps() {
-        return scbRegionalRepository.readTableStamps();
-    }
-
-    @Override
-    public Set<String> readScbIndicatorsWithData() {
-        return scbRegionalRepository.readIndicatorsWithData();
-    }
-
-    @Override
-    public Integer writeScbIndicatorResult(ScbIndicatorResult result) {
-        return scbRegionalRepository.writeIndicatorResult(result);
-    }
-
-    @Override
-    public void writeScbTableStamps(Map<String, Instant> stamps, Set<String> droppedTables) {
-        scbRegionalRepository.writeTableStamps(stamps, droppedTables);
-    }
-
-    @Override
-    public List<ScbAvailability> readScbAvailability() {
-        return scbRegionalRepository.readAvailability();
-    }
-
-    @Override
-    public List<ScbAvailability> readScbAvailability(String indicatorId) {
-        return scbRegionalRepository.readAvailability(indicatorId);
-    }
-
-    @Override
-    public Map<String, Double> readScbValues(String indicatorId, GeoVersion geoVersion, int year) {
-        return scbRegionalRepository.readValues(indicatorId, geoVersion, year);
     }
 
     private MacroSeries buildSeries(SeriesConfig params) {
