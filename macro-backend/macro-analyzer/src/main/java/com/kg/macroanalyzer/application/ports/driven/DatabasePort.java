@@ -1,10 +1,9 @@
 package com.kg.macroanalyzer.application.ports.driven;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
-import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.domain.localelection.Governance;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
+import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.domain.parliament.Election;
 import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
@@ -13,10 +12,9 @@ import com.kg.macroanalyzer.application.domain.scb.GeoVersion;
 import com.kg.macroanalyzer.application.domain.scb.ScbAvailability;
 import com.kg.macroanalyzer.application.domain.scb.ScbIndicator;
 import com.kg.macroanalyzer.application.domain.scb.ScbIndicatorResult;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,17 +26,7 @@ public interface DatabasePort {
 
     MacroSeries readMacroSeries(SeriesConfig paramList);
 
-    List<SeriesConfig> readSeriesConfigList();
-
-    void persistScrapeQueueItem(ScrapeQueueItem scrapeQueueItem);
-
-    List<ScrapeQueueItem> getScrapeQueue();
-
-    List<ScrapeQueueItem> getItemsToScrape(LocalDateTime timeStamp);
-
     Integer writeMacroPoints(ConfigWithMacroPoints configWithMacroPoints);
-
-    void markAsDone(SeriesConfig seriesConfig);
 
     Integer writeMembersOfParliament(List<MemberOfParliament> membersOfParliament);
 

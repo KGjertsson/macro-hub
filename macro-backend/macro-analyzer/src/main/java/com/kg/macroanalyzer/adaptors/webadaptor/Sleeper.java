@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 
 // Lets tests run the SCB retry and rate limiter without waiting
 @FunctionalInterface

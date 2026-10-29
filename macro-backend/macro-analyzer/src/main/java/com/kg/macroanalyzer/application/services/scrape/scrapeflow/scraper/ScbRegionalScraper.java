@@ -8,11 +8,12 @@ import com.kg.macroanalyzer.application.domain.scb.ScbSource;
 import com.kg.macroanalyzer.application.domain.scb.ScbTableMetadata;
 import com.kg.macroanalyzer.application.domain.scb.ScbTableValues;
 import com.kg.macroanalyzer.application.domain.scb.ScbValues;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithScbIndicators;
 import com.kg.macroanalyzer.application.ports.driven.ScbDataRequest;
 import com.kg.macroanalyzer.application.ports.driven.ScbMetadataRequest;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebPort;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

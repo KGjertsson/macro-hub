@@ -1,13 +1,13 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.ScbConnectionBuilder;
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.getter.HttpGetter;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.ScbMetadataResponseParser;
 import com.kg.macroanalyzer.application.domain.scb.ScbTableMetadata;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ScbMetadataRequest;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
+import com.kg.macroanalyzer.shared.web.HttpGetter;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebAdaptorFlow;
+import com.kg.macroanalyzer.shared.web.WebPort;
 
 public class ScbMetadataWebAdaptor implements WebPort<ScbMetadataRequest, ScbTableMetadata> {
 

@@ -12,12 +12,13 @@ import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalEle
 import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
 import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalIndicatorDto;
 import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalValuesDto;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.application.services.localelection.LocalElectionService;
 import com.kg.macroanalyzer.application.services.parliament.ParliamentService;
 import com.kg.macroanalyzer.application.services.regionalstatistics.RegionalStatisticsService;
+import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class OutPortImpl implements OutPort {
     @Autowired
     public OutPortImpl(
             DatabasePort databasePort,
+            SeriesConfigPort seriesConfigPort,
             AlignmentService alignmentService,
             TimeFilterService timeFilterService,
             ParliamentService parliamentService,
@@ -54,7 +56,7 @@ public class OutPortImpl implements OutPort {
         this.parliamentService = parliamentService;
         this.localElectionService = localElectionService;
         this.regionalStatisticsService = regionalStatisticsService;
-        this.seriesConfigList = databasePort.readSeriesConfigList();
+        this.seriesConfigList = seriesConfigPort.readSeriesConfigList();
     }
 
     @Override

@@ -1,7 +1,8 @@
 package com.kg.macroanalyzer.application.services.scrape.scrapeflow.existingfinder;
 
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 
 import java.util.List;
 import java.util.Optional;

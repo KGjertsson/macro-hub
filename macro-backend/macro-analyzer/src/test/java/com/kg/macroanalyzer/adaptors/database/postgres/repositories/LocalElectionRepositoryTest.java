@@ -3,9 +3,9 @@ package com.kg.macroanalyzer.adaptors.database.postgres.repositories;
 import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.ValmyndighetenResultResponseParser;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
-import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +26,7 @@ public class LocalElectionRepositoryTest {
     @Autowired
     LocalElectionRepository repository;
     @Autowired
-    DatabasePort databasePort;
+    SeriesConfigPort seriesConfigPort;
 
     @Test
     void shouldStoreEveryValkrets_fromTheRiksdagFile() throws ScrapeException {
@@ -79,7 +79,7 @@ public class LocalElectionRepositoryTest {
     @Test
     void shouldSeedTheRiksdagSeriesConfig() {
         // when
-        final var config = databasePort.readSeriesConfigList().stream()
+        final var config = seriesConfigPort.readSeriesConfigList().stream()
                 .filter(c -> c.name().equals(LocalElectionType.RD.configName()))
                 .findFirst();
 

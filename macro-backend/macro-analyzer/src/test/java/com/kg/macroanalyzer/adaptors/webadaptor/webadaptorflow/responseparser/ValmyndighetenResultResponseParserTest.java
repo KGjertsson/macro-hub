@@ -5,7 +5,7 @@ import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.V
 import com.kg.macroanalyzer.application.domain.localelection.ElectedMember;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.localelection.LocalPartyResult;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

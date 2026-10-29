@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebAdaptorFlow;
 import lombok.extern.slf4j.Slf4j;
 
 // resultat.val.se answers 429 when called too often, so failed calls back off a little longer each attempt

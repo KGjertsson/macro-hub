@@ -1,13 +1,13 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.RiksdagenConnectionBuilder;
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.getter.HttpGetter;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksdagenResponseParser;
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import com.kg.macroanalyzer.shared.web.HttpGetter;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebAdaptorFlow;
+import com.kg.macroanalyzer.shared.web.WebPort;
 
 import java.util.stream.Stream;
 

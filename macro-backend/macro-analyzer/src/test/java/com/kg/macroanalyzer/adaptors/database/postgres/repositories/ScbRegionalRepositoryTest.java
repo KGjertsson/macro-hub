@@ -6,8 +6,8 @@ import com.kg.macroanalyzer.application.domain.scb.ScbAvailability;
 import com.kg.macroanalyzer.application.domain.scb.ScbIndicator;
 import com.kg.macroanalyzer.application.domain.scb.ScbIndicatorResult;
 import com.kg.macroanalyzer.application.domain.scb.ScbLevel;
-import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +36,14 @@ public class ScbRegionalRepositoryTest {
     @Autowired
     ScbRegionalRepository repository;
     @Autowired
-    DatabasePort databasePort;
+    SeriesConfigPort seriesConfigPort;
     @Autowired
     DSLContext dslContext;
 
     @Test
     void shouldSeedTheConfigRow_andParseEveryIndicator() {
         // when
-        final var config = databasePort.readSeriesConfigList().stream()
+        final var config = seriesConfigPort.readSeriesConfigList().stream()
                 .filter(c -> c.name().equals("ScbRegionalStatistics"))
                 .findFirst();
         final var indicators = repository.readIndicators();

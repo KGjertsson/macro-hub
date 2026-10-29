@@ -3,7 +3,8 @@ package com.kg.macroanalyzer.application.services.scrape.scrapeflow.persister;
 import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
+import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,10 +25,12 @@ public class MemberOfParliamentPersisterTest {
 
     @Mock
     DatabasePort databasePort;
+    @Mock
+    ScrapeQueuePort scrapeQueuePort;
 
     @BeforeEach
     void setUp() {
-        persister = new MemberOfParliamentPersister(databasePort);
+        persister = new MemberOfParliamentPersister(databasePort, scrapeQueuePort);
     }
 
     @Test
@@ -40,7 +43,7 @@ public class MemberOfParliamentPersisterTest {
 
         // then
         assertEquals(ScrapeResult.EMPTY, result);
-        verify(databasePort).markAsDone(seriesConfig);
+        verify(scrapeQueuePort).markAsDone(seriesConfig);
         verify(databasePort, never()).writeMembersOfParliament(any());
     }
 
@@ -56,7 +59,7 @@ public class MemberOfParliamentPersisterTest {
 
         // then
         assertEquals(ScrapeResult.SUCCESS, result);
-        verify(databasePort).markAsDone(seriesConfig);
+        verify(scrapeQueuePort).markAsDone(seriesConfig);
         verify(databasePort).writeMembersOfParliament(members);
     }
 

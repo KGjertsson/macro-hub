@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebAdaptorFlow;
 import lombok.extern.slf4j.Slf4j;
 
 // Some of SCB's API servers intermittently answer "Non-existent table" (as 404 or 400) for tables that exist, so every

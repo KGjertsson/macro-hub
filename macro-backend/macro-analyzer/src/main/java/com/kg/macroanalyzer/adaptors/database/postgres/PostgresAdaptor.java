@@ -1,6 +1,5 @@
 package com.kg.macroanalyzer.adaptors.database.postgres;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
 import com.kg.macroanalyzer.application.domain.localelection.Governance;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
@@ -17,13 +16,12 @@ import com.kg.macroanalyzer.application.domain.scb.ScbIndicator;
 import com.kg.macroanalyzer.application.domain.scb.ScbIndicatorResult;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,8 +45,6 @@ public class PostgresAdaptor implements DatabasePort {
     RiksdagElectionRepository riksdagElectionRepository;
     LocalElectionRepository localElectionRepository;
     ScbRegionalRepository scbRegionalRepository;
-    ScrapeRepository scrapeRepository;
-    SeriesConfigRepository seriesConfigRepository;
 
     @Autowired
     public PostgresAdaptor(
@@ -63,9 +59,7 @@ public class PostgresAdaptor implements DatabasePort {
             SweParActivityRepository sweParActivityRepository,
             RiksdagElectionRepository riksdagElectionRepository,
             LocalElectionRepository localElectionRepository,
-            ScbRegionalRepository scbRegionalRepository,
-            ScrapeRepository scrapeRepository,
-            SeriesConfigRepository seriesConfigRepository
+            ScbRegionalRepository scbRegionalRepository
     ) {
         this.euroMarketRateRepo = euroMarketRateRepo;
         this.exchangeRateRepo = exchangeRateRepo;
@@ -79,8 +73,6 @@ public class PostgresAdaptor implements DatabasePort {
         this.riksdagElectionRepository = riksdagElectionRepository;
         this.localElectionRepository = localElectionRepository;
         this.scbRegionalRepository = scbRegionalRepository;
-        this.scrapeRepository = scrapeRepository;
-        this.seriesConfigRepository = seriesConfigRepository;
     }
 
     @Override
@@ -96,38 +88,11 @@ public class PostgresAdaptor implements DatabasePort {
     }
 
     @Override
-    public List<SeriesConfig> readSeriesConfigList() {
-        return seriesConfigRepository.readSeriesConfigList();
-    }
-
-    @Override
-    public void persistScrapeQueueItem(ScrapeQueueItem scrapeQueueItem) {
-        log.info("Persisting scrapeQueueItem=%s".formatted(scrapeQueueItem));
-
-        scrapeRepository.addScrapeQueueItem(scrapeQueueItem);
-    }
-
-    @Override
-    public List<ScrapeQueueItem> getScrapeQueue() {
-        return scrapeRepository.getCurrentQueue();
-    }
-
-    @Override
-    public List<ScrapeQueueItem> getItemsToScrape(LocalDateTime timeStamp) {
-        return scrapeRepository.getItemsToScrape(timeStamp);
-    }
-
-    @Override
     public Integer writeMacroPoints(ConfigWithMacroPoints configWithMacroPoints) {
         final var seriesConfig = configWithMacroPoints.seriesConfig();
         final var macroPoints = configWithMacroPoints.macroPoints();
         final var writer = macroPointWriter(seriesConfig);
         return writer.apply(macroPoints);
-    }
-
-    @Override
-    public void markAsDone(SeriesConfig seriesConfig) {
-        scrapeRepository.markAsDone(seriesConfig.name());
     }
 
     @Override

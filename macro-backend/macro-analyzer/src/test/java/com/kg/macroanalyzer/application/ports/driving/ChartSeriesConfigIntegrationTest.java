@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.application.ports.driving;
 
 import com.kg.macroanalyzer.application.ports.driving.out.OutPort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

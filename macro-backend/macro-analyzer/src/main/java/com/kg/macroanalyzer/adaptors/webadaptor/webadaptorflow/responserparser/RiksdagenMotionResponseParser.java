@@ -2,7 +2,8 @@ package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
 import com.kg.macroanalyzer.application.domain.parliament.DocumentPage;
 import com.kg.macroanalyzer.application.domain.parliament.ParliamentDocument;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ResponseParser;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 
 public record RiksdagenMotionResponseParser() implements ResponseParser<String, DocumentPage> {
 

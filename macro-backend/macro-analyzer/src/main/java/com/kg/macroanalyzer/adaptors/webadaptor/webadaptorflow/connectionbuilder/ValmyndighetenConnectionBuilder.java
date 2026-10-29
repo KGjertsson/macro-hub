@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder;
 
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ConnectionBuilder;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

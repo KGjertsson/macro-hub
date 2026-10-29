@@ -4,8 +4,9 @@ import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithLocalElections;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
+import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -25,6 +26,8 @@ public class LocalElectionPersisterTest {
 
     @Mock
     DatabasePort databasePort;
+    @Mock
+    ScrapeQueuePort scrapeQueuePort;
 
     @Test
     void shouldWriteResults_andMarkAsDone() {
@@ -34,11 +37,11 @@ public class LocalElectionPersisterTest {
 
         // when
         when(databasePort.writeLocalElectionResults(results)).thenReturn(1);
-        final var scrapeResult = new LocalElectionPersister(databasePort).persist(input(config, results));
+        final var scrapeResult = new LocalElectionPersister(databasePort, scrapeQueuePort).persist(input(config, results));
 
         // then
         assertEquals(ScrapeResult.SUCCESS, scrapeResult);
-        verify(databasePort).markAsDone(config);
+        verify(scrapeQueuePort).markAsDone(config);
     }
 
     @Test
@@ -47,11 +50,11 @@ public class LocalElectionPersisterTest {
         final var config = SeriesConfig.builder().name("MunicipalElections").build();
 
         // when
-        final var scrapeResult = new LocalElectionPersister(databasePort).persist(input(config, List.of()));
+        final var scrapeResult = new LocalElectionPersister(databasePort, scrapeQueuePort).persist(input(config, List.of()));
 
         // then
         assertEquals(ScrapeResult.EMPTY, scrapeResult);
-        verify(databasePort).markAsDone(config);
+        verify(scrapeQueuePort).markAsDone(config);
         verify(databasePort, never()).writeLocalElectionResults(anyList());
     }
 

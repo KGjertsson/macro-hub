@@ -1,15 +1,15 @@
 package com.kg.macroanalyzer.application.ports.driving.out;
 
-import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
-import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
+import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
 import com.kg.macroanalyzer.application.domain.scb.ScbLevel;
+import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
 import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
 import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalIndicatorDto;
 import com.kg.macroanalyzer.application.ports.driving.out.regionalstatistics.RegionalValuesDto;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder;
 
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

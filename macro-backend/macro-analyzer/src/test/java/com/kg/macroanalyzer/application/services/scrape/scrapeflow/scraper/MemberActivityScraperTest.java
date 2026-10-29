@@ -2,10 +2,10 @@ package com.kg.macroanalyzer.application.services.scrape.scrapeflow.scraper;
 
 import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.MemberActivityRequest;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
