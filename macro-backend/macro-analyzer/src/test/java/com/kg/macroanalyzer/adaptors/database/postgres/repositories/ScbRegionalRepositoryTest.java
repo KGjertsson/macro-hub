@@ -8,6 +8,7 @@ import com.kg.macroanalyzer.application.domain.scb.ScbIndicatorResult;
 import com.kg.macroanalyzer.application.domain.scb.ScbLevel;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,8 +21,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_AREA_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
@@ -34,6 +37,8 @@ public class ScbRegionalRepositoryTest {
     ScbRegionalRepository repository;
     @Autowired
     DatabasePort databasePort;
+    @Autowired
+    DSLContext dslContext;
 
     @Test
     void shouldSeedTheConfigRow_andParseEveryIndicator() {
@@ -107,6 +112,46 @@ public class ScbRegionalRepositoryTest {
         assertFalse(repository.readTableStamps().containsKey("TAB6568"));
         assertTrue(repository.readIndicatorsWithData().contains("households"));
         assertFalse(repository.readIndicatorsWithData().contains("turnout_region"));
+    }
+
+    @Test
+    void shouldKeepTheAvailabilityInStepWithTheValues() {
+        // given
+        final var rental = indicator("share_rental");
+        final var index = indicator("socioeconomic_index");
+        final var rentalValues = List.of(
+                new ScbAreaValue(2022, GeoVersion.DESO_2018, "0114A0010", 40.0),
+                new ScbAreaValue(2022, GeoVersion.DESO_2018, "0114A0020", 41.0),
+                new ScbAreaValue(2024, GeoVersion.DESO_2025, "0114A0010", 42.0),
+                new ScbAreaValue(2024, GeoVersion.REGSO_2025, "0114R001", 43.0)
+        );
+        final var duplicateKey = List.of(
+                new ScbAreaValue(2025, GeoVersion.DESO_2025, "0114A0010", 1.0),
+                new ScbAreaValue(2025, GeoVersion.DESO_2025, "0114A0010", 2.0)
+        );
+
+        // when
+        repository.writeIndicatorResult(result(rental, rentalValues, Map.of()));
+        repository.writeIndicatorResult(result(index, List.of(new ScbAreaValue(2021, GeoVersion.REGSO_2020, "0114R001", 1.5)), Map.of()));
+        repository.writeIndicatorResult(result(index, List.of(), Map.of()));
+        // the value insert fails, so the transaction rolls back the availability as well
+        assertThrows(RuntimeException.class, () -> repository.writeIndicatorResult(result(rental, duplicateKey, Map.of())));
+
+        // then
+        assertEquals(
+                Set.of(
+                        new ScbAvailability("share_rental", GeoVersion.DESO_2018, 2022),
+                        new ScbAvailability("share_rental", GeoVersion.DESO_2025, 2024),
+                        new ScbAvailability("share_rental", GeoVersion.REGSO_2025, 2024)
+                ),
+                new HashSet<>(repository.readAvailability("share_rental"))
+        );
+        assertEquals(List.of(), repository.readAvailability("socioeconomic_index"));
+        final var distinctValues = dslContext
+                .selectDistinct(SCB_AREA_VALUE.INDICATOR_ID, SCB_AREA_VALUE.GEO_VERSION, SCB_AREA_VALUE.YEAR)
+                .from(SCB_AREA_VALUE)
+                .fetchSet(r -> new ScbAvailability(r.value1(), GeoVersion.fromCode(r.value2()).orElseThrow(), r.value3()));
+        assertEquals(distinctValues, new HashSet<>(repository.readAvailability()));
     }
 
     private ScbIndicator indicator(String id) {

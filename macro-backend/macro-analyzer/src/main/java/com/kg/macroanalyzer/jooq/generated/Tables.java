@@ -46,6 +46,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagOrgan;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagParty;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbAreaValue;
+import com.kg.macroanalyzer.jooq.generated.tables.ScbAvailability;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbIndicator;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbTableState;
 import com.kg.macroanalyzer.jooq.generated.tables.ScrapeActionQueue;
@@ -277,6 +278,11 @@ public class Tables {
      * The table <code>public.scb_area_value</code>.
      */
     public static final ScbAreaValue SCB_AREA_VALUE = ScbAreaValue.SCB_AREA_VALUE;
+
+    /**
+     * The table <code>public.scb_availability</code>.
+     */
+    public static final ScbAvailability SCB_AVAILABILITY = ScbAvailability.SCB_AVAILABILITY;
 
     /**
      * The table <code>public.scb_indicator</code>.

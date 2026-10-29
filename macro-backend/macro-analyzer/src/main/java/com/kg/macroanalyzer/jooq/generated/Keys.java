@@ -46,6 +46,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagOrgan;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagParty;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbAreaValue;
+import com.kg.macroanalyzer.jooq.generated.tables.ScbAvailability;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbIndicator;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbTableState;
 import com.kg.macroanalyzer.jooq.generated.tables.ScrapeActionQueue;
@@ -102,6 +103,7 @@ import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagElectionResultR
 import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagOrganRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.RiksdagPartyRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ScbAreaValueRecord;
+import com.kg.macroanalyzer.jooq.generated.tables.records.ScbAvailabilityRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ScbIndicatorRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ScbTableStateRecord;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ScrapeActionQueueRecord;
@@ -178,6 +180,7 @@ public class Keys {
     public static final UniqueKey<RiksdagOrganRecord> RIKSDAG_ORGAN_PKEY = Internal.createUniqueKey(RiksdagOrgan.RIKSDAG_ORGAN, DSL.name("riksdag_organ_pkey"), new TableField[] { RiksdagOrgan.RIKSDAG_ORGAN.CODE }, true);
     public static final UniqueKey<RiksdagPartyRecord> RIKSDAG_PARTY_PKEY = Internal.createUniqueKey(RiksdagParty.RIKSDAG_PARTY, DSL.name("riksdag_party_pkey"), new TableField[] { RiksdagParty.RIKSDAG_PARTY.CODE }, true);
     public static final UniqueKey<ScbAreaValueRecord> SCB_AREA_VALUE_PKEY = Internal.createUniqueKey(ScbAreaValue.SCB_AREA_VALUE, DSL.name("scb_area_value_pkey"), new TableField[] { ScbAreaValue.SCB_AREA_VALUE.INDICATOR_ID, ScbAreaValue.SCB_AREA_VALUE.GEO_VERSION, ScbAreaValue.SCB_AREA_VALUE.YEAR, ScbAreaValue.SCB_AREA_VALUE.AREA_CODE }, true);
+    public static final UniqueKey<ScbAvailabilityRecord> SCB_AVAILABILITY_PKEY = Internal.createUniqueKey(ScbAvailability.SCB_AVAILABILITY, DSL.name("scb_availability_pkey"), new TableField[] { ScbAvailability.SCB_AVAILABILITY.INDICATOR_ID, ScbAvailability.SCB_AVAILABILITY.GEO_VERSION, ScbAvailability.SCB_AVAILABILITY.YEAR }, true);
     public static final UniqueKey<ScbIndicatorRecord> SCB_INDICATOR_PKEY = Internal.createUniqueKey(ScbIndicator.SCB_INDICATOR, DSL.name("scb_indicator_pkey"), new TableField[] { ScbIndicator.SCB_INDICATOR.ID }, true);
     public static final UniqueKey<ScbTableStateRecord> SCB_TABLE_STATE_PKEY = Internal.createUniqueKey(ScbTableState.SCB_TABLE_STATE, DSL.name("scb_table_state_pkey"), new TableField[] { ScbTableState.SCB_TABLE_STATE.TABLE_ID }, true);
     public static final UniqueKey<ScrapeActionQueueRecord> SCRAPE_ACTION_QUEUE_PKEY = Internal.createUniqueKey(ScrapeActionQueue.SCRAPE_ACTION_QUEUE, DSL.name("scrape_action_queue_pkey"), new TableField[] { ScrapeActionQueue.SCRAPE_ACTION_QUEUE.ID }, true);
@@ -202,4 +205,5 @@ public class Keys {
     public static final ForeignKey<RiksdagElectionResultRecord, RiksdagPartyRecord> RIKSDAG_ELECTION_RESULT__RIKSDAG_ELECTION_RESULT_PARTY_CODE_FKEY = Internal.createForeignKey(RiksdagElectionResult.RIKSDAG_ELECTION_RESULT, DSL.name("riksdag_election_result_party_code_fkey"), new TableField[] { RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.PARTY_CODE }, Keys.RIKSDAG_PARTY_PKEY, new TableField[] { RiksdagParty.RIKSDAG_PARTY.CODE }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<RiksdagElectionResultRecord, RiksdagElectionRecord> RIKSDAG_ELECTION_RESULT__RIKSDAG_ELECTION_RESULT_YEAR_FKEY = Internal.createForeignKey(RiksdagElectionResult.RIKSDAG_ELECTION_RESULT, DSL.name("riksdag_election_result_year_fkey"), new TableField[] { RiksdagElectionResult.RIKSDAG_ELECTION_RESULT.YEAR }, Keys.RIKSDAG_ELECTION_PKEY, new TableField[] { RiksdagElection.RIKSDAG_ELECTION.YEAR }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<ScbAreaValueRecord, ScbIndicatorRecord> SCB_AREA_VALUE__SCB_AREA_VALUE_INDICATOR_ID_FKEY = Internal.createForeignKey(ScbAreaValue.SCB_AREA_VALUE, DSL.name("scb_area_value_indicator_id_fkey"), new TableField[] { ScbAreaValue.SCB_AREA_VALUE.INDICATOR_ID }, Keys.SCB_INDICATOR_PKEY, new TableField[] { ScbIndicator.SCB_INDICATOR.ID }, true, ForeignKeyRule.CASCADE, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<ScbAvailabilityRecord, ScbIndicatorRecord> SCB_AVAILABILITY__SCB_AVAILABILITY_INDICATOR_ID_FKEY = Internal.createForeignKey(ScbAvailability.SCB_AVAILABILITY, DSL.name("scb_availability_indicator_id_fkey"), new TableField[] { ScbAvailability.SCB_AVAILABILITY.INDICATOR_ID }, Keys.SCB_INDICATOR_PKEY, new TableField[] { ScbIndicator.SCB_INDICATOR.ID }, true, ForeignKeyRule.CASCADE, ForeignKeyRule.NO_ACTION);
 }
