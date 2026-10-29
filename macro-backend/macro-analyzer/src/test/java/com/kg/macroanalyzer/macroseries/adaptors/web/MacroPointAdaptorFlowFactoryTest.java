@@ -1,0 +1,88 @@
+package com.kg.macroanalyzer.macroseries.adaptors.web;
+
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import com.kg.macroanalyzer.shared.web.HttpGetter;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class MacroPointAdaptorFlowFactoryTest {
+
+    MacroPointAdaptorFlowFactory macroPointAdaptorFlowFactory;
+
+    @BeforeEach
+    void setUp() {
+        final var fedKey = "fedKey";
+        final var riksbankenKey = "riksbankenKey";
+        macroPointAdaptorFlowFactory = new MacroPointAdaptorFlowFactory(fedKey, riksbankenKey);
+    }
+
+    @Test
+    void shouldBuildFedFlow_whenConfigNameStartsWithFED() {
+        // given
+        final var seriesConfig = SeriesConfig.builder().name("FED_SOMETHING").build();
+
+        // when
+        final var result = macroPointAdaptorFlowFactory.build(seriesConfig);
+
+        // then
+        assertNotNull(result);
+        assertInstanceOf(FedConnectionBuilder.class, result.connectionBuilder());
+        assertInstanceOf(HttpGetter.class, result.getter());
+        assertInstanceOf(FedResponseParser.class, result.responseParser());
+    }
+
+    @Test
+    void shouldBuildEuroStatFlow_whenConfigNameStartsWithDebt() {
+        // given
+        final var seriesConfig = SeriesConfig.builder().name("Debt_SOMETHING").build();
+
+        // when
+        final var result = macroPointAdaptorFlowFactory.build(seriesConfig);
+
+        // then
+        assertNotNull(result);
+        assertInstanceOf(EuroStatConnectionBuilder.class, result.connectionBuilder());
+        assertInstanceOf(HttpGetter.class, result.getter());
+        assertInstanceOf(EuroStatResponseParser.class, result.responseParser());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "Int_something",
+            "Euro_something",
+            "PolicyRateSweden",
+            "UsdSekExchangeRate",
+            "GovernmentBondSweden2Year",
+            "GovernmentBillSweden3Month"
+    })
+    void shouldBuildRiksbankenFlow_whenConfigNameIsRiksbankenCompatible(String name) {
+        // given
+        final var seriesConfig = SeriesConfig.builder().name(name).build();
+
+        // when
+        final var result = macroPointAdaptorFlowFactory.build(seriesConfig);
+
+        // then
+        assertNotNull(result);
+        assertInstanceOf(RiksbankenConnectionBuilder.class, result.connectionBuilder());
+        assertInstanceOf(HttpGetter.class, result.getter());
+        assertInstanceOf(RiksbankenResponseParser.class, result.responseParser());
+    }
+
+    @Test
+    void shouldThrowIllegalStateException_whenConfigNameIsUnknown() {
+        // given
+        final var seriesConfig = SeriesConfig.builder().name("UNKNOWN").build();
+
+        // when && then
+        final var exception = assertThrows(
+                IllegalStateException.class,
+                () -> macroPointAdaptorFlowFactory.build(seriesConfig)
+        );
+        assertEquals("Unexpected value: UNKNOWN", exception.getMessage());
+    }
+}

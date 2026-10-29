@@ -20,18 +20,18 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideOutsid
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
-// Package-by-domain rules. Add a module to MODULES once its domain slice has moved out of the legacy layer packages
+// Package-by-domain rules. A new module goes into MODULES (and DOMAIN_MODULES if it holds a business domain)
 @AnalyzeClasses(packages = ArchitectureTest.ROOT, importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
     static final String ROOT = "com.kg.macroanalyzer";
 
     // Modules that follow the domain / application / adaptors layout
-    private static final List<String> MODULES = List.of("scrape", "regionalstatistics", "parliament", "election");
+    private static final List<String> MODULES = List.of("scrape", "macroseries", "regionalstatistics", "parliament", "election");
 
     // Modules holding one business domain. They build on scrape, shared and the jOOQ model, and are only used from
     // outside where DOMAIN_MODULE_EXTRA_DEPENDENCIES allows it
-    private static final List<String> DOMAIN_MODULES = List.of("regionalstatistics", "parliament", "election");
+    private static final List<String> DOMAIN_MODULES = List.of("macroseries", "regionalstatistics", "parliament", "election");
 
     // What every domain module may use besides itself and classes outside the application
     private static final List<String> DOMAIN_MODULE_DEPENDENCIES = List.of("scrape", "shared", "jooq.generated");
@@ -45,21 +45,18 @@ class ArchitectureTest {
     // Modules every other module may use, and which use none of them
     private static final List<String> SHARED_MODULES = List.of("shared");
 
-    // The layer-first packages still being split up by domain
-    private static final String[] LEGACY_PACKAGES = {
-            ROOT + ".adaptors..",
-            ROOT + ".application..",
-            ROOT + ".configuration.."
-    };
+    // Generated code that belongs to no module
+    private static final List<String> GENERATED_PACKAGES = List.of("jooq.generated");
 
+    // Only the application class sits in the root package; everything else belongs to a module, so no layer-first
+    // package can reappear next to them
     @ArchTest
-    static final ArchRule modulesDoNotDependOnLegacyPackages = CompositeArchRule.of(
-            concat(MODULES, SHARED_MODULES).stream()
-                    .map(module -> noClasses().that().resideInAPackage(pkg(module))
-                            .should().dependOnClassesThat().resideInAnyPackage(LEGACY_PACKAGES)
-                            .as("%s does not depend on the legacy layer packages".formatted(module)))
-                    .toList()
-    );
+    static final ArchRule everyClassResidesInAModule = classes().that().resideInAPackage(ROOT + "..")
+            .and().resideOutsideOfPackage(ROOT)
+            .should().resideInAnyPackage(concat(concat(MODULES, SHARED_MODULES), GENERATED_PACKAGES).stream()
+                    .map(ArchitectureTest::pkg)
+                    .toArray(String[]::new))
+            .as("every class outside the root package resides in a module or in generated code");
 
     @ArchTest
     static final ArchRule sharedDoesNotDependOnModules = CompositeArchRule.of(
