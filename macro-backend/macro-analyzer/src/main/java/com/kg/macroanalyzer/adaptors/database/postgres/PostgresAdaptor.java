@@ -1,9 +1,6 @@
 package com.kg.macroanalyzer.adaptors.database.postgres;
 
 import com.kg.macroanalyzer.adaptors.database.postgres.repositories.*;
-import com.kg.macroanalyzer.application.domain.localelection.Governance;
-import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
-import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
@@ -14,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -30,7 +25,6 @@ public class PostgresAdaptor implements DatabasePort {
     PolicyRateRepository policyRateRepo;
     FedRepository fedRepository;
     EurostatRepository eurostatRepository;
-    LocalElectionRepository localElectionRepository;
 
     @Autowired
     public PostgresAdaptor(
@@ -40,8 +34,7 @@ public class PostgresAdaptor implements DatabasePort {
             GovernmentBondsRepository govBondsRepo,
             PolicyRateRepository policyRateRepo,
             FedRepository fedRepository,
-            EurostatRepository eurostatRepository,
-            LocalElectionRepository localElectionRepository
+            EurostatRepository eurostatRepository
     ) {
         this.euroMarketRateRepo = euroMarketRateRepo;
         this.exchangeRateRepo = exchangeRateRepo;
@@ -50,7 +43,6 @@ public class PostgresAdaptor implements DatabasePort {
         this.policyRateRepo = policyRateRepo;
         this.fedRepository = fedRepository;
         this.eurostatRepository = eurostatRepository;
-        this.localElectionRepository = localElectionRepository;
     }
 
     @Override
@@ -71,36 +63,6 @@ public class PostgresAdaptor implements DatabasePort {
         final var macroPoints = configWithMacroPoints.macroPoints();
         final var writer = macroPointWriter(seriesConfig);
         return writer.apply(macroPoints);
-    }
-
-    @Override
-    public Set<String> readLocalElectionSourceMd5s(LocalElectionType type) {
-        return localElectionRepository.readSourceMd5s(type);
-    }
-
-    @Override
-    public Integer writeLocalElectionResults(List<LocalElectionResult> results) {
-        return localElectionRepository.writeResults(results);
-    }
-
-    @Override
-    public Optional<Integer> readLatestLocalElectionYear(LocalElectionType type) {
-        return localElectionRepository.readLatestYear(type);
-    }
-
-    @Override
-    public List<LocalElectionResult> readLocalElectionResults(LocalElectionType type, int year) {
-        return localElectionRepository.readResults(type, year);
-    }
-
-    @Override
-    public Optional<LocalElectionResult> readLocalElectionResult(LocalElectionType type, int year, String areaCode) {
-        return localElectionRepository.readResult(type, year, areaCode);
-    }
-
-    @Override
-    public Optional<Governance> readGovernance(LocalElectionType type, int year, String areaCode) {
-        return localElectionRepository.readGovernance(type, year, areaCode);
     }
 
     private MacroSeries buildSeries(SeriesConfig params) {

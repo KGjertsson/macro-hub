@@ -27,25 +27,19 @@ class ArchitectureTest {
     static final String ROOT = "com.kg.macroanalyzer";
 
     // Modules that follow the domain / application / adaptors layout
-    private static final List<String> MODULES = List.of("scrape", "regionalstatistics", "parliament");
+    private static final List<String> MODULES = List.of("scrape", "regionalstatistics", "parliament", "election");
 
     // Modules holding one business domain. They build on scrape, shared and the jOOQ model, and are only used from
     // outside where DOMAIN_MODULE_EXTRA_DEPENDENCIES allows it
-    private static final List<String> DOMAIN_MODULES = List.of("regionalstatistics", "parliament");
+    private static final List<String> DOMAIN_MODULES = List.of("regionalstatistics", "parliament", "election");
 
     // What every domain module may use besides itself and classes outside the application
     private static final List<String> DOMAIN_MODULE_DEPENDENCIES = List.of("scrape", "shared", "jooq.generated");
 
     // What a module may use of other domain modules, on top of DOMAIN_MODULE_DEPENDENCIES. Only in-ports and domain
-    // types, never another module's out-ports, services or adaptors. A key may be a module that does not exist yet
+    // types, never another module's out-ports, services or adaptors
     private static final Map<String, List<String>> DOMAIN_MODULE_EXTRA_DEPENDENCIES = Map.of(
             "election", List.of("parliament.application.port.in", "parliament.domain")
-    );
-
-    // Legacy classes that already use a domain module the way their future module may, keyed by class name
-    // TODO(PR 3): remove when election becomes a module
-    private static final Map<String, List<String>> LEGACY_EXTRA_DEPENDENCIES = Map.of(
-            ROOT + ".application.services.localelection.LocalElectionService", DOMAIN_MODULE_EXTRA_DEPENDENCIES.get("election")
     );
 
     // Modules every other module may use, and which use none of them
@@ -86,7 +80,7 @@ class ArchitectureTest {
     );
 
     @ArchTest
-    static final ArchRule domainModulesOnlyDependOnScrapeSharedAndJooq = CompositeArchRule.of(
+    static final ArchRule domainModulesOnlyDependOnAllowedModules = CompositeArchRule.of(
             DOMAIN_MODULES.stream()
                     .map(module -> {
                         final var allowed = concat(concat(List.of(module), DOMAIN_MODULE_DEPENDENCIES), extraDependencies(module));
@@ -107,7 +101,7 @@ class ArchitectureTest {
                     .toList()
     );
 
-    // Fails every dependency on the module that the depending class's module (or legacy exemption) does not allow
+    // Fails every dependency on the module that the depending class's module does not allow
     private static ArchCondition<JavaClass> onlyUseAllowedPartsOf(String module) {
         return new ArchCondition<>("only use the allowed parts of %s".formatted(module)) {
             @Override
@@ -124,14 +118,11 @@ class ArchitectureTest {
     }
 
     private static List<String> allowedExtraDependencies(JavaClass origin) {
-        final var topLevelName = origin.getName().split("\\$")[0];
-        final var fromModule = DOMAIN_MODULE_EXTRA_DEPENDENCIES.keySet().stream()
+        return DOMAIN_MODULE_EXTRA_DEPENDENCIES.keySet().stream()
                 .filter(module -> origin.getPackageName().equals(ROOT + "." + module)
                         || origin.getPackageName().startsWith(ROOT + "." + module + "."))
-                .flatMap(module -> DOMAIN_MODULE_EXTRA_DEPENDENCIES.get(module).stream());
-        final var fromLegacy = LEGACY_EXTRA_DEPENDENCIES.getOrDefault(topLevelName, List.of()).stream();
-
-        return Stream.concat(fromModule, fromLegacy).toList();
+                .flatMap(module -> DOMAIN_MODULE_EXTRA_DEPENDENCIES.get(module).stream())
+                .toList();
     }
 
     private static List<String> extraDependencies(String module) {

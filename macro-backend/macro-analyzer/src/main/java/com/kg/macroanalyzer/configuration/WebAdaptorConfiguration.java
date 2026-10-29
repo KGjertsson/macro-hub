@@ -1,20 +1,14 @@
 package com.kg.macroanalyzer.configuration;
 
 import com.kg.macroanalyzer.adaptors.webadaptor.MacroPointWebAdaptor;
-import com.kg.macroanalyzer.adaptors.webadaptor.ValmyndighetenIndexWebAdaptor;
-import com.kg.macroanalyzer.adaptors.webadaptor.ValmyndighetenWebAdaptor;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.MacroPointAdaptorFlowFactory;
-import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
-import com.kg.macroanalyzer.application.ports.driven.LocalElectionFile;
-import com.kg.macroanalyzer.application.ports.driven.LocalElectionIndexRequest;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import com.kg.macroanalyzer.shared.web.WebPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 @Configuration
@@ -34,16 +28,6 @@ public class WebAdaptorConfiguration {
         );
 
         return new MacroPointWebAdaptor(macroPointAdaptorFlowFactory);
-    }
-
-    @Bean("localElectionIndexWebAdaptor")
-    public WebPort<LocalElectionIndexRequest, List<LocalElectionFile>> localElectionIndexWebAdaptor() {
-        return new ValmyndighetenIndexWebAdaptor();
-    }
-
-    @Bean("localElectionWebAdaptor")
-    public WebPort<LocalElectionFile, List<LocalElectionResult>> localElectionWebAdaptor() {
-        return new ValmyndighetenWebAdaptor();
     }
 
 }
