@@ -114,7 +114,7 @@ CronAdaptor ───────────→ InPort
 
 ### Package structure (`com.kg.macroanalyzer`)
 
-The backend is moving from packages by layer to packages by domain. Modules (`scrape`, `regionalstatistics` and `parliament` so far) use `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; code not yet moved still sits in the layer packages below.
+The backend is moving from packages by layer to packages by domain. Modules (`scrape`, `regionalstatistics`, `parliament` and `election` so far) use `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; code not yet moved still sits in the layer packages below.
 
 - **`scrape/`** — the scrape core, independent of the data sources:
   - `domain/` — `ScrapeQueueItem`, `ScrapeQueueKind`, `SeriesConfig` (every scrape flow's config)
@@ -131,15 +131,20 @@ The backend is moving from packages by layer to packages by domain. Modules (`sc
   - `application/port/in/` — `ParliamentQueries` (parties, elections, composition, members) and its DTOs, and `PartyDirectory` (the `Party` records, for the election code's party colours); `application/port/out/` — `ParliamentRepositoryPort`, the scrape payloads `ConfigWithMemberOfParliament`/`ConfigWithMemberActivity` and `MemberActivityRequest`
   - `application/service/` — `ParliamentService` (implements both in-ports), and in `scrape/` the member and member-activity finders, scrapers and persisters
   - `adaptors/http/` — `ParliamentController` (`/parliament/*`); `adaptors/postgres/` — `ParliamentPostgresAdaptor`, `SweParMemberRepository`, `SweParActivityRepository` and `RiksdagElectionRepository`; `adaptors/web/` — `MembersOfParliamentWebAdaptor`, `RiksdagenActivityWebAdaptor`, the Riksdagen connection builders and response parsers; `adaptors/config/` — the Riksdagen web beans and both scrape flows
+- **`election/`** — Valmyndigheten kommun (KF), region (RF) and Riksdag valkrets (RD) elections:
+  - `domain/` — `LocalElectionType`, `LocalElectionResult`, `LocalPartyResult`, `ElectedMember`, `Governance`
+  - `application/port/in/` — `ElectionQueries` (results per type and year, one area's detail) and its DTOs; `application/port/out/` — `ElectionRepositoryPort`, the scrape payload `ConfigWithLocalElections`, `LocalElectionIndexRequest` and `LocalElectionFile`
+  - `application/service/` — `LocalElectionService` (party colours come from parliament's `PartyDirectory`), and in `scrape/` `ExistingLocalElectionFinder`, `LocalElectionScraper` and `LocalElectionPersister`
+  - `adaptors/http/` — `ElectionController` (`/municipalities/*`, `/regions/*`, `/constituencies/*`); `adaptors/postgres/` — `ElectionPostgresAdaptor` and `LocalElectionRepository`; `adaptors/web/` — the Valmyndigheten index and result web adaptors, retry, connection builder and parsers; `adaptors/config/` — the Valmyndigheten web beans and the scrape flow
 - **`shared/`** — used by every module, depends on none of them: `config/` (CORS, Jackson, JDBC, Flyway catalog version) and `web/` (`WebPort`, `ScrapeException`, `WebAdaptorFlow`, `ConnectionBuilder`/`Getter`/`ResponseParser`, `HttpGetter`, `ZipEntryGetter`, `HttpResponses`)
-- **`adaptors/http/`** — `ExtractionAdaptor` handles series config, chart data and the election reads.
+- **`adaptors/http/`** — `ExtractionAdaptor` handles series config and chart data.
 - **`adaptors/database/postgres/`** — `PostgresAdaptor` implements `DatabasePort` using JOOQ. Contains per-table repositories.
 - **`adaptors/webadaptor/`** — Source-specific web adaptors, connection builders and response parsers. `MacroPointAdaptorFlowFactory` routes to the correct connection builder and response parser per data source.
 - **`application/ports/driving/`** — `OutPort` (read operations).
-- **`application/ports/driven/`** — `DatabasePort` and the domain-specific `ConfigWith*` scrape payloads and web requests.
-- **`application/domain/`** — Core domain: `MacroSeries`, `MacroPoint`, `AlignedBundle`, local election models. Uses Java records for value objects.
-- **`application/services/`** — Domain services (`TimeFilterService`, `AlignmentService`, `LabelGenerationService`, election) and, in `scrape/scrapeflow/`, the domain-specific finders, scrapers and persisters.
-- **`configuration/`** — `WebAdaptorConfiguration` and the per-domain `scrapeflow/*ScrapeFlowConfiguration` beans.
+- **`application/ports/driven/`** — `DatabasePort` and the `ConfigWithMacroPoints` scrape payload.
+- **`application/domain/`** — Core domain: `MacroSeries`, `MacroPoint`, `AlignedBundle`. Uses Java records for value objects.
+- **`application/services/`** — Domain services (`TimeFilterService`, `AlignmentService`, `LabelGenerationService`) and, in `scrape/scrapeflow/`, the macro point finder, scraper and persister.
+- **`configuration/`** — `WebAdaptorConfiguration` and `scrapeflow/MacroPointScrapeFlowConfiguration`.
   - Jackson 3 (`tools.jackson`) is used throughout. `CorsConfiguration` (in `shared/config/`) has `@EnableWebMvc`, which disables Boot's MVC auto-config, so `JacksonConfiguration` registers its `JsonMapper` with MVC explicitly. It keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
 - **`jooq/generated/`** — Auto-generated JOOQ classes (do not edit manually).
 
@@ -192,7 +197,7 @@ Chart series in `series_configuration` carry picker metadata (V27), returned by 
 
 - JUnit 5 + Mockito for unit tests
 - TestContainers (PostgreSQL) for integration tests — Docker must be running for `mvn test`
-- `ArchitectureTest` (ArchUnit) checks the module boundaries: modules and `shared` don't depend on the legacy `adaptors`/`application`/`configuration` packages, `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; today `election` → `parliament`, used temporarily by the legacy `LocalElectionService`). Add a module to `MODULES` (and to `DOMAIN_MODULES` for a business domain) once it has moved out of the layer packages
+- `ArchitectureTest` (ArchUnit) checks the module boundaries: modules and `shared` don't depend on the legacy `adaptors`/`application`/`configuration` packages, `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; today `election` → `parliament`). Add a module to `MODULES` (and to `DOMAIN_MODULES` for a business domain) once it has moved out of the layer packages
 - Test fixtures in `src/test/resources/json/`
 - `@ActiveProfiles("test")` activates `application-test.properties`
 

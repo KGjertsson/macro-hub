@@ -11,7 +11,6 @@ import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
 import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
-import com.kg.macroanalyzer.application.services.localelection.LocalElectionService;
 import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
@@ -44,8 +43,6 @@ public class OutPortImplTest {
     AlignmentService alignmentService;
     @Mock
     TimeFilterService timeFilterService;
-    @Mock
-    LocalElectionService localElectionService;
 
     @Test
     void shouldReturnAlignedBundle_whenInputListIsPresent() {
@@ -109,7 +106,7 @@ public class OutPortImplTest {
         final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").category("SCB").build();
         when(seriesConfigPort.readSeriesConfigList()).thenReturn(List.of(rate, members, elections, scb));
         final var outPort = new OutPortImpl(
-                databasePort, seriesConfigPort, alignmentService, timeFilterService, localElectionService);
+                databasePort, seriesConfigPort, alignmentService, timeFilterService);
 
         // when
         final var chartList = outPort.getChartSeriesConfigList();
