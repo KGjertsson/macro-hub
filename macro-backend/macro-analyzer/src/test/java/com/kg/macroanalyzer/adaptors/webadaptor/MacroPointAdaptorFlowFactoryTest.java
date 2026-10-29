@@ -4,11 +4,11 @@ import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.MacroPointAdaptor
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.EuroStatConnectionBuilder;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.FedConnectionBuilder;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.RiksbankenConnectionBuilder;
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.getter.HttpGetter;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.EuroStatResponseParser;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.FedResponseParser;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksbankenResponseParser;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import com.kg.macroanalyzer.shared.web.HttpGetter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

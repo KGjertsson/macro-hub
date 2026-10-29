@@ -2,7 +2,8 @@ package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ResponseParser;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;

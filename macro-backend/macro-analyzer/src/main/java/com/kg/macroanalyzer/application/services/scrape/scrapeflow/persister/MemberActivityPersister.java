@@ -2,17 +2,19 @@ package com.kg.macroanalyzer.application.services.scrape.scrapeflow.persister;
 
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
+import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public record MemberActivityPersister(DatabasePort databasePort) implements Persister<ConfigWithMemberActivity> {
+public record MemberActivityPersister(DatabasePort databasePort, ScrapeQueuePort scrapeQueuePort) implements Persister<ConfigWithMemberActivity> {
 
     @Override
     public ScrapeResult persist(ConfigWithMemberActivity configWithMemberActivity) {
         final var config = configWithMemberActivity.seriesConfig();
         final var activity = configWithMemberActivity.memberActivity();
-        databasePort.markAsDone(config);
+        scrapeQueuePort.markAsDone(config);
         if (activity.isEmpty()) {
             log.info("Found no member activity for %s".formatted(config.name()));
 

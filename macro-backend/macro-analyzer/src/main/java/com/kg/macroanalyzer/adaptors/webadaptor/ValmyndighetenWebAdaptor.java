@@ -1,13 +1,13 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.ValmyndighetenConnectionBuilder;
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.getter.ZipEntryGetter;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.ValmyndighetenResultResponseParser;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.LocalElectionFile;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebAdaptorFlow;
+import com.kg.macroanalyzer.shared.web.WebPort;
+import com.kg.macroanalyzer.shared.web.ZipEntryGetter;
 
 import java.util.List;
 

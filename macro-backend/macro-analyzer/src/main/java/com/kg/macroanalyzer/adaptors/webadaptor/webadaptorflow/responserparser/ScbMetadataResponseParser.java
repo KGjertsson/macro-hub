@@ -1,7 +1,8 @@
 package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
 import com.kg.macroanalyzer.application.domain.scb.ScbTableMetadata;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ResponseParser;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 
 import java.time.Instant;
 import java.time.format.DateTimeParseException;

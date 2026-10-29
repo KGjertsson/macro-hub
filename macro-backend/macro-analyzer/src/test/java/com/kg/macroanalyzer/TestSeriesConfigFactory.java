@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer;
 
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 
 import java.util.List;
 

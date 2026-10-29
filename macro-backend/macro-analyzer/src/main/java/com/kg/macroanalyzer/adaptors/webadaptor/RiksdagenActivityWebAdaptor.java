@@ -1,18 +1,18 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.RiksdagenUrlConnectionBuilder;
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.getter.HttpGetter;
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.ResponseParser;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksdagenMotionResponseParser;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksdagenSpeechResponseParser;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksdagenVoteResponseParser;
 import com.kg.macroanalyzer.application.domain.parliament.DocumentPage;
 import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
 import com.kg.macroanalyzer.application.domain.parliament.VoteTotals;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.MemberActivityRequest;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
+import com.kg.macroanalyzer.shared.web.HttpGetter;
+import com.kg.macroanalyzer.shared.web.ResponseParser;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebAdaptorFlow;
+import com.kg.macroanalyzer.shared.web.WebPort;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URLEncoder;

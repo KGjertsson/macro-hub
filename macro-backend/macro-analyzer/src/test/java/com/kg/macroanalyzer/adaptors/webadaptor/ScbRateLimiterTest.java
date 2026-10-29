@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

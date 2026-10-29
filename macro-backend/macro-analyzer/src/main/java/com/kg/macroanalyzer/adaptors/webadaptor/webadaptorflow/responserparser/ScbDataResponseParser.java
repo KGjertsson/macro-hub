@@ -2,7 +2,8 @@ package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
 import com.kg.macroanalyzer.application.domain.scb.ScbTableMetadata;
 import com.kg.macroanalyzer.application.domain.scb.ScbTableValues;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ResponseParser;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;

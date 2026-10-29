@@ -3,7 +3,9 @@ package com.kg.macroanalyzer.application.services.scrape.scrapeflow.persister;
 import com.kg.macroanalyzer.application.domain.scb.ScbIndicatorResult;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithScbIndicators;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
+import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
@@ -17,7 +19,7 @@ import java.util.HashSet;
 // The queue item is only marked as done when something was written (or nothing needed writing), so a scrape where
 // every write failed is retried on the next queue drain
 @Slf4j
-public record ScbRegionalPersister(DatabasePort databasePort) implements Persister<ConfigWithScbIndicators> {
+public record ScbRegionalPersister(DatabasePort databasePort, ScrapeQueuePort scrapeQueuePort) implements Persister<ConfigWithScbIndicators> {
 
     @Override
     public ScrapeResult persist(ConfigWithScbIndicators configWithScbIndicators) {
@@ -25,7 +27,7 @@ public record ScbRegionalPersister(DatabasePort databasePort) implements Persist
         final var results = configWithScbIndicators.results();
         if (results.isEmpty()) {
             log.info("Found no updated SCB tables for %s".formatted(config.name()));
-            databasePort.markAsDone(config);
+            scrapeQueuePort.markAsDone(config);
 
             return ScrapeResult.EMPTY;
         }
@@ -48,7 +50,7 @@ public record ScbRegionalPersister(DatabasePort databasePort) implements Persist
         if (written.isEmpty()) {
             return ScrapeResult.FAILED;
         }
-        databasePort.markAsDone(config);
+        scrapeQueuePort.markAsDone(config);
 
         return ScrapeResult.SUCCESS;
     }

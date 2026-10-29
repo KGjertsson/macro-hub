@@ -1,14 +1,14 @@
 package com.kg.macroanalyzer.adaptors.webadaptor;
 
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.WebAdaptorFlow;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.connectionbuilder.ScbConnectionBuilder;
-import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.getter.HttpGetter;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.ScbDataResponseParser;
 import com.kg.macroanalyzer.application.domain.scb.ScbTableMetadata;
 import com.kg.macroanalyzer.application.domain.scb.ScbTableValues;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ScbDataRequest;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
+import com.kg.macroanalyzer.shared.web.HttpGetter;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebAdaptorFlow;
+import com.kg.macroanalyzer.shared.web.WebPort;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;

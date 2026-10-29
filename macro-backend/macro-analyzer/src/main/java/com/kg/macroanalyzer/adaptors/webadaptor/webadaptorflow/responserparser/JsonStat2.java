@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;

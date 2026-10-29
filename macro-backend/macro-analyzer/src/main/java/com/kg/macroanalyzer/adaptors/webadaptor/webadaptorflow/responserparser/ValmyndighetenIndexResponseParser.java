@@ -1,8 +1,9 @@
 package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser;
 
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.LocalElectionFile;
+import com.kg.macroanalyzer.shared.web.ResponseParser;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 
 import java.util.List;
 import java.util.regex.Pattern;

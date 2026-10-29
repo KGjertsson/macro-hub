@@ -5,8 +5,9 @@ import com.kg.macroanalyzer.application.domain.scb.ScbIndicatorResult;
 import com.kg.macroanalyzer.application.domain.scb.ScbSource;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithScbIndicators;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
+import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -31,6 +32,8 @@ public class ScbRegionalPersisterTest {
 
     @Mock
     DatabasePort databasePort;
+    @Mock
+    ScrapeQueuePort scrapeQueuePort;
 
     @Test
     void shouldWriteEveryIndicator_andMarkAsDone() {
@@ -41,11 +44,11 @@ public class ScbRegionalPersisterTest {
 
         // when
         when(databasePort.writeScbIndicatorResult(any())).thenReturn(1);
-        final var scrapeResult = new ScbRegionalPersister(databasePort).persist(input(config, List.of(population, households)));
+        final var scrapeResult = new ScbRegionalPersister(databasePort, scrapeQueuePort).persist(input(config, List.of(population, households)));
 
         // then
         assertEquals(ScrapeResult.SUCCESS, scrapeResult);
-        verify(databasePort).markAsDone(config);
+        verify(scrapeQueuePort).markAsDone(config);
         verify(databasePort).writeScbIndicatorResult(population);
         verify(databasePort).writeScbIndicatorResult(households);
         verify(databasePort).writeScbTableStamps(Map.of("TAB6574", UPDATED, "TAB6568", UPDATED), Set.of());
@@ -58,13 +61,13 @@ public class ScbRegionalPersisterTest {
         final var population = result("population", "TAB6574");
         final var share65 = result("share_65_plus", "TAB6574");
         final var households = result("households", "TAB6568");
-        final var order = inOrder(databasePort);
+        final var order = inOrder(databasePort, scrapeQueuePort);
 
         // when
         when(databasePort.writeScbIndicatorResult(population)).thenReturn(1);
         when(databasePort.writeScbIndicatorResult(share65)).thenThrow(new RuntimeException("connection reset"));
         when(databasePort.writeScbIndicatorResult(households)).thenReturn(1);
-        final var scrapeResult = new ScbRegionalPersister(databasePort)
+        final var scrapeResult = new ScbRegionalPersister(databasePort, scrapeQueuePort)
                 .persist(input(config, List.of(population, share65, households), Set.of("TAB6589")));
 
         // then
@@ -72,7 +75,7 @@ public class ScbRegionalPersisterTest {
         order.verify(databasePort).writeScbIndicatorResult(households);
         // TAB6574 is shared with the failed share_65_plus, so population's new stamp for it is not stored either
         order.verify(databasePort).writeScbTableStamps(Map.of("TAB6568", UPDATED), Set.of("TAB6574", "TAB6589"));
-        order.verify(databasePort).markAsDone(config);
+        order.verify(scrapeQueuePort).markAsDone(config);
     }
 
     @Test
@@ -83,12 +86,12 @@ public class ScbRegionalPersisterTest {
 
         // when
         when(databasePort.writeScbIndicatorResult(population)).thenThrow(new RuntimeException("connection reset"));
-        final var scrapeResult = new ScbRegionalPersister(databasePort).persist(input(config, List.of(population)));
+        final var scrapeResult = new ScbRegionalPersister(databasePort, scrapeQueuePort).persist(input(config, List.of(population)));
 
         // then
         assertEquals(ScrapeResult.FAILED, scrapeResult);
         verify(databasePort).writeScbTableStamps(Map.of(), Set.of("TAB6574"));
-        verify(databasePort, never()).markAsDone(any());
+        verify(scrapeQueuePort, never()).markAsDone(any());
     }
 
     @Test
@@ -97,11 +100,11 @@ public class ScbRegionalPersisterTest {
         final var config = SeriesConfig.builder().name("ScbRegionalStatistics").build();
 
         // when
-        final var scrapeResult = new ScbRegionalPersister(databasePort).persist(input(config, List.of()));
+        final var scrapeResult = new ScbRegionalPersister(databasePort, scrapeQueuePort).persist(input(config, List.of()));
 
         // then
         assertEquals(ScrapeResult.EMPTY, scrapeResult);
-        verify(databasePort).markAsDone(config);
+        verify(scrapeQueuePort).markAsDone(config);
         verify(databasePort, never()).writeScbIndicatorResult(any());
         verify(databasePort, never()).writeScbTableStamps(any(), any());
     }

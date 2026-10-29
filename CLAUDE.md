@@ -114,16 +114,23 @@ CronAdaptor ───────────→ InPort
 
 ### Package structure (`com.kg.macroanalyzer`)
 
-- **`adaptors/http/`** — REST controllers. `InsertionAdaptor` handles enqueue/scrape endpoints; `ExtractionAdaptor` handles chart data retrieval.
+The backend is moving from packages by layer to packages by domain. Domain modules (`scrape` so far) use `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; code not yet moved still sits in the layer packages below.
+
+- **`scrape/`** — the scrape core, independent of the data sources:
+  - `domain/` — `ScrapeQueueItem`, `ScrapeQueueKind`, `SeriesConfig` (every scrape flow's config)
+  - `application/port/in/` — `InPort` (enqueue, enqueue-all, scrape-from-queue); `application/port/out/` — `ScrapeQueuePort` (queue reads/writes, `markAsDone`) and `SeriesConfigPort`
+  - `application/service/` — `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `KindedScrapeFlow`. Each domain contributes one `KindedScrapeFlow` bean per `ScrapeQueueKind` (today from the `*ScrapeFlowConfiguration` classes in `configuration/scrapeflow/`); `ScrapeService` routes queue items by kind and fails at startup if a kind has no flow or more than one
+  - `adaptors/http/` — `InsertionAdaptor` (enqueue/scrape endpoints); `adaptors/cron/` — `CronScrapeAdaptor` drains the queue every 60s, `CronEnqueueAdaptor` enqueues all series every minute during the 22:00 hour; `adaptors/postgres/` — queue and series-config repositories; `adaptors/config/` — preparer, series-config list and scheduler beans
+- **`shared/`** — used by every module, depends on none of them: `config/` (CORS, Jackson, JDBC, Flyway catalog version) and `web/` (`WebPort`, `ScrapeException`, `WebAdaptorFlow`, `ConnectionBuilder`/`Getter`/`ResponseParser`, `HttpGetter`, `ZipEntryGetter`, `HttpResponses`)
+- **`adaptors/http/`** — `ExtractionAdaptor` handles series config, chart data and the parliament, election and regional-statistics reads.
 - **`adaptors/database/postgres/`** — `PostgresAdaptor` implements `DatabasePort` using JOOQ. Contains per-table repositories.
-- **`adaptors/webadaptor/`** — Fetches external API data. `MacroPointAdaptorFlowFactory` routes to the correct connection builder and response parser per data source. `MembersOfParliamentWebAdaptor` handles parliament data.
-- **`adaptors/cron/`** — Scheduled tasks: `CronScrapeAdaptor` drains the scrape queue every 60s; `CronEnqueueAdaptor` enqueues all series every minute during the 22:00 hour.
-- **`application/ports/driving/`** — `InPort` (write operations), `OutPort` (read operations).
-- **`application/ports/driven/`** — `DatabasePort`, `WebPort`.
+- **`adaptors/webadaptor/`** — Source-specific web adaptors, connection builders and response parsers. `MacroPointAdaptorFlowFactory` routes to the correct connection builder and response parser per data source. `MembersOfParliamentWebAdaptor` handles parliament data.
+- **`application/ports/driving/`** — `OutPort` (read operations).
+- **`application/ports/driven/`** — `DatabasePort` and the domain-specific `ConfigWith*` scrape payloads and web requests.
 - **`application/domain/`** — Core domain: `MacroSeries`, `MacroPoint`, `AlignedBundle`, parliament models. Uses Java records for value objects.
-- **`application/services/`** — `ScrapeService` uses Strategy pattern with `ScrapeQueueKind` to route to the correct `ScrapeFlow`. Other services: `EnqueueService`, `TimeFilterService`, `AlignmentService`, `LabelGenerationService`.
-- **`configuration/`** — Spring `@Configuration` beans for CORS, Jackson, schedulers, scrape flows, JDBC.
-  - Jackson 3 (`tools.jackson`) is used throughout. `CorsConfiguration` has `@EnableWebMvc`, which disables Boot's MVC auto-config, so `JacksonConfiguration` registers its `JsonMapper` with MVC explicitly. It keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
+- **`application/services/`** — Domain services (`TimeFilterService`, `AlignmentService`, `LabelGenerationService`, parliament, election and regional statistics) and, in `scrape/scrapeflow/`, the domain-specific finders, scrapers and persisters.
+- **`configuration/`** — `WebAdaptorConfiguration` and the per-domain `scrapeflow/*ScrapeFlowConfiguration` beans.
+  - Jackson 3 (`tools.jackson`) is used throughout. `CorsConfiguration` (in `shared/config/`) has `@EnableWebMvc`, which disables Boot's MVC auto-config, so `JacksonConfiguration` registers its `JsonMapper` with MVC explicitly. It keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
 - **`jooq/generated/`** — Auto-generated JOOQ classes (do not edit manually).
 
 ### REST API Endpoints
@@ -175,6 +182,7 @@ Chart series in `series_configuration` carry picker metadata (V27), returned by 
 
 - JUnit 5 + Mockito for unit tests
 - TestContainers (PostgreSQL) for integration tests — Docker must be running for `mvn test`
+- `ArchitectureTest` (ArchUnit) checks the module boundaries: modules and `shared` don't depend on the legacy `adaptors`/`application`/`configuration` packages, `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. Add a module to its `MODULES` list once it has moved out of the layer packages
 - Test fixtures in `src/test/resources/json/`
 - `@ActiveProfiles("test")` activates `application-test.properties`
 

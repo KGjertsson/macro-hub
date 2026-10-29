@@ -3,7 +3,7 @@ package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responseparser;
 import com.kg.macroanalyzer.TestJsonReader;
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.RiksdagenResponseParser;
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

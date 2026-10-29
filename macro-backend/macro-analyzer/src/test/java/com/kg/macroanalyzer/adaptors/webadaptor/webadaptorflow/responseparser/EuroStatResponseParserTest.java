@@ -2,7 +2,7 @@ package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responseparser;
 
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.EuroStatResponseParser;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

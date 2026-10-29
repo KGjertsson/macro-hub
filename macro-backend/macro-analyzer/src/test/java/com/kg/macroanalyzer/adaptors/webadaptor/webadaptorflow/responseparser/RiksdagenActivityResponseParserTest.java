@@ -7,7 +7,7 @@ import com.kg.macroanalyzer.application.domain.parliament.DocumentPage;
 import com.kg.macroanalyzer.application.domain.parliament.ParliamentDocument;
 import com.kg.macroanalyzer.application.domain.parliament.SessionVotes;
 import com.kg.macroanalyzer.application.domain.parliament.VoteTotals;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

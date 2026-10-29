@@ -2,8 +2,8 @@ package com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responseparser;
 
 import com.kg.macroanalyzer.adaptors.webadaptor.webadaptorflow.responserparser.ValmyndighetenIndexResponseParser;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.LocalElectionFile;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

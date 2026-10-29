@@ -7,7 +7,6 @@ import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.OutPortImpl;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
@@ -15,6 +14,8 @@ import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy
 import com.kg.macroanalyzer.application.services.localelection.LocalElectionService;
 import com.kg.macroanalyzer.application.services.parliament.ParliamentService;
 import com.kg.macroanalyzer.application.services.regionalstatistics.RegionalStatisticsService;
+import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +40,8 @@ public class OutPortImplTest {
 
     @Mock
     DatabasePort databasePort;
+    @Mock
+    SeriesConfigPort seriesConfigPort;
     @Mock
     AlignmentService alignmentService;
     @Mock
@@ -110,9 +113,9 @@ public class OutPortImplTest {
         final var members = SeriesConfig.builder().name("MembersOfParliament").category("Riksdagen").build();
         final var elections = SeriesConfig.builder().name("MunicipalElections").category("Valmyndigheten").build();
         final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").category("SCB").build();
-        when(databasePort.readSeriesConfigList()).thenReturn(List.of(rate, members, elections, scb));
+        when(seriesConfigPort.readSeriesConfigList()).thenReturn(List.of(rate, members, elections, scb));
         final var outPort = new OutPortImpl(
-                databasePort, alignmentService, timeFilterService, parliamentService, localElectionService, regionalStatisticsService);
+                databasePort, seriesConfigPort, alignmentService, timeFilterService, parliamentService, localElectionService, regionalStatisticsService);
 
         // when
         final var chartList = outPort.getChartSeriesConfigList();

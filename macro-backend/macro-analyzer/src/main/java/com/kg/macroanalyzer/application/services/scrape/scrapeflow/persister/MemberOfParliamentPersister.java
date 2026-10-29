@@ -2,17 +2,19 @@ package com.kg.macroanalyzer.application.services.scrape.scrapeflow.persister;
 
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.services.scrape.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
+import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public record MemberOfParliamentPersister(DatabasePort databasePort) implements Persister<ConfigWithMemberOfParliament> {
+public record MemberOfParliamentPersister(DatabasePort databasePort, ScrapeQueuePort scrapeQueuePort) implements Persister<ConfigWithMemberOfParliament> {
 
     @Override
     public ScrapeResult persist(ConfigWithMemberOfParliament configWithMemberOfParliament) {
         final var config = configWithMemberOfParliament.seriesConfig();
         final var members = configWithMemberOfParliament.membersOfParliament();
-        databasePort.markAsDone(config);
+        scrapeQueuePort.markAsDone(config);
         if (members.isEmpty()) {
             log.info("Found no members of parliament for %s".formatted(config.name()));
 

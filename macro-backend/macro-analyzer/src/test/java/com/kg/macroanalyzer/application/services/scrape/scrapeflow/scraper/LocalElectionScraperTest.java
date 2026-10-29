@@ -2,12 +2,12 @@ package com.kg.macroanalyzer.application.services.scrape.scrapeflow.scraper;
 
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithLocalElections;
 import com.kg.macroanalyzer.application.ports.driven.LocalElectionFile;
 import com.kg.macroanalyzer.application.ports.driven.LocalElectionIndexRequest;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

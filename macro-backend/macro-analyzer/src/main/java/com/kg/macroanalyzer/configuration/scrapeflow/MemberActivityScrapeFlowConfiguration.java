@@ -1,20 +1,23 @@
 package com.kg.macroanalyzer.configuration.scrapeflow;
 
-import com.kg.macroanalyzer.adaptors.database.postgres.models.ScrapeQueueItem;
 import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driven.MemberActivityRequest;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
-import com.kg.macroanalyzer.application.services.scrape.scrapeflow.ScrapeFlow;
-import com.kg.macroanalyzer.application.services.scrape.scrapeflow.existingfinder.ExistingFinder;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.existingfinder.ExistingMemberActivityFinder;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.persister.MemberActivityPersister;
-import com.kg.macroanalyzer.application.services.scrape.scrapeflow.persister.Persister;
-import com.kg.macroanalyzer.application.services.scrape.scrapeflow.preparer.Preparer;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.scraper.MemberActivityScraper;
-import com.kg.macroanalyzer.application.services.scrape.scrapeflow.scraper.Scraper;
+import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.KindedScrapeFlow;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Preparer;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ScrapeFlow;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
+import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
+import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import com.kg.macroanalyzer.shared.web.WebPort;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,23 +43,23 @@ public class MemberActivityScrapeFlowConfiguration {
     }
 
     @Bean("memberActivityPersister")
-    public Persister<ConfigWithMemberActivity> persister(DatabasePort databasePort) {
-        return new MemberActivityPersister(databasePort);
+    public Persister<ConfigWithMemberActivity> persister(DatabasePort databasePort, ScrapeQueuePort scrapeQueuePort) {
+        return new MemberActivityPersister(databasePort, scrapeQueuePort);
     }
 
     @Bean("memberActivityScrapeFlow")
-    public ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberActivity> scrapeFlow(
+    public KindedScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
             @Qualifier("existingMemberActivityFinder") ExistingFinder<SeriesConfig, ConfigWithMemberActivity> finder,
             @Qualifier("memberActivityScraper") Scraper<ConfigWithMemberActivity> scraper,
             @Qualifier("memberActivityPersister") Persister<ConfigWithMemberActivity> persister
     ) {
-        return new ScrapeFlow<>(
+        return KindedScrapeFlow.of(ScrapeQueueKind.MEMBER_ACTIVITY, new ScrapeFlow<>(
                 preparer,
                 finder,
                 scraper,
                 persister
-        );
+        ));
     }
 
 }

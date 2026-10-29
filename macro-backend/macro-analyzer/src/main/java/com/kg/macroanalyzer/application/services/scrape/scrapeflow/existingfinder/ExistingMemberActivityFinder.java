@@ -3,7 +3,8 @@ package com.kg.macroanalyzer.application.services.scrape.scrapeflow.existingfind
 import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
-import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;

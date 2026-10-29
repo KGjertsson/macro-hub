@@ -1,11 +1,12 @@
 package com.kg.macroanalyzer.application.services.scrape.scrapeflow.scraper;
 
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
-import com.kg.macroanalyzer.application.exceptions.ScrapeException;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithLocalElections;
 import com.kg.macroanalyzer.application.ports.driven.LocalElectionFile;
 import com.kg.macroanalyzer.application.ports.driven.LocalElectionIndexRequest;
-import com.kg.macroanalyzer.application.ports.driven.WebPort;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
+import com.kg.macroanalyzer.shared.web.ScrapeException;
+import com.kg.macroanalyzer.shared.web.WebPort;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
