@@ -1,0 +1,8 @@
+# Shell scripts must keep LF even when core.autocrlf=true, or sh fails on the CRs
+mvnw text eol=lf
+*.sh text eol=lf
+.githooks/* text eol=lf
+
+# Windows scripts
+*.cmd text eol=crlf
+*.bat text eol=crlf
