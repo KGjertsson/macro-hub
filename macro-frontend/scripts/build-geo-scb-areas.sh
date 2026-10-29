@@ -27,7 +27,7 @@ download() {
   ' "$WORK_DIR/$layer.json" "$expected"
 }
 
-# Fails unless the output has the expected feature count, unique non-empty codes without version suffix, and a name and kommunkod on every feature
+# Fails unless the output has the expected feature count, unique codes without version suffix, a name (with a matched kommun) and kommunkod on every feature, and a regsokod on every DeSO
 verify() {
   file=$1
   expected=$2
@@ -38,7 +38,9 @@ verify() {
     const codes = new Set();
     for (const g of geometries) {
       const p = g.properties;
-      if (!g.arcs || !/^\d{4}[ABCR]\d{3,4}$/.test(p.code) || !p.name || !/^\d{4}$/.test(p.kommunkod) || codes.has(p.code)) {
+      const badName = !p.name || p.name.startsWith("undefined");
+      const badRegso = name.startsWith("deso") && !/^\d{4}R\d{3}$/.test(p.regsokod);
+      if (!g.arcs || !/^\d{4}[ABCR]\d{3,4}$/.test(p.code) || badName || !/^\d{4}$/.test(p.kommunkod) || badRegso || codes.has(p.code)) {
         console.error(`${file}: bad feature ${JSON.stringify(p)}`); process.exit(1);
       }
       codes.add(p.code);
@@ -47,15 +49,25 @@ verify() {
   ' "$file" "$expected"
 }
 
+# Dissolves a downloaded layer into a land outline. The 2025 layers extend into territorial waters, so they are clipped to the 2018/2020 outline
+land_outline() {
+  $MAPSHAPER "$WORK_DIR/$1.json" -dissolve -o "$WORK_DIR/$1.land.json"
+}
+
+# Optional second argument: the layer whose land outline the output is clipped to
 build_deso() {
   layer=$1
+  land=${2:-}
   stem=$(echo "$layer" | tr '[:upper:]' '[:lower:]')
   download "$layer"
+  set --
+  if [ -n "$land" ]; then set -- -clip "$WORK_DIR/$land.land.json" remove-slivers; fi
   $MAPSHAPER "$WORK_DIR/$layer.json" \
     -rename-fields code=desokod \
     -join "$WORK_DIR/kommuner.csv" keys=kommunkod,code string-fields=code fields=name \
     -each 'name = name + " " + code' \
-    -filter-fields code,name,kommunkod \
+    -filter-fields code,name,kommunkod,regsokod \
+    "$@" \
     -simplify dp variable interval="$INTERVAL" keep-shapes \
     -rename-layers "$stem" \
     -o "$OUT_DIR/$stem.topo.json" format=topojson quantization=1e6
@@ -64,11 +76,15 @@ build_deso() {
 
 build_regso() {
   layer=$1
+  land=${2:-}
   stem=$(echo "$layer" | tr '[:upper:]' '[:lower:]')
   download "$layer"
+  set --
+  if [ -n "$land" ]; then set -- -clip "$WORK_DIR/$land.land.json" remove-slivers; fi
   $MAPSHAPER "$WORK_DIR/$layer.json" \
     -rename-fields code=regsokod,name=regsonamn \
     -filter-fields code,name,kommunkod \
+    "$@" \
     -simplify dp variable interval="$INTERVAL" keep-shapes \
     -rename-layers "$stem" \
     -o "$OUT_DIR/$stem.topo.json" format=topojson quantization=1e6
@@ -76,6 +92,8 @@ build_regso() {
 }
 
 build_deso DeSO_2018
-build_deso DeSO_2025
+land_outline DeSO_2018
+build_deso DeSO_2025 DeSO_2018
 build_regso RegSO_2020
-build_regso RegSO_2025
+land_outline RegSO_2020
+build_regso RegSO_2025 RegSO_2020
