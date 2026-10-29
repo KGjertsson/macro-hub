@@ -43,16 +43,21 @@ const MapSearch = ({ geometry, areaLabel, onAddress, onArea }: MapSearchProps) =
       .map(f => f.properties);
   }, [geometry, query]);
 
-  const addressHits = debouncedQuery.trim().length >= 3 ? addresses ?? [] : [];
+  // Both checks, so a cleared box doesn't show the last results while the debounce catches up
+  const addressHits = query.trim().length >= 3 && debouncedQuery.trim().length >= 3 ? addresses ?? [] : [];
   const searching = isFetching || query !== debouncedQuery;
 
-  const close = () => {
-    setOpen(false);
-    setQuery('');
+  // Also on dismissal (outside click, Escape), so the next open starts empty
+  const setOpenAndReset = (next: boolean) => {
+    setOpen(next);
+    if (!next) {
+      setQuery('');
+    }
   };
+  const close = () => setOpenAndReset(false);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpenAndReset}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"

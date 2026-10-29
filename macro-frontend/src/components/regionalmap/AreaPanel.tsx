@@ -70,7 +70,6 @@ const AreaPanel = ({ area, kommunName, level, indicator, year, geoVersion, value
           Plats 1 har det högsta värdet bland områden med data. Indelning: {geoVersionLabel(geoVersion)}.
         </p>
       )}
-      {indicator.description && <p className="text-sm text-muted-foreground leading-relaxed">{indicator.description}</p>}
     </div>
   );
 };

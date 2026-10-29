@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AREA_LEVELS, AreaLevel } from '@/models/RegionalStatistics';
 
@@ -31,14 +32,15 @@ export const useRegionalMapSearchParams = (): [RegionalMapState, (change: Partia
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const state: RegionalMapState = {
+  // Stable between renders so the view can use them in effect dependencies
+  const state = useMemo<RegionalMapState>(() => ({
     level: parseLevel(searchParams.get('l')),
     indicator: searchParams.get('i') || null,
     year: parseYear(searchParams.get('y')),
     area: searchParams.get('a') || null,
-  };
+  }), [searchParams]);
 
-  const update = (change: Partial<RegionalMapState>) => {
+  const update = useCallback((change: Partial<RegionalMapState>) => {
     const next = { ...state, ...change };
     const params = new URLSearchParams(searchParams);
     params.set('l', next.level);
@@ -46,7 +48,7 @@ export const useRegionalMapSearchParams = (): [RegionalMapState, (change: Partia
     setOrDelete(params, 'y', next.year === null ? null : String(next.year));
     setOrDelete(params, 'a', next.area);
     navigate({ search: params.toString() }, { replace: true });
-  };
+  }, [state, searchParams, navigate]);
 
   return [state, update];
 };

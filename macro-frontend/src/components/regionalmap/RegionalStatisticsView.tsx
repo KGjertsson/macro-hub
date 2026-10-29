@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { AddressHit } from '@/api/addressSearch';
-import { useAreaGeometry, useKommunNames, useRegionalIndicators, useRegionalValues } from '@/api/regionalStatistics';
+import { AreaGeometry, useAreaGeometry, useKommunNames, useRegionalIndicators, useRegionalValues } from '@/api/regionalStatistics';
 import { AREA_LEVELS, AreaLevel, geoVersionLabel, RegionalIndicator } from '@/models/RegionalStatistics';
 import AreaPanel from './AreaPanel';
 import { classify } from './classification';
@@ -17,6 +17,12 @@ import { useRegionalMapSearchParams } from './useRegionalMapSearchParams';
 const DEFAULT_INDICATOR = 'population';
 
 const hasData = (indicator: RegionalIndicator, level: AreaLevel) => indicator.availability[level].length > 0;
+
+const containingArea = (geometry: AreaGeometry, [x, y]: [number, number]) =>
+  geometry.collection.features.find(f => {
+    const [minX, minY, maxX, maxY] = geometry.byCode.get(f.properties.code)!.bbox;
+    return x >= minX && x <= maxX && y >= minY && y <= maxY && geoContains(f, [x, y]);
+  });
 
 // Categories in the order their first indicator appears (the backend sorts by sort_order)
 const groupByCategory = (indicators: RegionalIndicator[]) => {
@@ -31,6 +37,8 @@ const RegionalStatisticsView = () => {
   const { data: kommunNames } = useKommunNames();
   const [focus, setFocus] = useState<MapFocus | null>(null);
   const [marker, setMarker] = useState<[number, number] | null>(null);
+  // An address picked before the boundaries are in; its area is selected when they arrive
+  const [pendingAddress, setPendingAddress] = useState<[number, number] | null>(null);
   const focusedFromUrl = useRef(false);
 
   const withData = (indicators ?? []).filter(i => AREA_LEVELS.some(level => hasData(i, level)));
@@ -75,6 +83,25 @@ const RegionalStatisticsView = () => {
     }
   }, [geometry, selectedArea]);
 
+  // Write coerced values (unknown indicator or year, a RegSO-only indicator at DeSO) back, so a copied link matches the page
+  useEffect(() => {
+    if (!indicator) {
+      return;
+    }
+    const indicatorCoerced = state.indicator !== null && state.indicator !== indicator.id;
+    const yearCoerced = state.year !== null && state.year !== year;
+    if (indicatorCoerced || yearCoerced || state.level !== level) {
+      update({ indicator: indicator.id, level, year, area: state.level === level ? state.area : null });
+    }
+  }, [indicator, level, year, state, update]);
+
+  useEffect(() => {
+    if (pendingAddress && geometry) {
+      setPendingAddress(null);
+      update({ area: containingArea(geometry, pendingAddress)?.properties.code ?? null });
+    }
+  }, [pendingAddress, geometry, update]);
+
   const selectIndicator = (id: string) => {
     const next = withData.find(i => i.id === id);
     if (!next) {
@@ -104,12 +131,12 @@ const RegionalStatisticsView = () => {
   const selectAddress = (hit: AddressHit) => {
     setMarker(hit.lngLat);
     setFocus({ kind: 'point', lngLat: hit.lngLat });
-    const containing = geometry?.collection.features.find(f => {
-      const [minX, minY, maxX, maxY] = geometry.byCode.get(f.properties.code)!.bbox;
-      const [x, y] = hit.lngLat;
-      return x >= minX && x <= maxX && y >= minY && y <= maxY && geoContains(f, hit.lngLat);
-    });
-    update({ area: containing?.properties.code ?? null });
+    if (geometry) {
+      setPendingAddress(null);
+      update({ area: containingArea(geometry, hit.lngLat)?.properties.code ?? null });
+    } else {
+      setPendingAddress(hit.lngLat);
+    }
   };
 
   const selectArea = (code: string) => {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import type { ExpressionSpecification, FilterSpecification, GeoJSONSource, LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
+import type { ExpressionSpecification, GeoJSONSource, LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { BBox } from 'geojson';
@@ -19,8 +19,8 @@ const FILL_LAYER = 'areas-fill';
 const HOVER_LAYER = 'areas-hover';
 const SELECTED_CASING_LAYER = 'areas-selected-casing';
 const SELECTED_LAYER = 'areas-selected';
-const matchCode = (code: string): FilterSpecification => ['==', ['get', 'code'], code];
-const NO_MATCH = matchCode('');
+// Highlights use feature state; changing a layer filter would make MapLibre re-parse the whole source
+const whenState = (flag: string): ExpressionSpecification => ['case', ['boolean', ['feature-state', flag], false], 1, 0];
 
 // A new object moves the map even when it points at the same place again
 export type MapFocus =
@@ -65,8 +65,11 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
   // Handlers are bound once, so they read the latest props through refs
   const dataRef = useRef(data);
   const onSelectRef = useRef(onSelect);
+  const selectedRef = useRef(selectedCode);
+  const hoveredRef = useRef<string | null>(null);
   dataRef.current = data;
   onSelectRef.current = onSelect;
+  selectedRef.current = selectedCode;
 
   useEffect(() => {
     const map = new maplibregl.Map({
@@ -75,7 +78,6 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
       bounds: SWEDEN_BOUNDS,
       fitBoundsOptions: { padding: 16 },
       attributionControl: {
-        compact: true,
         customAttribution: '<a href="https://www.scb.se/" target="_blank" rel="noopener">SCB</a>',
       },
     });
@@ -83,6 +85,19 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     mapRef.current = map;
+
+    const setHovered = (code: string | null) => {
+      if (hoveredRef.current === code) {
+        return;
+      }
+      if (hoveredRef.current) {
+        map.setFeatureState({ source: SOURCE, id: hoveredRef.current }, { hover: false });
+      }
+      if (code) {
+        map.setFeatureState({ source: SOURCE, id: code }, { hover: true });
+      }
+      hoveredRef.current = code;
+    };
 
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 8, className: 'regional-map-popup' });
 
@@ -119,22 +134,19 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
         id: HOVER_LAYER,
         type: 'line',
         source: SOURCE,
-        filter: NO_MATCH,
-        paint: { 'line-color': '#0b0b0b', 'line-width': 1.5 },
+        paint: { 'line-color': '#0b0b0b', 'line-width': 1.5, 'line-opacity': whenState('hover') },
       }, firstLabel);
       map.addLayer({
         id: SELECTED_CASING_LAYER,
         type: 'line',
         source: SOURCE,
-        filter: NO_MATCH,
-        paint: { 'line-color': '#ffffff', 'line-width': 5 },
+        paint: { 'line-color': '#ffffff', 'line-width': 5, 'line-opacity': whenState('selected') },
       }, firstLabel);
       map.addLayer({
         id: SELECTED_LAYER,
         type: 'line',
         source: SOURCE,
-        filter: NO_MATCH,
-        paint: { 'line-color': '#0b0b0b', 'line-width': 2.5 },
+        paint: { 'line-color': '#0b0b0b', 'line-width': 2.5, 'line-opacity': whenState('selected') },
       }, firstLabel);
       setReady(true);
     });
@@ -146,7 +158,7 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
         return;
       }
       map.getCanvas().style.cursor = 'pointer';
-      map.setFilter(HOVER_LAYER, matchCode(code));
+      setHovered(code);
       const name = current.geometry.byCode.get(code)?.feature.properties.name ?? code;
       const value = current.values[code];
       popup
@@ -156,7 +168,7 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
     });
     map.on('mouseleave', FILL_LAYER, () => {
       map.getCanvas().style.cursor = '';
-      map.setFilter(HOVER_LAYER, NO_MATCH);
+      setHovered(null);
       popup.remove();
     });
     map.on('click', FILL_LAYER, (event: MapLayerMouseEvent) => {
@@ -189,10 +201,18 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
     if (!ready || !map || !classification) {
       return;
     }
+    // Clearing drops the highlight flags too, so they are put back
     map.removeFeatureState({ source: SOURCE });
     classification.classByCode.forEach((cls, code) => map.setFeatureState({ source: SOURCE, id: code }, { cls }));
+    if (selectedRef.current) {
+      map.setFeatureState({ source: SOURCE, id: selectedRef.current }, { selected: true });
+    }
+    if (hoveredRef.current) {
+      map.setFeatureState({ source: SOURCE, id: hoveredRef.current }, { hover: true });
+    }
     const classIndex: ExpressionSpecification = ['coalesce', ['feature-state', 'cls'], -1];
-    map.setPaintProperty(FILL_LAYER, 'fill-color', [
+    // A match needs at least one branch, so a year without values is painted as no data
+    map.setPaintProperty(FILL_LAYER, 'fill-color', classification.classes.length === 0 ? NO_DATA_COLOR : [
       'match', classIndex,
       ...classification.classes.flatMap((c, i) => [i, c.color]),
       NO_DATA_COLOR,
@@ -210,9 +230,16 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
     if (!ready || !map) {
       return;
     }
-    const filter = selectedCode ? matchCode(selectedCode) : NO_MATCH;
-    map.setFilter(SELECTED_CASING_LAYER, filter);
-    map.setFilter(SELECTED_LAYER, filter);
+    if (!selectedCode) {
+      return;
+    }
+    map.setFeatureState({ source: SOURCE, id: selectedCode }, { selected: true });
+    return () => {
+      // The map may already be gone when the component unmounts
+      if (mapRef.current) {
+        map.setFeatureState({ source: SOURCE, id: selectedCode }, { selected: false });
+      }
+    };
   }, [ready, selectedCode]);
 
   useEffect(() => {
