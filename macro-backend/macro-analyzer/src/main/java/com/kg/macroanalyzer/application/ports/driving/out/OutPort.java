@@ -5,7 +5,6 @@ import com.kg.macroanalyzer.application.domain.macroseries.AlignedBundle;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
-import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 
 import java.util.List;
@@ -18,16 +17,6 @@ public interface OutPort {
     List<SeriesConfig> getSeriesConfigList();
 
     List<SeriesConfig> getChartSeriesConfigList();
-
-    List<PartyDto> getParties();
-
-    List<ElectionResultDto> getElections();
-
-    CompositionDto getComposition();
-
-    List<MemberSummaryDto> getMembersOfParliament(Integer electionYear);
-
-    Optional<MemberDetailDto> getMemberOfParliament(String id);
 
     List<LocalElectionSummaryDto> getLocalElectionResults(LocalElectionType type, Integer year);
 

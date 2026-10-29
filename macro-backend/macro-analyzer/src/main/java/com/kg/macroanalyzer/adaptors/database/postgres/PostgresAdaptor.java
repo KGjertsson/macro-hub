@@ -6,10 +6,6 @@ import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroPoint;
 import com.kg.macroanalyzer.application.domain.macroseries.MacroSeries;
-import com.kg.macroanalyzer.application.domain.parliament.Election;
-import com.kg.macroanalyzer.application.domain.parliament.MemberActivity;
-import com.kg.macroanalyzer.application.domain.parliament.MemberOfParliament;
-import com.kg.macroanalyzer.application.domain.parliament.Party;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
@@ -18,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -35,9 +30,6 @@ public class PostgresAdaptor implements DatabasePort {
     PolicyRateRepository policyRateRepo;
     FedRepository fedRepository;
     EurostatRepository eurostatRepository;
-    SweParMemberRepository sweParMemberRepository;
-    SweParActivityRepository sweParActivityRepository;
-    RiksdagElectionRepository riksdagElectionRepository;
     LocalElectionRepository localElectionRepository;
 
     @Autowired
@@ -49,9 +41,6 @@ public class PostgresAdaptor implements DatabasePort {
             PolicyRateRepository policyRateRepo,
             FedRepository fedRepository,
             EurostatRepository eurostatRepository,
-            SweParMemberRepository sweParMemberRepository,
-            SweParActivityRepository sweParActivityRepository,
-            RiksdagElectionRepository riksdagElectionRepository,
             LocalElectionRepository localElectionRepository
     ) {
         this.euroMarketRateRepo = euroMarketRateRepo;
@@ -61,9 +50,6 @@ public class PostgresAdaptor implements DatabasePort {
         this.policyRateRepo = policyRateRepo;
         this.fedRepository = fedRepository;
         this.eurostatRepository = eurostatRepository;
-        this.sweParMemberRepository = sweParMemberRepository;
-        this.sweParActivityRepository = sweParActivityRepository;
-        this.riksdagElectionRepository = riksdagElectionRepository;
         this.localElectionRepository = localElectionRepository;
     }
 
@@ -85,41 +71,6 @@ public class PostgresAdaptor implements DatabasePort {
         final var macroPoints = configWithMacroPoints.macroPoints();
         final var writer = macroPointWriter(seriesConfig);
         return writer.apply(macroPoints);
-    }
-
-    @Override
-    public Integer writeMembersOfParliament(List<MemberOfParliament> membersOfParliament) {
-        return sweParMemberRepository.upsertMembers(membersOfParliament);
-    }
-
-    @Override
-    public List<MemberOfParliament> readMembersOfParliament() {
-        return sweParMemberRepository.readMembers();
-    }
-
-    @Override
-    public Integer writeMemberActivity(List<MemberActivity> memberActivity) {
-        return sweParActivityRepository.upsertActivity(memberActivity);
-    }
-
-    @Override
-    public List<MemberActivity> readMemberActivity() {
-        return sweParActivityRepository.readActivity();
-    }
-
-    @Override
-    public List<Party> readParties() {
-        return riksdagElectionRepository.readParties();
-    }
-
-    @Override
-    public List<Election> readElections() {
-        return riksdagElectionRepository.readElections();
-    }
-
-    @Override
-    public Map<String, String> readOrganNames() {
-        return riksdagElectionRepository.readOrganNames();
     }
 
     @Override

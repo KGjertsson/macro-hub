@@ -10,9 +10,6 @@ import com.kg.macroanalyzer.application.ports.driving.out.OutPort;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDataParams;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartData;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartDataWithLabels;
-import com.kg.macroanalyzer.application.ports.driving.out.parliament.CompositionDto;
-import com.kg.macroanalyzer.application.ports.driving.out.parliament.MemberSummaryDto;
-import com.kg.macroanalyzer.application.ports.driving.out.parliament.PartySeats;
 import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.StrategyFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -109,54 +106,6 @@ public class ExtractionAdaptorTest {
 
         // then
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    public void shouldReturnOk_whenMembersFoundForYear() {
-        // given
-        final var member = MemberSummaryDto.builder().id("1").name("Anna Andersson").party("S").build();
-
-        // when
-        when(outPort.getMembersOfParliament(2026)).thenReturn(List.of(member));
-        final var response = extractionAdaptor.getMembersOfParliament(2026);
-
-        // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(List.of(member), response.getBody());
-    }
-
-    @Test
-    public void shouldReturnNoContent_whenNoMembersScraped() {
-        // when
-        when(outPort.getMembersOfParliament(null)).thenReturn(List.of());
-        final var response = extractionAdaptor.getMembersOfParliament(null);
-
-        // then
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    public void shouldReturnNotFound_whenMemberUnknown() {
-        // when
-        when(outPort.getMemberOfParliament("missing")).thenReturn(Optional.empty());
-        final var response = extractionAdaptor.getMemberOfParliament("missing");
-
-        // then
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
-    public void shouldReturnComposition_whenServingMembersFound() {
-        // given
-        final var composition = new CompositionDto("2026-10-25", List.of(new PartySeats("S", "Socialdemokraterna", "#E8112d", 98)));
-
-        // when
-        when(outPort.getComposition()).thenReturn(composition);
-        final var response = extractionAdaptor.getComposition();
-
-        // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(composition, response.getBody());
     }
 
     @Test

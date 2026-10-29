@@ -5,9 +5,10 @@ import com.kg.macroanalyzer.application.domain.localelection.Governance;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.localelection.LocalPartyResult;
-import com.kg.macroanalyzer.application.domain.parliament.Party;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.*;
+import com.kg.macroanalyzer.parliament.application.port.in.PartyDirectory;
+import com.kg.macroanalyzer.parliament.domain.Party;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +26,12 @@ public class LocalElectionService {
     private static final String UNKNOWN_PARTY_COLOR = "#9CA3AF";
 
     private final DatabasePort databasePort;
+    private final PartyDirectory partyDirectory;
 
     @Autowired
-    public LocalElectionService(DatabasePort databasePort) {
+    public LocalElectionService(DatabasePort databasePort, PartyDirectory partyDirectory) {
         this.databasePort = databasePort;
+        this.partyDirectory = partyDirectory;
     }
 
     public List<LocalElectionSummaryDto> getResults(LocalElectionType type, Integer year) {
@@ -66,7 +69,7 @@ public class LocalElectionService {
     // Riksdag parties use the app's own palette so a party has the same colour on every page;
     // Valmyndigheten's own colours (e.g. blue for SD) are only kept for local parties
     private Map<String, String> partyColors() {
-        return databasePort.readParties().stream()
+        return partyDirectory.listParties().stream()
                 .collect(Collectors.toMap(Party::code, Party::color, (a, b) -> a));
     }
 

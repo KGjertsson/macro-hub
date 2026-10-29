@@ -9,7 +9,6 @@ import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartData;
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartDataWithLabels;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
-import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,49 +57,6 @@ public class ExtractionAdaptor {
                 : HttpStatus.OK;
 
         return new ResponseEntity<>(seriesConfigList, responseCode);
-    }
-
-    @GetMapping("/parliament/parties")
-    public ResponseEntity<List<PartyDto>> getParties() {
-        log.info("Received GET macro-analyzer/parliament/parties");
-
-        return listResponse(outPort.getParties());
-    }
-
-    @GetMapping("/parliament/elections")
-    public ResponseEntity<List<ElectionResultDto>> getElections() {
-        log.info("Received GET macro-analyzer/parliament/elections");
-
-        return listResponse(outPort.getElections());
-    }
-
-    @GetMapping("/parliament/composition")
-    public ResponseEntity<CompositionDto> getComposition() {
-        log.info("Received GET macro-analyzer/parliament/composition");
-        final var composition = outPort.getComposition();
-        if (composition.parties().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.ok(composition);
-    }
-
-    @GetMapping("/parliament/members")
-    public ResponseEntity<List<MemberSummaryDto>> getMembersOfParliament(
-            @RequestParam(name = "year", required = false) Integer year
-    ) {
-        log.info("Received GET macro-analyzer/parliament/members?year=%s".formatted(year));
-
-        return listResponse(outPort.getMembersOfParliament(year));
-    }
-
-    @GetMapping("/parliament/members/{id}")
-    public ResponseEntity<MemberDetailDto> getMemberOfParliament(@PathVariable("id") String id) {
-        log.info("Received GET macro-analyzer/parliament/members/%s".formatted(id));
-
-        return outPort.getMemberOfParliament(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/municipalities/elections")
