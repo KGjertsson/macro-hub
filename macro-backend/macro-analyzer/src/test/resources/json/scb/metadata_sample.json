@@ -1,0 +1,40 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "Folkmängden per region efter ålder och kön. År 2023-2024",
+  "source": "SCB",
+  "updated": "2026-03-24T07:00:00Z",
+  "id": ["Region", "Alder", "ContentsCode", "Tid"],
+  "size": [6, 3, 1, 2],
+  "dimension": {
+    "Region": {
+      "label": "region",
+      "category": {
+        "index": {"0114": 0, "0114A0010": 1, "0114A0020": 2, "0114A0010_DeSO2025": 3, "0114A0020_DeSO2025": 4, "0114R001": 5},
+        "label": {"0114": "Upplands Väsby", "0114A0010": "0114A0010", "0114A0020": "0114A0020", "0114A0010_DeSO2025": "0114A0010", "0114A0020_DeSO2025": "0114A0020", "0114R001": "Upplands Väsby centrum"}
+      }
+    },
+    "Alder": {
+      "label": "ålder",
+      "category": {
+        "index": ["totalt", "65-69", "70-74"],
+        "label": {"totalt": "totalt", "65-69": "65–69 år", "70-74": "70–74 år"}
+      }
+    },
+    "ContentsCode": {
+      "label": "tabellinnehåll",
+      "category": {
+        "index": {"000007Y7": 0},
+        "label": {"000007Y7": "Antal"}
+      }
+    },
+    "Tid": {
+      "label": "år",
+      "category": {
+        "index": {"2023": 0, "2024": 1},
+        "label": {"2023": "2023", "2024": "2024"}
+      }
+    }
+  },
+  "role": {"time": ["Tid"], "metric": ["ContentsCode"]}
+}

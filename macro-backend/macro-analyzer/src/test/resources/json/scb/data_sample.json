@@ -1,0 +1,43 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "Folkmängden per region efter ålder och kön. År 2023-2024",
+  "source": "SCB",
+  "updated": "2026-03-24T07:00:00Z",
+  "id": ["Region", "Alder", "ContentsCode", "Tid"],
+  "size": [6, 2, 1, 2],
+  "dimension": {
+    "Region": {
+      "label": "region",
+      "category": {
+        "index": {"0114": 0, "0114A0010": 1, "0114A0020": 2, "0114A0010_DeSO2025": 3, "0114A0020_DeSO2025": 4, "0114R001": 5}
+      }
+    },
+    "Alder": {
+      "label": "ålder",
+      "category": {
+        "index": {"65-69": 0, "70-74": 1}
+      }
+    },
+    "ContentsCode": {
+      "label": "tabellinnehåll",
+      "category": {
+        "index": {"000007Y7": 0}
+      }
+    },
+    "Tid": {
+      "label": "år",
+      "category": {
+        "index": {"2023": 0, "2024": 1}
+      }
+    }
+  },
+  "value": [
+    500, 510, 300, 310,
+    100, 0, 50, 0,
+    0, 0, 0, 0,
+    0, 120, 0, null,
+    0, 40, 0, 0,
+    null, 7, 3, 4
+  ]
+}

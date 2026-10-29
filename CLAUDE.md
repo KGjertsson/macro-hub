@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-macro-hub visualizes macro-economic trends from multiple data sources (Riksbanken, Eurostat, Federal Reserve, Swedish Parliament, Valmyndigheten). It consists of:
+macro-hub visualizes macro-economic trends from multiple data sources (Riksbanken, Eurostat, Federal Reserve, Swedish Parliament, Valmyndigheten, SCB). It consists of:
 
 - **macro-backend/macro-analyzer/** — Java 25 / Spring Boot 4.1.2 backend
 - **macro-frontend/** — Vite + React 18 + TypeScript + shadcn-ui dashboard (formerly the separate `macro-view-hub` repo, merged in via `git subtree`)
@@ -138,6 +138,8 @@ CronAdaptor ───────────→ InPort
 - `GET /macro-analyzer/parliament/members/{intressentId}` — member detail (assignments, biography, contact, votes, speeches, motions)
 - `GET /macro-analyzer/municipalities/elections?year=` / `GET /macro-analyzer/regions/elections?year=` / `GET /macro-analyzer/constituencies/elections?year=` — per kommun/region/Riksdag valkrets: seats, turnout, votes and seats per party (default: latest year)
 - `GET /macro-analyzer/municipalities/{kommunkod}` / `GET /macro-analyzer/regions/{länskod}` / `GET /macro-analyzer/constituencies/{valkretskod}` — the same plus elected members and curated governance (none for valkretsar)
+- `GET /macro-analyzer/regional-statistics/indicators` — SCB indicators with `availability` per level (`DeSO`, `RegSO`): years (newest first) and the boundary version (`geoVersion`) of each
+- `GET /macro-analyzer/regional-statistics/values?indicator=&level=DeSO|RegSO&year=` — `{indicator, level, year, geoVersion, values: {areaCode: value}}` (default: latest year; 204 without data, 400 for an unknown level)
 
 ### Riksdagen (parliament) data
 
@@ -153,9 +155,16 @@ CronAdaptor ───────────→ InPort
 - Who governs (`local_governance`) has no open data source and starts empty; add rows by migration (party abbreviations as in the results). The frontend only shows the "styre" section where a row exists
 - Configs use category `Valmyndigheten` and are also kept out of `/series-config`
 
+### SCB regional statistics (DeSO / RegSO)
+
+- `ScbRegionalStatistics` (category `SCB`, kept out of `/series-config`) scrapes curated indicators from SCB's PxWeb API v2 (`scrape_url` `https://statistikdatabasen.scb.se/api/v2`, CC0). Indicators live in `scb_indicator` (seeded by V29): `numerator`/`denominator` are JSONB lists of `{table, contents, select}`; every table dimension except `Region` and `Tid` must be selected, codes within a dimension are summed, a later source replaces an earlier one per year and version, and with a denominator the value is `sum(num) / sum(den) * multiplier`
+- One SCB table holds every area version; the region code tells them apart: `DeSO2018` (`0114A0010`), `DeSO2025` (`0114A0010_DeSO2025`), `RegSO2020` (`0114R001`), `RegSO2025` (`0114R001_RegSO2025`). Data is requested per version with a PxWeb wildcard (`?????????`, `*_DeSO2025`, …) and chunked by year to stay below 150 000 cells per call. Years a version has no data for are 0/null placeholders in SCB; a (version, year) is only kept when a value is non-null and non-zero. `area_code` is stored without the suffix so it matches the boundary files
+- `scb_table_state` keeps SCB's `updated` stamp per table; an indicator is skipped when all its tables are unchanged and it already has rows. To change an existing indicator's selection, also delete its `scb_area_value` rows in the migration so it is re-fetched
+- Calls are spaced by `scb.delay-ms` (default 350 ms, SCB allows 30 calls per 10 s) and retried up to 8 times: some SCB servers intermittently answer "Non-existent table" (404/400) for tables that exist. A first full scrape takes about 12 minutes (2.4 M rows, ~370 MB) because SCB spends several seconds on each uncached DeSO request; a run with unchanged tables takes about 30 seconds
+
 ### Database
 
-PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V28). JOOQ generates type-safe table access. Key tables: `series_configuration`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`.
+PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V29). JOOQ generates type-safe table access. Key tables: `series_configuration`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`, `scb_indicator`/`scb_area_value`/`scb_table_state`.
 
 Chart series in `series_configuration` carry picker metadata (V27), returned by `/series-config`: `category` (`Räntor`, `Statsobligationer`, `Statsskuld`, `Valuta`, `Nyckeltal USA`), `subcategory` (e.g. `Styrränta`, `Euromarknadsränta`, `Statsskuldväxel`, `Nominell`), `unit` (short Swedish display form taken from the source: `%`, `% av BNP`, `mn EUR`, `mn USD`, `mdr USD`, `SEK/USD`, `punkter`, `index`), `country` (Swedish name, null when not country-specific) and `maturity_months` (rates/bonds/bills only). A new chart series must set them in its migration; `ChartSeriesConfigIntegrationTest` checks that every chart series has a unit and subcategory and lists the exact category set and row count.
 

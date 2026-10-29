@@ -6,6 +6,7 @@ import com.kg.macroanalyzer.application.ports.driven.ConfigWithLocalElections;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
+import com.kg.macroanalyzer.application.ports.driven.ConfigWithScbIndicators;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.ScrapeFlow;
@@ -31,6 +32,7 @@ public class ScrapeService {
     private final ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberOfParliament> memberScrapeFlow;
     private final ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberActivity> memberActivityScrapeFlow;
     private final ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithLocalElections> localElectionScrapeFlow;
+    private final ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithScbIndicators> scbRegionalScrapeFlow;
 
     @Autowired
     public ScrapeService(
@@ -38,13 +40,15 @@ public class ScrapeService {
             @Qualifier("macroPointScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMacroPoints> macroPointScrapeFlow,
             @Qualifier("memberScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberOfParliament> memberScrapeFlow,
             @Qualifier("memberActivityScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberActivity> memberActivityScrapeFlow,
-            @Qualifier("localElectionScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithLocalElections> localElectionScrapeFlow
+            @Qualifier("localElectionScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithLocalElections> localElectionScrapeFlow,
+            @Qualifier("scbRegionalScrapeFlow") ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithScbIndicators> scbRegionalScrapeFlow
     ) {
         this.databasePort = databasePort;
         this.macroPointScrapeFlow = macroPointScrapeFlow;
         this.memberScrapeFlow = memberScrapeFlow;
         this.memberActivityScrapeFlow = memberActivityScrapeFlow;
         this.localElectionScrapeFlow = localElectionScrapeFlow;
+        this.scbRegionalScrapeFlow = scbRegionalScrapeFlow;
     }
 
     public ScrapeRun scrapeFromQueue(LocalDateTime timeStamp) {
@@ -90,6 +94,9 @@ public class ScrapeService {
             }
             case LOCAL_ELECTION -> {
                 return localElectionScrapeFlow;
+            }
+            case SCB_REGIONAL -> {
+                return scbRegionalScrapeFlow;
             }
             default -> throw new IllegalArgumentException(
                     "Unsupported scrape queue kind: %s".formatted(scrapeQueueKind)
