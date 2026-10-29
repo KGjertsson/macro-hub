@@ -20,6 +20,8 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 - Before every push, run the checks for what you changed:
   - Backend: `JAVA_HOME=~/.sdkman/candidates/java/current mvn test` from `macro-backend/macro-analyzer/`, with Docker running.
   - Frontend: `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run build` and `npm run lint` from `macro-frontend/`. Lint must exit 0, as CI enforces.
+- Run builds, tests and other checks in the foreground with a long `timeout` (up to 600000 ms); they all fit in it. Don't start them with `run_in_background` and wait for a completion notice: an idle sub-agent is not reliably woken by it and stalls. For anything longer, use Monitor with a loop that ends when the process exits.
+- For frontend changes that add assets, workers or routes, also check the production build as nginx serves it: build the image under a throwaway tag, run it on a spare port, and `curl -I` the new assets. Vite's dev server hides serving bugs, e.g. nginx served `.mjs` as `application/octet-stream`, which blanked the MapLibre map.
 - Use conventional commits that end with the Co-Authored-By line. Open the PR with `gh pr create` and end its body with the Claude Code line. Wait for CI with `gh pr checks <n> --watch` and fix any failing job.
 - Don't merge. Stay available for review rounds.
 
@@ -29,6 +31,7 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 - Brief it with the PR number, the stated intent and the agreed requirements. Leave out the implementer's reasoning and your own opinions.
 - It reviews `gh pr diff <n>` and reads surrounding code for context.
 - If it builds, it uses its own worktree. It never checks out branches in the main clone.
+- It follows the implementer's rule for long-running commands: run them in the foreground with a long `timeout`, or poll with Monitor. It never waits for a background completion notice.
 - It labels each finding blocking or nit and posts them with `gh pr review <n> --comment`, starting with "LGTM" or "Changes requested". It cannot approve, because it runs on the PR author's account.
 
 ## 4. Iterate
@@ -36,6 +39,7 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 - Forward the findings to the implementer. Decide which nits to fix and which to accept.
 - Ask the user about requirement or product questions. Don't decide them yourself.
 - After the fixes are pushed, ask the reviewer to re-review the new commits.
+- Watch for stalls. When a sub-agent goes idle without the expected result (no review on the PR in `gh pr view <n> --json reviews`, or no PR or push), message it at once to check its command's result itself and finish. If it stalls again, take over the check yourself.
 
 ## 5. Cap
 
