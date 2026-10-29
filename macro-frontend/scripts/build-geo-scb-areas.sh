@@ -58,7 +58,7 @@ build_deso() {
     -filter-fields code,name,kommunkod \
     -simplify dp variable interval="$INTERVAL" keep-shapes \
     -rename-layers "$stem" \
-    -o "$OUT_DIR/$stem.topo.json" format=topojson quantization=1e5
+    -o "$OUT_DIR/$stem.topo.json" format=topojson quantization=1e6
   verify "$OUT_DIR/$stem.topo.json" "$expected"
 }
 
@@ -71,7 +71,7 @@ build_regso() {
     -filter-fields code,name,kommunkod \
     -simplify dp variable interval="$INTERVAL" keep-shapes \
     -rename-layers "$stem" \
-    -o "$OUT_DIR/$stem.topo.json" format=topojson quantization=1e5
+    -o "$OUT_DIR/$stem.topo.json" format=topojson quantization=1e6
   verify "$OUT_DIR/$stem.topo.json" "$expected"
 }
 
