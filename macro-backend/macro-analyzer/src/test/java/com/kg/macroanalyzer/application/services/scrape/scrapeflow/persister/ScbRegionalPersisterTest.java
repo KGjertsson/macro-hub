@@ -72,10 +72,11 @@ public class ScbRegionalPersisterTest {
         order.verify(databasePort).writeScbIndicatorResult(households);
         // TAB6574 is shared with the failed share_65_plus, so population's new stamp for it is not stored either
         order.verify(databasePort).writeScbTableStamps(Map.of("TAB6568", UPDATED), Set.of("TAB6574", "TAB6589"));
+        order.verify(databasePort).markAsDone(config);
     }
 
     @Test
-    void shouldFail_whenEveryWriteFails() {
+    void shouldFail_andLeaveTheItemQueued_whenEveryWriteFails() {
         // given
         final var config = SeriesConfig.builder().name("ScbRegionalStatistics").build();
         final var population = result("population", "TAB6574");
@@ -87,6 +88,7 @@ public class ScbRegionalPersisterTest {
         // then
         assertEquals(ScrapeResult.FAILED, scrapeResult);
         verify(databasePort).writeScbTableStamps(Map.of(), Set.of("TAB6574"));
+        verify(databasePort, never()).markAsDone(any());
     }
 
     @Test

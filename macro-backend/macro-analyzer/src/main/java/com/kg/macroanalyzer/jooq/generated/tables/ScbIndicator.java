@@ -7,6 +7,7 @@ package com.kg.macroanalyzer.jooq.generated.tables;
 import com.kg.macroanalyzer.jooq.generated.Keys;
 import com.kg.macroanalyzer.jooq.generated.Public;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbAreaValue.ScbAreaValuePath;
+import com.kg.macroanalyzer.jooq.generated.tables.ScbAvailability.ScbAvailabilityPath;
 import com.kg.macroanalyzer.jooq.generated.tables.records.ScbIndicatorRecord;
 
 import java.math.BigDecimal;
@@ -195,6 +196,19 @@ public class ScbIndicator extends TableImpl<ScbIndicatorRecord> {
             _scbAreaValue = new ScbAreaValuePath(this, null, Keys.SCB_AREA_VALUE__SCB_AREA_VALUE_INDICATOR_ID_FKEY.getInverseKey());
 
         return _scbAreaValue;
+    }
+
+    private transient ScbAvailabilityPath _scbAvailability;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.scb_availability</code> table
+     */
+    public ScbAvailabilityPath scbAvailability() {
+        if (_scbAvailability == null)
+            _scbAvailability = new ScbAvailabilityPath(this, null, Keys.SCB_AVAILABILITY__SCB_AVAILABILITY_INDICATOR_ID_FKEY.getInverseKey());
+
+        return _scbAvailability;
     }
 
     @Override

@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_AREA_VALUE;
+import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_AVAILABILITY;
 import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_INDICATOR;
 import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_TABLE_STATE;
 
@@ -65,15 +66,13 @@ public class ScbRegionalRepository {
     }
 
     public Set<String> readIndicatorsWithData() {
-        return new HashSet<>(dslContext.select(SCB_INDICATOR.ID)
-                .from(SCB_INDICATOR)
-                .whereExists(DSL.selectOne()
-                        .from(SCB_AREA_VALUE)
-                        .where(SCB_AREA_VALUE.INDICATOR_ID.eq(SCB_INDICATOR.ID)))
-                .fetch(SCB_INDICATOR.ID));
+        return new HashSet<>(dslContext.selectDistinct(SCB_AVAILABILITY.INDICATOR_ID)
+                .from(SCB_AVAILABILITY)
+                .fetch(SCB_AVAILABILITY.INDICATOR_ID));
     }
 
-    // The indicator is replaced as a whole, so a failed write leaves the old values
+    // The indicator is replaced as a whole, so a failed write leaves the old values. scb_availability is replaced in the
+    // same transaction, so it always lists exactly the (geo version, year) pairs that have values
     public Integer writeIndicatorResult(ScbIndicatorResult result) {
         final var indicatorId = result.indicator().id();
         dslContext.transaction(configuration -> {
@@ -85,6 +84,7 @@ public class ScbRegionalRepository {
             for (int i = 0; i < values.size(); i += INSERT_BATCH_SIZE) {
                 insertValues(tx, indicatorId, values.subList(i, Math.min(values.size(), i + INSERT_BATCH_SIZE)));
             }
+            replaceAvailability(tx, indicatorId, values);
         });
 
         return result.values().size();
@@ -129,17 +129,40 @@ public class ScbRegionalRepository {
         insert.execute();
     }
 
+    private static void replaceAvailability(DSLContext tx, String indicatorId, List<ScbAreaValue> values) {
+        tx.deleteFrom(SCB_AVAILABILITY)
+                .where(SCB_AVAILABILITY.INDICATOR_ID.eq(indicatorId))
+                .execute();
+        final var available = values.stream()
+                .map(value -> new ScbAvailability(indicatorId, value.geoVersion(), value.year()))
+                .distinct()
+                .toList();
+        if (available.isEmpty()) {
+            return;
+        }
+        var insert = tx.insertInto(
+                SCB_AVAILABILITY,
+                SCB_AVAILABILITY.INDICATOR_ID,
+                SCB_AVAILABILITY.GEO_VERSION,
+                SCB_AVAILABILITY.YEAR
+        );
+        for (final var availability : available) {
+            insert = insert.values(indicatorId, availability.geoVersion().code(), (short) availability.year());
+        }
+        insert.execute();
+    }
+
     public List<ScbAvailability> readAvailability() {
         return readAvailability(DSL.noCondition());
     }
 
     public List<ScbAvailability> readAvailability(String indicatorId) {
-        return readAvailability(SCB_AREA_VALUE.INDICATOR_ID.eq(indicatorId));
+        return readAvailability(SCB_AVAILABILITY.INDICATOR_ID.eq(indicatorId));
     }
 
     private List<ScbAvailability> readAvailability(Condition condition) {
-        return dslContext.selectDistinct(SCB_AREA_VALUE.INDICATOR_ID, SCB_AREA_VALUE.GEO_VERSION, SCB_AREA_VALUE.YEAR)
-                .from(SCB_AREA_VALUE)
+        return dslContext.select(SCB_AVAILABILITY.INDICATOR_ID, SCB_AVAILABILITY.GEO_VERSION, SCB_AVAILABILITY.YEAR)
+                .from(SCB_AVAILABILITY)
                 .where(condition)
                 .fetch()
                 .map(ScbRegionalRepository::toAvailability);

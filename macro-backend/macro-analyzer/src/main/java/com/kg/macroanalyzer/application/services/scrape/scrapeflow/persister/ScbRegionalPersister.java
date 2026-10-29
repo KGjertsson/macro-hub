@@ -13,7 +13,9 @@ import java.util.HashSet;
 
 // Table stamps are written once, after every indicator: a stamp stored while another indicator on the same table
 // still holds old rows would make the scraper skip that indicator. Tables whose fetch failed, and every table of an
-// indicator whose write failed, lose their stored stamp, so the indicators using them are fetched again next time
+// indicator whose write failed, lose their stored stamp, so the indicators using them are fetched again next time.
+// The queue item is only marked as done when something was written (or nothing needed writing), so a scrape where
+// every write failed is retried on the next queue drain
 @Slf4j
 public record ScbRegionalPersister(DatabasePort databasePort) implements Persister<ConfigWithScbIndicators> {
 
@@ -21,9 +23,9 @@ public record ScbRegionalPersister(DatabasePort databasePort) implements Persist
     public ScrapeResult persist(ConfigWithScbIndicators configWithScbIndicators) {
         final var config = configWithScbIndicators.seriesConfig();
         final var results = configWithScbIndicators.results();
-        databasePort.markAsDone(config);
         if (results.isEmpty()) {
             log.info("Found no updated SCB tables for %s".formatted(config.name()));
+            databasePort.markAsDone(config);
 
             return ScrapeResult.EMPTY;
         }
@@ -43,8 +45,12 @@ public record ScbRegionalPersister(DatabasePort databasePort) implements Persist
         written.forEach(result -> stamps.putAll(result.tableStamps()));
         stamps.keySet().removeAll(droppedTables);
         databasePort.writeScbTableStamps(stamps, droppedTables);
+        if (written.isEmpty()) {
+            return ScrapeResult.FAILED;
+        }
+        databasePort.markAsDone(config);
 
-        return written.isEmpty() ? ScrapeResult.FAILED : ScrapeResult.SUCCESS;
+        return ScrapeResult.SUCCESS;
     }
 
 }

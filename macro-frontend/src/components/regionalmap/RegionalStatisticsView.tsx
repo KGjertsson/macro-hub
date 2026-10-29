@@ -108,6 +108,10 @@ const RegionalStatisticsView = () => {
       return;
     }
     const nextLevel = hasData(next, level) ? level : AREA_LEVELS.find(l => hasData(next, l)) ?? level;
+    if (nextLevel !== level) {
+      setMarker(null);
+      setPendingAddress(null);
+    }
     update({
       indicator: id,
       level: nextLevel,
@@ -121,6 +125,8 @@ const RegionalStatisticsView = () => {
       return;
     }
     setMarker(null);
+    // An address still waiting for its geometry would otherwise select an area at the new level
+    setPendingAddress(null);
     update({
       level: nextLevel,
       year: indicator?.availability[nextLevel].some(y => y.year === year) ? year : null,

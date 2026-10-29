@@ -17,7 +17,7 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
 - **JDK 25** for the backend (installed via SDKMAN). If `java -version` isn't 25 (e.g. an IDE exported an older `JAVA_HOME`), set `JAVA_HOME=~/.sdkman/candidates/java/current` for Maven commands.
 - Lombok is registered under `annotationProcessorPaths` in the compiler plugin because JDK 23+ no longer runs annotation processors found on the classpath; without it the build fails with `cannot find symbol` errors (`log`, getters/builders).
 - **Node 20.19+ or 22.12+** for the frontend (Vite 7). Node 18 fails with `crypto.hash is not a function`.
-- `mvnw` is not committed as executable; run it as `sh ./mvnw ...` (or `chmod +x mvnw`).
+- `mvnw` and the `*.sh` scripts are committed as executable. The root `.gitattributes` keeps them (and `.githooks/*`) LF even under `core.autocrlf=true`, so `./mvnw ...` works; if an old checkout still has CRLF copies, delete them and `git checkout -- .` to refresh.
 - Docker must be running for Postgres and for `mvn test` (TestContainers).
 
 ### Starting the local stack (in this order)
@@ -26,7 +26,7 @@ Both the backend and Vite want port 8080, and the frontend calls the backend at 
 
 1. **Check what is already running:** `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|31274)'`. If an older backend holds 8080, it must be restarted to serve new code.
 2. **Postgres** (from repo root): `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:31274`.
-3. **Backend** (from `macro-backend/macro-analyzer/`, so `.env` is picked up): `SPRING_DATASOURCE_PASSWORD=macropassword JAVA_HOME=~/.sdkman/candidates/java/current sh ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`. Wait until it serves requests on 8080 (e.g. `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/macro-analyzer/series-config` returns 200) before starting Vite. Flyway migrations run on startup.
+3. **Backend** (from `macro-backend/macro-analyzer/`, so `.env` is picked up): `SPRING_DATASOURCE_PASSWORD=macropassword JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`. Wait until it serves requests on 8080 (e.g. `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/macro-analyzer/series-config` returns 200) before starting Vite. Flyway migrations run on startup.
 4. **Frontend** (from `macro-frontend/`): `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run dev`. With 8080 taken, Vite falls back to **8081**; open `http://localhost:8081`.
 
 If Vite starts first it takes 8080 and the backend fails with "Port 8080 was already in use".
@@ -50,7 +50,7 @@ mvn test -Dtest=ExtractionAdaptorTest#shouldReturnOk_whenValidBundleRetrieved
 mvn -P jooq-codegen generate-sources
 
 # Run locally against the Docker Postgres (dev profile points at localhost:31274)
-SPRING_DATASOURCE_PASSWORD=macropassword sh ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+SPRING_DATASOURCE_PASSWORD=macropassword ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 A fresh database has series configs but no data points (`chart-data` returns 204). Populate it with `POST /macro-analyzer/enqueue-all` followed by `POST /macro-analyzer/scrape-from-queue`.
@@ -161,13 +161,13 @@ CronAdaptor ───────────→ InPort
 
 - `ScbRegionalStatistics` (category `SCB`, kept out of `/series-config`) scrapes curated indicators from SCB's PxWeb API v2 (`scrape_url` `https://statistikdatabasen.scb.se/api/v2`, CC0). Indicators live in `scb_indicator` (seeded by V29): `numerator`/`denominator` are JSONB lists of `{table, contents, select}`; every table dimension except `Region` and `Tid` must be selected, codes within a dimension are summed, a later source replaces an earlier one per year and version, and with a denominator the value is `sum(num) / sum(den) * multiplier`
 - One SCB table holds every area version; the region code tells them apart: `DeSO2018` (`0114A0010`), `DeSO2025` (`0114A0010_DeSO2025`), `RegSO2020` (`0114R001`), `RegSO2025` (`0114R001_RegSO2025`). Data is requested per version with a PxWeb wildcard (`?????????`, `*_DeSO2025`, …) and chunked by year to stay below 150 000 cells per call. Years a version has no data for are 0/null placeholders in SCB; a (version, year) is only kept when a value is non-null and non-zero. `area_code` is stored without the suffix so it matches the boundary files
-- `scb_table_state` keeps SCB's `updated` stamp per table; an indicator is skipped when all its tables are unchanged and it already has rows. Stamps are written once every indicator of the run is stored; a table whose fetch failed, and every table of an indicator whose write failed, loses its stamp so the indicators using it are fetched again. To change an existing indicator's selection, also delete its `scb_area_value` rows in the migration so it is re-fetched
+- `scb_table_state` keeps SCB's `updated` stamp per table; an indicator is skipped when all its tables are unchanged and it already has rows. Stamps are written once every indicator of the run is stored; a table whose fetch failed, and every table of an indicator whose write failed, loses its stamp so the indicators using it are fetched again. To change an existing indicator's selection, also delete its `scb_area_value` and `scb_availability` rows in the migration so it is re-fetched (whether an indicator has data is read from `scb_availability`, which the persister keeps in step with the values)
 - Calls are spaced by `scb.delay-ms` (default 350 ms, SCB allows 30 calls per 10 s) and retried up to 8 times: some SCB servers intermittently answer "Non-existent table" (404/400) for tables that exist. A first full scrape takes about 12 minutes (2.4 M rows, ~370 MB) because SCB spends several seconds on each uncached DeSO request; a run with unchanged tables takes about 30 seconds
 - A full scrape keeps every fetched value in memory until the persister runs (~2.4 M values plus the per-source maps, a few hundred MB of heap). The JVM has no `-Xmx` and the pods no memory limit today; if either is added, leave room for this or the first full scrape can run out of memory
 
 ### Database
 
-PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V29). JOOQ generates type-safe table access. Key tables: `series_configuration`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`, `scb_indicator`/`scb_area_value`/`scb_table_state`.
+PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V30). JOOQ generates type-safe table access. Key tables: `series_configuration`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`, `scb_indicator`/`scb_area_value`/`scb_availability`/`scb_table_state`.
 
 Chart series in `series_configuration` carry picker metadata (V27), returned by `/series-config`: `category` (`Räntor`, `Statsobligationer`, `Statsskuld`, `Valuta`, `Nyckeltal USA`), `subcategory` (e.g. `Styrränta`, `Euromarknadsränta`, `Statsskuldväxel`, `Nominell`), `unit` (short Swedish display form taken from the source: `%`, `% av BNP`, `mn EUR`, `mn USD`, `mdr USD`, `SEK/USD`, `punkter`, `index`), `country` (Swedish name, null when not country-specific) and `maturity_months` (rates/bonds/bills only). A new chart series must set them in its migration; `ChartSeriesConfigIntegrationTest` checks that every chart series has a unit and subcategory and lists the exact category set and row count.
 
