@@ -8,11 +8,9 @@ import com.kg.macroanalyzer.application.ports.driving.out.chartdata.BuildChartDa
 import com.kg.macroanalyzer.application.ports.driving.out.chartdata.ChartSeriesParam;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionDetailDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.LocalElectionSummaryDto;
-import com.kg.macroanalyzer.application.ports.driving.out.parliament.*;
 import com.kg.macroanalyzer.application.services.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.application.services.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.application.services.localelection.LocalElectionService;
-import com.kg.macroanalyzer.application.services.parliament.ParliamentService;
 import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.NonNull;
@@ -31,7 +29,6 @@ public class OutPortImpl implements OutPort {
     private final DatabasePort databasePort;
     private final AlignmentService alignmentService;
     private final TimeFilterService timeFilterService;
-    private final ParliamentService parliamentService;
     private final LocalElectionService localElectionService;
     private final List<SeriesConfig> seriesConfigList;
 
@@ -41,13 +38,11 @@ public class OutPortImpl implements OutPort {
             SeriesConfigPort seriesConfigPort,
             AlignmentService alignmentService,
             TimeFilterService timeFilterService,
-            ParliamentService parliamentService,
             LocalElectionService localElectionService
     ) {
         this.databasePort = databasePort;
         this.alignmentService = alignmentService;
         this.timeFilterService = timeFilterService;
-        this.parliamentService = parliamentService;
         this.localElectionService = localElectionService;
         this.seriesConfigList = seriesConfigPort.readSeriesConfigList();
     }
@@ -73,31 +68,6 @@ public class OutPortImpl implements OutPort {
         return seriesConfigList.stream()
                 .filter(c -> !NON_CHART_CATEGORIES.contains(c.category()))
                 .toList();
-    }
-
-    @Override
-    public List<PartyDto> getParties() {
-        return parliamentService.getParties();
-    }
-
-    @Override
-    public List<ElectionResultDto> getElections() {
-        return parliamentService.getElections();
-    }
-
-    @Override
-    public CompositionDto getComposition() {
-        return parliamentService.getComposition();
-    }
-
-    @Override
-    public List<MemberSummaryDto> getMembersOfParliament(Integer electionYear) {
-        return parliamentService.getMembers(electionYear);
-    }
-
-    @Override
-    public Optional<MemberDetailDto> getMemberOfParliament(String id) {
-        return parliamentService.getMember(id);
     }
 
     @Override

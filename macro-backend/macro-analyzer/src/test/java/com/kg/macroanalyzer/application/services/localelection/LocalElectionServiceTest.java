@@ -5,10 +5,11 @@ import com.kg.macroanalyzer.application.domain.localelection.Governance;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionResult;
 import com.kg.macroanalyzer.application.domain.localelection.LocalElectionType;
 import com.kg.macroanalyzer.application.domain.localelection.LocalPartyResult;
-import com.kg.macroanalyzer.application.domain.parliament.Party;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.ElectedMemberDto;
 import com.kg.macroanalyzer.application.ports.driving.out.localelection.GovernanceDto;
+import com.kg.macroanalyzer.parliament.application.port.in.PartyDirectory;
+import com.kg.macroanalyzer.parliament.domain.Party;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,12 +31,14 @@ public class LocalElectionServiceTest {
 
     @Mock
     DatabasePort databasePort;
+    @Mock
+    PartyDirectory partyDirectory;
 
     LocalElectionService service;
 
     @BeforeEach
     void setUp() {
-        service = new LocalElectionService(databasePort);
+        service = new LocalElectionService(databasePort, partyDirectory);
     }
 
     @Test
@@ -58,7 +61,7 @@ public class LocalElectionServiceTest {
     @Test
     void shouldUseRiksdagPartyColour_overValmyndighetensColour() {
         // when
-        when(databasePort.readParties()).thenReturn(List.of(
+        when(partyDirectory.listParties()).thenReturn(List.of(
                 new Party("M", "Moderaterna", "#52BDEC", "Liberal Conservatism", true)
         ));
         when(databasePort.readLocalElectionResults(LocalElectionType.KF, 2026)).thenReturn(List.of(lund()));
