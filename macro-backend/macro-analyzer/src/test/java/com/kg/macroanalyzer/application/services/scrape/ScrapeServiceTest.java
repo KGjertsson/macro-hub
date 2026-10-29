@@ -8,6 +8,7 @@ import com.kg.macroanalyzer.application.ports.driven.ConfigWithLocalElections;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMacroPoints;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberActivity;
 import com.kg.macroanalyzer.application.ports.driven.ConfigWithMemberOfParliament;
+import com.kg.macroanalyzer.application.ports.driven.ConfigWithScbIndicators;
 import com.kg.macroanalyzer.application.ports.driven.DatabasePort;
 import com.kg.macroanalyzer.application.ports.driving.out.seriesconfig.SeriesConfig;
 import com.kg.macroanalyzer.application.services.scrape.scrapeflow.ScrapeFlow;
@@ -50,11 +51,14 @@ public class ScrapeServiceTest {
     ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithMemberActivity> memberActivityScrapeFlow;
     @Mock
     ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithLocalElections> localElectionScrapeFlow;
+    @Mock
+    ScrapeFlow<ScrapeQueueItem, SeriesConfig, ConfigWithScbIndicators> scbRegionalScrapeFlow;
 
     @BeforeEach
     public void setUp() {
         seriesConfigList = TestSeriesConfigFactory.buildTestConfig();
-        scrapeService = new ScrapeService(databasePort, macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow);
+        scrapeService = new ScrapeService(
+                databasePort, macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow, scbRegionalScrapeFlow);
         testJsonReader = new TestJsonReader();
     }
 
@@ -153,6 +157,24 @@ public class ScrapeServiceTest {
         // then
         assertEquals(List.of(ScrapeResult.SUCCESS, ScrapeResult.EMPTY, ScrapeResult.SUCCESS), result);
         verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow);
+    }
+
+    @Test
+    void shouldRouteToScbRegionalScrapeFlow_whenScbStatisticsQueued() {
+        // given
+        final var now = LocalDateTime.now();
+        final var scrapeQueueItem = ScrapeQueueItem.of("ScbRegionalStatistics");
+
+        // when
+        when(databasePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
+        when(scbRegionalScrapeFlow.run(scrapeQueueItem)).thenReturn(ScrapeResult.SUCCESS);
+
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
+
+        // then
+        assertEquals(ScrapeQueueKind.SCB_REGIONAL, scrapeQueueItem.scrapeQueueKind());
+        assertEquals(List.of(ScrapeResult.SUCCESS), result);
+        verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow);
     }
 
     @Test

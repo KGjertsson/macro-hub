@@ -14,6 +14,7 @@ import com.kg.macroanalyzer.application.services.bundleformat.samplestrategy.Str
 import com.kg.macroanalyzer.application.services.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import com.kg.macroanalyzer.application.services.localelection.LocalElectionService;
 import com.kg.macroanalyzer.application.services.parliament.ParliamentService;
+import com.kg.macroanalyzer.application.services.regionalstatistics.RegionalStatisticsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,6 +47,8 @@ public class OutPortImplTest {
     ParliamentService parliamentService;
     @Mock
     LocalElectionService localElectionService;
+    @Mock
+    RegionalStatisticsService regionalStatisticsService;
 
     @Test
     void shouldReturnAlignedBundle_whenInputListIsPresent() {
@@ -106,8 +109,10 @@ public class OutPortImplTest {
         final var rate = SeriesConfig.builder().name("PolicyRateSweden").category("Räntor").build();
         final var members = SeriesConfig.builder().name("MembersOfParliament").category("Riksdagen").build();
         final var elections = SeriesConfig.builder().name("MunicipalElections").category("Valmyndigheten").build();
-        when(databasePort.readSeriesConfigList()).thenReturn(List.of(rate, members, elections));
-        final var outPort = new OutPortImpl(databasePort, alignmentService, timeFilterService, parliamentService, localElectionService);
+        final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").category("SCB").build();
+        when(databasePort.readSeriesConfigList()).thenReturn(List.of(rate, members, elections, scb));
+        final var outPort = new OutPortImpl(
+                databasePort, alignmentService, timeFilterService, parliamentService, localElectionService, regionalStatisticsService);
 
         // when
         final var chartList = outPort.getChartSeriesConfigList();
@@ -115,7 +120,7 @@ public class OutPortImplTest {
 
         // then
         assertEquals(List.of(rate), chartList);
-        assertEquals(List.of(rate, members, elections), fullList);
+        assertEquals(List.of(rate, members, elections, scb), fullList);
     }
 
 }

@@ -48,6 +48,7 @@ public record ScrapeQueueItem(
             case "MembersOfParliament" -> ScrapeQueueKind.MEMBER_OF_PARLIAMENT;
             case "MembersOfParliamentActivity" -> ScrapeQueueKind.MEMBER_ACTIVITY;
             case "MunicipalElections", "RegionElections", "ParliamentElections" -> ScrapeQueueKind.LOCAL_ELECTION;
+            case "ScbRegionalStatistics" -> ScrapeQueueKind.SCB_REGIONAL;
             default -> ScrapeQueueKind.MACRO_POINT;
         };
     }

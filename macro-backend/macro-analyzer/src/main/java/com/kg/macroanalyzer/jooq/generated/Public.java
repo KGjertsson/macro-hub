@@ -45,6 +45,9 @@ import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElection;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagOrgan;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagParty;
+import com.kg.macroanalyzer.jooq.generated.tables.ScbAreaValue;
+import com.kg.macroanalyzer.jooq.generated.tables.ScbIndicator;
+import com.kg.macroanalyzer.jooq.generated.tables.ScbTableState;
 import com.kg.macroanalyzer.jooq.generated.tables.ScrapeActionQueue;
 import com.kg.macroanalyzer.jooq.generated.tables.SeriesConfiguration;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
@@ -287,6 +290,21 @@ public class Public extends SchemaImpl {
     public final RiksdagParty RIKSDAG_PARTY = RiksdagParty.RIKSDAG_PARTY;
 
     /**
+     * The table <code>public.scb_area_value</code>.
+     */
+    public final ScbAreaValue SCB_AREA_VALUE = ScbAreaValue.SCB_AREA_VALUE;
+
+    /**
+     * The table <code>public.scb_indicator</code>.
+     */
+    public final ScbIndicator SCB_INDICATOR = ScbIndicator.SCB_INDICATOR;
+
+    /**
+     * The table <code>public.scb_table_state</code>.
+     */
+    public final ScbTableState SCB_TABLE_STATE = ScbTableState.SCB_TABLE_STATE;
+
+    /**
      * The table <code>public.scrape_action_queue</code>.
      */
     public final ScrapeActionQueue SCRAPE_ACTION_QUEUE = ScrapeActionQueue.SCRAPE_ACTION_QUEUE;
@@ -430,6 +448,9 @@ public class Public extends SchemaImpl {
             RiksdagElectionResult.RIKSDAG_ELECTION_RESULT,
             RiksdagOrgan.RIKSDAG_ORGAN,
             RiksdagParty.RIKSDAG_PARTY,
+            ScbAreaValue.SCB_AREA_VALUE,
+            ScbIndicator.SCB_INDICATOR,
+            ScbTableState.SCB_TABLE_STATE,
             ScrapeActionQueue.SCRAPE_ACTION_QUEUE,
             SeriesConfiguration.SERIES_CONFIGURATION,
             SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH,
