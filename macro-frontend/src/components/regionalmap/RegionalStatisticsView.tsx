@@ -109,6 +109,7 @@ const RegionalStatisticsView = () => {
     }
     const nextLevel = hasData(next, level) ? level : AREA_LEVELS.find(l => hasData(next, l)) ?? level;
     if (nextLevel !== level) {
+      setMarker(null);
       setPendingAddress(null);
     }
     update({

@@ -147,6 +147,8 @@ public class ScbRegionalRepositoryTest {
                 new HashSet<>(repository.readAvailability("share_rental"))
         );
         assertEquals(List.of(), repository.readAvailability("socioeconomic_index"));
+        assertTrue(repository.readIndicatorsWithData().contains("share_rental"));
+        assertFalse(repository.readIndicatorsWithData().contains("socioeconomic_index"));
         final var distinctValues = dslContext
                 .selectDistinct(SCB_AREA_VALUE.INDICATOR_ID, SCB_AREA_VALUE.GEO_VERSION, SCB_AREA_VALUE.YEAR)
                 .from(SCB_AREA_VALUE)

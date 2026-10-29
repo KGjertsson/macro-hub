@@ -1,5 +1,6 @@
 -- Which (indicator, geo_version, year) combinations have values. Kept by the persister in the same transaction as
--- scb_area_value, so /regional-statistics/indicators doesn't have to scan every area value
+-- scb_area_value, so /regional-statistics/indicators doesn't have to scan every area value. It also decides which
+-- indicators have data, so to re-fetch a changed selection delete the indicator's rows here and in scb_area_value
 CREATE TABLE IF NOT EXISTS scb_availability
 (
     indicator_id TEXT     NOT NULL REFERENCES scb_indicator (id) ON DELETE CASCADE,

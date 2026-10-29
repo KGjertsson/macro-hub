@@ -66,12 +66,9 @@ public class ScbRegionalRepository {
     }
 
     public Set<String> readIndicatorsWithData() {
-        return new HashSet<>(dslContext.select(SCB_INDICATOR.ID)
-                .from(SCB_INDICATOR)
-                .whereExists(DSL.selectOne()
-                        .from(SCB_AREA_VALUE)
-                        .where(SCB_AREA_VALUE.INDICATOR_ID.eq(SCB_INDICATOR.ID)))
-                .fetch(SCB_INDICATOR.ID));
+        return new HashSet<>(dslContext.selectDistinct(SCB_AVAILABILITY.INDICATOR_ID)
+                .from(SCB_AVAILABILITY)
+                .fetch(SCB_AVAILABILITY.INDICATOR_ID));
     }
 
     // The indicator is replaced as a whole, so a failed write leaves the old values. scb_availability is replaced in the
