@@ -70,6 +70,8 @@ const DynamicChartSettings = () => {
           sampleStrategy={state.sampleStrategy}
           timeFrame={state.timeFrame}
           indexed={state.indexed}
+          zoom={state.zoom}
+          onZoomChange={(zoom) => update({ zoom })}
         />
       )}
     </div>
