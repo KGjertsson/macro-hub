@@ -52,7 +52,7 @@ services or adaptors.
                      |                    +-----------+                |   | + ResponseParser |
                      +-------------------------------------------------+   +------------------+
 
-  adaptors.config: *WebAdaptorConfiguration (WebPort beans), *ScrapeFlowConfiguration (KindedScrapeFlow bean)
+  adaptors.config: *WebAdaptorConfiguration (WebPort beans), *ScrapeFlowConfiguration (RegisteredScrapeFlow bean)
 ```
 
 - `domain` and `application` never depend on `adaptors`.
@@ -62,14 +62,16 @@ services or adaptors.
 ## ScrapeFlow pipeline (write path)
 
 `ScrapeFlow<Input, Config, Data>` composes four steps. Each domain module wraps its flow in a
-`KindedScrapeFlow` bean for one `ScrapeQueueKind`; `ScrapeService` puts them in an `EnumMap` and fails at
-startup when a kind has no flow or more than one.
+`RegisteredScrapeFlow` bean under a flow id, a string constant the module owns in its `domain`. Every
+`series_configuration` row names its flow in `scrape_flow`. `ScrapeService` fails at startup when two flows share
+an id or a config names an id without a flow, and logs a warning for a flow that no config uses.
 
 ```
-  ScrapeQueueItem (kind resolved from the config name)
+  ScrapeQueueItem (name)
        |
        v
-  ScrapeService --EnumMap<ScrapeQueueKind, KindedScrapeFlow>--> flow for the item's kind
+  ScrapeService --SeriesConfigPreparer--> SeriesConfig.scrapeFlow --> RegisteredScrapeFlow with that id
+                (no config with that name: FAILED, item stays pending)
        |
        v
   1. Preparer         SeriesConfigPreparer (scrape)     looks up the SeriesConfig
@@ -82,13 +84,13 @@ startup when a kind has no flow or more than one.
   ScrapeResult (SUCCESS | FAILED | EMPTY)
 ```
 
-| ScrapeQueueKind        | Flow built in                                                           |
-|------------------------|-------------------------------------------------------------------------|
-| `MACRO_POINT`          | `macroseries.adaptors.config.MacroPointScrapeFlowConfiguration`         |
-| `MEMBER_OF_PARLIAMENT` | `parliament.adaptors.config.MemberOfParliamentScrapeFlowConfiguration`  |
-| `MEMBER_ACTIVITY`      | `parliament.adaptors.config.MemberActivityScrapeFlowConfiguration`      |
-| `LOCAL_ELECTION`       | `election.adaptors.config.LocalElectionScrapeFlowConfiguration`         |
-| `SCB_REGIONAL`         | `regionalstatistics.adaptors.config.ScbRegionalScrapeFlowConfiguration` |
+| Flow id (`scrape_flow`) | Constant                                                          | Flow built in                                                           | Configs                                                    |
+|-------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------------|------------------------------------------------------------|
+| `MACRO_POINT`           | `macroseries.domain.MacroSeriesScrapeFlows`                       | `macroseries.adaptors.config.MacroPointScrapeFlowConfiguration`         | every chart series (the only configs in `/series-config`)  |
+| `MEMBER_OF_PARLIAMENT`  | `parliament.domain.ParliamentScrapeFlows`                         | `parliament.adaptors.config.MemberOfParliamentScrapeFlowConfiguration`  | `MembersOfParliament`                                      |
+| `MEMBER_ACTIVITY`       | `parliament.domain.ParliamentScrapeFlows`                         | `parliament.adaptors.config.MemberActivityScrapeFlowConfiguration`      | `MembersOfParliamentActivity`                              |
+| `LOCAL_ELECTION`        | `election.domain.ElectionScrapeFlows`                             | `election.adaptors.config.LocalElectionScrapeFlowConfiguration`         | `MunicipalElections`, `RegionElections`, `ParliamentElections` |
+| `SCB_REGIONAL`          | `regionalstatistics.domain.RegionalStatisticsScrapeFlows`         | `regionalstatistics.adaptors.config.ScbRegionalScrapeFlowConfiguration` | `ScbRegionalStatistics`                                    |
 
 ## WebAdaptorFlow pipeline
 
@@ -141,5 +143,5 @@ startup when a kind has no flow or more than one.
   POST /scrape-from-queue --> InsertionAdaptor --> InPort --> ScrapeService
   (CronScrapeAdaptor calls InPort every 60 s; CronEnqueueAdaptor calls enqueueAll during the 22:00 hour)
        --> ScrapeQueuePort.getItemsToScrape() --> PostgreSQL
-       --> for each item: KindedScrapeFlow for its kind --> ScrapeFlow.run() (see above)
+       --> for each item: RegisteredScrapeFlow named by its config's scrapeFlow --> ScrapeFlow.run() (see above)
 ```

@@ -113,7 +113,7 @@ The backend is split into **modules by domain**. Inside each module it follows *
 
   InsertionAdaptor, CronEnqueueAdaptor, CronScrapeAdaptor ──→ InPort ──→ EnqueueService ──→ ScrapeQueuePort
                                                                     └──→ ScrapeService
-  ScrapeService ──→ KindedScrapeFlow (one per ScrapeQueueKind, built in each module's adaptors.config)
+  ScrapeService ──→ RegisteredScrapeFlow (picked by the config's scrape_flow id, built in each module's adaptors.config)
       Preparer ──→ ExistingFinder ──→ Scraper ──→ WebPort ←── adaptors.web ──→ external API
                                       Persister ──→ port.out, ScrapeQueuePort.markAsDone
 
@@ -125,27 +125,27 @@ The backend is split into **modules by domain**. Inside each module it follows *
 The backend is organised by domain. Every module (`scrape`, `macroseries`, `regionalstatistics`, `parliament`, `election`) uses `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; besides them there is only `shared/`, the generated jOOQ model and `MacroAnalyzerApplication` in the root package.
 
 - **`scrape/`** — the scrape core, independent of the data sources:
-  - `domain/` — `ScrapeQueueItem`, `ScrapeQueueKind`, `ScrapeResult`, `SeriesConfig` (every scrape flow's config)
+  - `domain/` — `ScrapeQueueItem`, `ScrapeResult`, `SeriesConfig` (every scrape flow's config, including the `scrapeFlow` id that routes it)
   - `application/port/in/` — `InPort` (enqueue, enqueue-all, scrape-from-queue) and its `ScrapeRun` result; `application/port/out/` — `ScrapeQueuePort` (queue reads/writes, `markAsDone`) and `SeriesConfigPort`
-  - `application/service/` — `InPortImpl`, `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `KindedScrapeFlow` (see below)
+  - `application/service/` — `InPortImpl`, `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `RegisteredScrapeFlow` (see below)
   - `adaptors/http/` — `InsertionAdaptor` (enqueue/scrape endpoints); `adaptors/cron/` — `CronScrapeAdaptor` drains the queue every 60s, `CronEnqueueAdaptor` enqueues all series every minute during the 22:00 hour; `adaptors/postgres/` — queue and series-config repositories; `adaptors/config/` — preparer, series-config list and scheduler beans
 - **`macroseries/`** — chart time series (Riksbanken, Fed and Eurostat rates, bonds, bills, exchange rates and key figures):
-  - `domain/` — `MacroSeries`, `MacroPoint`, `AlignedBundle`, `InvalidBundleDimensionException`
+  - `domain/` — `MacroSeries`, `MacroPoint`, `AlignedBundle`, `InvalidBundleDimensionException`, `MacroSeriesScrapeFlows` (the `MACRO_POINT` flow id)
   - `application/port/in/` — `MacroSeriesQueries` (aligned chart data, chart series configs) and its DTOs (`BuildChartDataParams` with the `Strategy` and `TimeFrame` enums, `ChartSeriesParam`, `ChartData`, `ChartDataWithLabels`); `application/port/out/` — `MacroSeriesRepositoryPort` and the scrape payload `ConfigWithMacroPoints`
-  - `application/service/` — `MacroSeriesService` (keeps the Riksdagen, Valmyndigheten and SCB configs out of the chart list), `LabelGenerationService`, in `bundleformat/` `TimeFilterService`, `AlignmentService` and the sample and time-filter strategies, and in `scrape/` `ExistingMacroPointFinder`, `MacroPointScraper` and `MacroPointPersister`
-  - `adaptors/http/` — `MacroSeriesController` (`/series-config`, `/chart-data`) and `ColorSelectionStrategy`; `adaptors/postgres/` — `MacroSeriesPostgresAdaptor` and the per-table rate, bond, bill, exchange-rate, Fed and Eurostat repositories; `adaptors/web/` — `MacroPointWebAdaptor` and `MacroPointAdaptorFlowFactory`, which routes to the Riksbanken, Fed or Eurostat connection builder and response parser; `adaptors/config/` — the web adaptor bean (with the Riksbanken/Fed subscription keys) and the scrape flow
+  - `application/service/` — `MacroSeriesService` (the chart list is the configs of the `MACRO_POINT` flow), `LabelGenerationService`, in `bundleformat/` `TimeFilterService`, `AlignmentService` and the sample and time-filter strategies, and in `scrape/` `ExistingMacroPointFinder`, `MacroPointScraper` and `MacroPointPersister`
+  - `adaptors/http/` — `MacroSeriesController` (`/series-config`, `/chart-data`), `SeriesConfigResponse` (a `/series-config` entry, without `scrapeFlow`) and `ColorSelectionStrategy`; `adaptors/postgres/` — `MacroSeriesPostgresAdaptor` and the per-table rate, bond, bill, exchange-rate, Fed and Eurostat repositories; `adaptors/web/` — `MacroPointWebAdaptor` and `MacroPointAdaptorFlowFactory`, which routes to the Riksbanken, Fed or Eurostat connection builder and response parser; `adaptors/config/` — the web adaptor bean (with the Riksbanken/Fed subscription keys) and the scrape flow
 - **`regionalstatistics/`** — SCB DeSO/RegSO statistics:
-  - `domain/` — `GeoVersion`, `ScbLevel`, `ScbIndicator`, `ScbValues` and the other SCB value types
+  - `domain/` — `GeoVersion`, `ScbLevel`, `ScbIndicator`, `ScbValues` and the other SCB value types, `RegionalStatisticsScrapeFlows` (the `SCB_REGIONAL` flow id)
   - `application/port/in/` — `RegionalStatisticsQueries` (indicators and values) and its DTOs; `application/port/out/` — `RegionalStatisticsRepositoryPort`, the scrape payload `ConfigWithScbIndicators` and the SCB web requests
   - `application/service/` — `RegionalStatisticsService`, and in `scrape/` the scrape flow (`ExistingScbTableFinder`, `ScbRegionalScraper`, `ScbRegionalPersister`)
   - `adaptors/http/` — `RegionalStatisticsController` (`/regional-statistics/*`); `adaptors/postgres/` — `RegionalStatisticsPostgresAdaptor` and `ScbRegionalRepository`; `adaptors/web/` — SCB web adaptors, rate limiter, retry, connection builder and JSON-stat parsers; `adaptors/config/` — the SCB web beans and the scrape flow
 - **`parliament/`** — Riksdagen members, activity, parties and elections:
-  - `domain/` — `MemberOfParliament`, `MemberActivity`, `Party`, `Election` and the other Riksdagen value types
+  - `domain/` — `MemberOfParliament`, `MemberActivity`, `Party`, `Election` and the other Riksdagen value types, `ParliamentScrapeFlows` (the `MEMBER_OF_PARLIAMENT` and `MEMBER_ACTIVITY` flow ids)
   - `application/port/in/` — `ParliamentQueries` (parties, elections, composition, members) and its DTOs, and `PartyDirectory` (the `Party` records, for the election code's party colours); `application/port/out/` — `ParliamentRepositoryPort`, the scrape payloads `ConfigWithMemberOfParliament`/`ConfigWithMemberActivity` and `MemberActivityRequest`
   - `application/service/` — `ParliamentService` (implements both in-ports), and in `scrape/` the member and member-activity finders, scrapers and persisters
   - `adaptors/http/` — `ParliamentController` (`/parliament/*`); `adaptors/postgres/` — `ParliamentPostgresAdaptor`, `SweParMemberRepository`, `SweParActivityRepository` and `RiksdagElectionRepository`; `adaptors/web/` — `MembersOfParliamentWebAdaptor`, `RiksdagenActivityWebAdaptor`, the Riksdagen connection builders and response parsers; `adaptors/config/` — the Riksdagen web beans and both scrape flows
 - **`election/`** — Valmyndigheten kommun (KF), region (RF) and Riksdag valkrets (RD) elections:
-  - `domain/` — `LocalElectionType`, `LocalElectionResult`, `LocalPartyResult`, `ElectedMember`, `Governance`
+  - `domain/` — `LocalElectionType`, `LocalElectionResult`, `LocalPartyResult`, `ElectedMember`, `Governance`, `ElectionScrapeFlows` (the `LOCAL_ELECTION` flow id)
   - `application/port/in/` — `ElectionQueries` (results per type and year, one area's detail) and its DTOs; `application/port/out/` — `ElectionRepositoryPort`, the scrape payload `ConfigWithLocalElections`, `LocalElectionIndexRequest` and `LocalElectionFile`
   - `application/service/` — `LocalElectionService` (party colours come from parliament's `PartyDirectory`), and in `scrape/` `ExistingLocalElectionFinder`, `LocalElectionScraper` and `LocalElectionPersister`
   - `adaptors/http/` — `ElectionController` (`/municipalities/*`, `/regions/*`, `/constituencies/*`); `adaptors/postgres/` — `ElectionPostgresAdaptor` and `LocalElectionRepository`; `adaptors/web/` — the Valmyndigheten index and result web adaptors, retry, connection builder and parsers; `adaptors/config/` — the Valmyndigheten web beans and the scrape flow
@@ -163,7 +163,7 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
 
 ### How a scrape flow plugs in
 
-Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `Preparer` and its own finder, scraper and persister, and registers it as a `KindedScrapeFlow` bean for one `ScrapeQueueKind`. `ScrapeService` collects all `KindedScrapeFlow` beans into an `EnumMap` and fails at startup if a kind has no flow or more than one. Queue items get their kind from their name (`ScrapeQueueItem.resolveKind`, default `MACRO_POINT`). Persisters write through their module's repository port and call `ScrapeQueuePort.markAsDone`.
+Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `Preparer` and its own finder, scraper and persister, and registers it as a `RegisteredScrapeFlow` bean under a flow id. The ids are plain strings that each module owns as constants in its `domain/` (`MacroSeriesScrapeFlows.MACRO_POINT`, `ParliamentScrapeFlows.MEMBER_OF_PARLIAMENT`/`MEMBER_ACTIVITY`, `ElectionScrapeFlows.LOCAL_ELECTION`, `RegionalStatisticsScrapeFlows.SCB_REGIONAL`); `scrape` never names them. Every `series_configuration` row says which flow scrapes it in `scrape_flow` (NOT NULL, V31). `ScrapeService` routes a queue item by name → `SeriesConfig` (through the `SeriesConfigPreparer`) → `scrapeFlow` → flow; an item whose name matches no config is `FAILED` with a warning and stays pending. At startup it fails if two flows share an id or a config's `scrapeFlow` has no registered flow (the message names the config and the id), and only warns for a registered flow that no config uses. The configs are read once at startup, so a new row needs a restart. Persisters write through their module's repository port and call `ScrapeQueuePort.markAsDone`.
 
 ### Dependency rules (`ArchitectureTest`)
 
@@ -179,10 +179,10 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 1. Create `com.kg.macroanalyzer.<module>` with `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` (and `service/scrape/`) and `adaptors/`.
 2. Define the in-port (`*Queries`) and out-port (`*RepositoryPort`); implement them in a service and a `*PostgresAdaptor`.
 3. Add a controller in `adaptors/http/` that only uses the in-port.
-4. Add a `*WebAdaptorConfiguration` for the `WebPort` beans and a `*ScrapeFlowConfiguration` that registers a `KindedScrapeFlow`.
-5. Add a `ScrapeQueueKind` value and map the config name to it in `ScrapeQueueItem.resolveKind` (startup fails until the kind has a flow). Non-chart categories also go into `NON_CHART_CATEGORIES` in `MacroSeriesService` so they stay out of `/series-config`.
+4. Add a `*WebAdaptorConfiguration` for the `WebPort` beans and a `*ScrapeFlowConfiguration` that registers a `RegisteredScrapeFlow` under a new flow id.
+5. Define that flow id as a constant in the module's `domain/` (e.g. `<Module>ScrapeFlows`). Only `MACRO_POINT` configs appear in `/series-config`, so a new flow stays out of the chart picker without further changes.
 6. Add the module to `MODULES` and `DOMAIN_MODULES` in `ArchitectureTest` (and to `DOMAIN_MODULE_EXTRA_DEPENDENCIES` only if it must use another module's in-port).
-7. Add a Flyway migration with the module's tables and its `series_configuration` row, then regenerate the jOOQ model. The row needs a `scrape_url` and a `category`; add that category to `NON_CHART_CATEGORIES` (step 5) so the config stays out of `/series-config`.
+7. Add a Flyway migration with the module's tables and its `series_configuration` row, then regenerate the jOOQ model. The row needs a `scrape_url`, a `category` and its `scrape_flow` (the id from step 5); startup fails if no flow is registered under that id.
 
 ### REST API Endpoints
 
@@ -205,7 +205,7 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 
 - `MembersOfParliament` scrape upserts every person from `data.riksdagen.se/personlista` (JSONB, keyed on `intressent_id`); `MembersOfParliamentActivity` then fetches voting totals, speeches and motions per member of the latest two terms (~600 members, ~7 min, throttled)
 - Election seat counts are curated in `riksdag_election_result` (Flyway seed from Valmyndigheten) because Riksdagen only stores each person's *current* party. Add a new election as a migration (rows in `riksdag_election` + `riksdag_election_result`)
-- Riksdagen configs (category `Riksdagen`) are excluded from `/series-config` so they don't appear in the chart picker
+- Riksdagen configs (category `Riksdagen`, flows `MEMBER_OF_PARLIAMENT` and `MEMBER_ACTIVITY`) are not in `/series-config`, which only lists `MACRO_POINT` configs, so they don't appear in the chart picker
 
 ### Kommun, region and Riksdag elections (Valmyndigheten)
 
@@ -213,11 +213,11 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 - `ParliamentElections` (RD) uses the same pipeline, but its single zip (`s/rd/..._00_RD.zip`) holds all 29 valkretsar under `valkretsLista`, so the parser returns one area per valkrets (area code `01`..`29`, Gotland is `09`). Valkrets seats include the utjämningsmandat assigned to that valkrets (they sum to 349). The ~200 MB per-district `rostfordelning` file in the zip is streamed past, not parsed
 - `scrape_url` (`.../resultatfiler/val2026`) selects the election; point it at the next election's folder with a migration. Gotland has no regionfullmäktige
 - Who governs (`local_governance`) has no open data source and starts empty; add rows by migration (party abbreviations as in the results). The frontend only shows the "styre" section where a row exists
-- Configs use category `Valmyndigheten` and are also kept out of `/series-config`
+- Configs use category `Valmyndigheten` and flow `LOCAL_ELECTION`, so they are not in `/series-config` either
 
 ### SCB regional statistics (DeSO / RegSO)
 
-- `ScbRegionalStatistics` (category `SCB`, kept out of `/series-config`) scrapes curated indicators from SCB's PxWeb API v2 (`scrape_url` `https://statistikdatabasen.scb.se/api/v2`, CC0). Indicators live in `scb_indicator` (seeded by V29): `numerator`/`denominator` are JSONB lists of `{table, contents, select}`; every table dimension except `Region` and `Tid` must be selected, codes within a dimension are summed, a later source replaces an earlier one per year and version, and with a denominator the value is `sum(num) / sum(den) * multiplier`
+- `ScbRegionalStatistics` (category `SCB`, flow `SCB_REGIONAL`, so not in `/series-config`) scrapes curated indicators from SCB's PxWeb API v2 (`scrape_url` `https://statistikdatabasen.scb.se/api/v2`, CC0). Indicators live in `scb_indicator` (seeded by V29): `numerator`/`denominator` are JSONB lists of `{table, contents, select}`; every table dimension except `Region` and `Tid` must be selected, codes within a dimension are summed, a later source replaces an earlier one per year and version, and with a denominator the value is `sum(num) / sum(den) * multiplier`
 - One SCB table holds every area version; the region code tells them apart: `DeSO2018` (`0114A0010`), `DeSO2025` (`0114A0010_DeSO2025`), `RegSO2020` (`0114R001`), `RegSO2025` (`0114R001_RegSO2025`). Data is requested per version with a PxWeb wildcard (`?????????`, `*_DeSO2025`, …) and chunked by year to stay below 150 000 cells per call. Years a version has no data for are 0/null placeholders in SCB; a (version, year) is only kept when a value is non-null and non-zero. `area_code` is stored without the suffix so it matches the boundary files
 - `scb_table_state` keeps SCB's `updated` stamp per table; an indicator is skipped when all its tables are unchanged and it already has rows. Stamps are written once every indicator of the run is stored; a table whose fetch failed, and every table of an indicator whose write failed, loses its stamp so the indicators using it are fetched again. To change an existing indicator's selection, also delete its `scb_area_value` and `scb_availability` rows in the migration so it is re-fetched (whether an indicator has data is read from `scb_availability`, which the persister keeps in step with the values)
 - Calls are spaced by `scb.delay-ms` (default 350 ms, SCB allows 30 calls per 10 s) and retried up to 8 times: some SCB servers intermittently answer "Non-existent table" (404/400) for tables that exist. A first full scrape takes about 12 minutes (2.4 M rows, ~370 MB) because SCB spends several seconds on each uncached DeSO request; a run with unchanged tables takes about 30 seconds
@@ -225,9 +225,9 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 
 ### Database
 
-PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V30). JOOQ generates type-safe table access. Key tables: `series_configuration`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`, `scb_indicator`/`scb_area_value`/`scb_availability`/`scb_table_state`.
+PostgreSQL 16 with Flyway migrations in `src/main/resources/db/migration/` (V1–V31). JOOQ generates type-safe table access. Key tables: `series_configuration`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`, `scb_indicator`/`scb_area_value`/`scb_availability`/`scb_table_state`.
 
-Chart series in `series_configuration` carry picker metadata (V27), returned by `/series-config`: `category` (`Räntor`, `Statsobligationer`, `Statsskuld`, `Valuta`, `Nyckeltal USA`), `subcategory` (e.g. `Styrränta`, `Euromarknadsränta`, `Statsskuldväxel`, `Nominell`), `unit` (short Swedish display form taken from the source: `%`, `% av BNP`, `mn EUR`, `mn USD`, `mdr USD`, `SEK/USD`, `punkter`, `index`), `country` (Swedish name, null when not country-specific) and `maturity_months` (rates/bonds/bills only). A new chart series must set them in its migration; `ChartSeriesConfigIntegrationTest` checks that every chart series has a unit and subcategory and lists the exact category set and row count.
+Chart series in `series_configuration` carry picker metadata (V27), returned by `/series-config`: `category` (`Räntor`, `Statsobligationer`, `Statsskuld`, `Valuta`, `Nyckeltal USA`), `subcategory` (e.g. `Styrränta`, `Euromarknadsränta`, `Statsskuldväxel`, `Nominell`), `unit` (short Swedish display form taken from the source: `%`, `% av BNP`, `mn EUR`, `mn USD`, `mdr USD`, `SEK/USD`, `punkter`, `index`), `country` (Swedish name, null when not country-specific) and `maturity_months` (rates/bonds/bills only). A new chart series must set them, and `scrape_flow = 'MACRO_POINT'`, in its migration; the chart series are exactly the `MACRO_POINT` configs. `ChartSeriesConfigIntegrationTest` checks that every chart series has a unit and subcategory, lists the exact category set and row count, and checks the flow of every non-`MACRO_POINT` config.
 
 ## Testing
 

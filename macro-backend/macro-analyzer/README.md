@@ -31,8 +31,8 @@ flowchart LR
     CronEnqueueAdaptor --> InPort
     InPort --> EnqueueService --> ScrapeQueuePort
     InPort --> ScrapeService
-    ScrapeService -- ScrapeQueueKind --> KindedScrapeFlow
-    KindedScrapeFlow --> Preparer --> ExistingFinder --> Scraper --> Persister
+    ScrapeService -- SeriesConfig.scrapeFlow --> RegisteredScrapeFlow
+    RegisteredScrapeFlow --> Preparer --> ExistingFinder --> Scraper --> Persister
     Persister --> RepositoryPort[module port.out]
     Persister --> ScrapeQueuePort
 ```
@@ -57,6 +57,7 @@ erDiagram
         string subcategory
         string country
         integer maturity_months
+        string scrape_flow
     }
     
     MACRO_SERIES {

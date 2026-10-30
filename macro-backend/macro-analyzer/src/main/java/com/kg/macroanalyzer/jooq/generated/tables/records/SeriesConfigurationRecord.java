@@ -189,6 +189,20 @@ public class SeriesConfigurationRecord extends UpdatableRecordImpl<SeriesConfigu
         return (Integer) get(11);
     }
 
+    /**
+     * Setter for <code>public.series_configuration.scrape_flow</code>.
+     */
+    public void setScrapeFlow(String value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>public.series_configuration.scrape_flow</code>.
+     */
+    public String getScrapeFlow() {
+        return (String) get(12);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -212,7 +226,7 @@ public class SeriesConfigurationRecord extends UpdatableRecordImpl<SeriesConfigu
     /**
      * Create a detached, initialised SeriesConfigurationRecord
      */
-    public SeriesConfigurationRecord(Integer id, UUID globalId, String name, String displayName, LocalDateTime created, LocalDateTime updated, String scrapeUrl, String category, String unit, String subcategory, String country, Integer maturityMonths) {
+    public SeriesConfigurationRecord(Integer id, UUID globalId, String name, String displayName, LocalDateTime created, LocalDateTime updated, String scrapeUrl, String category, String unit, String subcategory, String country, Integer maturityMonths, String scrapeFlow) {
         super(SeriesConfiguration.SERIES_CONFIGURATION);
 
         setId(id);
@@ -227,6 +241,7 @@ public class SeriesConfigurationRecord extends UpdatableRecordImpl<SeriesConfigu
         setSubcategory(subcategory);
         setCountry(country);
         setMaturityMonths(maturityMonths);
+        setScrapeFlow(scrapeFlow);
         resetTouchedOnNotNull();
     }
 }

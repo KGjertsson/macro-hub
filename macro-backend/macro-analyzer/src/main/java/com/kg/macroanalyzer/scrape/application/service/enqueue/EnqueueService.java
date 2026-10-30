@@ -5,7 +5,6 @@ import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.enqueue.queuestrategy.QueueStrategyFactory;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem.ScrapeQueueItemBuilder;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,6 @@ public class EnqueueService {
     public void enqueueAll() {
         final var queueTimeStrategy = buildQueueStrategy(QueueStrategyFactory.Strategy.INSTANT);
         final var builder = ScrapeQueueItem.builder();
-        builder.scrapeQueueKind(ScrapeQueueKind.MACRO_POINT);
         final var currentQueue = scrapeQueuePort.getScrapeQueue().stream()
                 .map(ScrapeQueueItem::name).toList();
 

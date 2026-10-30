@@ -7,16 +7,16 @@ import com.kg.macroanalyzer.election.application.port.out.LocalElectionIndexRequ
 import com.kg.macroanalyzer.election.application.service.scrape.ExistingLocalElectionFinder;
 import com.kg.macroanalyzer.election.application.service.scrape.LocalElectionPersister;
 import com.kg.macroanalyzer.election.application.service.scrape.LocalElectionScraper;
+import com.kg.macroanalyzer.election.domain.ElectionScrapeFlows;
 import com.kg.macroanalyzer.election.domain.LocalElectionResult;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.KindedScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Preparer;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.RegisteredScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import com.kg.macroanalyzer.shared.web.WebPort;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,13 +49,13 @@ public class LocalElectionScrapeFlowConfiguration {
     }
 
     @Bean("localElectionScrapeFlow")
-    public KindedScrapeFlow scrapeFlow(
+    public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
             @Qualifier("existingLocalElectionFinder") ExistingFinder<SeriesConfig, ConfigWithLocalElections> finder,
             @Qualifier("localElectionScraper") Scraper<ConfigWithLocalElections> scraper,
             @Qualifier("localElectionPersister") Persister<ConfigWithLocalElections> persister
     ) {
-        return KindedScrapeFlow.of(ScrapeQueueKind.LOCAL_ELECTION, new ScrapeFlow<>(
+        return RegisteredScrapeFlow.of(ElectionScrapeFlows.LOCAL_ELECTION, new ScrapeFlow<>(
                 preparer,
                 finder,
                 scraper,

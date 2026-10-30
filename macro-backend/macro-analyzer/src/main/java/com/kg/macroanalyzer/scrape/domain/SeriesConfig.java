@@ -11,6 +11,7 @@ public record SeriesConfig(
         String unit,
         String subcategory,
         String country,
-        Integer maturityMonths
+        Integer maturityMonths,
+        String scrapeFlow
 ) {
 }

@@ -6,15 +6,15 @@ import com.kg.macroanalyzer.macroseries.application.service.scrape.ExistingMacro
 import com.kg.macroanalyzer.macroseries.application.service.scrape.MacroPointPersister;
 import com.kg.macroanalyzer.macroseries.application.service.scrape.MacroPointScraper;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
+import com.kg.macroanalyzer.macroseries.domain.MacroSeriesScrapeFlows;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.KindedScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Preparer;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.RegisteredScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import com.kg.macroanalyzer.shared.web.WebPort;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,13 +42,13 @@ public class MacroPointScrapeFlowConfiguration {
     }
 
     @Bean("macroPointScrapeFlow")
-    public KindedScrapeFlow scrapeFlow(
+    public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
             @Qualifier("existingMacroPointFinder") ExistingFinder<SeriesConfig, ConfigWithMacroPoints> finder,
             @Qualifier("macroPointScraper") Scraper<ConfigWithMacroPoints> scraper,
             @Qualifier("macroPointPersister") Persister<ConfigWithMacroPoints> persister
     ) {
-        return KindedScrapeFlow.of(ScrapeQueueKind.MACRO_POINT, new ScrapeFlow<>(
+        return RegisteredScrapeFlow.of(MacroSeriesScrapeFlows.MACRO_POINT, new ScrapeFlow<>(
                 preparer,
                 finder,
                 scraper,

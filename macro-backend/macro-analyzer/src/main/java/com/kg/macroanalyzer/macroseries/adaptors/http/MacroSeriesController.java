@@ -6,7 +6,6 @@ import com.kg.macroanalyzer.macroseries.application.port.in.ChartDataWithLabels;
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
-import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -47,9 +46,11 @@ public class MacroSeriesController {
     }
 
     @GetMapping("/series-config")
-    public ResponseEntity<List<SeriesConfig>> getSeriesConfig() {
+    public ResponseEntity<List<SeriesConfigResponse>> getSeriesConfig() {
         log.info("Received GET macro-analyzer/series-config");
-        final var seriesConfigList = macroSeriesQueries.getChartSeriesConfigList();
+        final var seriesConfigList = macroSeriesQueries.getChartSeriesConfigList().stream()
+                .map(SeriesConfigResponse::from)
+                .toList();
         final var responseCode = seriesConfigList.isEmpty()
                 ? HttpStatus.NO_CONTENT
                 : HttpStatus.OK;

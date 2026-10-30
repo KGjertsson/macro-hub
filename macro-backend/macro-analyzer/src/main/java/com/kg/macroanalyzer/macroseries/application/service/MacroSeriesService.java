@@ -8,6 +8,7 @@ import com.kg.macroanalyzer.macroseries.application.service.bundleformat.Alignme
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
+import com.kg.macroanalyzer.macroseries.domain.MacroSeriesScrapeFlows;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class MacroSeriesService implements MacroSeriesQueries {
-
-    private static final Set<String> NON_CHART_CATEGORIES = Set.of("Riksdagen", "Valmyndigheten", "SCB");
 
     private final MacroSeriesRepositoryPort repositoryPort;
     private final AlignmentService alignmentService;
@@ -50,11 +48,11 @@ public class MacroSeriesService implements MacroSeriesQueries {
                 .flatMap(macroSeriesList -> alignmentService.align(macroSeriesList, strategy));
     }
 
-    // Riksdagen, Valmyndigheten and SCB scrapes are not time series, so they are kept out of the chart picker
+    // Only configs scraped by the macro point flow are time series; the other domains' configs stay out of the picker
     @Override
     public List<SeriesConfig> getChartSeriesConfigList() {
         return seriesConfigList.stream()
-                .filter(c -> !NON_CHART_CATEGORIES.contains(c.category()))
+                .filter(c -> MacroSeriesScrapeFlows.MACRO_POINT.equals(c.scrapeFlow()))
                 .toList();
     }
 

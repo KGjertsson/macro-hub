@@ -1,6 +1,8 @@
 package com.kg.macroanalyzer.macroseries.application.service;
 
+import com.kg.macroanalyzer.macroseries.adaptors.http.SeriesConfigResponse;
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
+import com.kg.macroanalyzer.macroseries.domain.MacroSeriesScrapeFlows;
 import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
@@ -50,9 +52,28 @@ public class ChartSeriesConfigIntegrationTest {
         // then
         assertEquals(108, configs.size());
         configs.forEach(c -> {
+            assertEquals(MacroSeriesScrapeFlows.MACRO_POINT, c.scrapeFlow(), c.name());
             assertNotNull(c.unit(), c.name());
             assertNotNull(c.subcategory(), c.name());
         });
+    }
+
+    @Test
+    void shouldRouteEveryNonChartConfig_toItsDomainsScrapeFlow() {
+        // when
+        final var flowByName = seriesConfigPort.readSeriesConfigList().stream()
+                .filter(c -> !c.scrapeFlow().equals(MacroSeriesScrapeFlows.MACRO_POINT))
+                .collect(Collectors.toMap(SeriesConfig::name, SeriesConfig::scrapeFlow));
+
+        // then
+        assertEquals(Map.of(
+                "MembersOfParliament", "MEMBER_OF_PARLIAMENT",
+                "MembersOfParliamentActivity", "MEMBER_ACTIVITY",
+                "MunicipalElections", "LOCAL_ELECTION",
+                "RegionElections", "LOCAL_ELECTION",
+                "ParliamentElections", "LOCAL_ELECTION",
+                "ScbRegionalStatistics", "SCB_REGIONAL"
+        ), flowByName);
     }
 
     @Test
@@ -126,9 +147,10 @@ public class ChartSeriesConfigIntegrationTest {
         final var bond = find(seriesConfigPort.readSeriesConfigList(), "GovernmentBondSweden10Year");
 
         // when
-        final var json = jsonMapper.writeValueAsString(bond);
+        final var json = jsonMapper.writeValueAsString(SeriesConfigResponse.from(bond));
 
         // then
+        assertFalse(json.contains("scrapeFlow"), json);
         assertTrue(json.contains("\"unit\":\"%\""), json);
         assertTrue(json.contains("\"subcategory\":\"Statsobligation\""), json);
         assertTrue(json.contains("\"country\":\"Sverige\""), json);
