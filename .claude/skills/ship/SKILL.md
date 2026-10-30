@@ -47,7 +47,7 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 ## 4. Iterate
 
 - The PR is the single source of truth for findings; don't retype them. Send the implementer a short message such as "address the review on #<n>", plus any nit to drop and why. It fixes all the others by default.
-- Decide the findings the implementer left unfixed as wrong yourself: drop them, or tell it to fix them after all.
+- When the implementer reports a finding it judged wrong, decide it yourself: drop it, or tell it to fix it after all.
 - Ask the user about requirement or product questions, including conflicts the implementer reports. Don't decide them yourself.
 - After the fixes are pushed:
   - `LGTM after nits`: read the new commits' diff yourself. If they do what the nits asked and nothing else, go to step 6. Otherwise ask the reviewer to re-review.
