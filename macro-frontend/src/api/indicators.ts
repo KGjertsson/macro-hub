@@ -1,9 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { rootUrl, SAMPLE_STRATEGY, TIME_FRAME } from '@/models/Constants';
-import { Dataset } from '@/models/Dataset';
-import { SeriesConfig } from '@/models/SeriesConfig';
-
-const baseUrl = `${rootUrl}/macro-analyzer`;
+import { SAMPLE_STRATEGY, TIME_FRAME } from '@/models/Constants';
+import { fetchChartData, labelToDate } from '@/api/chartData';
 
 // How often the source publishes. Decides whether the period shows the day or only the month, and what the
 // change is measured against: a daily rate against the value before it last moved, a monthly series against
@@ -33,34 +30,6 @@ export type LatestObservation = {
   changedAt: Date | null;
 };
 
-type ChartDataResponse = {
-  labels: number[][];
-  chartData: Dataset[];
-};
-
-const fetchChartData = async (names: string[]): Promise<ChartDataResponse | null> => {
-  const response = await fetch(`${baseUrl}/chart-data`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      strategy: SAMPLE_STRATEGY.Day,
-      timeFrame: TIME_FRAME.OneYear,
-      chartSeriesParams: names.map(name => ({ name })),
-    }),
-  });
-  // 204 when none of the series has data points yet
-  if (response.status === 204) {
-    return null;
-  }
-  if (!response.ok) {
-    throw new Error(`POST /chart-data failed with ${response.status}`);
-  }
-  return response.json();
-};
-
-// Day labels arrive as [year, month, day]
-const toDate = (label: number[]) => new Date(Date.UTC(label[0], label[1] - 1, label[2] ?? 1));
-
 // The same day one month earlier, clamped to the end of a shorter month (31 mar -> 28 feb)
 const oneMonthBefore = (date: Date) => {
   const year = date.getUTCFullYear();
@@ -84,12 +53,12 @@ export const latestObservation = (
     return null;
   }
   const value = values[last] as number;
-  const date = toDate(labels[last]);
+  const date = labelToDate(labels[last]);
 
   if (frequency === 'month') {
     // The day one month before carries the previous month's observation, repeated or on that very day
     const target = oneMonthBefore(date).getTime();
-    const index = labels.findIndex(label => toDate(label).getTime() === target);
+    const index = labels.findIndex(label => labelToDate(label).getTime() === target);
     return { value, date, previous: index >= 0 ? values[index] : null, changedAt: null };
   }
 
@@ -104,31 +73,19 @@ export const latestObservation = (
     value,
     date,
     previous: previous ?? value,
-    changedAt: previous === null ? null : toDate(labels[before + 1]),
+    changedAt: previous === null ? null : labelToDate(labels[before + 1]),
   };
 };
-
-// Shares its key with the chart picker's series-config query, so the page fetches the configs once
-export const useSeriesConfigs = () =>
-  useQuery({
-    queryKey: ['seriesConfig'],
-    queryFn: async (): Promise<SeriesConfig[]> => {
-      const response = await fetch(`${baseUrl}/series-config`);
-      if (response.status === 204) {
-        return [];
-      }
-      if (!response.ok) {
-        throw new Error(`servern svarade med status ${response.status}`);
-      }
-      return response.json();
-    },
-  });
 
 export const useStartPageIndicators = () =>
   useQuery({
     queryKey: ['startPageIndicators'],
     queryFn: async (): Promise<Record<string, LatestObservation | null>> => {
-      const chartData = await fetchChartData(START_PAGE_INDICATORS.map(indicator => indicator.name));
+      const chartData = await fetchChartData(
+        START_PAGE_INDICATORS.map(indicator => indicator.name),
+        SAMPLE_STRATEGY.Day,
+        TIME_FRAME.OneYear,
+      );
       return Object.fromEntries(
         START_PAGE_INDICATORS.map(indicator => {
           const series = chartData?.chartData.find(dataset => dataset.name === indicator.name);

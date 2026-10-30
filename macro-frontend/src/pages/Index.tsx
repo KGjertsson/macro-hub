@@ -4,7 +4,8 @@ import ChartSection from '@/components/ChartSection';
 import InsightsSection from '@/components/InsightsSection';
 import Footer from '@/components/Footer';
 import {Skeleton} from '@/components/ui/skeleton';
-import {Frequency, START_PAGE_INDICATORS, useSeriesConfigs, useStartPageIndicators} from '@/api/indicators';
+import {Frequency, START_PAGE_INDICATORS, useStartPageIndicators} from '@/api/indicators';
+import {useSeriesConfigs} from '@/api/chartData';
 
 // Latest observation's date: the day for daily series, the month for monthly ones ("29 okt 2026", "sep 2026")
 const formatPeriod = (date: Date, frequency: Frequency) =>
