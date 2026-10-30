@@ -7,6 +7,8 @@ description: Ship a change the user has already agreed on. An implementer sub-ag
 
 You orchestrate this workflow. The sub-agents write the code and the review.
 
+The sub-agents are plain subagents, not agent-team teammates: `.claude/settings.json` sets `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=0`, so each one reports once, when its turn ends, and stays reachable by name with SendMessage for later rounds.
+
 ## 1. Preconditions
 
 - The user has agreed on the change. If the design or scope is still open, settle it with the user first.
@@ -23,6 +25,8 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 - Run builds, tests and other checks in the foreground with a long `timeout` (up to 600000 ms); they all fit in it. Don't start them with `run_in_background` and wait for a completion notice: an idle sub-agent is not reliably woken by it and stalls. For anything longer, use Monitor with a loop that ends when the process exits.
 - For frontend changes that add assets, workers or routes, also check the production build as nginx serves it: build the image under a throwaway tag, run it on a spare port, and `curl -I` the new assets. Vite's dev server hides serving bugs, e.g. nginx served `.mjs` as `application/octet-stream`, which blanked the MapLibre map.
 - Use conventional commits that end with the Co-Authored-By line. Open the PR with `gh pr create` and end its body with the Claude Code line. Wait for CI with `gh pr checks <n> --watch` and fix any failing job.
+- Apply every reviewer nit you're sent unless it conflicts with the agreed requirements; report only those conflicts.
+- Your final answer is your report: PR number, head SHA, check results, and open questions or conflicts, if any. Don't also send it with SendMessage.
 - Don't merge. Stay available for review rounds.
 
 ## 3. Reviewer (fresh named sub-agent)
@@ -32,14 +36,20 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 - It reviews `gh pr diff <n>` and reads surrounding code for context.
 - If it builds, it uses its own worktree. It never checks out branches in the main clone.
 - It follows the implementer's rule for long-running commands: run them in the foreground with a long `timeout`, or poll with Monitor. It never waits for a background completion notice.
-- It labels each finding blocking or nit and posts them with `gh pr review <n> --comment`, starting with "LGTM" or "Changes requested". It cannot approve, because it runs on the PR author's account.
+- It labels each finding blocking or nit and posts them with `gh pr review <n> --comment`. It cannot approve, because it runs on the PR author's account. The review starts with exactly one verdict:
+  - `LGTM`: merge as is.
+  - `LGTM after nits`: no blocking findings; merge once the listed nits are fixed, without another review.
+  - `Changes requested`: at least one blocking finding; re-review after the fixes.
+- Its final answer is the verdict plus a one-line summary per finding. It doesn't also send it with SendMessage.
 
 ## 4. Iterate
 
-- Forward the findings to the implementer. Decide which nits to fix and which to accept.
-- Ask the user about requirement or product questions. Don't decide them yourself.
-- After the fixes are pushed, ask the reviewer to re-review the new commits.
-- Watch for stalls. When a sub-agent goes idle without the expected result (no review on the PR in `gh pr view <n> --json reviews`, or no PR or push), message it at once to check its command's result itself and finish. If it stalls again, take over the check yourself.
+- Forward the findings to the implementer in one message. It fixes all of them by default; drop a nit only if you have a reason, and say so.
+- Ask the user about requirement or product questions, including conflicts the implementer reports. Don't decide them yourself.
+- After the fixes are pushed:
+  - `LGTM after nits`: read the new commits' diff yourself. If they do what the nits asked and nothing else, go to step 6. Otherwise ask the reviewer to re-review.
+  - `Changes requested`: ask the reviewer to re-review the new commits.
+- Watch for stalls. When a sub-agent's turn ends without the expected result (no review on the PR in `gh pr view <n> --json reviews`, or no PR or push), message it at once to check its command's result itself and finish. If it stalls again, take over the check yourself.
 
 ## 5. Cap
 
@@ -47,7 +57,7 @@ If blocking findings remain after 3 fix rounds, stop and bring the disagreement 
 
 ## 6. Merge
 
-On LGTM, first remove the sub-agents' worktrees (`git worktree remove <dir>`), or `--delete-branch` fails on the branch still checked out there. Check that the `frontend` and `backend` CI checks pass on the head commit (`gh pr checks <n>`); `main` requires them. Then merge without asking: `gh pr merge <n> --squash --delete-branch --match-head-commit <sha>`. Don't use `--admin`; if a check fails, send it back to the implementer. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
+On `LGTM` (or `LGTM after nits` with the nits checked), first remove the sub-agents' worktrees (`git worktree remove <dir>`), or `--delete-branch` fails on the branch still checked out there. Check that the `frontend` and `backend` CI checks pass on the head commit (`gh pr checks <n>`); `main` requires them. Then merge without asking: `gh pr merge <n> --squash --delete-branch --match-head-commit <sha>`. Don't use `--admin`; if a check fails, send it back to the implementer. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
 
 ## 7. After merge
 
