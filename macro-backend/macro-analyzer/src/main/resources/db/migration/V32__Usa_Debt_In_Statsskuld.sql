@@ -11,3 +11,8 @@ SET category     = 'Statsskuld',
     subcategory  = 'Andel av BNP',
     display_name = 'Statsskuld i % av BNP, USA'
 WHERE name = 'FEDPublicDebtAsGDPPercentage';
+
+-- With the debts gone, the deficit is the only series left in Statsfinanser; name the subcategory after it
+UPDATE series_configuration
+SET subcategory = 'Budgetsaldo'
+WHERE name = 'FEDSurplusOrDeficit';

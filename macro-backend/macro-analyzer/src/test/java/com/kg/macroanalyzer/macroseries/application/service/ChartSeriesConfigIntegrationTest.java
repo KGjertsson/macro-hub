@@ -139,6 +139,7 @@ public class ChartSeriesConfigIntegrationTest {
         assertEquals("USA", pctGdp.country());
         assertEquals("Statsskuld i % av BNP, USA", pctGdp.displayName());
         assertEquals("Nyckeltal USA", deficit.category());
+        assertEquals("Budgetsaldo", deficit.subcategory());
         assertEquals(2 * 30, chartSeries.stream().filter(c -> c.category().equals("Statsskuld")).count());
     }
 

@@ -90,7 +90,7 @@ const VariantList = ({ group, isSelected, onToggle }: { group: VariantListGroup 
         size='sm'
         value={variant}
         onValueChange={(value) => value && setVariant(value)}
-        aria-label='Enhet'
+        aria-label='Mått'
         className='mb-2 justify-start'
       >
         {group.variants.map((v) => {
