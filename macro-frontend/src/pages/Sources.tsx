@@ -21,7 +21,7 @@ const Sources = () => {
         {
           name: 'Sveriges riksbank (SWEA API)',
           description:
-            'Styrräntan, statsobligationer (2, 5, 7 och 10 år), statsskuldväxlar (1–12 månader), euromarknadsräntor (3 och 6 månader för Danmark, euroområdet, Storbritannien, Japan, Norge och USA), utländska statsobligationsräntor (5 och 10 år) och växelkursen SEK/USD.',
+            'Styrräntan, statsobligationer (2, 5, 7 och 10 år), statsskuldväxlar (1, 3, 6 och 12 månader), euromarknadsräntor (3 och 6 månader för Danmark, euroområdet, Storbritannien, Japan, Norge och USA), utländska statsobligationsräntor (10 år, och 5 år för alla utom Danmark, Finland och Norge) och växelkursen SEK/USD.',
           url: 'https://developer.api.riksbank.se',
         },
         {
