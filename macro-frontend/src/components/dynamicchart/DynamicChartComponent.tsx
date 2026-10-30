@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 import {
   CategoryScale,
@@ -34,6 +34,9 @@ const formatValue = (value: number, unit?: string) =>
 const themeColor = (token: string, alpha = 1) =>
   `hsl(${getComputedStyle(document.documentElement).getPropertyValue(token).trim()} / ${alpha})`;
 
+// Shorter drags are clicks: on daily data a single pixel can span several labels
+const MIN_DRAG_PX = 5;
+
 // A drag in progress, in canvas pixels; the band is drawn between its start and the pointer
 type Drag = { pointerId: number; startX: number; currentX: number };
 
@@ -43,6 +46,8 @@ const dragBandPlugin = (
   colorsRef: React.RefObject<{ fill: string; edge: string }>
 ): Plugin<'line'> => ({
   id: 'dragZoomBand',
+  // Chart.js ignores pointer events during a drag, so a touch drag doesn't keep re-opening the tooltip
+  beforeEvent: () => (dragRef.current ? false : undefined),
   afterDatasetsDraw: (chart) => {
     const drag = dragRef.current;
     if (!drag) {
@@ -110,22 +115,21 @@ const DynamicChartComponent = ({ labels, series, indexed, units, onZoom, onReset
   const pointerX = (event: React.PointerEvent) =>
     event.clientX - (chartRef.current?.canvas.getBoundingClientRect().left ?? 0);
 
-  const endDrag = () => {
+  const endDrag = useCallback(() => {
     dragRef.current = null;
     chartRef.current?.draw();
-  };
+  }, []);
 
   // Esc cancels a drag in progress
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && dragRef.current) {
-        dragRef.current = null;
-        chartRef.current?.draw();
+        endDrag();
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [endDrag]);
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     const chart = chartRef.current;
@@ -150,7 +154,7 @@ const DynamicChartComponent = ({ labels, series, indexed, units, onZoom, onReset
       return;
     }
     drag.currentX = pointerX(event);
-    // The tooltip would stay frozen where the drag started, so hide it while dragging
+    // Hide the tooltip that was showing when the drag started; Chart.js ignores events until it ends
     if (chart.tooltip && chart.tooltip.getActiveElements().length > 0) {
       chart.tooltip.setActiveElements([], { x: 0, y: 0 });
       chart.setActiveElements([]);
@@ -172,10 +176,11 @@ const DynamicChartComponent = ({ labels, series, indexed, units, onZoom, onReset
       const index = chart.scales.x.getValueForPixel(Math.max(left, Math.min(right, x)));
       return Math.max(0, Math.min(labels.length - 1, Math.round(index ?? 0)));
     };
+    const endX = pointerX(event);
     const a = indexAt(drag.startX);
-    const b = indexAt(pointerX(event));
-    // Spanning fewer than two data points is a click, not a zoom
-    if (a !== b) {
+    const b = indexAt(endX);
+    // Spanning fewer than two data points, or a few pixels of hand movement on dense data, is a click
+    if (a !== b && Math.abs(endX - drag.startX) >= MIN_DRAG_PX) {
       onZoom(Math.min(a, b), Math.max(a, b));
     }
   };

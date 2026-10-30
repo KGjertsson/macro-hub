@@ -141,29 +141,31 @@ const DynamicChartRenderComponent = ({
         </Hint>
       )}
       {plotted.length > 0 && (
-        <>
-          <DynamicChartComponent
-            labels={labels}
-            series={plotted}
-            indexed={indexed}
-            units={units}
-            onZoom={(start, end) => onZoomChange([labels[start], labels[end]])}
-            onResetZoom={() => zoomWindow && onZoomChange(undefined)}
-          />
-          {zoomWindow ? (
-            <div className='flex flex-wrap items-center gap-3'>
-              <Button variant='outline' size='sm' onClick={() => onZoomChange(undefined)}>
-                <RotateCcw />
-                Visa hela perioden
-              </Button>
-              <Hint>
-                Visar {labels[0]} – {labels[labels.length - 1]}. Dubbelklicka i grafen för att återställa.
-              </Hint>
-            </div>
-          ) : (
-            labels.length > 1 && <Hint>Dra i grafen för att zooma in på en period.</Hint>
-          )}
-        </>
+        <DynamicChartComponent
+          labels={labels}
+          series={plotted}
+          indexed={indexed}
+          units={units}
+          onZoom={(start, end) => onZoomChange([labels[start], labels[end]])}
+          onResetZoom={() => zoomWindow && onZoomChange(undefined)}
+        />
+      )}
+      {/* Shown even when nothing in the window can be plotted, so a zoom can always be undone */}
+      {zoomWindow ? (
+        <div className='flex flex-wrap items-center gap-3'>
+          <Button
+            variant='outline'
+            size='sm'
+            title='Du kan också dubbelklicka i grafen'
+            onClick={() => onZoomChange(undefined)}
+          >
+            <RotateCcw />
+            Visa hela perioden
+          </Button>
+          <Hint>Visar {labels[0]} – {labels[labels.length - 1]}.</Hint>
+        </div>
+      ) : (
+        plotted.length > 0 && labels.length > 1 && <Hint>Dra i grafen för att zooma in på en period.</Hint>
       )}
     </div>
   );
