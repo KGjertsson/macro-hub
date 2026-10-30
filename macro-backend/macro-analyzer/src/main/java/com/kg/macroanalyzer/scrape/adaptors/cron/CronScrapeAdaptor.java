@@ -1,7 +1,7 @@
 package com.kg.macroanalyzer.scrape.adaptors.cron;
 
 import com.kg.macroanalyzer.scrape.application.port.in.InPort;
-import com.kg.macroanalyzer.scrape.application.service.ScrapeRun;
+import com.kg.macroanalyzer.scrape.application.port.in.ScrapeRun;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;

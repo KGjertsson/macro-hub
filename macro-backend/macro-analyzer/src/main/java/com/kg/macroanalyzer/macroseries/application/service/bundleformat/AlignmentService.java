@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 
+import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import com.kg.macroanalyzer.macroseries.application.service.LabelGenerationService;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.StrategyFactory;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.UniqueMacroPointCollector;
@@ -28,7 +29,7 @@ public class AlignmentService {
 
     public Optional<AlignedBundle> align(
             List<MacroSeries> macroSeriesList,
-            StrategyFactory.Strategy strategy
+            Strategy strategy
     ) {
         final var sampleStrategy = strategyFactory.build(strategy);
 

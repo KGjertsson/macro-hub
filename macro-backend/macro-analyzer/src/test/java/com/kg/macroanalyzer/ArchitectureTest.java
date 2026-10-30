@@ -52,11 +52,11 @@ class ArchitectureTest {
     // package can reappear next to them
     @ArchTest
     static final ArchRule everyClassResidesInAModule = classes().that().resideInAPackage(ROOT + "..")
-            .and().resideOutsideOfPackage(ROOT)
+            .and().doNotHaveFullyQualifiedName(MacroAnalyzerApplication.class.getName())
             .should().resideInAnyPackage(concat(concat(MODULES, SHARED_MODULES), GENERATED_PACKAGES).stream()
                     .map(ArchitectureTest::pkg)
                     .toArray(String[]::new))
-            .as("every class outside the root package resides in a module or in generated code");
+            .as("every class except the application class resides in a module or in generated code");
 
     @ArchTest
     static final ArchRule sharedDoesNotDependOnModules = CompositeArchRule.of(
@@ -73,6 +73,16 @@ class ArchitectureTest {
                     .map(module -> noClasses().that().resideInAnyPackage(pkg(module + ".domain"), pkg(module + ".application"))
                             .should().dependOnClassesThat().resideInAPackage(pkg(module + ".adaptors"))
                             .as("%s domain and application do not depend on %s adaptors".formatted(module, module)))
+                    .toList()
+    );
+
+    // Ports are the contract the services implement and use, so they only refer to domain and port types
+    @ArchTest
+    static final ArchRule portsDoNotDependOnServices = CompositeArchRule.of(
+            MODULES.stream()
+                    .map(module -> noClasses().that().resideInAPackage(pkg(module + ".application.port"))
+                            .should().dependOnClassesThat().resideInAPackage(pkg(module + ".application.service"))
+                            .as("%s ports do not depend on %s services".formatted(module, module)))
                     .toList()
     );
 

@@ -4,8 +4,8 @@ import com.kg.macroanalyzer.regionalstatistics.application.port.out.ConfigWithSc
 import com.kg.macroanalyzer.regionalstatistics.application.port.out.RegionalStatisticsRepositoryPort;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbIndicatorResult;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
-import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;

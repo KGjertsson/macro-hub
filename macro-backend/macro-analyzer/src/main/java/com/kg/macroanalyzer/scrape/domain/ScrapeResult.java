@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.scrape.application.service;
+package com.kg.macroanalyzer.scrape.domain;
 
 public enum ScrapeResult {
     SUCCESS,

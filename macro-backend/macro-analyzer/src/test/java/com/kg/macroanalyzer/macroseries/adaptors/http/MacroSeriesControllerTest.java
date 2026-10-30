@@ -4,7 +4,7 @@ import com.kg.macroanalyzer.macroseries.application.port.in.BuildChartDataParams
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartData;
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartDataWithLabels;
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
-import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.StrategyFactory;
+import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
@@ -65,7 +65,7 @@ public class MacroSeriesControllerTest {
 
         // when
         final var params = BuildChartDataParams.builder()
-                .strategy(StrategyFactory.Strategy.MONTH)
+                .strategy(Strategy.MONTH)
                 .chartSeriesParams(List.of())
                 .build();
         when(macroSeriesQueries.buildAlignedBundle(any())).thenReturn(Optional.of(alignedBundle));
@@ -93,7 +93,7 @@ public class MacroSeriesControllerTest {
     public void shouldReturnNoContent_whenEmptyReplyFromServer() {
         // given
         final var params = BuildChartDataParams.builder()
-                .strategy(StrategyFactory.Strategy.MONTH)
+                .strategy(Strategy.MONTH)
                 .chartSeriesParams(List.of())
                 .build();
 

@@ -1,8 +1,8 @@
 package com.kg.macroanalyzer.scrape.application.service.scrapeflow;
 
-import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 
 // A domain's scrape flow registered for one queue kind; ScrapeService routes queue items by kind
 public interface KindedScrapeFlow {

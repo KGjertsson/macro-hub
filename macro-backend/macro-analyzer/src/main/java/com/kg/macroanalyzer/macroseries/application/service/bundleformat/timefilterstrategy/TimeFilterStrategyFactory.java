@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy;
 
+import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -13,10 +14,6 @@ public class TimeFilterStrategyFactory {
         return Optional.ofNullable(timeFrame)
                 .map(this::buildStrategy)
                 .orElseThrow(() -> new IllegalArgumentException(nullMsg));
-    }
-
-    public enum TimeFrame {
-        ALL, ONEYEAR, FIVEYEAR, TENYEAR, ONEMONTH
     }
 
     private TimeFilterStrategy buildStrategy(TimeFrame timeFrame) {

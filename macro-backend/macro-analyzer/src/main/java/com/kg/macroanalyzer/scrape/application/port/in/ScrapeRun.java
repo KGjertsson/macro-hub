@@ -1,4 +1,6 @@
-package com.kg.macroanalyzer.scrape.application.service;
+package com.kg.macroanalyzer.scrape.application.port.in;
+
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 
 import java.util.List;
 

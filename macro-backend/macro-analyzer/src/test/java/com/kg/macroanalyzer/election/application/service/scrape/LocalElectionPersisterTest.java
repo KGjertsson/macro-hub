@@ -5,7 +5,7 @@ import com.kg.macroanalyzer.election.application.port.out.ElectionRepositoryPort
 import com.kg.macroanalyzer.election.domain.LocalElectionResult;
 import com.kg.macroanalyzer.election.domain.LocalElectionType;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
-import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
