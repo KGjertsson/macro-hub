@@ -43,6 +43,7 @@ services:
       - macro-analyzer
     environment:
       # nginx proxies /macro-analyzer/ here, so the browser only talks to :8081
+      # scheme://host:port only: a trailing slash or path makes every proxied request 404
       BACKEND_URL: http://macro-analyzer:8080
     ports:
       - "8081:80"
