@@ -120,6 +120,29 @@ public class ChartSeriesConfigIntegrationTest {
     }
 
     @Test
+    void shouldListTheUsaDebt_withTheOtherNationalDebts() {
+        // when
+        final var chartSeries = macroSeriesQueries.getChartSeriesConfigList();
+        final var nominal = find(chartSeries, "FEDTotalPublicDebt");
+        final var pctGdp = find(chartSeries, "FEDPublicDebtAsGDPPercentage");
+        final var deficit = find(chartSeries, "FEDSurplusOrDeficit");
+
+        // then
+        assertEquals("Statsskuld", nominal.category());
+        assertEquals("Nominell", nominal.subcategory());
+        assertEquals("mn USD", nominal.unit());
+        assertEquals("USA", nominal.country());
+        assertEquals("Statsskuld i miljoner dollar, USA", nominal.displayName());
+        assertEquals("Statsskuld", pctGdp.category());
+        assertEquals("Andel av BNP", pctGdp.subcategory());
+        assertEquals("% av BNP", pctGdp.unit());
+        assertEquals("USA", pctGdp.country());
+        assertEquals("Statsskuld i % av BNP, USA", pctGdp.displayName());
+        assertEquals("Nyckeltal USA", deficit.category());
+        assertEquals(2 * 30, chartSeries.stream().filter(c -> c.category().equals("Statsskuld")).count());
+    }
+
+    @Test
     void shouldQuoteTheExchangeRate_inSekPerUsd() {
         // when
         final var usdSek = find(seriesConfigPort.readSeriesConfigList(), "UsdSekExchangeRate");
@@ -248,7 +271,7 @@ public class ChartSeriesConfigIntegrationTest {
 
         // when
         final var debt = macroSeriesQueries.getChartSeriesConfigList().stream()
-                .filter(c -> c.category().equals("Statsskuld"))
+                .filter(c -> c.category().equals("Statsskuld") && c.name().startsWith("Debt"))
                 .toList();
 
         // then

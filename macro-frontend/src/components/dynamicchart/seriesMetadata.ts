@@ -81,11 +81,13 @@ export type MaturityGridGroup = {
   rows: { country: string; cells: (SeriesConfig | undefined)[] }[];
 };
 
-// Subcategories holding the same countries in different units (e.g. Statsskuld nominellt / andel av BNP)
+// Subcategories holding the same countries in different units (e.g. Statsskuld nominellt / andel av BNP).
+// A variant's label is its unit when every config shares it, otherwise the subcategory; a row whose unit
+// differs from the variant's usual one is labelled with it (e.g. "USA (mn USD)")
 export type VariantListGroup = {
   kind: 'variants';
-  variants: { subcategory: string; unit: string }[];
-  rows: { country: string; configs: Record<string, SeriesConfig> }[];
+  variants: { subcategory: string; label: string }[];
+  rows: { country: string; configs: Record<string, SeriesConfig>; labels: Record<string, string> }[];
 };
 
 export type PickerGroup = CheckboxListGroup | MaturityGridGroup | VariantListGroup;
@@ -126,23 +128,33 @@ const toGridGroup = (subcategory: string, configs: SeriesConfig[]): MaturityGrid
   return { kind: 'grid', subcategory, maturities, rows };
 };
 
+// The unit most configs have (the first one on a tie)
+const mostCommonUnit = (configs: SeriesConfig[]) => {
+  const counts = new Map<string | undefined, number>();
+  configs.forEach((c) => counts.set(c.unit, (counts.get(c.unit) ?? 0) + 1));
+  return Array.from(counts.entries()).reduce((best, entry) => (entry[1] > best[1] ? entry : best))[0];
+};
+
 const toVariantGroup = (bySubcategory: Map<string, SeriesConfig[]>): VariantListGroup => {
-  const variants = Array.from(bySubcategory.entries()).map(([subcategory, configs]) => ({
+  const entries = Array.from(bySubcategory.entries());
+  const usualUnits = new Map(entries.map(([subcategory, configs]) => [subcategory, mostCommonUnit(configs)]));
+  const variants = entries.map(([subcategory, configs]) => ({
     subcategory,
-    unit: configs[0].unit ?? subcategory
+    label: configs.every((c) => c.unit === configs[0].unit) ? (configs[0].unit ?? subcategory) : subcategory
   }));
-  const countries = Array.from(bySubcategory.values())[0]
-    .map((c) => c.country as string)
-    .sort(compareCountries);
-  const rows = countries.map((country) => ({
-    country,
-    configs: Object.fromEntries(
-      Array.from(bySubcategory.entries()).map(([subcategory, configs]) => [
-        subcategory,
-        configs.find((c) => c.country === country) as SeriesConfig
-      ])
-    )
-  }));
+  const countries = entries[0][1].map((c) => c.country as string).sort(compareCountries);
+  const rows = countries.map((country) => {
+    const configs = Object.fromEntries(
+      entries.map(([subcategory, group]) => [subcategory, group.find((c) => c.country === country) as SeriesConfig])
+    );
+    const labels = Object.fromEntries(
+      entries.map(([subcategory]) => {
+        const unit = configs[subcategory].unit;
+        return [subcategory, unit && unit !== usualUnits.get(subcategory) ? `${country} (${unit})` : country];
+      })
+    );
+    return { country, configs, labels };
+  });
   return { kind: 'variants', variants, rows };
 };
 

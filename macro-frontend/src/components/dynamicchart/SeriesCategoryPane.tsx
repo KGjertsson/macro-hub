@@ -97,7 +97,7 @@ const VariantList = ({ group, isSelected, onToggle }: { group: VariantListGroup 
           const selectedCount = group.rows.filter((row) => isSelected(row.configs[v.subcategory].name)).length;
           return (
             <ToggleGroupItem key={v.subcategory} value={v.subcategory} title={v.subcategory}>
-              {v.unit}
+              {v.label}
               {selectedCount > 0 && <span className='ml-1 text-xs opacity-70'>({selectedCount})</span>}
             </ToggleGroupItem>
           );
@@ -107,7 +107,7 @@ const VariantList = ({ group, isSelected, onToggle }: { group: VariantListGroup 
         <SeriesCheckbox
           key={row.country}
           config={row.configs[variant]}
-          label={row.country}
+          label={row.labels[variant]}
           isSelected={isSelected}
           onToggle={onToggle}
         />
