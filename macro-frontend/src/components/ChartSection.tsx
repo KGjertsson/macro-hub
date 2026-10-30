@@ -12,6 +12,8 @@ type Trend = TrendDefinition & {
     kind: "area" | "line";
     color: string;
     fractionDigits: number;
+    // Fit the Y axis to the data instead of starting at 0, for a series whose values lie far from 0
+    fitYAxis?: boolean;
 };
 
 const TRENDS: Trend[] = [
@@ -23,6 +25,7 @@ const TRENDS: Trend[] = [
         kind: "area",
         color: "hsl(var(--primary))",
         fractionDigits: 0,
+        fitYAxis: true,
     },
     {
         name: "FEDCPI",
@@ -76,6 +79,30 @@ const toRows = (points: TrendPoint[], frequency: TrendFrequency): ChartRow[] =>
         value: point.value,
     }));
 
+// The data range padded by 5 % on each side and widened to whole steps of 1, 2, 2.5 or 5 times a power of ten:
+// the smallest such step that needs at most six intervals, with a tick on every step
+const MAX_INTERVALS = 6;
+
+const fittedAxis = (values: number[]) => {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const padding = (max - min) * 0.05 || Math.abs(max) * 0.05 || 1;
+    const magnitude = Math.pow(10, Math.floor(Math.log10((max - min + 2 * padding) / MAX_INTERVALS)));
+    const bounds = (step: number) =>
+        [Math.floor((min - padding) / step) * step, Math.ceil((max + padding) / step) * step] as [number, number];
+    const step = [1, 2, 2.5, 5, 10, 20]
+        .map(factor => factor * magnitude)
+        .find(candidate => {
+            const [lower, upper] = bounds(candidate);
+            return Math.round((upper - lower) / candidate) <= MAX_INTERVALS;
+        }) ?? 20 * magnitude;
+    const [lower, upper] = bounds(step);
+    const ticks = Array.from({length: Math.round((upper - lower) / step) + 1},
+        // toPrecision drops float noise such as 5.1000000000000005
+        (_, index) => Number((lower + index * step).toPrecision(12)));
+    return {domain: [lower, upper] as [number, number], ticks};
+};
+
 const subtitle = (points: TrendPoint[], frequency: TrendFrequency, unit: string | undefined) => {
     const first = points[0].date.getUTCFullYear();
     const last = points[points.length - 1].date.getUTCFullYear();
@@ -101,7 +128,8 @@ const TrendChart = ({trend}: { trend: Trend }) => {
         );
     }
 
-    if (error || points.length === 0) {
+    // A failed background refetch keeps the data of the last successful one, so the chart stays
+    if (!points || points.length === 0) {
         return (
             <>
                 <div className="mb-6">
@@ -118,6 +146,7 @@ const TrendChart = ({trend}: { trend: Trend }) => {
     const tickFormatter = (value: number) => withUnit(formatNumber(value, 0, 1), unit);
     // Room for the longest tick, e.g. "30 000 mdr USD"
     const yAxisWidth = unit && unit.length > 2 ? 100 : 60;
+    const yAxis = trend.fitYAxis ? fittedAxis(points.map(point => point.value)) : undefined;
 
     const tooltip = ({active, payload}: TooltipProps<number, string>) => {
         if (!active || !payload || payload.length === 0 || payload[0].value === undefined) {
@@ -140,7 +169,7 @@ const TrendChart = ({trend}: { trend: Trend }) => {
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
             <XAxis dataKey="axisLabel" stroke="hsl(var(--muted-foreground))" fontSize={12} minTickGap={24}/>
             <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} width={yAxisWidth}
-                   tickFormatter={tickFormatter}/>
+                   tickFormatter={tickFormatter} domain={yAxis?.domain} ticks={yAxis?.ticks}/>
             <Tooltip content={tooltip}/>
         </>
     );
@@ -168,6 +197,8 @@ const TrendChart = ({trend}: { trend: Trend }) => {
                                 stroke={trend.color}
                                 strokeWidth={3}
                                 fill={`url(#${gradientId})`}
+                                // Fill down to the bottom of the axis, also when it does not start at 0
+                                baseValue={trend.fitYAxis ? "dataMin" : undefined}
                             />
                         </AreaChart>
                     ) : (
