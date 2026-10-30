@@ -66,7 +66,7 @@ Flyway migrations run automatically on application startup via `spring-boot-star
 - Riksbanken and Fed scrapes require `riksbanken.prod.subscription.key` / `fed.prod.subscription.key` (env: `RIKSBANKEN_PROD_SUBSCRIPTION_KEY`, `FED_PROD_SUBSCRIPTION_KEY`)
   - Locally, put them in `macro-backend/macro-analyzer/.env` (copy `.env.example`; gitignored). Spring loads it via `spring.config.import=optional:file:.env[.properties]`, relative to the working directory, so run the app from `macro-analyzer/`
   - For `docker-compose-all.yml`, pass `--env-file macro-backend/macro-analyzer/.env`
-  - `.githooks/pre-commit` rejects commits that stage `.env` files (even via `git add -f`). Enable it once per clone: `git config core.hooksPath .githooks`
+  - `.githooks/pre-commit` rejects commits that stage `.env` files (even via `git add -f`). Enable it once per clone: `git config core.hooksPath .githooks`. The hook is opt-in, so CI's `frontend` job also fails if any `.env` file is tracked (same rule: `.env`, `.env.<anything>`, except `.env.example`)
 
 ### Frontend (from `macro-frontend/`)
 
@@ -76,6 +76,7 @@ npm run dev        # Vite dev server
 npm run build      # production build
 npm run build:dev  # development-mode build
 npm run lint
+npm run typecheck  # tsc --noEmit for tsconfig.app.json and tsconfig.node.json (vite build does not type-check)
 npm run preview    # serve the production build
 ```
 
@@ -240,7 +241,7 @@ Chart series in `series_configuration` carry picker metadata (V27), returned by 
 
 ## Workflow
 
-Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent (Fable, or Opus when Fable credits run out) reviews it, then it is merged once the reviewer says LGTM. `main` is protected: every change needs a PR, and the `frontend` and `backend` jobs in `.github/workflows/ci.yml` (build, lint, `mvn test`) must pass. No approval is required.
+Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent (Fable, or Opus when Fable credits run out) reviews it, then it is merged once the reviewer says LGTM. `main` is protected: every change needs a PR, and the `frontend` and `backend` jobs in `.github/workflows/ci.yml` (frontend: tracked-`.env` check, `npm run typecheck`, build, lint; backend: `mvn test`) must pass. No approval is required.
 
 PRs also get an automatic Claude review comment from `.github/workflows/claude-review.yml` (comment-only, not a required check; a PR that changes that file is skipped, since the action requires it to match `main`). It needs the Claude GitHub App installed on the repo and a `CLAUDE_CODE_OAUTH_TOKEN` repo secret generated with `claude setup-token` (Pro/Max subscription).
 

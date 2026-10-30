@@ -22,12 +22,24 @@ jobs:
         working-directory: macro-frontend
     steps:
       - uses: actions/checkout@v7
+      # Same rule as .githooks/pre-commit: no .env files tracked (.env.example is allowed)
+      - name: No tracked .env files
+        working-directory: .
+        run: |
+          tracked=$(git ls-files | grep -E '(^|/)\.env(\..+)?$' | grep -vE '(^|/)\.env\.example$' || true)
+          if [ -n "$tracked" ]; then
+            echo "::error::.env files are tracked (they contain secrets):"
+            echo "$tracked" | sed 's/^/  /'
+            echo "Remove them with: git rm --cached <file>"
+            exit 1
+          fi
       - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: macro-frontend/package-lock.json
       - run: npm ci
+      - run: npm run typecheck
       - run: npm run build
       - run: npm run lint
 
