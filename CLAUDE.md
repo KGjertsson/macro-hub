@@ -186,8 +186,8 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 
 ### REST API Endpoints
 
-- `GET /macro-analyzer/series-config` — list all series configurations
-- `POST /macro-analyzer/chart-data` — retrieve aligned chart data
+- `GET /macro-analyzer/series-config` — list the chart series configurations, in `id` (seed) order
+- `POST /macro-analyzer/chart-data` — retrieve aligned chart data (400 when `strategy`, `timeFrame` or `chartSeriesParams` is missing)
 - `POST /macro-analyzer/enqueue?name={series}` — enqueue a series for scraping (202)
 - `POST /macro-analyzer/enqueue-all` — enqueue all series (202)
 - `POST /macro-analyzer/scrape-from-queue` — execute pending scrapes (200)

@@ -21,6 +21,7 @@ public class SeriesConfigRepository {
     public List<SeriesConfig> readSeriesConfigList() {
         return dslContext.select()
                 .from(SERIES_CONFIGURATION)
+                .orderBy(SERIES_CONFIGURATION.ID)
                 .fetch()
                 .map(this::toSeriesConfig);
     }

@@ -9,11 +9,10 @@ import com.kg.macroanalyzer.macroseries.application.service.bundleformat.TimeFil
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
-import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -30,17 +29,19 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class MacroSeriesServiceTest {
 
-    @InjectMocks
     MacroSeriesService macroSeriesService;
 
     @Mock
     MacroSeriesRepositoryPort repositoryPort;
     @Mock
-    SeriesConfigPort seriesConfigPort;
-    @Mock
     AlignmentService alignmentService;
     @Mock
     TimeFilterService timeFilterService;
+
+    @BeforeEach
+    void setUp() {
+        macroSeriesService = new MacroSeriesService(repositoryPort, emptyList(), alignmentService, timeFilterService);
+    }
 
     @Test
     void shouldReturnAlignedBundle_whenInputListIsPresent() {
@@ -96,23 +97,20 @@ public class MacroSeriesServiceTest {
     }
 
     @Test
-    void shouldKeepParliamentAndElectionConfigsOutOfChartList_butInFullList() {
+    void shouldKeepParliamentElectionAndScbConfigsOutOfChartList() {
         // given
         final var rate = SeriesConfig.builder().name("PolicyRateSweden").category("Räntor").build();
         final var members = SeriesConfig.builder().name("MembersOfParliament").category("Riksdagen").build();
         final var elections = SeriesConfig.builder().name("MunicipalElections").category("Valmyndigheten").build();
         final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").category("SCB").build();
-        when(seriesConfigPort.readSeriesConfigList()).thenReturn(List.of(rate, members, elections, scb));
         final var service = new MacroSeriesService(
-                repositoryPort, seriesConfigPort, alignmentService, timeFilterService);
+                repositoryPort, List.of(rate, members, elections, scb), alignmentService, timeFilterService);
 
         // when
         final var chartList = service.getChartSeriesConfigList();
-        final var fullList = service.getSeriesConfigList();
 
         // then
         assertEquals(List.of(rate), chartList);
-        assertEquals(List.of(rate, members, elections, scb), fullList);
     }
 
 }

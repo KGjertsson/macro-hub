@@ -3,8 +3,10 @@ package com.kg.macroanalyzer.macroseries.adaptors.http;
 import com.kg.macroanalyzer.macroseries.application.port.in.BuildChartDataParams;
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartData;
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartDataWithLabels;
+import com.kg.macroanalyzer.macroseries.application.port.in.ChartSeriesParam;
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
 import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
+import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
@@ -17,11 +19,13 @@ import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,6 +70,7 @@ public class MacroSeriesControllerTest {
         // when
         final var params = BuildChartDataParams.builder()
                 .strategy(Strategy.MONTH)
+                .timeFrame(TimeFrame.ALL)
                 .chartSeriesParams(List.of())
                 .build();
         when(macroSeriesQueries.buildAlignedBundle(any())).thenReturn(Optional.of(alignedBundle));
@@ -90,10 +95,76 @@ public class MacroSeriesControllerTest {
     }
 
     @Test
+    public void shouldReturnBadRequest_whenStrategyMissing() {
+        // given
+        final var params = BuildChartDataParams.builder()
+                .timeFrame(TimeFrame.ALL)
+                .chartSeriesParams(List.of())
+                .build();
+
+        // when
+        final var response = macroSeriesController.buildChartData(params);
+
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verifyNoInteractions(macroSeriesQueries);
+    }
+
+    @Test
+    public void shouldReturnBadRequest_whenTimeFrameMissing() {
+        // given
+        final var params = BuildChartDataParams.builder()
+                .strategy(Strategy.MONTH)
+                .chartSeriesParams(List.of())
+                .build();
+
+        // when
+        final var response = macroSeriesController.buildChartData(params);
+
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verifyNoInteractions(macroSeriesQueries);
+    }
+
+    @Test
+    public void shouldReturnBadRequest_whenChartSeriesParamsMissing() {
+        // given
+        final var params = BuildChartDataParams.builder()
+                .strategy(Strategy.MONTH)
+                .timeFrame(TimeFrame.ALL)
+                .build();
+
+        // when
+        final var response = macroSeriesController.buildChartData(params);
+
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verifyNoInteractions(macroSeriesQueries);
+    }
+
+    @Test
+    public void shouldReturnBadRequest_whenChartSeriesParamsContainsNull() {
+        // given
+        final var params = BuildChartDataParams.builder()
+                .strategy(Strategy.MONTH)
+                .timeFrame(TimeFrame.ALL)
+                .chartSeriesParams(Arrays.asList((ChartSeriesParam) null))
+                .build();
+
+        // when
+        final var response = macroSeriesController.buildChartData(params);
+
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verifyNoInteractions(macroSeriesQueries);
+    }
+
+    @Test
     public void shouldReturnNoContent_whenEmptyReplyFromServer() {
         // given
         final var params = BuildChartDataParams.builder()
                 .strategy(Strategy.MONTH)
+                .timeFrame(TimeFrame.ALL)
                 .chartSeriesParams(List.of())
                 .build();
 

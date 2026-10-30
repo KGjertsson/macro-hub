@@ -10,8 +10,6 @@ public interface MacroSeriesQueries {
 
     Optional<AlignedBundle> buildAlignedBundle(BuildChartDataParams params);
 
-    List<SeriesConfig> getSeriesConfigList();
-
     List<SeriesConfig> getChartSeriesConfigList();
 
 }
