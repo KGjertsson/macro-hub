@@ -1,7 +1,8 @@
-package com.kg.macroanalyzer.scrape.application.port.in;
+package com.kg.macroanalyzer.scrape.application.service;
 
-import com.kg.macroanalyzer.scrape.application.service.ScrapeRun;
-import com.kg.macroanalyzer.scrape.application.service.ScrapeService;
+import com.kg.macroanalyzer.scrape.application.port.in.EnqueueException;
+import com.kg.macroanalyzer.scrape.application.port.in.InPort;
+import com.kg.macroanalyzer.scrape.application.port.in.ScrapeRun;
 import com.kg.macroanalyzer.scrape.application.service.enqueue.EnqueueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

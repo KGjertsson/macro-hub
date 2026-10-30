@@ -1,132 +1,101 @@
-# Hexagonal Architecture — macro-analyzer
+# Architecture — macro-analyzer
 
-## Overview
+The backend is split into modules by domain, each laid out as a small hexagon (ports and adaptors).
+The full package map, the dependency rules and the checklist for a new domain are in the
+"Architecture" section of the repository's `CLAUDE.md`; `ArchitectureTest` (ArchUnit) enforces the rules.
 
-```
-  DRIVING SIDE                                                         DRIVEN SIDE
-  (primary)                                                            (secondary)
-                         +-----------------------------------------------+
-                         |              APPLICATION CORE                 |
-  +-----------------+    |                                               |    +-------------------+
-  |                 |    |  +-----------+         +-----------+          |    |                   |
-  | Insertion       |--->|  |  InPort   |-------->| InPortImpl|          |    |                   |
-  |  Adaptor        |    |  +-----------+         +-----+-----+          |    |                   |
-  |  (REST)         |    |   enqueue()              |       |            |    |                   |
-  |                 |    |   enqueueAll()            v       v           |    |                   |
-  | POST /enqueue   |    |   scrapeFromQueue()  Enqueue  Scrape          |    |                   |
-  | POST /enqueue-  |    |                      Service  Service         |    |                   |
-  |       all       |    |                         |       |            |    |  PostgresAdaptor  |
-  | POST /scrape-   |    |                         |       |            |    |  (DatabasePort)   |
-  |       from-     |    |                         |   +---+----+       |    |                   |
-  |       queue     |    |                         |   |ScrapeFlow|      |    |  10 Repositories: |
-  +-----------------+    |                         |   | .run()   |      |    |  - ExchangeRate   |
-                         |                         |   +---+------+      |    |  - GovBonds       |
-  +-----------------+    |                         |       |             |    |  - GovBills       |
-  |                 |    |                     +---v-------v---+         |    |  - PolicyRate     |
-  | Extraction      |--->|  +-----------+      | DatabasePort  |-------->|--->|  - EuroMarketRate |
-  |  Adaptor        |    |  |  OutPort  |      +---------------+         |    |  - Fed            |
-  |  (REST)         |    |  +-----------+       readMacroSeries()       |    |  - Eurostat       |
-  |                 |    |   buildAligned        readSeriesConfig()      |    |  - SweParMember   |
-  | POST /chart-    |    |    Bundle()           writeMacroPoints()      |    |  - Scrape         |
-  |       data      |    |   getSeriesConfig     persistScrapeQueue()    |    |  - SeriesConfig   |
-  | GET  /series-   |    |    List()             getItemsToScrape()      |    |                   |
-  |       config    |    |        |              markAsDone()            |    +--------+----------+
-  +-----------------+    |        v                                      |             |
-                         |  +-----------+                                |             v
-  +-----------------+    |  |OutPortImpl|                                |    +--------+----------+
-  |                 |    |  +-----+-----+                                |    |   PostgreSQL 16   |
-  | CronEnqueue     |--->|        |                                      |    |   (JOOQ+Flyway)   |
-  |  Adaptor        |    |   +----+--------+                             |    +-------------------+
-  |  (@Scheduled)   |    |   |    |        |                             |
-  +-----------------+    |   v    v        v                             |
-                         |  Time  Align  Label                           |
-  +-----------------+    |  Filter ment  Generation                     |    +-------------------+
-  |                 |    |  Svc   Svc    Svc                            |    |                   |
-  | CronScrape      |--->|                                              |    | MacroPoint        |
-  |  Adaptor        |    |  +----------------------------------+        |    |  WebAdaptor       |
-  |  (@Scheduled)   |    |  |         DOMAIN MODEL             |        |    |  (WebPort)        |
-  +-----------------+    |  |                                  |        |    |                   |
-                         |  |  MacroPoint(value, date)         |        |    | uses Adaptor      |
-                         |  |  MacroSeries(name, macroPoints)  |        |    |  FlowFactory:     |
-                         |  |  AlignedBundle(series, labels)   |        |    |                   |
-                         |  |  MemberOfParliament              |  +----------+  FED* -->         |
-                         |  |  ScrapeQueueItem                 |  |     |    |   FedConnection   |
-                         |  |  ScrapeQueueKind:                |  |     |    |   Builder +       |
-                         |  |    MACRO_POINT                   |  |     |    |   FedResponse     |
-                         |  |    MEMBER_OF_PARLIAMENT          |  |     |    |   Parser          |
-                         |  |                                  |  |     |    |                   |
-                         |  +----------------------------------+  |     |    |  Debt* -->        |
-                         |                                        |     |    |   EuroStatConn    |
-                         |              +----------+              |     |    |   Builder +       |
-                         |              | WebPort  |--------------+     |    |   EuroStatResp    |
-                         |              +----------+                    |    |   Parser          |
-                         |               fetch()                        |    |                   |
-                         |                                              |    |  Int*/Euro*/      |
-                         +-----------------------------------------------+    |  PolicyRate -->  |
-                                                                        |    |   RiksbankenConn |
-                                                                        |    |   Builder +      |
-                                                                        |    |   RiksbankenResp |
-                                                                        |    |   Parser         |
-                                                                        |    +--------+---------+
-                                                                        |             |
-                                                                        |    +--------v---------+
-                                                                        |    | MembersOfParlia- |
-                                                                        |    |  mentWebAdaptor  |
-                                                                        |    |  (WebPort)       |
-                                                                        |    |                  |
-                                                                        |    | RiksdagenConn    |
-                                                                        |    |  Builder +       |
-                                                                        |    | RiksdagenResp    |
-                                                                        |    |  Parser          |
-                                                                        |    +--------+---------+
-                                                                        |             |
-                                                                        |             v
-                                                                        |    +-------------------+
-                                                                        |    | EXTERNAL APIs     |
-                                                                        |    |                   |
-                                                                        |    | - Riksbanken      |
-                                                                        |    | - Federal Reserve |
-                                                                        |    | - Eurostat        |
-                                                                        |    | - Riksdagen       |
-                                                                        |    +-------------------+
-```
-
-## ScrapeFlow Pipeline (Write Path)
-
-The `ScrapeFlow<Input, Config, Data>` is a generic record composing four pluggable steps.
-`ScrapeService` selects the correct flow instance via `ScrapeQueueKind`:
+## Modules
 
 ```
-                         macroPointScrapeFlow                          memberScrapeFlow
-                         (MACRO_POINT)                                 (MEMBER_OF_PARLIAMENT)
-                         ====================                          ====================
-
-  ScrapeQueueItem -----> SeriesConfigPreparer -----> SeriesConfigPreparer
-                              |                           |
-                              v                           v
-                         ExistingMacroPoint          ExistingMemberOf
-                          Finder                     ParliamentFinder
-                          (DatabasePort)             (stub/TODO)
-                              |                           |
-                              v                           v
-                         MacroPointScraper           MemberOfParliament
-                          (WebPort)                  Scraper (WebPort)
-                              |                           |
-                              v                           v
-                         MacroPointPersister         MemberOfParliament
-                          (DatabasePort)             Persister (TODO)
-                              |                           |
-                              v                           v
-                         ScrapeResult                ScrapeResult
-                         (SUCCESS/EMPTY)             (FAILED — not yet wired)
+  com.kg.macroanalyzer
+  |
+  +-- MacroAnalyzerApplication        (the only class in the root package)
+  |
+  +-- scrape              scrape queue, enqueue/scrape endpoints, cron jobs, the generic ScrapeFlow
+  +-- macroseries         chart series: Riksbanken, Fed, Eurostat        (/chart-data, /series-config)
+  +-- regionalstatistics  SCB DeSO/RegSO indicators                      (/regional-statistics/*)
+  +-- parliament          Riksdagen members, activity, parties, seats    (/parliament/*)
+  +-- election            Valmyndigheten kommun/region/valkrets results  (/municipalities/*, /regions/*,
+  |                                                                       /constituencies/*)
+  +-- shared              CORS, Jackson, JDBC, Flyway config; WebPort and the WebAdaptorFlow pipeline
+  +-- jooq.generated      generated jOOQ model
 ```
 
-## WebAdaptorFlow Pipeline
-
-Each `WebAdaptorFlow<Config, Response>` composes three steps to fetch external data:
+Allowed dependencies between modules:
 
 ```
-  SeriesConfig
+  macroseries, regionalstatistics, parliament, election --> scrape, shared, jooq.generated
+  scrape                                                 --> shared, jooq.generated
+  election                                               --> parliament.application.port.in (PartyDirectory)
+                                                             parliament.domain (Party)
+  shared                                                 --> no module
+```
+
+The election edge is the only one between domain modules. No module uses another module's out-ports,
+services or adaptors.
+
+## Inside a module
+
+```
+  DRIVING SIDE                                                              DRIVEN SIDE
+                     +-------------------------------------------------+
+                     |                   APPLICATION                   |
+  +--------------+   |  +-----------+     +-----------+     +--------+ |   +------------------+
+  | adaptors.http|-->|  | port.in   |<----| service   |---->|port.out|<|---| adaptors.postgres|--> PostgreSQL
+  | (controller) |   |  | *Queries, |impl | *Service  |     | *Repo- | |   | *PostgresAdaptor |
+  +--------------+   |  | DTOs      |     +-----+-----+     | sitory-| |   | + jOOQ repos     |
+                     |  +-----------+           |           | Port   | |   +------------------+
+                     |                          v           +--------+ |
+                     |                    +-----------+                |   +------------------+
+                     |                    |  domain   |    WebPort <---|---| adaptors.web     |--> external API
+                     |                    | (records) |    (shared)    |   | ConnectionBuilder|
+                     |                    +-----------+                |   | + ResponseParser |
+                     +-------------------------------------------------+   +------------------+
+
+  adaptors.config: *WebAdaptorConfiguration (WebPort beans), *ScrapeFlowConfiguration (KindedScrapeFlow bean)
+```
+
+- `domain` and `application` never depend on `adaptors`.
+- `application.port` never depends on `application.service`, of its own module or any other (`scrape`'s included):
+  ports only use domain and port types.
+
+## ScrapeFlow pipeline (write path)
+
+`ScrapeFlow<Input, Config, Data>` composes four steps. Each domain module wraps its flow in a
+`KindedScrapeFlow` bean for one `ScrapeQueueKind`; `ScrapeService` puts them in an `EnumMap` and fails at
+startup when a kind has no flow or more than one.
+
+```
+  ScrapeQueueItem (kind resolved from the config name)
+       |
+       v
+  ScrapeService --EnumMap<ScrapeQueueKind, KindedScrapeFlow>--> flow for the item's kind
+       |
+       v
+  1. Preparer         SeriesConfigPreparer (scrape)     looks up the SeriesConfig
+  2. ExistingFinder   <module>.application.service.scrape   reads what is already stored
+  3. Scraper          <module>.application.service.scrape   fetches through a WebPort
+  4. Persister        <module>.application.service.scrape   writes through the module's port.out
+                                                            and calls ScrapeQueuePort.markAsDone
+       |
+       v
+  ScrapeResult (SUCCESS | FAILED | EMPTY)
+```
+
+| ScrapeQueueKind        | Flow built in                                                           |
+|------------------------|-------------------------------------------------------------------------|
+| `MACRO_POINT`          | `macroseries.adaptors.config.MacroPointScrapeFlowConfiguration`         |
+| `MEMBER_OF_PARLIAMENT` | `parliament.adaptors.config.MemberOfParliamentScrapeFlowConfiguration`  |
+| `MEMBER_ACTIVITY`      | `parliament.adaptors.config.MemberActivityScrapeFlowConfiguration`      |
+| `LOCAL_ELECTION`       | `election.adaptors.config.LocalElectionScrapeFlowConfiguration`         |
+| `SCB_REGIONAL`         | `regionalstatistics.adaptors.config.ScbRegionalScrapeFlowConfiguration` |
+
+## WebAdaptorFlow pipeline
+
+`shared.web.WebAdaptorFlow<Config, Response>` composes three steps to fetch external data:
+
+```
+  Config
        |
        v
   +--------------------+      +------------+      +-----------------+
@@ -134,51 +103,43 @@ Each `WebAdaptorFlow<Config, Response>` composes three steps to fetch external d
   | .buildConnection() |      | .get()     |      | .parse()        |
   +--------------------+      +------------+      +-----------------+
   builds HttpURLConnection    reads response       parses to domain
-  with auth headers/params    body as String        Stream<MacroPoint>
+  with auth headers/params    body as String        types
 ```
 
-Routing by `SeriesConfig.name()` prefix:
+`macroseries.adaptors.web.MacroPointAdaptorFlowFactory` picks the flow by `SeriesConfig.name()`:
 
 ```
-  FED*                  --> FedConnectionBuilder      + FedResponseParser
-  Debt*                 --> EuroStatConnectionBuilder  + EuroStatResponseParser
-  Int* | Euro* | Policy --> RiksbankenConnectionBuilder + RiksbankenResponseParser
-  (parliament)          --> RiksdagenConnectionBuilder  + RiksdagenResponseParser
+  FED*                                  --> FedConnectionBuilder        + FedResponseParser
+  Debt*                                 --> EuroStatConnectionBuilder   + EuroStatResponseParser
+  Int* | Euro* | GovernmentBondSweden*
+  | GovernmentBillSweden* | PolicyRateSweden
+  | UsdSekExchangeRate                  --> RiksbankenConnectionBuilder + RiksbankenResponseParser
 ```
 
-## Data Flow Summary
+## Data flow summary
 
 ```
   READ PATH (chart data):
 
-  POST /chart-data --> ExtractionAdaptor --> OutPort --> OutPortImpl
-       --> DatabasePort.readMacroSeries() --> PostgresAdaptor --> PostgreSQL
-       --> TimeFilterService.shrinkToTimeFrame()
+  POST /chart-data --> MacroSeriesController --> MacroSeriesQueries --> MacroSeriesService
+       --> MacroSeriesRepositoryPort.readMacroSeries() --> MacroSeriesPostgresAdaptor --> PostgreSQL
+       --> TimeFilterService.shrinkToTimeFrame()  (TimeFrame: ALL | ONEYEAR | FIVEYEAR | TENYEAR | ONEMONTH)
        --> AlignmentService.align()
            --> LabelGenerationService.padToFullLabels()
-           --> SampleStrategy.sample()  (DAY | MONTH | YEAR)
-       --> AlignedBundle --> ChartDataWithLabels (200 OK)
+           --> SampleStrategy.sample()  (Strategy: DAY | MONTH | YEAR)
+       --> AlignedBundle --> ChartDataWithLabels (200 OK, 204 without data)
+
+  The other read endpoints follow the same shape: <Module>Controller --> *Queries --> *Service
+       --> *RepositoryPort --> *PostgresAdaptor --> PostgreSQL
 
 
   WRITE PATH (enqueue + scrape):
 
-  POST /enqueue --> InsertionAdaptor --> InPort --> EnqueueService
-       --> DatabasePort.persistScrapeQueueItem() --> PostgreSQL
+  POST /enqueue, /enqueue-all --> InsertionAdaptor --> InPort --> EnqueueService
+       --> ScrapeQueuePort.persistScrapeQueueItem() --> ScrapeQueuePostgresAdaptor --> PostgreSQL
 
   POST /scrape-from-queue --> InsertionAdaptor --> InPort --> ScrapeService
-       --> DatabasePort.getItemsToScrape() --> PostgreSQL
-       --> for each item:
-           selectScrapeFlow(ScrapeQueueKind) --> ScrapeFlow.run():
-             1. Preparer:  SeriesConfigPreparer (lookup config)
-             2. Finder:    read existing from DatabasePort --> PostgreSQL
-             3. Scraper:   WebPort.fetch() --> WebAdaptorFlow --> External API
-             4. Persister: DatabasePort.write() + markAsDone() --> PostgreSQL
+  (CronScrapeAdaptor calls InPort every 60 s; CronEnqueueAdaptor calls enqueueAll during the 22:00 hour)
+       --> ScrapeQueuePort.getItemsToScrape() --> PostgreSQL
+       --> for each item: KindedScrapeFlow for its kind --> ScrapeFlow.run() (see above)
 ```
-
-## Dependency Rule
-
-All dependencies point **inward** toward the domain:
-- Driving adaptors depend on driving ports (InPort, OutPort)
-- Application services implement driving ports and depend on driven ports
-- Driven adaptors implement driven ports (DatabasePort, WebPort)
-- The domain model has **zero** external dependencies

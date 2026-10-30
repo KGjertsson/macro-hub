@@ -6,6 +6,8 @@ import com.kg.macroanalyzer.macroseries.application.port.in.BuildChartDataParams
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartData;
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartDataWithLabels;
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
+import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
+import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
 import com.kg.macroanalyzer.macroseries.application.service.LabelGenerationService;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.StrategyFactory;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
@@ -43,17 +45,17 @@ public class ChartDataPipelineTest {
     );
 
     static Stream<Arguments> strategiesAndTimeFrames() {
-        return Arrays.stream(StrategyFactory.Strategy.values())
-                .flatMap(strategy -> Arrays.stream(TimeFilterStrategyFactory.TimeFrame.values())
-                        .filter(timeFrame -> timeFrame != TimeFilterStrategyFactory.TimeFrame.ALL)
+        return Arrays.stream(Strategy.values())
+                .flatMap(strategy -> Arrays.stream(TimeFrame.values())
+                        .filter(timeFrame -> timeFrame != TimeFrame.ALL)
                         .map(timeFrame -> Arguments.of(strategy, timeFrame)));
     }
 
     @ParameterizedTest
     @MethodSource("strategiesAndTimeFrames")
     public void shouldKeepEmptySeriesAsNulls_whenOneSeriesHasNoDataInTimeFrame(
-            StrategyFactory.Strategy strategy,
-            TimeFilterStrategyFactory.TimeFrame timeFrame
+            Strategy strategy,
+            TimeFrame timeFrame
     ) {
         // given
         final var recent = series("recent", TODAY.minusDays(10), TODAY.minusDays(3), TODAY.minusDays(1));
@@ -76,8 +78,8 @@ public class ChartDataPipelineTest {
     @ParameterizedTest
     @MethodSource("strategiesAndTimeFrames")
     public void shouldAlignSinglePointInTimeFrame(
-            StrategyFactory.Strategy strategy,
-            TimeFilterStrategyFactory.TimeFrame timeFrame
+            Strategy strategy,
+            TimeFrame timeFrame
     ) {
         // given
         final var single = series("single", TODAY.minusYears(20), TODAY.minusDays(1));
@@ -94,8 +96,8 @@ public class ChartDataPipelineTest {
     @ParameterizedTest
     @MethodSource("strategiesAndTimeFrames")
     public void shouldReturnNoContent_whenNoSeriesHasDataInTimeFrame(
-            StrategyFactory.Strategy strategy,
-            TimeFilterStrategyFactory.TimeFrame timeFrame
+            Strategy strategy,
+            TimeFrame timeFrame
     ) {
         // given
         final var old = series("old", TODAY.minusYears(30));
@@ -121,8 +123,8 @@ public class ChartDataPipelineTest {
         // when
         final var chartData = chartData(
                 List.of(long_, short_),
-                StrategyFactory.Strategy.MONTH,
-                TimeFilterStrategyFactory.TimeFrame.ALL
+                Strategy.MONTH,
+                TimeFrame.ALL
         );
 
         // then
@@ -140,8 +142,8 @@ public class ChartDataPipelineTest {
         // when
         final var chartData = chartData(
                 macroSeries,
-                StrategyFactory.Strategy.DAY,
-                TimeFilterStrategyFactory.TimeFrame.ALL
+                Strategy.DAY,
+                TimeFrame.ALL
         );
 
         // then
@@ -151,8 +153,8 @@ public class ChartDataPipelineTest {
 
     private List<ChartData> chartData(
             List<MacroSeries> macroSeries,
-            StrategyFactory.Strategy strategy,
-            TimeFilterStrategyFactory.TimeFrame timeFrame
+            Strategy strategy,
+            TimeFrame timeFrame
     ) {
         final var response = respond(macroSeries, strategy, timeFrame);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -164,8 +166,8 @@ public class ChartDataPipelineTest {
 
     private ResponseEntity<ChartDataWithLabels> respond(
             List<MacroSeries> macroSeries,
-            StrategyFactory.Strategy strategy,
-            TimeFilterStrategyFactory.TimeFrame timeFrame
+            Strategy strategy,
+            TimeFrame timeFrame
     ) {
         final var bundle = timeFilterService.shrinkToTimeFrame(macroSeries, timeFrame)
                 .flatMap(filtered -> alignmentService.align(filtered, strategy));

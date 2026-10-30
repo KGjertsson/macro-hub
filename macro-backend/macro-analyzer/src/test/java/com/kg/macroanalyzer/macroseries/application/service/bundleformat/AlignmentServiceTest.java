@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 
+import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import com.kg.macroanalyzer.macroseries.application.service.LabelGenerationService;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.SampleStrategy;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.StrategyFactory;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class AlignmentServiceTest {
 
-    private final StrategyFactory.Strategy STRATEGY = StrategyFactory.Strategy.MONTH;
+    private final Strategy STRATEGY = Strategy.MONTH;
 
     @InjectMocks
     AlignmentService alignmentService;

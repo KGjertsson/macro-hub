@@ -104,12 +104,20 @@ docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/mac
 
 ## Architecture
 
-The backend uses **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**:
+The backend is split into **modules by domain**. Inside each module it follows **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**. Every class lives in a module under `com.kg.macroanalyzer`, except `MacroAnalyzerApplication` in the root package and the generated jOOQ model.
 
 ```
-HttpInsertionAdaptor ──→ InPort  ──→ domain ──→ DatabasePort ──→ PostgresAdaptor
-HttpExtractionAdaptor ─→ OutPort ─→ domain ──→ WebPort ──────→ WebAdaptors
-CronAdaptor ───────────→ InPort
+  REST ──→ adaptors.http ──→ port.in ──→ service ──→ port.out ←── adaptors.postgres ──→ PostgreSQL
+                                           │
+                                           └──→ domain
+
+  InsertionAdaptor, CronEnqueueAdaptor, CronScrapeAdaptor ──→ InPort ──→ EnqueueService ──→ ScrapeQueuePort
+                                                                    └──→ ScrapeService
+  ScrapeService ──→ KindedScrapeFlow (one per ScrapeQueueKind, built in each module's adaptors.config)
+      Preparer ──→ ExistingFinder ──→ Scraper ──→ WebPort ←── adaptors.web ──→ external API
+                                      Persister ──→ port.out, ScrapeQueuePort.markAsDone
+
+  election ──→ parliament.application.port.in (PartyDirectory), parliament.domain (Party)
 ```
 
 ### Package structure (`com.kg.macroanalyzer`)
@@ -117,16 +125,16 @@ CronAdaptor ───────────→ InPort
 The backend is organised by domain. Every module (`scrape`, `macroseries`, `regionalstatistics`, `parliament`, `election`) uses `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; besides them there is only `shared/`, the generated jOOQ model and `MacroAnalyzerApplication` in the root package.
 
 - **`scrape/`** — the scrape core, independent of the data sources:
-  - `domain/` — `ScrapeQueueItem`, `ScrapeQueueKind`, `SeriesConfig` (every scrape flow's config)
-  - `application/port/in/` — `InPort` (enqueue, enqueue-all, scrape-from-queue); `application/port/out/` — `ScrapeQueuePort` (queue reads/writes, `markAsDone`) and `SeriesConfigPort`
-  - `application/service/` — `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `KindedScrapeFlow`. Each domain contributes one `KindedScrapeFlow` bean per `ScrapeQueueKind` (from each module's `adaptors/config/`); `ScrapeService` routes queue items by kind and fails at startup if a kind has no flow or more than one
+  - `domain/` — `ScrapeQueueItem`, `ScrapeQueueKind`, `ScrapeResult`, `SeriesConfig` (every scrape flow's config)
+  - `application/port/in/` — `InPort` (enqueue, enqueue-all, scrape-from-queue) and its `ScrapeRun` result; `application/port/out/` — `ScrapeQueuePort` (queue reads/writes, `markAsDone`) and `SeriesConfigPort`
+  - `application/service/` — `InPortImpl`, `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `KindedScrapeFlow` (see below)
   - `adaptors/http/` — `InsertionAdaptor` (enqueue/scrape endpoints); `adaptors/cron/` — `CronScrapeAdaptor` drains the queue every 60s, `CronEnqueueAdaptor` enqueues all series every minute during the 22:00 hour; `adaptors/postgres/` — queue and series-config repositories; `adaptors/config/` — preparer, series-config list and scheduler beans
 - **`macroseries/`** — chart time series (Riksbanken, Fed and Eurostat rates, bonds, bills, exchange rates and key figures):
   - `domain/` — `MacroSeries`, `MacroPoint`, `AlignedBundle`, `InvalidBundleDimensionException`
-  - `application/port/in/` — `MacroSeriesQueries` (aligned chart data, chart series configs) and its DTOs (`BuildChartDataParams`, `ChartSeriesParam`, `ChartData`, `ChartDataWithLabels`); `application/port/out/` — `MacroSeriesRepositoryPort` and the scrape payload `ConfigWithMacroPoints`
+  - `application/port/in/` — `MacroSeriesQueries` (aligned chart data, chart series configs) and its DTOs (`BuildChartDataParams` with the `Strategy` and `TimeFrame` enums, `ChartSeriesParam`, `ChartData`, `ChartDataWithLabels`); `application/port/out/` — `MacroSeriesRepositoryPort` and the scrape payload `ConfigWithMacroPoints`
   - `application/service/` — `MacroSeriesService` (keeps the Riksdagen, Valmyndigheten and SCB configs out of the chart list), `LabelGenerationService`, in `bundleformat/` `TimeFilterService`, `AlignmentService` and the sample and time-filter strategies, and in `scrape/` `ExistingMacroPointFinder`, `MacroPointScraper` and `MacroPointPersister`
   - `adaptors/http/` — `MacroSeriesController` (`/series-config`, `/chart-data`) and `ColorSelectionStrategy`; `adaptors/postgres/` — `MacroSeriesPostgresAdaptor` and the per-table rate, bond, bill, exchange-rate, Fed and Eurostat repositories; `adaptors/web/` — `MacroPointWebAdaptor` and `MacroPointAdaptorFlowFactory`, which routes to the Riksbanken, Fed or Eurostat connection builder and response parser; `adaptors/config/` — the web adaptor bean (with the Riksbanken/Fed subscription keys) and the scrape flow
-- **`regionalstatistics/`** — SCB DeSO/RegSO statistics, the first domain module:
+- **`regionalstatistics/`** — SCB DeSO/RegSO statistics:
   - `domain/` — `GeoVersion`, `ScbLevel`, `ScbIndicator`, `ScbValues` and the other SCB value types
   - `application/port/in/` — `RegionalStatisticsQueries` (indicators and values) and its DTOs; `application/port/out/` — `RegionalStatisticsRepositoryPort`, the scrape payload `ConfigWithScbIndicators` and the SCB web requests
   - `application/service/` — `RegionalStatisticsService`, and in `scrape/` the scrape flow (`ExistingScbTableFinder`, `ScbRegionalScraper`, `ScbRegionalPersister`)
@@ -144,6 +152,37 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
 - **`shared/`** — used by every module, depends on none of them: `config/` (CORS, Jackson, JDBC, Flyway catalog version) and `web/` (`WebPort`, `ScrapeException`, `WebAdaptorFlow`, `ConnectionBuilder`/`Getter`/`ResponseParser`, `HttpGetter`, `ZipEntryGetter`, `HttpResponses`)
   - Jackson 3 (`tools.jackson`) is used throughout. `CorsConfiguration` (in `shared/config/`) has `@EnableWebMvc`, which disables Boot's MVC auto-config, so `JacksonConfiguration` registers its `JsonMapper` with MVC explicitly. It keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
 - **`jooq/generated/`** — Auto-generated JOOQ classes (do not edit manually).
+
+### Layers inside a module
+
+- `domain/` — records and enums of the domain (Lombok only, no Spring).
+- `application/port/in/` — what the module offers: query interfaces (`*Queries`, `InPort`, `PartyDirectory`) and their DTOs/parameters.
+- `application/port/out/` — what the module needs: repository ports (`*RepositoryPort`) and the request/config-with-data records its scrapers pass around.
+- `application/service/` — implementations of the in-ports; `application/service/scrape/` holds the module's `ExistingFinder`/`Scraper`/`Persister`.
+- `adaptors/http/` (controllers), `adaptors/postgres/` (`*PostgresAdaptor` implementing the repository port, plus jOOQ repositories), `adaptors/web/` (`WebPort` implementations, connection builders, response parsers), `adaptors/config/` (`*WebAdaptorConfiguration` for the `WebPort` beans, `*ScrapeFlowConfiguration` for the scrape flow), `adaptors/cron/` (scrape only).
+
+### How a scrape flow plugs in
+
+Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `Preparer` and its own finder, scraper and persister, and registers it as a `KindedScrapeFlow` bean for one `ScrapeQueueKind`. `ScrapeService` collects all `KindedScrapeFlow` beans into an `EnumMap` and fails at startup if a kind has no flow or more than one. Queue items get their kind from their name (`ScrapeQueueItem.resolveKind`, default `MACRO_POINT`). Persisters write through their module's repository port and call `ScrapeQueuePort.markAsDone`.
+
+### Dependency rules (`ArchitectureTest`)
+
+`src/test/java/com/kg/macroanalyzer/ArchitectureTest.java` (ArchUnit, part of `mvn test`) enforces:
+
+- every class except `MacroAnalyzerApplication` resides in a module listed in `MODULES`/`SHARED_MODULES` or in `jooq.generated`;
+- `shared` depends on no module;
+- a module's `domain` and `application` do not depend on its `adaptors`, and no `application.port` depends on any module's `application.service` (`scrape`'s included);
+- a domain module (`DOMAIN_MODULES`) only depends on itself, `scrape`, `shared` and `jooq.generated`, plus what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows. The only entry is `election` → `parliament.application.port.in` and `parliament.domain` (for `PartyDirectory`/`Party`); no module may use another module's out-ports, services or adaptors.
+
+### Adding a new domain
+
+1. Create `com.kg.macroanalyzer.<module>` with `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` (and `service/scrape/`) and `adaptors/`.
+2. Define the in-port (`*Queries`) and out-port (`*RepositoryPort`); implement them in a service and a `*PostgresAdaptor`.
+3. Add a controller in `adaptors/http/` that only uses the in-port.
+4. Add a `*WebAdaptorConfiguration` for the `WebPort` beans and a `*ScrapeFlowConfiguration` that registers a `KindedScrapeFlow`.
+5. Add a `ScrapeQueueKind` value and map the config name to it in `ScrapeQueueItem.resolveKind` (startup fails until the kind has a flow). Non-chart categories also go into `NON_CHART_CATEGORIES` in `MacroSeriesService` so they stay out of `/series-config`.
+6. Add the module to `MODULES` and `DOMAIN_MODULES` in `ArchitectureTest` (and to `DOMAIN_MODULE_EXTRA_DEPENDENCIES` only if it must use another module's in-port).
+7. Add a Flyway migration with the module's tables and its `series_configuration` row, then regenerate the jOOQ model. The row needs a `scrape_url` and a `category`; add that category to `NON_CHART_CATEGORIES` (step 5) so the config stays out of `/series-config`.
 
 ### REST API Endpoints
 

@@ -6,7 +6,7 @@ import com.kg.macroanalyzer.regionalstatistics.domain.ScbIndicator;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbIndicatorResult;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbSource;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
-import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

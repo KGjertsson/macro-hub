@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 
 import com.kg.macroanalyzer.TestJsonReader;
+import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy.TimeFilterStrategy;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +40,7 @@ public class TimeFilterServiceTest {
     @Test
     public void shouldThrowIllegalArgumentException_whenStrategyIsNull() {
         // given
-        TimeFilterStrategyFactory.TimeFrame timeFrame = null;
+        TimeFrame timeFrame = null;
         when(timeFilterStrategyFactory.build(timeFrame)).thenThrow(new IllegalArgumentException());
 
         //then

@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 
+import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class TimeFilterService {
 
     public Optional<List<MacroSeries>> shrinkToTimeFrame(
             List<MacroSeries> macroSeriesList,
-            TimeFilterStrategyFactory.TimeFrame timeFrame
+            TimeFrame timeFrame
     ) {
         final var timeFilterStrategy = timeFilterStrategyFactory.build(timeFrame);
 

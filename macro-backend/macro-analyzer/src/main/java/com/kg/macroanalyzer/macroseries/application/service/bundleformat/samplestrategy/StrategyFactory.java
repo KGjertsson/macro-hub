@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy;
 
+import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +23,6 @@ public class StrategyFactory {
             case MONTH -> new SampleStrategyMonth();
             case DAY -> new SampleStrategyDay();
         };
-    }
-
-    public enum Strategy {
-        DAY, MONTH, YEAR
     }
 
 }

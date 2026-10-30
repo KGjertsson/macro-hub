@@ -3,8 +3,8 @@ package com.kg.macroanalyzer.election.application.service.scrape;
 import com.kg.macroanalyzer.election.application.port.out.ConfigWithLocalElections;
 import com.kg.macroanalyzer.election.application.port.out.ElectionRepositoryPort;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
-import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

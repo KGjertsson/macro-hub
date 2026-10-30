@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.scrape.application.service.scrapeflow;
 
-import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 
 public interface Persister<Data> {
 

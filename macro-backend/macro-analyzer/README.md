@@ -1,20 +1,40 @@
 ## marco-analyzer
 
 Java backend application for macro-hub. Built using domain driven design principles and the
-hexagonal architecture.
+hexagonal architecture, split into one module per domain (`macroseries`, `regionalstatistics`,
+`parliament`, `election`) plus the `scrape` core and `shared` infrastructure. See
+[ARCHITECTURE.md](ARCHITECTURE.md) and the "Architecture" section of the repository's `CLAUDE.md`.
+
+Inside every module:
 
 ```mermaid
 flowchart LR
-    HttpInsertionAdaptor --> InPort
-    HttpExtractionAdaptor --> OutPort
-    CronAdaptor --> InPort
-    subgraph A[Application]
-        InPort --> domain
-        OutPort --> domain
-        domain{{domain}}
-        domain --> DatabasePort
+    Controller[adaptors.http] --> PortIn[application.port.in]
+    subgraph M[Module]
+        PortIn --> Service[application.service]
+        Service --> domain{{domain}}
+        Service --> PortOut[application.port.out]
     end
-    DatabasePort --> PostgresAdaptor
+    PostgresAdaptor[adaptors.postgres] -. implements .-> PortOut
+    PostgresAdaptor --> DB[(PostgreSQL)]
+    WebAdaptor[adaptors.web] -. implements .-> WebPort[shared.web.WebPort]
+    Service --> WebPort
+    WebAdaptor --> API[External API]
+```
+
+Scraping, shared by all modules:
+
+```mermaid
+flowchart LR
+    InsertionAdaptor --> InPort
+    CronScrapeAdaptor --> InPort
+    CronEnqueueAdaptor --> InPort
+    InPort --> EnqueueService --> ScrapeQueuePort
+    InPort --> ScrapeService
+    ScrapeService -- ScrapeQueueKind --> KindedScrapeFlow
+    KindedScrapeFlow --> Preparer --> ExistingFinder --> Scraper --> Persister
+    Persister --> RepositoryPort[module port.out]
+    Persister --> ScrapeQueuePort
 ```
 
 ### Data Model
@@ -75,11 +95,5 @@ generate jooq model
 mvn -P jooq-codegen generate-sources
 ```
 
-run flyway migration
-
-```
-mvn -Dflyway.url=jdbc:postgresql://localhost:31274/macroanalyzer \
-    -Dflyway.user=macrouser \
-    -Dflyway.password=macropassword \
-    flyway:migrate
-```
+Flyway migrations (`src/main/resources/db/migration/`) run on application startup; there is no Flyway
+Maven plugin.

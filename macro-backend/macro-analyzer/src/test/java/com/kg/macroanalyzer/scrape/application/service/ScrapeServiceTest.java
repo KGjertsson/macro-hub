@@ -1,9 +1,11 @@
 package com.kg.macroanalyzer.scrape.application.service;
 
+import com.kg.macroanalyzer.scrape.application.port.in.ScrapeRun;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.KindedScrapeFlow;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

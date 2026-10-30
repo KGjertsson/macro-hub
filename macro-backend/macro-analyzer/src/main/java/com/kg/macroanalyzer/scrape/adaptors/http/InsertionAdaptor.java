@@ -1,8 +1,8 @@
 package com.kg.macroanalyzer.scrape.adaptors.http;
 
 import com.kg.macroanalyzer.scrape.application.port.in.InPort;
-import com.kg.macroanalyzer.scrape.application.service.ScrapeResult;
-import com.kg.macroanalyzer.scrape.application.service.ScrapeRun;
+import com.kg.macroanalyzer.scrape.application.port.in.ScrapeRun;
+import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

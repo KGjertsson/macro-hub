@@ -1,12 +1,11 @@
 package com.kg.macroanalyzer.macroseries.application.service;
 
-
 import com.kg.macroanalyzer.macroseries.application.port.in.BuildChartDataParams;
+import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
+import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
 import com.kg.macroanalyzer.macroseries.application.port.out.MacroSeriesRepositoryPort;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.AlignmentService;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.TimeFilterService;
-import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.StrategyFactory;
-import com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
@@ -63,8 +62,8 @@ public class MacroSeriesServiceTest {
         when(alignmentService.align(any(), any())).thenReturn(Optional.of(alignedBundle));
         final var params = BuildChartDataParams.builder()
                 .chartSeriesParams(emptyList())
-                .strategy(StrategyFactory.Strategy.MONTH)
-                .timeFrame(TimeFilterStrategyFactory.TimeFrame.ALL)
+                .strategy(Strategy.MONTH)
+                .timeFrame(TimeFrame.ALL)
                 .build();
 
         // when
@@ -85,7 +84,7 @@ public class MacroSeriesServiceTest {
         // given
         final var params = BuildChartDataParams.builder()
                 .chartSeriesParams(emptyList())
-                .strategy(StrategyFactory.Strategy.MONTH)
+                .strategy(Strategy.MONTH)
                 .build();
         when(repositoryPort.readMacroSeries(anyList())).thenReturn(emptyList());
 

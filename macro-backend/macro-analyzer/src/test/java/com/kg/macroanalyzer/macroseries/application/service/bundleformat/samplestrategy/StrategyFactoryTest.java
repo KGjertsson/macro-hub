@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy;
 
-import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.StrategyFactory.Strategy;
+import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
