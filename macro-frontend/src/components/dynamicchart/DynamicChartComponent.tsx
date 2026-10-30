@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 import {
   CategoryScale,
@@ -7,6 +7,7 @@ import {
   ChartOptions,
   LinearScale,
   LineElement,
+  Plugin,
   PointElement,
   Tooltip
 } from 'chart.js';
@@ -30,8 +31,46 @@ const formatValue = (value: number, unit?: string) =>
   unit ? `${valueFormat.format(value)} ${unit}` : valueFormat.format(value);
 
 // Canvas can't read CSS variables, so resolve the theme tokens (stored as "H S% L%") once per render
-const themeColor = (token: string) =>
-  `hsl(${getComputedStyle(document.documentElement).getPropertyValue(token).trim()})`;
+const themeColor = (token: string, alpha = 1) =>
+  `hsl(${getComputedStyle(document.documentElement).getPropertyValue(token).trim()} / ${alpha})`;
+
+// Shorter drags are clicks: on daily data a single pixel can span several labels
+const MIN_DRAG_PX = 5;
+
+// A drag in progress, in canvas pixels; the band is drawn between its start and the pointer
+type Drag = { pointerId: number; startX: number; currentX: number };
+
+// Draws the selection band of a drag over the plot area
+const dragBandPlugin = (
+  dragRef: React.RefObject<Drag | null>,
+  colorsRef: React.RefObject<{ fill: string; edge: string }>
+): Plugin<'line'> => ({
+  id: 'dragZoomBand',
+  // Chart.js ignores pointer events during a drag, so a touch drag doesn't keep re-opening the tooltip
+  beforeEvent: () => (dragRef.current ? false : undefined),
+  afterDatasetsDraw: (chart) => {
+    const drag = dragRef.current;
+    if (!drag) {
+      return;
+    }
+    const { left, right, top, bottom } = chart.chartArea;
+    const from = Math.max(left, Math.min(drag.startX, drag.currentX));
+    const to = Math.min(right, Math.max(drag.startX, drag.currentX));
+    const { ctx } = chart;
+    ctx.save();
+    ctx.fillStyle = colorsRef.current.fill;
+    ctx.fillRect(from, top, to - from, bottom - top);
+    ctx.strokeStyle = colorsRef.current.edge;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(from, top);
+    ctx.lineTo(from, bottom);
+    ctx.moveTo(to, top);
+    ctx.lineTo(to, bottom);
+    ctx.stroke();
+    ctx.restore();
+  }
+});
 
 // Tooltip swatch: a short line sample like the series chips, so a dashed series isn't shown as the
 // same filled square as the solid series sharing its hue. An SVG image stays sharp on high-DPI canvases
@@ -56,11 +95,95 @@ interface Props {
   indexed: boolean;
   // Units in the order their axes are assigned: the first goes left, the rest share the right axis
   units: string[];
+  // Called with the first and last label index of a drag across the plot
+  onZoom: (start: number, end: number) => void;
+  // Double-click on the plot
+  onResetZoom: () => void;
 }
 
-const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
+const DynamicChartComponent = ({ labels, series, indexed, units, onZoom, onResetZoom }: Props) => {
   const textColor = themeColor('--muted-foreground');
   const gridColor = themeColor('--border');
+
+  const chartRef = useRef<ChartJS<'line'>>(null);
+  const dragRef = useRef<Drag | null>(null);
+  const bandColors = useRef({ fill: '', edge: '' });
+  bandColors.current = { fill: themeColor('--primary', 0.15), edge: themeColor('--primary', 0.6) };
+  // Created once: react-chartjs-2 would rebuild the chart for a new plugins array
+  const plugins = useRef([dragBandPlugin(dragRef, bandColors)]);
+
+  const pointerX = (event: React.PointerEvent) =>
+    event.clientX - (chartRef.current?.canvas.getBoundingClientRect().left ?? 0);
+
+  const endDrag = useCallback(() => {
+    dragRef.current = null;
+    chartRef.current?.draw();
+  }, []);
+
+  // Esc cancels a drag in progress
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && dragRef.current) {
+        endDrag();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [endDrag]);
+
+  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    const chart = chartRef.current;
+    if (!chart || !event.isPrimary || event.button !== 0) {
+      return;
+    }
+    const x = pointerX(event);
+    const y = event.clientY - chart.canvas.getBoundingClientRect().top;
+    const { left, right, top, bottom } = chart.chartArea;
+    if (x < left || x > right || y < top || y > bottom) {
+      return;
+    }
+    // Capture so the drag keeps following the pointer outside the chart
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = { pointerId: event.pointerId, startX: x, currentX: x };
+  };
+
+  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const chart = chartRef.current;
+    const drag = dragRef.current;
+    if (!chart || !drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+    drag.currentX = pointerX(event);
+    // Hide the tooltip that was showing when the drag started; Chart.js ignores events until it ends
+    if (chart.tooltip && chart.tooltip.getActiveElements().length > 0) {
+      chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+      chart.setActiveElements([]);
+      chart.update('none');
+    } else {
+      chart.draw();
+    }
+  };
+
+  const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const chart = chartRef.current;
+    const drag = dragRef.current;
+    if (!chart || !drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+    endDrag();
+    const { left, right } = chart.chartArea;
+    const indexAt = (x: number) => {
+      const index = chart.scales.x.getValueForPixel(Math.max(left, Math.min(right, x)));
+      return Math.max(0, Math.min(labels.length - 1, Math.round(index ?? 0)));
+    };
+    const endX = pointerX(event);
+    const a = indexAt(drag.startX);
+    const b = indexAt(endX);
+    // Spanning fewer than two data points, or a few pixels of hand movement on dense data, is a click
+    if (a !== b && Math.abs(endX - drag.startX) >= MIN_DRAG_PX) {
+      onZoom(Math.min(a, b), Math.max(a, b));
+    }
+  };
 
   const hasIndex = indexed && series.some((s) => s.indexKind === 'index');
   const hasChange = indexed && series.some((s) => s.indexKind === 'change');
@@ -158,8 +281,18 @@ const DynamicChartComponent = ({ labels, series, indexed, units }: Props) => {
   }
 
   return (
-    <div className='relative h-[min(60vh,560px)] min-h-[320px] w-full'>
+    <div
+      // Horizontal touch drags select a period; vertical ones still scroll the page
+      className='relative h-[min(60vh,560px)] min-h-[320px] w-full cursor-crosshair touch-pan-y select-none'
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={endDrag}
+      onDoubleClick={onResetZoom}
+    >
       <Line
+        ref={chartRef}
+        plugins={plugins.current}
         options={{
           responsive: true,
           maintainAspectRatio: false,

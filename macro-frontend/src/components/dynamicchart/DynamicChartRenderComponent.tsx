@@ -1,11 +1,14 @@
 import React from 'react';
+import { RotateCcw } from 'lucide-react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { rootUrl, SAMPLE_STRATEGY, TIME_FRAME } from '@/models/Constants';
 import DynamicChartComponent from '@/components/dynamicchart/DynamicChartComponent';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SeriesConfig } from '@/models/SeriesConfig';
 import { Dataset } from '@/models/Dataset';
 import { ChartSeries, SeriesStyle, toIndexMode } from '@/components/dynamicchart/seriesMetadata';
+import { ChartZoom, resolveZoom, sliceLabels, sliceSeries } from '@/components/dynamicchart/chartZoom';
 
 interface Props {
   selectedItems: SeriesConfig[];
@@ -13,6 +16,8 @@ interface Props {
   sampleStrategy: SAMPLE_STRATEGY;
   timeFrame: TIME_FRAME;
   indexed: boolean;
+  zoom?: ChartZoom;
+  onZoomChange: (zoom: ChartZoom | undefined) => void;
 }
 
 type ChartLabel = number | string | number[];
@@ -37,7 +42,9 @@ const DynamicChartRenderComponent = ({
   styles,
   sampleStrategy,
   timeFrame,
-  indexed
+  indexed,
+  zoom,
+  onZoomChange
 }: Props) => {
   const body = {
     strategy: sampleStrategy,
@@ -88,10 +95,16 @@ const DynamicChartRenderComponent = ({
   }
 
   // While a new selection loads the response may still be the previous one, so match by name
-  const series: ChartSeries[] = data.chartData.flatMap((dataset) => {
+  const allSeries: ChartSeries[] = data.chartData.flatMap((dataset) => {
     const config = selectedItems.find((item) => item.name === dataset.name);
     return config ? [{ config, style: styles[config.name], values: dataset.values, rawValues: dataset.values }] : [];
   });
+
+  // A zoom is a window over the fetched data, applied before indexing so series rebase at its start
+  const allLabels = data.labels.map(formatLabel);
+  const zoomWindow = resolveZoom(allLabels, zoom);
+  const labels = sliceLabels(allLabels, zoomWindow);
+  const series = sliceSeries(allSeries, zoomWindow);
 
   // A series with no data points in the window still keeps its chip, but is noted instead of plotted
   const withoutData = series.filter((s) => s.values.every((v) => v === null));
@@ -129,11 +142,30 @@ const DynamicChartRenderComponent = ({
       )}
       {plotted.length > 0 && (
         <DynamicChartComponent
-          labels={data.labels.map(formatLabel)}
+          labels={labels}
           series={plotted}
           indexed={indexed}
           units={units}
+          onZoom={(start, end) => onZoomChange([labels[start], labels[end]])}
+          onResetZoom={() => zoomWindow && onZoomChange(undefined)}
         />
+      )}
+      {/* Shown even when nothing in the window can be plotted, so a zoom can always be undone */}
+      {zoomWindow ? (
+        <div className='flex flex-wrap items-center gap-3'>
+          <Button
+            variant='outline'
+            size='sm'
+            title='Du kan också dubbelklicka i grafen'
+            onClick={() => onZoomChange(undefined)}
+          >
+            <RotateCcw />
+            Visa hela perioden
+          </Button>
+          <Hint>Visar {labels[0]} – {labels[labels.length - 1]}.</Hint>
+        </div>
+      ) : (
+        plotted.length > 0 && labels.length > 1 && <Hint>Dra i grafen för att zooma in på en period.</Hint>
       )}
     </div>
   );
