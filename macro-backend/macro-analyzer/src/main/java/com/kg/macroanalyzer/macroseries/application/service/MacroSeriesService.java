@@ -8,7 +8,6 @@ import com.kg.macroanalyzer.macroseries.application.service.bundleformat.Alignme
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.TimeFilterService;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
-import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +30,14 @@ public class MacroSeriesService implements MacroSeriesQueries {
     @Autowired
     public MacroSeriesService(
             MacroSeriesRepositoryPort repositoryPort,
-            SeriesConfigPort seriesConfigPort,
+            List<SeriesConfig> seriesConfigList,
             AlignmentService alignmentService,
             TimeFilterService timeFilterService
     ) {
         this.repositoryPort = repositoryPort;
         this.alignmentService = alignmentService;
         this.timeFilterService = timeFilterService;
-        this.seriesConfigList = seriesConfigPort.readSeriesConfigList();
+        this.seriesConfigList = seriesConfigList;
     }
 
     @Override
@@ -49,11 +48,6 @@ public class MacroSeriesService implements MacroSeriesQueries {
         return readMacroSeries(params.chartSeriesParams())
                 .flatMap(macroSeries -> timeFilterService.shrinkToTimeFrame(macroSeries, timeFrame))
                 .flatMap(macroSeriesList -> alignmentService.align(macroSeriesList, strategy));
-    }
-
-    @Override
-    public List<SeriesConfig> getSeriesConfigList() {
-        return seriesConfigList;
     }
 
     // Riksdagen, Valmyndigheten and SCB scrapes are not time series, so they are kept out of the chart picker

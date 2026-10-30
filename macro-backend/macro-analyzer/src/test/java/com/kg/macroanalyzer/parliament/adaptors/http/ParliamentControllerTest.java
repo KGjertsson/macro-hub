@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.parliament.adaptors.http;
 
 import com.kg.macroanalyzer.parliament.application.port.in.CompositionDto;
+import com.kg.macroanalyzer.parliament.application.port.in.MemberDetailDto;
 import com.kg.macroanalyzer.parliament.application.port.in.MemberSummaryDto;
 import com.kg.macroanalyzer.parliament.application.port.in.ParliamentQueries;
 import com.kg.macroanalyzer.parliament.application.port.in.PartyDto;
@@ -49,6 +50,21 @@ public class ParliamentControllerTest {
 
         // then
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    public void shouldReturnOk_whenMemberFound() {
+        // given
+        final var summary = MemberSummaryDto.builder().id("0123456789").name("Anna Andersson").party("S").build();
+        final var member = MemberDetailDto.builder().summary(summary).birthYear(1970).speechCount(12).build();
+
+        // when
+        when(parliamentQueries.getMemberOfParliament("0123456789")).thenReturn(Optional.of(member));
+        final var response = parliamentController.getMemberOfParliament("0123456789");
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(member, response.getBody());
     }
 
     @Test

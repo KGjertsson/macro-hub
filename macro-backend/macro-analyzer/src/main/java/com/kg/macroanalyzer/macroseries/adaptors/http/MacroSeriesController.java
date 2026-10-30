@@ -68,6 +68,10 @@ public class MacroSeriesController {
             log.error("Received bad request with strategy == null");
             return true;
         }
+        if (params.timeFrame() == null) {
+            log.error("Received bad request with timeFrame == null");
+            return true;
+        }
         if (params.chartSeriesParams() == null) {
             log.error("Received bad request with chartSeriesParams == null");
             return true;

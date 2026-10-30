@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.macroseries.application.service;
 
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
+import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ public class ChartSeriesConfigIntegrationTest {
 
     @Autowired
     MacroSeriesQueries macroSeriesQueries;
+    @Autowired
+    SeriesConfigPort seriesConfigPort;
     @Autowired
     JsonMapper jsonMapper;
 
@@ -79,7 +82,7 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldSeparateNominalDebtFromDebtToGdp() {
         // when
-        final var configs = macroSeriesQueries.getSeriesConfigList();
+        final var configs = seriesConfigPort.readSeriesConfigList();
         final var nominal = find(configs, "DebtMioEurAt");
         final var pctGdp = find(configs, "DebtPcGdpAt");
 
@@ -98,7 +101,7 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldQuoteTheExchangeRate_inSekPerUsd() {
         // when
-        final var usdSek = find(macroSeriesQueries.getSeriesConfigList(), "UsdSekExchangeRate");
+        final var usdSek = find(seriesConfigPort.readSeriesConfigList(), "UsdSekExchangeRate");
 
         // then
         assertEquals("Valuta", usdSek.category());
@@ -108,7 +111,7 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldLeaveTheMetadataEmpty_forNonChartConfigs() {
         // when
-        final var membersOfParliament = find(macroSeriesQueries.getSeriesConfigList(), "MembersOfParliament");
+        final var membersOfParliament = find(seriesConfigPort.readSeriesConfigList(), "MembersOfParliament");
 
         // then
         assertNull(membersOfParliament.unit());
@@ -120,7 +123,7 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldSerializeTheMetadata_inCamelCase() {
         // given
-        final var bond = find(macroSeriesQueries.getSeriesConfigList(), "GovernmentBondSweden10Year");
+        final var bond = find(seriesConfigPort.readSeriesConfigList(), "GovernmentBondSweden10Year");
 
         // when
         final var json = jsonMapper.writeValueAsString(bond);
@@ -135,7 +138,7 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldHaveNoEmptyPathSegment_inAnyScrapeUrl() {
         // when
-        final var configs = macroSeriesQueries.getSeriesConfigList();
+        final var configs = seriesConfigPort.readSeriesConfigList();
 
         // then
         configs.stream()
@@ -150,7 +153,7 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldScrapeTheSixMonthSeries_forJapanSixMonth() {
         // when
-        final var japan6Month = find(macroSeriesQueries.getSeriesConfigList(), "EuroMarketRateJapan6Month");
+        final var japan6Month = find(seriesConfigPort.readSeriesConfigList(), "EuroMarketRateJapan6Month");
 
         // then
         assertEquals("https://api.riksbank.se/swea/v1/Observations/EUDP6MJPY/1979-11-29", japan6Month.scrapeUrl());
@@ -159,7 +162,7 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldNotHaveTheOldEuroAreaComposition() {
         // when
-        final var names = macroSeriesQueries.getSeriesConfigList().stream()
+        final var names = seriesConfigPort.readSeriesConfigList().stream()
                 .map(SeriesConfig::name)
                 .toList();
 
