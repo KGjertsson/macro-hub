@@ -28,13 +28,13 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 - After `gh pr checks <n> --watch` and before you report the PR ready, handle the automatic `claude[bot]` review from `.github/workflows/claude-review.yml`. Its `claude-review` job is one of the checks, so its comments exist once the watch ends. Read the summary (`gh pr view <n> --comments`) and inline comments (`gh api repos/{owner}/{repo}/pulls/<n>/comments`) for the current head. Do the same after every later push; the bot re-reviews each one. A PR that changes `claude-review.yml` itself gets no bot review.
 - When asked to address a review on the PR, read the findings yourself from the PR: review bodies and summary comments with `gh pr view <n> --comments`, inline comments with `gh api repos/{owner}/{repo}/pulls/<n>/comments`.
 - Fix every reviewer and `claude[bot]` finding by default, except a nit the lead tells you to drop. Report only those that conflict with the agreed requirements or that you judge wrong, each with a one-line reason.
-- Your final answer is your report: PR number, head SHA, check results, and open questions or conflicts, if any. Don't also send it with SendMessage.
+- Your final answer is your report: PR number, head SHA, check results, findings you didn't fix (each with its one-line reason), and open questions or conflicts, if any. Don't also send it with SendMessage.
 - Don't merge. Stay available for review rounds.
 
 ## 3. Reviewer (fresh named sub-agent)
 
 - Spawn it with `model: "fable"`. If that spawn (or a later re-review message) fails because Fable credits or usage limits are exhausted, or the model is unavailable, spawn a fresh reviewer with `model: "opus"` and the same brief, and tell the user the review ran on Opus.
-- Brief it with the PR number, the stated intent and the agreed requirements. Leave out the implementer's reasoning, the `claude[bot]` comments and your own opinions. It may see them on the PR, but it forms its own view.
+- Brief it with the PR number, the stated intent and the agreed requirements. Leave out the implementer's reasoning, the `claude[bot]` comments and your own opinions. It may see the bot's comments on the PR, but it forms its own view.
 - It reviews `gh pr diff <n>` and reads surrounding code for context.
 - If it builds, it uses its own worktree. It never checks out branches in the main clone.
 - It follows the implementer's rule for long-running commands: run them in the foreground with a long `timeout`, or poll with Monitor. It never waits for a background completion notice.
@@ -47,6 +47,7 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 ## 4. Iterate
 
 - The PR is the single source of truth for findings; don't retype them. Send the implementer a short message such as "address the review on #<n>", plus any nit to drop and why. It fixes all the others by default.
+- Decide the findings the implementer left unfixed as wrong yourself: drop them, or tell it to fix them after all.
 - Ask the user about requirement or product questions, including conflicts the implementer reports. Don't decide them yourself.
 - After the fixes are pushed:
   - `LGTM after nits`: read the new commits' diff yourself. If they do what the nits asked and nothing else, go to step 6. Otherwise ask the reviewer to re-review.
