@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -57,7 +58,7 @@ public class MacroSeriesController {
     }
 
     private void logBuildChartDataRequest(BuildChartDataParams params) {
-        var msg = "Received POST macro-analyzer/chart-values request with ";
+        var msg = "Received POST macro-analyzer/chart-data request with ";
         msg = msg + "chartSeriesParams=%s";
         msg = msg.formatted(params);
         log.info(msg);
@@ -74,6 +75,10 @@ public class MacroSeriesController {
         }
         if (params.chartSeriesParams() == null) {
             log.error("Received bad request with chartSeriesParams == null");
+            return true;
+        }
+        if (params.chartSeriesParams().stream().anyMatch(Objects::isNull)) {
+            log.error("Received bad request with a null element in chartSeriesParams");
             return true;
         }
 

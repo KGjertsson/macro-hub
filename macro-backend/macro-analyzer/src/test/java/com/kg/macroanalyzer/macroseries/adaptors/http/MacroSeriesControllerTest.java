@@ -3,6 +3,7 @@ package com.kg.macroanalyzer.macroseries.adaptors.http;
 import com.kg.macroanalyzer.macroseries.application.port.in.BuildChartDataParams;
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartData;
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartDataWithLabels;
+import com.kg.macroanalyzer.macroseries.application.port.in.ChartSeriesParam;
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
 import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -130,6 +132,23 @@ public class MacroSeriesControllerTest {
         final var params = BuildChartDataParams.builder()
                 .strategy(Strategy.MONTH)
                 .timeFrame(TimeFrame.ALL)
+                .build();
+
+        // when
+        final var response = macroSeriesController.buildChartData(params);
+
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verifyNoInteractions(macroSeriesQueries);
+    }
+
+    @Test
+    public void shouldReturnBadRequest_whenChartSeriesParamsContainsNull() {
+        // given
+        final var params = BuildChartDataParams.builder()
+                .strategy(Strategy.MONTH)
+                .timeFrame(TimeFrame.ALL)
+                .chartSeriesParams(Arrays.asList((ChartSeriesParam) null))
                 .build();
 
         // when
