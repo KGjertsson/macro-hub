@@ -4,7 +4,7 @@ import ChartSection from '@/components/ChartSection';
 import InsightsSection from '@/components/InsightsSection';
 import Footer from '@/components/Footer';
 import {Skeleton} from '@/components/ui/skeleton';
-import {Frequency, START_PAGE_INDICATORS, useStartPageIndicators} from '@/api/indicators';
+import {Frequency, START_PAGE_INDICATORS, useSeriesConfigs, useStartPageIndicators} from '@/api/indicators';
 
 // Latest observation's date: the day for daily series, the month for monthly ones ("29 okt 2026", "sep 2026")
 const formatPeriod = (date: Date, frequency: Frequency) =>
@@ -15,8 +15,19 @@ const formatPeriod = (date: Date, frequency: Frequency) =>
         timeZone: 'UTC'
     }).format(date).replace('.', '');
 
+const changeNote = (frequency: Frequency, changedAt: Date | null) => {
+    if (frequency === 'month') {
+        return 'Förändring mot föregående månad';
+    }
+    return changedAt
+        ? `Förändring sedan senaste ändringen, ${formatPeriod(changedAt, frequency)}`
+        : 'Oförändrad det senaste året';
+};
+
 const IndicatorCards = () => {
     const {isPending, error, data} = useStartPageIndicators();
+    // Only for the units; until or without them the cards fall back to %
+    const {data: configs} = useSeriesConfigs();
 
     if (isPending) {
         return (
@@ -31,8 +42,8 @@ const IndicatorCards = () => {
     return (
         <>
             {START_PAGE_INDICATORS.map((indicator, index) => {
-                const config = data?.configs.find(c => c.name === indicator.name);
-                const observation = data?.observations[indicator.name] ?? null;
+                const config = configs?.find(c => c.name === indicator.name);
+                const observation = data?.[indicator.name] ?? null;
                 return (
                     <IndicatorCard
                         key={indicator.name}
@@ -41,9 +52,7 @@ const IndicatorCards = () => {
                         previous={observation?.previous ?? null}
                         unit={config?.unit ?? '%'}
                         period={observation ? formatPeriod(observation.date, indicator.frequency) : undefined}
-                        changeNote={observation?.changedAt
-                            ? `Förändring sedan föregående värde, ändrades ${formatPeriod(observation.changedAt, indicator.frequency)}`
-                            : 'Oförändrad det senaste året'}
+                        changeNote={changeNote(indicator.frequency, observation?.changedAt ?? null)}
                         message={error ? 'Kunde inte hämta data' : 'Ingen data ännu'}
                         delay={`${(index + 3) * 100}ms`}
                     />
