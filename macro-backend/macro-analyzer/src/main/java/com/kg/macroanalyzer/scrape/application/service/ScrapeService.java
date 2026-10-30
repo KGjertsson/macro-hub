@@ -49,6 +49,9 @@ public class ScrapeService {
     ) {
         final var registry = new HashMap<String, RegisteredScrapeFlow>();
         for (final var scrapeFlow : scrapeFlows) {
+            if (scrapeFlow.flowId() == null) {
+                throw new IllegalStateException("Scrape flow %s has no flow id".formatted(scrapeFlow));
+            }
             if (registry.putIfAbsent(scrapeFlow.flowId(), scrapeFlow) != null) {
                 throw new IllegalStateException(
                         "More than one scrape flow registered for flow id %s".formatted(scrapeFlow.flowId())

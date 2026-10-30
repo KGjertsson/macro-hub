@@ -1,6 +1,5 @@
 package com.kg.macroanalyzer.macroseries.application.service;
 
-import com.kg.macroanalyzer.election.domain.ElectionScrapeFlows;
 import com.kg.macroanalyzer.macroseries.application.port.in.BuildChartDataParams;
 import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
@@ -11,8 +10,6 @@ import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeriesScrapeFlows;
-import com.kg.macroanalyzer.parliament.domain.ParliamentScrapeFlows;
-import com.kg.macroanalyzer.regionalstatistics.domain.RegionalStatisticsScrapeFlows;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,9 +101,9 @@ public class MacroSeriesServiceTest {
     void shouldKeepConfigsOfOtherScrapeFlowsOutOfChartList() {
         // given
         final var rate = SeriesConfig.builder().name("PolicyRateSweden").scrapeFlow(MacroSeriesScrapeFlows.MACRO_POINT).build();
-        final var members = SeriesConfig.builder().name("MembersOfParliament").scrapeFlow(ParliamentScrapeFlows.MEMBER_OF_PARLIAMENT).build();
-        final var elections = SeriesConfig.builder().name("MunicipalElections").scrapeFlow(ElectionScrapeFlows.LOCAL_ELECTION).build();
-        final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").scrapeFlow(RegionalStatisticsScrapeFlows.SCB_REGIONAL).build();
+        final var members = SeriesConfig.builder().name("MembersOfParliament").scrapeFlow("MEMBER_OF_PARLIAMENT").build();
+        final var elections = SeriesConfig.builder().name("MunicipalElections").scrapeFlow("LOCAL_ELECTION").build();
+        final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").scrapeFlow("SCB_REGIONAL").build();
         final var service = new MacroSeriesService(
                 repositoryPort, List.of(rate, members, elections, scb), alignmentService, timeFilterService);
 

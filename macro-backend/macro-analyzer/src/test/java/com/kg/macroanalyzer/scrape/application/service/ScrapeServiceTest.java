@@ -134,6 +134,21 @@ public class ScrapeServiceTest {
     }
 
     @Test
+    void shouldFailAtStartup_whenAScrapeFlowHasNoFlowId() {
+        // given
+        final var noId = mock(RegisteredScrapeFlow.class);
+        when(noId.flowId()).thenReturn(null);
+        final var flows = new ArrayList<>(allFlows());
+        flows.add(noId);
+
+        // when
+        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(flows, SERIES_CONFIGS));
+
+        // then
+        assertTrue(exception.getMessage().contains("has no flow id"), exception.getMessage());
+    }
+
+    @Test
     void shouldOnlyWarn_whenARegisteredScrapeFlowHasNoConfig(CapturedOutput output) {
         // given
         final var configs = SERIES_CONFIGS.stream()
