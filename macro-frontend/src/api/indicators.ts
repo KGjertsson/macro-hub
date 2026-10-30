@@ -5,7 +5,7 @@ import { SeriesConfig } from '@/models/SeriesConfig';
 
 const baseUrl = `${rootUrl}/macro-analyzer`;
 
-// How often the source publishes: daily series are compared with the previous day, monthly ones with the previous month
+// How often the source publishes; decides whether the period shows the day or only the month
 export type Frequency = 'day' | 'month';
 
 export type IndicatorDefinition = {
@@ -24,9 +24,11 @@ export const START_PAGE_INDICATORS: IndicatorDefinition[] = [
 
 export type LatestObservation = {
   value: number;
-  // null when the series has no observation one period before the latest
-  previous: number | null;
   date: Date;
+  // The value before the latest change; equal to value when the series did not change within the time frame
+  previous: number;
+  // The first day with the current value; null when the series did not change within the time frame
+  changedAt: Date | null;
 };
 
 type ChartDataResponse = {
@@ -57,19 +59,11 @@ const fetchChartData = async (names: string[]): Promise<ChartDataResponse | null
 // Day labels arrive as [year, month, day]
 const toDate = (label: number[]) => new Date(Date.UTC(label[0], label[1] - 1, label[2] ?? 1));
 
-const sameDay = (a: Date, b: Date) => a.getTime() === b.getTime();
-
-const oneMonthBefore = (date: Date) =>
-  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() - 1, date.getUTCDate()));
-
 // With day sampling the backend repeats a series' last value on every day up to its next observation and
-// leaves the days after its latest observation null. The last non-null day is therefore the latest observation,
-// and the previous observation is the value one day (daily series) or one month (monthly series) earlier.
-export const latestObservation = (
-  labels: number[][],
-  values: (number | null)[],
-  frequency: Frequency,
-): LatestObservation | null => {
+// leaves the days after its latest observation null. The last non-null day is therefore the latest observation.
+// A repeated value cannot be told apart from a new observation with the same value, so the change is taken
+// against the last value that differs from the latest one, i.e. the change since the value last moved.
+export const latestObservation = (labels: number[][], values: (number | null)[]): LatestObservation | null => {
   let last = values.length - 1;
   while (last >= 0 && values[last] === null) {
     last--;
@@ -77,16 +71,17 @@ export const latestObservation = (
   if (last < 0) {
     return null;
   }
-  const date = toDate(labels[last]);
-  let previousIndex = last - 1;
-  if (frequency === 'month') {
-    const target = oneMonthBefore(date);
-    previousIndex = labels.findIndex(label => sameDay(toDate(label), target));
+  const value = values[last] as number;
+  let before = last - 1;
+  while (before >= 0 && values[before] === value) {
+    before--;
   }
+  const previous = before >= 0 ? values[before] : null;
   return {
-    value: values[last] as number,
-    previous: previousIndex >= 0 ? values[previousIndex] ?? null : null,
-    date,
+    value,
+    date: toDate(labels[last]),
+    previous: previous ?? value,
+    changedAt: previous === null ? null : toDate(labels[before + 1]),
   };
 };
 
@@ -112,7 +107,7 @@ export const useStartPageIndicators = () =>
           const series = chartData?.chartData.find(dataset => dataset.name === indicator.name);
           return [
             indicator.name,
-            series && chartData ? latestObservation(chartData.labels, series.values, indicator.frequency) : null,
+            series && chartData ? latestObservation(chartData.labels, series.values) : null,
           ];
         }),
       );

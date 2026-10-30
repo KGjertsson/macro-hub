@@ -5,8 +5,10 @@ interface IndicatorCardProps {
     title: string;
     // null when the series has no data; the card then shows a dash and the message instead of a period
     value: number | null;
-    // The observation before; the change is shown against it
+    // The value the change is shown against
     previous: number | null;
+    // Tooltip on the change badge, e.g. when the value last changed
+    changeNote?: string;
     unit?: string;
     period?: string;
     message?: string;
@@ -19,7 +21,7 @@ const decimalsOf = (value: number) => Math.min((String(value).split(".")[1] ?? "
 // A change in a percentage is shown in procentenheter
 const changeUnit = (unit: string) => (unit.startsWith("%") ? " pe" : ` ${unit}`);
 
-const IndicatorCard = ({title, value, previous, unit = "", period, message, delay = "0"}: IndicatorCardProps) => {
+const IndicatorCard = ({title, value, previous, changeNote, unit = "", period, message, delay = "0"}: IndicatorCardProps) => {
     const decimals = Math.max(value === null ? 0 : decimalsOf(value), previous === null ? 0 : decimalsOf(previous));
     // Rounded to the shown decimals, so floating-point noise (4,0 - 4,1 = -0,0999…) does not leak into the badge
     const change = value === null || previous === null
@@ -51,7 +53,7 @@ const IndicatorCard = ({title, value, previous, unit = "", period, message, dela
                             isPositive && "bg-success/10 text-success",
                             !isPositive && !isNeutral && "bg-destructive/10 text-destructive"
                         )}
-                        title="Förändring mot föregående observation"
+                        title={changeNote}
                     >
                         <TrendIcon className="h-3 w-3"/>
                         <span>{format(change, "exceptZero")}{changeUnit(unit)}</span>

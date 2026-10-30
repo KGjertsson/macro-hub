@@ -41,6 +41,9 @@ const IndicatorCards = () => {
                         previous={observation?.previous ?? null}
                         unit={config?.unit ?? '%'}
                         period={observation ? formatPeriod(observation.date, indicator.frequency) : undefined}
+                        changeNote={observation?.changedAt
+                            ? `Förändring sedan föregående värde, ändrades ${formatPeriod(observation.changedAt, indicator.frequency)}`
+                            : 'Oförändrad det senaste året'}
                         message={error ? 'Kunde inte hämta data' : 'Ingen data ännu'}
                         delay={`${(index + 3) * 100}ms`}
                     />
