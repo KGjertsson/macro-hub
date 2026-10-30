@@ -76,15 +76,11 @@ class ArchitectureTest {
                     .toList()
     );
 
-    // Ports are the contract the services implement and use, so they only refer to domain and port types
+    // Ports are the contract the services implement and use, so they only refer to domain and port types, of any module
     @ArchTest
-    static final ArchRule portsDoNotDependOnServices = CompositeArchRule.of(
-            MODULES.stream()
-                    .map(module -> noClasses().that().resideInAPackage(pkg(module + ".application.port"))
-                            .should().dependOnClassesThat().resideInAPackage(pkg(module + ".application.service"))
-                            .as("%s ports do not depend on %s services".formatted(module, module)))
-                    .toList()
-    );
+    static final ArchRule portsDoNotDependOnServices = noClasses().that().resideInAPackage(ROOT + "..application.port..")
+            .should().dependOnClassesThat().resideInAPackage(ROOT + "..application.service..")
+            .as("no port depends on a service");
 
     @ArchTest
     static final ArchRule domainModulesOnlyDependOnAllowedModules = CompositeArchRule.of(

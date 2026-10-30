@@ -171,7 +171,7 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 
 - every class except `MacroAnalyzerApplication` resides in a module listed in `MODULES`/`SHARED_MODULES` or in `jooq.generated`;
 - `shared` depends on no module;
-- a module's `domain` and `application` do not depend on its `adaptors`, and its `application.port` does not depend on its `application.service`;
+- a module's `domain` and `application` do not depend on its `adaptors`, and no `application.port` depends on any module's `application.service` (`scrape`'s included);
 - a domain module (`DOMAIN_MODULES`) only depends on itself, `scrape`, `shared` and `jooq.generated`, plus what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows. The only entry is `election` → `parliament.application.port.in` and `parliament.domain` (for `PartyDirectory`/`Party`); no module may use another module's out-ports, services or adaptors.
 
 ### Adding a new domain
@@ -182,7 +182,7 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 4. Add a `*WebAdaptorConfiguration` for the `WebPort` beans and a `*ScrapeFlowConfiguration` that registers a `KindedScrapeFlow`.
 5. Add a `ScrapeQueueKind` value and map the config name to it in `ScrapeQueueItem.resolveKind` (startup fails until the kind has a flow). Non-chart categories also go into `NON_CHART_CATEGORIES` in `MacroSeriesService` so they stay out of `/series-config`.
 6. Add the module to `MODULES` and `DOMAIN_MODULES` in `ArchitectureTest` (and to `DOMAIN_MODULE_EXTRA_DEPENDENCIES` only if it must use another module's in-port).
-7. Add a Flyway migration with the `series_configuration` row and the module's tables, then regenerate the jOOQ model.
+7. Add a Flyway migration with the module's tables and its `series_configuration` row, then regenerate the jOOQ model. The row needs a `scrape_url` and a `category`; add that category to `NON_CHART_CATEGORIES` (step 5) so the config stays out of `/series-config`.
 
 ### REST API Endpoints
 

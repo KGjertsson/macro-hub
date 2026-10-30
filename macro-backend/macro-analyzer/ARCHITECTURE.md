@@ -56,7 +56,8 @@ services or adaptors.
 ```
 
 - `domain` and `application` never depend on `adaptors`.
-- `application.port` never depends on `application.service`: ports only use domain and port types.
+- `application.port` never depends on `application.service`, of its own module or any other (`scrape`'s included):
+  ports only use domain and port types.
 
 ## ScrapeFlow pipeline (write path)
 
@@ -81,12 +82,12 @@ startup when a kind has no flow or more than one.
   ScrapeResult (SUCCESS | FAILED | EMPTY)
 ```
 
-| ScrapeQueueKind        | Flow built in                                          |
-|------------------------|--------------------------------------------------------|
-| `MACRO_POINT`          | `macroseries.adaptors.config.MacroPointScrapeFlowConfiguration`        |
-| `MEMBER_OF_PARLIAMENT` | `parliament.adaptors.config.MemberOfParliamentScrapeFlowConfiguration` |
-| `MEMBER_ACTIVITY`      | `parliament.adaptors.config.MemberActivityScrapeFlowConfiguration`     |
-| `LOCAL_ELECTION`       | `election.adaptors.config.LocalElectionScrapeFlowConfiguration`        |
+| ScrapeQueueKind        | Flow built in                                                           |
+|------------------------|-------------------------------------------------------------------------|
+| `MACRO_POINT`          | `macroseries.adaptors.config.MacroPointScrapeFlowConfiguration`         |
+| `MEMBER_OF_PARLIAMENT` | `parliament.adaptors.config.MemberOfParliamentScrapeFlowConfiguration`  |
+| `MEMBER_ACTIVITY`      | `parliament.adaptors.config.MemberActivityScrapeFlowConfiguration`      |
+| `LOCAL_ELECTION`       | `election.adaptors.config.LocalElectionScrapeFlowConfiguration`         |
 | `SCB_REGIONAL`         | `regionalstatistics.adaptors.config.ScbRegionalScrapeFlowConfiguration` |
 
 ## WebAdaptorFlow pipeline
