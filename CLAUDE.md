@@ -76,7 +76,7 @@ npm run dev        # Vite dev server
 npm run build      # production build
 npm run build:dev  # development-mode build
 npm run lint
-npm run typecheck  # tsc --noEmit for tsconfig.app.json and tsconfig.node.json (vite build does not type-check)
+npm run typecheck  # tsc --noEmit for tsconfig.app.json (src/) and tsconfig.node.json (vite.config.ts, tailwind.config.ts); vite build does not type-check
 npm run preview    # serve the production build
 ```
 
