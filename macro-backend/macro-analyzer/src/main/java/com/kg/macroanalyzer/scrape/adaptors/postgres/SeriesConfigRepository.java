@@ -36,6 +36,7 @@ public class SeriesConfigRepository {
                 .subcategory(r.getValue(SERIES_CONFIGURATION.SUBCATEGORY))
                 .country(r.getValue(SERIES_CONFIGURATION.COUNTRY))
                 .maturityMonths(r.getValue(SERIES_CONFIGURATION.MATURITY_MONTHS))
+                .scrapeFlow(r.getValue(SERIES_CONFIGURATION.SCRAPE_FLOW))
                 .build();
     }
 

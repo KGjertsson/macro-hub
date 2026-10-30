@@ -9,8 +9,7 @@ import java.time.Instant;
 public record ScrapeQueueItem(
         Integer id,
         @NonNull String name,
-        @NonNull Instant scrapeDate,
-        @NonNull ScrapeQueueKind scrapeQueueKind
+        @NonNull Instant scrapeDate
 ) {
 
     public static ScrapeQueueItem of(String name) {
@@ -18,12 +17,9 @@ public record ScrapeQueueItem(
     }
 
     public static ScrapeQueueItem of(String name, Instant scrapeDate) {
-        final var scrapeQueueKind = resolveKind(name);
-
         return ScrapeQueueItem.builder()
                 .name(name)
                 .scrapeDate(scrapeDate)
-                .scrapeQueueKind(scrapeQueueKind)
                 .build();
     }
 
@@ -31,16 +27,6 @@ public record ScrapeQueueItem(
         return ScrapeQueueItem.of(name, scrapeDate).toBuilder()
                 .id(id)
                 .build();
-    }
-
-    private static ScrapeQueueKind resolveKind(String name) {
-        return switch (name) {
-            case "MembersOfParliament" -> ScrapeQueueKind.MEMBER_OF_PARLIAMENT;
-            case "MembersOfParliamentActivity" -> ScrapeQueueKind.MEMBER_ACTIVITY;
-            case "MunicipalElections", "RegionElections", "ParliamentElections" -> ScrapeQueueKind.LOCAL_ELECTION;
-            case "ScbRegionalStatistics" -> ScrapeQueueKind.SCB_REGIONAL;
-            default -> ScrapeQueueKind.MACRO_POINT;
-        };
     }
 
 }

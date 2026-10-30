@@ -6,15 +6,15 @@ import com.kg.macroanalyzer.parliament.application.service.scrape.ExistingMember
 import com.kg.macroanalyzer.parliament.application.service.scrape.MemberOfParliamentPersister;
 import com.kg.macroanalyzer.parliament.application.service.scrape.MemberOfParliamentScraper;
 import com.kg.macroanalyzer.parliament.domain.MemberOfParliament;
+import com.kg.macroanalyzer.parliament.domain.ParliamentScrapeFlows;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.KindedScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Preparer;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.RegisteredScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import com.kg.macroanalyzer.shared.web.WebPort;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,13 +44,13 @@ public class MemberOfParliamentScrapeFlowConfiguration {
     }
 
     @Bean("memberScrapeFlow")
-    public KindedScrapeFlow scrapeFlow(
+    public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
             @Qualifier("existingMemberFinder") ExistingFinder<SeriesConfig, ConfigWithMemberOfParliament> finder,
             @Qualifier("memberScraper") Scraper<ConfigWithMemberOfParliament> scraper,
             @Qualifier("memberPersister") Persister<ConfigWithMemberOfParliament> persister
     ) {
-        return KindedScrapeFlow.of(ScrapeQueueKind.MEMBER_OF_PARLIAMENT, new ScrapeFlow<>(
+        return RegisteredScrapeFlow.of(ParliamentScrapeFlows.MEMBER_OF_PARLIAMENT, new ScrapeFlow<>(
                 preparer,
                 finder,
                 scraper,

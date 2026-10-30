@@ -7,17 +7,17 @@ import com.kg.macroanalyzer.regionalstatistics.application.port.out.ScbMetadataR
 import com.kg.macroanalyzer.regionalstatistics.application.service.scrape.ExistingScbTableFinder;
 import com.kg.macroanalyzer.regionalstatistics.application.service.scrape.ScbRegionalPersister;
 import com.kg.macroanalyzer.regionalstatistics.application.service.scrape.ScbRegionalScraper;
+import com.kg.macroanalyzer.regionalstatistics.domain.RegionalStatisticsScrapeFlows;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbTableMetadata;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbTableValues;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.KindedScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Preparer;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.RegisteredScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import com.kg.macroanalyzer.shared.web.WebPort;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,13 +46,13 @@ public class ScbRegionalScrapeFlowConfiguration {
     }
 
     @Bean("scbRegionalScrapeFlow")
-    public KindedScrapeFlow scrapeFlow(
+    public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
             @Qualifier("existingScbTableFinder") ExistingFinder<SeriesConfig, ConfigWithScbIndicators> finder,
             @Qualifier("scbRegionalScraper") Scraper<ConfigWithScbIndicators> scraper,
             @Qualifier("scbRegionalPersister") Persister<ConfigWithScbIndicators> persister
     ) {
-        return KindedScrapeFlow.of(ScrapeQueueKind.SCB_REGIONAL, new ScrapeFlow<>(
+        return RegisteredScrapeFlow.of(RegionalStatisticsScrapeFlows.SCB_REGIONAL, new ScrapeFlow<>(
                 preparer,
                 finder,
                 scraper,

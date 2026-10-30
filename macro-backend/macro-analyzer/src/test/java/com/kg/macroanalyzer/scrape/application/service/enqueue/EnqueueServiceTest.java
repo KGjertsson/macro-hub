@@ -4,7 +4,6 @@ import com.kg.macroanalyzer.TestSeriesConfigFactory;
 import com.kg.macroanalyzer.scrape.application.port.in.EnqueueException;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -85,7 +84,7 @@ public class EnqueueServiceTest {
         final var existingQueue = TestSeriesConfigFactory.buildTestConfig();
         final var scrapeQueueItems = existingQueue.stream()
                 .filter(c -> !c.name().equals("macro_series_1"))
-                .map(c -> new ScrapeQueueItem(null, c.name(), Instant.now(), ScrapeQueueKind.MACRO_POINT))
+                .map(c -> new ScrapeQueueItem(null, c.name(), Instant.now()))
                 .toList();
 
         // when

@@ -113,6 +113,11 @@ public class SeriesConfiguration extends TableImpl<SeriesConfigurationRecord> {
      */
     public final TableField<SeriesConfigurationRecord, Integer> MATURITY_MONTHS = createField(DSL.name("maturity_months"), SQLDataType.INTEGER, this, "");
 
+    /**
+     * The column <code>public.series_configuration.scrape_flow</code>.
+     */
+    public final TableField<SeriesConfigurationRecord, String> SCRAPE_FLOW = createField(DSL.name("scrape_flow"), SQLDataType.VARCHAR(50).nullable(false), this, "");
+
     private SeriesConfiguration(Name alias, Table<SeriesConfigurationRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

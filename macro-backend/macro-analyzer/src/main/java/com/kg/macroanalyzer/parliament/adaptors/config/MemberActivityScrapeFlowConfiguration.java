@@ -7,15 +7,15 @@ import com.kg.macroanalyzer.parliament.application.service.scrape.ExistingMember
 import com.kg.macroanalyzer.parliament.application.service.scrape.MemberActivityPersister;
 import com.kg.macroanalyzer.parliament.application.service.scrape.MemberActivityScraper;
 import com.kg.macroanalyzer.parliament.domain.MemberActivity;
+import com.kg.macroanalyzer.parliament.domain.ParliamentScrapeFlows;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ExistingFinder;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.KindedScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Persister;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Preparer;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.RegisteredScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.ScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import com.kg.macroanalyzer.shared.web.WebPort;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -48,13 +48,13 @@ public class MemberActivityScrapeFlowConfiguration {
     }
 
     @Bean("memberActivityScrapeFlow")
-    public KindedScrapeFlow scrapeFlow(
+    public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
             @Qualifier("existingMemberActivityFinder") ExistingFinder<SeriesConfig, ConfigWithMemberActivity> finder,
             @Qualifier("memberActivityScraper") Scraper<ConfigWithMemberActivity> scraper,
             @Qualifier("memberActivityPersister") Persister<ConfigWithMemberActivity> persister
     ) {
-        return KindedScrapeFlow.of(ScrapeQueueKind.MEMBER_ACTIVITY, new ScrapeFlow<>(
+        return RegisteredScrapeFlow.of(ParliamentScrapeFlows.MEMBER_ACTIVITY, new ScrapeFlow<>(
                 preparer,
                 finder,
                 scraper,

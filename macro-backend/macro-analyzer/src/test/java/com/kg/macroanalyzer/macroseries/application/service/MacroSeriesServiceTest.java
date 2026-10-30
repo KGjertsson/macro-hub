@@ -9,6 +9,7 @@ import com.kg.macroanalyzer.macroseries.application.service.bundleformat.TimeFil
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
+import com.kg.macroanalyzer.macroseries.domain.MacroSeriesScrapeFlows;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,12 +98,12 @@ public class MacroSeriesServiceTest {
     }
 
     @Test
-    void shouldKeepParliamentElectionAndScbConfigsOutOfChartList() {
+    void shouldKeepConfigsOfOtherScrapeFlowsOutOfChartList() {
         // given
-        final var rate = SeriesConfig.builder().name("PolicyRateSweden").category("Räntor").build();
-        final var members = SeriesConfig.builder().name("MembersOfParliament").category("Riksdagen").build();
-        final var elections = SeriesConfig.builder().name("MunicipalElections").category("Valmyndigheten").build();
-        final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").category("SCB").build();
+        final var rate = SeriesConfig.builder().name("PolicyRateSweden").scrapeFlow(MacroSeriesScrapeFlows.MACRO_POINT).build();
+        final var members = SeriesConfig.builder().name("MembersOfParliament").scrapeFlow("MEMBER_OF_PARLIAMENT").build();
+        final var elections = SeriesConfig.builder().name("MunicipalElections").scrapeFlow("LOCAL_ELECTION").build();
+        final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").scrapeFlow("SCB_REGIONAL").build();
         final var service = new MacroSeriesService(
                 repositoryPort, List.of(rate, members, elections, scb), alignmentService, timeFilterService);
 

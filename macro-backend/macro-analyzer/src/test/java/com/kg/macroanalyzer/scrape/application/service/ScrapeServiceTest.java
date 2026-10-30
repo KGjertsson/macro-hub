@@ -2,15 +2,18 @@ package com.kg.macroanalyzer.scrape.application.service;
 
 import com.kg.macroanalyzer.scrape.application.port.in.ScrapeRun;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
-import com.kg.macroanalyzer.scrape.application.service.scrapeflow.KindedScrapeFlow;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.RegisteredScrapeFlow;
+import com.kg.macroanalyzer.scrape.application.service.scrapeflow.SeriesConfigPreparer;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueKind;
 import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
+import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -21,72 +24,143 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
 public class ScrapeServiceTest {
+
+    // The ids are opaque to scrape; the tests use the modules' ids so the routing reads like production
+    private static final String MACRO_POINT = "MACRO_POINT";
+    private static final String MEMBER_OF_PARLIAMENT = "MEMBER_OF_PARLIAMENT";
+    private static final String MEMBER_ACTIVITY = "MEMBER_ACTIVITY";
+    private static final String LOCAL_ELECTION = "LOCAL_ELECTION";
+    private static final String SCB_REGIONAL = "SCB_REGIONAL";
+
+    private static final List<SeriesConfig> SERIES_CONFIGS = List.of(
+            config("test-name", MACRO_POINT),
+            config("MembersOfParliament", MEMBER_OF_PARLIAMENT),
+            config("MembersOfParliamentActivity", MEMBER_ACTIVITY),
+            config("MunicipalElections", LOCAL_ELECTION),
+            config("RegionElections", LOCAL_ELECTION),
+            config("ParliamentElections", LOCAL_ELECTION),
+            config("ScbRegionalStatistics", SCB_REGIONAL)
+    );
 
     ScrapeService scrapeService;
 
     @Mock
     ScrapeQueuePort scrapeQueuePort;
     @Mock
-    KindedScrapeFlow macroPointScrapeFlow;
+    RegisteredScrapeFlow macroPointScrapeFlow;
     @Mock
-    KindedScrapeFlow memberScrapeFlow;
+    RegisteredScrapeFlow memberScrapeFlow;
     @Mock
-    KindedScrapeFlow memberActivityScrapeFlow;
+    RegisteredScrapeFlow memberActivityScrapeFlow;
     @Mock
-    KindedScrapeFlow localElectionScrapeFlow;
+    RegisteredScrapeFlow localElectionScrapeFlow;
     @Mock
-    KindedScrapeFlow scbRegionalScrapeFlow;
+    RegisteredScrapeFlow scbRegionalScrapeFlow;
 
     @BeforeEach
     public void setUp() {
-        lenient().when(macroPointScrapeFlow.kind()).thenReturn(ScrapeQueueKind.MACRO_POINT);
-        lenient().when(memberScrapeFlow.kind()).thenReturn(ScrapeQueueKind.MEMBER_OF_PARLIAMENT);
-        lenient().when(memberActivityScrapeFlow.kind()).thenReturn(ScrapeQueueKind.MEMBER_ACTIVITY);
-        lenient().when(localElectionScrapeFlow.kind()).thenReturn(ScrapeQueueKind.LOCAL_ELECTION);
-        lenient().when(scbRegionalScrapeFlow.kind()).thenReturn(ScrapeQueueKind.SCB_REGIONAL);
-        scrapeService = new ScrapeService(scrapeQueuePort, allFlows());
-        // Registration reads every kind; the routing tests only care about run()
+        lenient().when(macroPointScrapeFlow.flowId()).thenReturn(MACRO_POINT);
+        lenient().when(memberScrapeFlow.flowId()).thenReturn(MEMBER_OF_PARLIAMENT);
+        lenient().when(memberActivityScrapeFlow.flowId()).thenReturn(MEMBER_ACTIVITY);
+        lenient().when(localElectionScrapeFlow.flowId()).thenReturn(LOCAL_ELECTION);
+        lenient().when(scbRegionalScrapeFlow.flowId()).thenReturn(SCB_REGIONAL);
+        scrapeService = scrapeService(allFlows(), SERIES_CONFIGS);
+        // Registration reads every flow id; the routing tests only care about run()
         clearInvocations(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow, scbRegionalScrapeFlow);
     }
 
-    private List<KindedScrapeFlow> allFlows() {
+    private List<RegisteredScrapeFlow> allFlows() {
         return List.of(
                 macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow, scbRegionalScrapeFlow);
     }
 
-    @Test
-    void shouldFailAtStartup_whenAKindHasNoScrapeFlow() {
-        // given
-        final var flows = List.of(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow);
+    private ScrapeService scrapeService(List<RegisteredScrapeFlow> flows, List<SeriesConfig> configs) {
+        return new ScrapeService(scrapeQueuePort, flows, configs, new SeriesConfigPreparer(configs));
+    }
 
-        // when
-        final var exception = assertThrows(IllegalStateException.class, () -> new ScrapeService(scrapeQueuePort, flows));
-
-        // then
-        assertTrue(exception.getMessage().contains("SCB_REGIONAL"), exception.getMessage());
+    private static SeriesConfig config(String name, String scrapeFlow) {
+        return SeriesConfig.builder().name(name).scrapeFlow(scrapeFlow).build();
     }
 
     @Test
-    void shouldFailAtStartup_whenAKindHasMoreThanOneScrapeFlow() {
+    void shouldFailAtStartup_whenAConfigNamesAnUnregisteredScrapeFlow() {
         // given
-        final var duplicate = mock(KindedScrapeFlow.class);
-        when(duplicate.kind()).thenReturn(ScrapeQueueKind.LOCAL_ELECTION);
+        final var configs = new ArrayList<>(SERIES_CONFIGS);
+        configs.add(config("NewSeries", "NEW_FLOW"));
+
+        // when
+        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(allFlows(), configs));
+
+        // then
+        assertTrue(exception.getMessage().contains("NewSeries (scrapeFlow=NEW_FLOW)"), exception.getMessage());
+    }
+
+    @Test
+    void shouldFailAtStartup_whenAConfigHasNoScrapeFlow() {
+        // given
+        final var configs = List.of(config("test-name", null));
+
+        // when
+        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(allFlows(), configs));
+
+        // then
+        assertTrue(exception.getMessage().contains("test-name (scrapeFlow=null)"), exception.getMessage());
+    }
+
+    @Test
+    void shouldFailAtStartup_whenAFlowIdHasMoreThanOneScrapeFlow() {
+        // given
+        final var duplicate = mock(RegisteredScrapeFlow.class);
+        when(duplicate.flowId()).thenReturn(LOCAL_ELECTION);
         final var flows = new ArrayList<>(allFlows());
         flows.add(duplicate);
 
         // when
-        final var exception = assertThrows(IllegalStateException.class, () -> new ScrapeService(scrapeQueuePort, flows));
+        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(flows, SERIES_CONFIGS));
 
         // then
         assertTrue(exception.getMessage().contains("LOCAL_ELECTION"), exception.getMessage());
+    }
+
+    @Test
+    void shouldFailAtStartup_whenAScrapeFlowHasNoFlowId() {
+        // given
+        final var noId = mock(RegisteredScrapeFlow.class);
+        when(noId.flowId()).thenReturn(null);
+        final var flows = new ArrayList<>(allFlows());
+        flows.add(noId);
+
+        // when
+        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(flows, SERIES_CONFIGS));
+
+        // then
+        assertTrue(exception.getMessage().contains("has no flow id"), exception.getMessage());
+    }
+
+    @Test
+    void shouldOnlyWarn_whenARegisteredScrapeFlowHasNoConfig(CapturedOutput output) {
+        // given
+        final var configs = SERIES_CONFIGS.stream()
+                .filter(c -> !c.scrapeFlow().equals(SCB_REGIONAL))
+                .toList();
+
+        // when
+        assertDoesNotThrow(() -> scrapeService(allFlows(), configs));
+
+        // then
+        assertTrue(output.getOut().contains("Scrape flow SCB_REGIONAL is registered but no series config uses it"), output.getOut());
+        assertFalse(output.getOut().contains("Scrape flow MACRO_POINT is registered"), output.getOut());
     }
 
     @Test
@@ -96,7 +170,6 @@ public class ScrapeServiceTest {
         final var scrapeQueueItem = ScrapeQueueItem.builder()
                 .name("test-name")
                 .scrapeDate(now.toInstant(ZoneOffset.UTC))
-                .scrapeQueueKind(ScrapeQueueKind.MACRO_POINT)
                 .build();
         final List<ScrapeQueueItem> items = List.of(scrapeQueueItem);
 
@@ -199,9 +272,26 @@ public class ScrapeServiceTest {
         final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
-        assertEquals(ScrapeQueueKind.SCB_REGIONAL, scrapeQueueItem.scrapeQueueKind());
         assertEquals(List.of(ScrapeResult.SUCCESS), result);
         verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow);
+    }
+
+    @Test
+    void shouldFailTheItem_whenNoConfigMatchesItsName(CapturedOutput output) {
+        // given
+        final var now = LocalDateTime.now();
+        final var scrapeQueueItem = ScrapeQueueItem.of("RemovedSeries");
+
+        // when
+        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(scrapeQueueItem));
+
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
+
+        // then
+        assertEquals(List.of(ScrapeResult.FAILED), result);
+        assertTrue(output.getOut().contains("No series config named RemovedSeries"), output.getOut());
+        verify(scrapeQueuePort, never()).markAsDone(any());
+        verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow, scbRegionalScrapeFlow);
     }
 
     @Test
