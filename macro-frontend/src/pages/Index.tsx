@@ -3,37 +3,52 @@ import IndicatorCard from '@/components/IndicatorCard';
 import ChartSection from '@/components/ChartSection';
 import InsightsSection from '@/components/InsightsSection';
 import Footer from '@/components/Footer';
+import {Skeleton} from '@/components/ui/skeleton';
+import {Frequency, START_PAGE_INDICATORS, useStartPageIndicators} from '@/api/indicators';
 
-const indicators = [
-    {
-        title: 'BNP-tillväxt USA',
-        value: '2,8',
-        change: 0.3,
-        unit: '%',
-        period: 'K3 2024'
-    },
-    {
-        title: 'Inflation USA (KPI)',
-        value: '2,7',
-        change: -0.3,
-        unit: '%',
-        period: 'nov 2024'
-    },
-    {
-        title: 'Arbetslöshet USA',
-        value: '4,2',
-        change: 0.1,
-        unit: '%',
-        period: 'nov 2024'
-    },
-    {
-        title: 'Styrränta (Fed)',
-        value: '4,50',
-        change: 0,
-        unit: '%',
-        period: 'dec 2024'
+// Latest observation's date: the day for daily series, the month for monthly ones ("29 okt 2026", "sep 2026")
+const formatPeriod = (date: Date, frequency: Frequency) =>
+    new Intl.DateTimeFormat('sv-SE', {
+        day: frequency === 'day' ? 'numeric' : undefined,
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC'
+    }).format(date).replace('.', '');
+
+const IndicatorCards = () => {
+    const {isPending, error, data} = useStartPageIndicators();
+
+    if (isPending) {
+        return (
+            <>
+                {START_PAGE_INDICATORS.map(indicator => (
+                    <Skeleton key={indicator.name} className='h-[134px] rounded-xl'/>
+                ))}
+            </>
+        );
     }
-];
+
+    return (
+        <>
+            {START_PAGE_INDICATORS.map((indicator, index) => {
+                const config = data?.configs.find(c => c.name === indicator.name);
+                const observation = data?.observations[indicator.name] ?? null;
+                return (
+                    <IndicatorCard
+                        key={indicator.name}
+                        title={indicator.title}
+                        value={observation?.value ?? null}
+                        previous={observation?.previous ?? null}
+                        unit={config?.unit ?? '%'}
+                        period={observation ? formatPeriod(observation.date, indicator.frequency) : undefined}
+                        message={error ? 'Kunde inte hämta data' : 'Ingen data ännu'}
+                        delay={`${(index + 3) * 100}ms`}
+                    />
+                );
+            })}
+        </>
+    );
+};
 
 const Index = () => {
     return (
@@ -65,13 +80,7 @@ const Index = () => {
 
                     {/* Indicator Cards */}
                     <div id='indicators' className='grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-                        {indicators.map((indicator, index) => (
-                            <IndicatorCard
-                                key={indicator.title}
-                                {...indicator}
-                                delay={`${(index + 3) * 100}ms`}
-                            />
-                        ))}
+                        <IndicatorCards/>
                     </div>
                 </div>
             </section>
