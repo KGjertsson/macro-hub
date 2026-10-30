@@ -6,7 +6,6 @@ export interface BlogPost {
   author: string;
   date: string;
   category: string;
-  politicianId?: string;
   imageUrl?: string;
   featured?: boolean;
 }
@@ -30,7 +29,6 @@ export const blogPosts: BlogPost[] = [
     author: 'Politikredaktionen',
     date: '2024-12-15',
     category: 'Profil',
-    politicianId: '3',
   },
   {
     id: '3',
