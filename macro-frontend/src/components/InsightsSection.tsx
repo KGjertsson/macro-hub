@@ -37,7 +37,7 @@ const InsightsSection = () => {
         >
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12 opacity-0 animate-fade-in-up" style={{animationDelay: "100ms"}}>
-                    <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 mb-4">
                         <h2 id="insights-heading" className="text-3xl md:text-4xl font-bold">
                             Marknads<span className="text-gradient">insikter</span>
                         </h2>

@@ -30,7 +30,7 @@ const ParliamentBlog = () => {
                     <Sparkles className='w-5 h-5 text-primary'/>
                 </div>
                 <div>
-                    <div className='flex items-center gap-3'>
+                    <div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
                         <h2 id='parliament-blog-heading' className='text-2xl font-display font-semibold'>
                             Riksdagsinsikter
                         </h2>
