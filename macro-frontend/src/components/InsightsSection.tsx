@@ -1,6 +1,7 @@
-import {AlertTriangle, ArrowRight, CheckCircle, TrendingUp} from "lucide-react";
+import {AlertTriangle, CheckCircle, TrendingUp} from "lucide-react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
+import {ExampleBadge, ExampleNote} from "@/components/ExampleContent";
 
 const insights = [
     {
@@ -28,22 +29,31 @@ const insights = [
 
 const InsightsSection = () => {
     return (
-        <section id="insights" className="py-20 bg-gradient-glow">
+        <section
+            id="insights"
+            className="py-20 bg-gradient-glow"
+            aria-labelledby="insights-heading"
+            aria-describedby="insights-example-note"
+        >
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12 opacity-0 animate-fade-in-up" style={{animationDelay: "100ms"}}>
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                        Marknads<span className="text-gradient">insikter</span>
-                    </h2>
+                    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 mb-4">
+                        <h2 id="insights-heading" className="text-3xl md:text-4xl font-bold">
+                            Marknads<span className="text-gradient">insikter</span>
+                        </h2>
+                        <ExampleBadge/>
+                    </div>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
                         Håll dig uppdaterad med den senaste ekonomiska utvecklingen och analysen
                     </p>
+                    <ExampleNote id="insights-example-note" className="justify-center mt-2"/>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-6">
                     {insights.map((insight, index) => (
                         <Card
                             key={insight.title}
-                            className="glass-card border-border/50 hover:border-primary/30 transition-all duration-300 cursor-pointer group opacity-0 animate-fade-in-up"
+                            className="glass-card border-border/50 opacity-0 animate-fade-in-up"
                             style={{animationDelay: `${(index + 2) * 100}ms`}}
                         >
                             <CardHeader className="pb-3">
@@ -56,11 +66,14 @@ const InsightsSection = () => {
                   `}>
                                         <insight.icon className="h-5 w-5"/>
                                     </div>
-                                    <Badge variant="outline" className="text-xs text-muted-foreground">
-                                        {insight.date}
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <ExampleBadge/>
+                                        <Badge variant="outline" className="text-xs text-muted-foreground">
+                                            {insight.date}
+                                        </Badge>
+                                    </div>
                                 </div>
-                                <CardTitle className="text-lg mt-4 group-hover:text-primary transition-colors">
+                                <CardTitle className="text-lg mt-4">
                                     {insight.title}
                                 </CardTitle>
                             </CardHeader>
@@ -68,12 +81,6 @@ const InsightsSection = () => {
                                 <p className="text-sm text-muted-foreground leading-relaxed">
                                     {insight.description}
                                 </p>
-                                <div
-                                    className="mt-4 flex items-center text-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span>Läs mer</span>
-                                    <ArrowRight
-                                        className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform"/>
-                                </div>
                             </CardContent>
                         </Card>
                     ))}
