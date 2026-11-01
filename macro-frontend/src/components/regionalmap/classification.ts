@@ -56,10 +56,12 @@ const quantileGroups = (sorted: number[], shares: Share[]) => {
   return groups.filter(g => g.length > 0);
 };
 
-// The finer breaks go where the longer tail is; a tie keeps the upper set
+// The finer breaks go where the longer tail is, measured at p1 and p99 so one extreme area can't decide it;
+// a tie keeps the upper set. The lower set also needs p1 > min: otherwise the low end is a spike of equal
+// values (e.g. areas at exactly 0), not a tail, and its low breaks would collapse into one class
 const sequentialBreaks = (sorted: number[]) => {
-  const median = sorted[Math.floor(sorted.length / 2)];
-  return median - sorted[0] > sorted[sorted.length - 1] - median ? SEQUENTIAL_LOWER_TAIL_BREAKS : SEQUENTIAL_UPPER_TAIL_BREAKS;
+  const [p1, median, p99] = quantileBreaks(sorted, [[1, 100], [1, 2], [99, 100]]);
+  return p1 > sorted[0] && median - p1 > p99 - median ? SEQUENTIAL_LOWER_TAIL_BREAKS : SEQUENTIAL_UPPER_TAIL_BREAKS;
 };
 
 // Picks `count` colours spread over the ramp, keeping both ends
