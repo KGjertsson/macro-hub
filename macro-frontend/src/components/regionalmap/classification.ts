@@ -6,7 +6,12 @@ type Share = [number, number];
 
 // Five seventh-sized classes, then p90, p97 and p99 so a long upper tail is not one wide class. The 6/7
 // break (about p86) is left out because it nearly coincides with p90
-const SEQUENTIAL_BREAKS: Share[] = [[1, 7], [2, 7], [3, 7], [4, 7], [5, 7], [90, 100], [97, 100], [99, 100]];
+const SEQUENTIAL_UPPER_TAIL_BREAKS: Share[] = [[1, 7], [2, 7], [3, 7], [4, 7], [5, 7], [90, 100], [97, 100], [99, 100]];
+// The exact mirror, for a long lower tail: p1, p3 and p10, then the seventh-sized classes
+const SEQUENTIAL_LOWER_TAIL_BREAKS: Share[] = [[1, 100], [3, 100], [10, 100], [2, 7], [3, 7], [4, 7], [5, 7], [6, 7]];
+// How many times longer the lower tail must be to get the lower set; near-equal tails must not flip the
+// legend between years
+const LOWER_TAIL_MARGIN = 1.5;
 // Three classes per side, one neutral class
 const DIVERGING_ARM_BREAKS: Share[] = [[1, 3], [2, 3]];
 const DIVERGING_CLASS_COUNT = 7;
@@ -54,6 +59,14 @@ const quantileGroups = (sorted: number[], shares: Share[]) => {
   return groups.filter(g => g.length > 0);
 };
 
+// The upper set unless the lower tail is clearly longer, measured at p1 and p99 so one extreme area can't
+// decide it. The lower set also needs p1 > min: otherwise the low end is a spike of equal values (e.g. areas
+// at exactly 0), not a tail, and its low breaks would collapse into one class
+const sequentialBreaks = (sorted: number[]) => {
+  const [p1, median, p99] = quantileBreaks(sorted, [[1, 100], [1, 2], [99, 100]]);
+  return p1 > sorted[0] && median - p1 >= LOWER_TAIL_MARGIN * (p99 - median) ? SEQUENTIAL_LOWER_TAIL_BREAKS : SEQUENTIAL_UPPER_TAIL_BREAKS;
+};
+
 // Picks `count` colours spread over the ramp, keeping both ends
 const spread = (ramp: string[], count: number) =>
   count === 1 ? [ramp[Math.floor(ramp.length / 2)]] : Array.from({ length: count }, (_, i) => ramp[Math.round((i * (ramp.length - 1)) / (count - 1))]);
@@ -61,8 +74,9 @@ const spread = (ramp: string[], count: number) =>
 const toClasses = (groups: number[][], colors: string[]): ValueClass[] =>
   groups.map((group, i) => ({ color: colors[i], min: group[0], max: group[group.length - 1] }));
 
-// Up to nine classes split at SEQUENTIAL_BREAKS; data with both signs (e.g. flyttnetto) instead gets three
-// quantile classes per side and a gray class around zero holding the seventh of the areas closest to it
+// Up to nine classes with the finer breaks on the side of the long tail (light = low either way); data
+// with both signs (e.g. flyttnetto) instead gets three quantile classes per side and a gray class around
+// zero holding the seventh of the areas closest to it
 export const classify = (values: Record<string, number>): Classification => {
   const sorted = Object.values(values).sort((a, b) => a - b);
   const diverging = sorted.length > 0 && sorted[0] < 0 && sorted[sorted.length - 1] > 0;
@@ -81,7 +95,7 @@ export const classify = (values: Record<string, number>): Classification => {
       ...toClasses(positive, DIVERGING.slice(4, 4 + positive.length)),
     ];
   } else {
-    const groups = quantileGroups(sorted, SEQUENTIAL_BREAKS);
+    const groups = quantileGroups(sorted, sequentialBreaks(sorted));
     classes = toClasses(groups, spread(SEQUENTIAL, groups.length));
   }
 
