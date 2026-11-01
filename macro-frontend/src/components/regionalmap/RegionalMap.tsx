@@ -131,7 +131,7 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
           'line-color': borderColor(NO_DATA_COLOR),
           // Faint at country zoom, where lines of thousands of small areas would otherwise grey out the fills.
           // A line under 1 px still draws at over half strength, so width alone cannot thin them
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.12, 7, 0.3, 9, 0.7],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.12, 7, 0.3, 8, 0.7],
           'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.2, 8, 0.4, 10, 0.7, 14, 1],
         },
       }, firstLabel);
