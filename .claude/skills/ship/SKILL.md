@@ -20,7 +20,7 @@ Its brief must include the agreed design, what is out of scope, and these rules:
 
 - Work in your own git worktree under your scratchpad directory, on a feature branch from an up-to-date `origin/main`: `git -C <repo> fetch && git -C <repo> worktree add <dir> -b <branch> origin/main`. A ruleset blocks direct pushes to `main`.
 - Before every push, run the checks for what you changed:
-  - Backend: `JAVA_HOME=~/.sdkman/candidates/java/current mvn test` from `macro-backend/macro-analyzer/`, with Docker running.
+  - Backend: `JAVA_HOME=~/.sdkman/candidates/java/current mvn test` from `macro-backend/`, with Docker running.
   - Frontend: `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run build` and `npm run lint` from `macro-frontend/`. Lint must exit 0, as CI enforces.
 - Run builds, tests and other checks in the foreground with a long `timeout` (up to 600000 ms); they all fit in it. Don't start them with `run_in_background` and wait for a completion notice: an idle sub-agent is not reliably woken by it and stalls. For anything longer, use Monitor with a loop that ends when the process exits.
 - For frontend changes that add assets, workers or routes, also check the production build as nginx serves it: build the image under a throwaway tag, run it on a spare port, and `curl -I` the new assets. Vite's dev server hides serving bugs, e.g. nginx served `.mjs` as `application/octet-stream`, which blanked the MapLibre map.
@@ -68,8 +68,8 @@ From the repo root of the main clone:
 
 1. Run `git pull` on `main`.
 2. Rebuild and restart only the containers the change affects, and only if step 1 found them running. Never start containers that weren't running.
-   - If the backend or frontend runs outside Docker (`spring-boot:run` or Vite; check `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081)'`), don't restart it. Tell the user it keeps serving the old code until they restart it.
+   - If the backend or frontend runs outside Docker (`spring-boot:run` or Vite; check `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|5173)'`), don't restart it. Tell the user it keeps serving the old code until they restart it.
    - Frontend: `docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build --no-deps macro-frontend`
-   - Backend: from `macro-backend/macro-analyzer/`, run `sh ./mvnw clean package && docker build -t macro-analyzer .`. Then, from the repo root, run the same compose command with `up -d --no-deps macro-analyzer`.
+   - Backend: from `macro-backend/`, run `sh ./mvnw clean package && docker build -t macro-analyzer macro-analyzer`. Then, from the repo root, run the same compose command with `up -d --no-deps macro-analyzer`.
 3. Check with curl that each restarted service responds: `http://localhost:8081` for the frontend, `http://localhost:8080/macro-analyzer/series-config` for the backend.
 4. Once the change is in `main`, stop the implementer and reviewer sub-agents with TaskStop so none linger. Spawn fresh ones for the next change.

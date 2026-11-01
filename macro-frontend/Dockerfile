@@ -11,9 +11,15 @@ RUN npm run build
 
 # Serve it with nginx
 FROM nginx:1.27-alpine
-# Where nginx proxies /macro-analyzer/ to (scheme://host:port, no path); the default is the
-# compose service. The resolver is read from /etc/resolv.conf at startup (Docker: 127.0.0.11).
-ENV BACKEND_URL=http://macro-analyzer:8080 \
+# Where nginx proxies each route to (scheme://host:port, no path); the default is the compose service.
+# BACKEND_URL is the catch-all /macro-analyzer/, which also carries the manual scrape endpoints.
+# These defaults matter: the template keeps ${X} literally for an unset variable. An empty value
+# makes nginx exit at startup. The resolver is read from /etc/resolv.conf (Docker: 127.0.0.11).
+ENV MACRO_SERIES_URL=http://macro-analyzer:8080 \
+    REGIONAL_STATISTICS_URL=http://macro-analyzer:8080 \
+    PARLIAMENT_URL=http://macro-analyzer:8080 \
+    ELECTION_URL=http://macro-analyzer:8080 \
+    BACKEND_URL=http://macro-analyzer:8080 \
     NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html

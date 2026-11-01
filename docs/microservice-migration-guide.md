@@ -2,7 +2,7 @@
 
 This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
 
-Statements about the current code were checked against commit `07c7482`. The manual trigger paths and the Flyway ordering were decided on 2026-11-01, after that check. Anything marked **Suggested** or **Open** is not decided.
+Statements about the current code were checked against commit `07c7482`, and the steps that are done say what changed since then. The manual trigger paths and the Flyway ordering were decided on 2026-11-01, after that check. Anything marked **Suggested** or **Open** is not decided.
 
 ## Keeping this guide updated
 
@@ -26,8 +26,8 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 
 | Step | Description | Status |
 | --- | --- | --- |
-| 0 | Record the decisions and start this guide | Done when this PR merges |
-| 1 | Prepare inside the monolith | Not started |
+| 0 | Record the decisions and start this guide | Done |
+| 1 | Prepare inside the monolith | Done when this PR merges |
 | 2 | Extract regional-statistics | Not started |
 | 3 | Extract macro-series | Not started |
 | 4 | Extract parliament, switch election to REST | Not started |
@@ -152,25 +152,35 @@ Revert the PR and re-create the local databases.
 
 **Tasks:**
 
-- [ ] Convert to a Maven reactor. **Suggested:** the parent `pom.xml` and `mvnw` in `macro-backend/`, with the modules `macro-platform` and `macro-analyzer`.
-- [ ] Extract `scrape` and `shared` into `macro-platform`, keeping their package names. `MacroAnalyzerApplication` stays in `com.kg.macroanalyzer`, so component scanning still finds them.
-- [ ] Give `macro-platform` its own jOOQ model, in its own package, for `series_configuration`, `scrape_action_queue` and `flyway_schema_history` (`scrape`'s repositories and `FlywayCatalogVersion` use them). Today's generated model has one package and is committed in `src/main/java`.
-- [ ] Adjust what depends on the Maven layout: `.github/workflows/ci.yml` (`working-directory`, `mvnw`), `macro-backend/macro-analyzer/Dockerfile` (`COPY target/...`), the image build commands in `CLAUDE.md` and `macro-backend/macro-infra/k8s/README.md`, and the other docs.
-- [ ] Split `location /macro-analyzer/` in `macro-frontend/nginx/default.conf.template` into per-domain routes, all still pointing at the monolith:
+- [x] Convert to a Maven reactor. **Suggested:** the parent `pom.xml` and `mvnw` in `macro-backend/`, with the modules `macro-platform` and `macro-analyzer`.
+- [x] Extract `scrape` and `shared` into `macro-platform`, keeping their package names. `MacroAnalyzerApplication` stays in `com.kg.macroanalyzer`, so component scanning still finds them.
+- [x] Give `macro-platform` its own jOOQ model, in its own package, for `series_configuration`, `scrape_action_queue` and `flyway_schema_history` (`scrape`'s repositories and `FlywayCatalogVersion` use them). Today's generated model has one package and is committed in `src/main/java`.
+- [x] Adjust what depends on the Maven layout: `.github/workflows/ci.yml` (`working-directory`, `mvnw`), `macro-backend/macro-analyzer/Dockerfile` (`COPY target/...`), the image build commands in `CLAUDE.md` and `macro-backend/macro-infra/k8s/README.md`, and the other docs.
+- [x] Split `location /macro-analyzer/` in `macro-frontend/nginx/default.conf.template` into per-domain routes, all still pointing at the monolith:
   - `/macro-analyzer/series-config` and `/macro-analyzer/chart-data`
   - `/macro-analyzer/regional-statistics/`
   - `/macro-analyzer/parliament/`
   - `/macro-analyzer/municipalities/`, `/macro-analyzer/regions/` and `/macro-analyzer/constituencies/`
   - `/macro-analyzer/` stays as the catch-all, which also carries the manual endpoints for now
-- [ ] Give each domain its own URL variable (**Suggested:** `MACRO_SERIES_URL` and so on), with a default in `macro-frontend/Dockerfile`. The nginx entrypoint only substitutes variables that are defined: an unset variable stays as the literal `${X}`, and one set to an empty string leaves `set $backend ;`, so nginx fails to start. Both are easy to hit in Compose. Keep the rule from `BACKEND_URL`: `scheme://host:port`, with no trailing slash. Keep the 30-minute `proxy_read_timeout` on every route.
-- [ ] **Suggested:** add a Vite proxy for `/macro-analyzer` to the monolith, split the same way, make the dev frontend call its own origin and move Vite off 8080, which ends the port clash. `rootUrl` falls back to `http://localhost:8080` when `VITE_API_URL` is unset. A `.env.development` file isn't an option: the pre-commit hook and CI reject `.env.<anything>`. Change the fallback or set the variable in the `dev` script.
-- [ ] Update the local start-up steps in `CLAUDE.md`, with Compose as the default route. Running a service with `mvnw` and Vite stays possible, for working on one service.
+- [x] Give each domain its own URL variable (**Suggested:** `MACRO_SERIES_URL` and so on), with a default in `macro-frontend/Dockerfile`. The nginx entrypoint only substitutes variables that are defined: an unset variable stays as the literal `${X}`, and one set to an empty string leaves `set $backend ;`, so nginx fails to start. Both are easy to hit in Compose. Keep the rule from `BACKEND_URL`: `scheme://host:port`, with no trailing slash. Keep the 30-minute `proxy_read_timeout` on every route.
+- [x] **Suggested:** add a Vite proxy for `/macro-analyzer` to the monolith, split the same way, make the dev frontend call its own origin and move Vite off 8080, which ends the port clash. `rootUrl` falls back to `http://localhost:8080` when `VITE_API_URL` is unset. A `.env.development` file isn't an option: the pre-commit hook and CI reject `.env.<anything>`. Change the fallback or set the variable in the `dev` script.
+- [x] Update the local start-up steps in `CLAUDE.md`, with Compose as the default route. Running a service with `mvnw` and Vite stays possible, for working on one service.
 
 **Verify:** CI is green. The Compose stack and `npm run dev` both serve every page, and the manual endpoints still work through the gateway.
 
 **Rollback:** revert the PR. This step changes no database.
 
-**What differed:** not started.
+**What differed:** all the suggested items were done as written, with these details:
+
+- The `macro-analyzer` jOOQ model was regenerated without the three platform tables, so each table has one generated class. Its only other changes are the references to them. The two models are selected with `includes`/`excludes` in each module's `jooq-codegen` profile.
+- `ArchitectureTest` stays in `macro-analyzer` and sees `macro-platform` through the classpath, as directories under `mvn test` and as a jar under `mvn package`. `importIncludesMacroPlatform` fails if that stops. `platform.jooq.generated` is not in `DOMAIN_MODULE_DEPENDENCIES`, so domain modules can't use the queue and config tables directly, which is stricter than before.
+- `mvn -P jooq-codegen generate-sources` no longer works from the root, because `macro-analyzer` can't resolve `macro-platform` before it has compiled. The command is now `mvn -P jooq-codegen compile`. The URL is the property `jooq.codegen.url` in the parent pom, which each service's profile can override instead of "the profile's URL" in the checklist.
+- Running the application from the root needs `-pl macro-analyzer -am spring-boot:run`. The parent pom sets `spring-boot.run.skip` so only the application module runs. A new service's module has to turn it off, as `macro-analyzer` does.
+- `macro-analyzer/Dockerfile` needed no change, because its build context stays `macro-analyzer/` and the jar keeps its name. The image build commands changed.
+- `SeriesConfigRepositoryTest` and `NoStaticResourceHandlersHttpTest` stayed in `macro-analyzer`, because they need the application and its migrations. `macro-platform` has no Flyway run until step 2. `TestSeriesConfigFactory` is copied into `macro-platform`'s tests: as a test-jar it would be imported as production code by `ArchitectureTest`.
+- `location =` is used for `/macro-analyzer/series-config` and `/macro-analyzer/chart-data`, so nothing below those paths takes that route. The proxy settings, including the 30-minute `proxy_read_timeout`, are set once on the `server` block and inherited by every route. A later route only needs its own `set` and `proxy_pass`, unless it sets one of those directives itself.
+- Vite moved to 5173, its default, rather than 8081, so it can run next to the Compose frontend. The Vite proxy's backends are constants in `vite.config.ts` named like the nginx variables. `rootUrl` now falls back to same origin.
+- Beyond the plan: `.claude/skills/ship/SKILL.md` has the new build commands, and `CLAUDE.md` warns that microk8s' Postgres NodePort takes `localhost:31274` ahead of the Compose container when it runs.
 
 ## Step 2: Extract regional-statistics
 

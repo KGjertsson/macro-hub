@@ -2,7 +2,8 @@
 
 Java backend application for macro-hub. Built using domain driven design principles and the
 hexagonal architecture, split into one module per domain (`macroseries`, `regionalstatistics`,
-`parliament`, `election`) plus the `scrape` core and `shared` infrastructure. See
+`parliament`, `election`) plus the `scrape` core and `shared` infrastructure, which are built in the
+sibling Maven module `macro-platform`. See
 [ARCHITECTURE.md](ARCHITECTURE.md) and the "Architecture" section of the repository's `CLAUDE.md`.
 
 Inside every module:
@@ -90,10 +91,12 @@ erDiagram
 
 ### Maven
 
-generate jooq model
+The reactor root is `macro-backend/`, the parent of this module and `macro-platform`. Run Maven there.
+
+generate the jooq models of both modules
 
 ```
-mvn -P jooq-codegen generate-sources
+mvn -P jooq-codegen compile
 ```
 
 Flyway migrations (`src/main/resources/db/migration/`) run on application startup; there is no Flyway

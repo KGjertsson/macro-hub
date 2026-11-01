@@ -1,6 +1,10 @@
 package com.kg.macroanalyzer;
 
+import com.kg.macroanalyzer.platform.jooq.generated.DefaultCatalog;
+import com.kg.macroanalyzer.scrape.application.service.ScrapeService;
+import com.kg.macroanalyzer.shared.web.WebPort;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -19,8 +23,11 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyP
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideOutsideOfPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// Package-by-domain rules. A new module goes into MODULES (and DOMAIN_MODULES if it holds a business domain)
+// Package-by-domain rules, across the Maven modules: macro-platform (scrape, shared and its jOOQ model) is imported
+// from the classpath together with macro-analyzer. A new module goes into MODULES (and DOMAIN_MODULES if it holds a
+// business domain)
 @AnalyzeClasses(packages = ArchitectureTest.ROOT, importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
@@ -45,8 +52,16 @@ class ArchitectureTest {
     // Modules every other module may use, and which use none of them
     private static final List<String> SHARED_MODULES = List.of("shared");
 
-    // Generated code that belongs to no module
-    private static final List<String> GENERATED_PACKAGES = List.of("jooq.generated");
+    // Generated code that belongs to no module. platform.jooq.generated is macro-platform's model, for scrape and shared
+    // only: it is not in DOMAIN_MODULE_DEPENDENCIES
+    private static final List<String> GENERATED_PACKAGES = List.of("jooq.generated", "platform.jooq.generated");
+
+    // The rules below hold for classes they see, so a macro-platform missing from the import would pass them silently
+    @ArchTest
+    static void importIncludesMacroPlatform(JavaClasses classes) {
+        Stream.of(ScrapeService.class, WebPort.class, DefaultCatalog.class).forEach(platformClass ->
+                assertTrue(classes.contain(platformClass), platformClass.getName() + " is not among the imported classes"));
+    }
 
     // Only the application class sits in the root package; everything else belongs to a module, so no layer-first
     // package can reappear next to them

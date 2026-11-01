@@ -19,7 +19,6 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.EurostatNationalDebtSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
 import com.kg.macroanalyzer.jooq.generated.tables.FedSeries;
-import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearEur;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearFinland;
@@ -49,8 +48,6 @@ import com.kg.macroanalyzer.jooq.generated.tables.ScbAreaValue;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbAvailability;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbIndicator;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbTableState;
-import com.kg.macroanalyzer.jooq.generated.tables.ScrapeActionQueue;
-import com.kg.macroanalyzer.jooq.generated.tables.SeriesConfiguration;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
@@ -143,11 +140,6 @@ public class Tables {
      * The table <code>public.fed_series</code>.
      */
     public static final FedSeries FED_SERIES = FedSeries.FED_SERIES;
-
-    /**
-     * The table <code>public.flyway_schema_history</code>.
-     */
-    public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
 
     /**
      * The table <code>public.int_gov_bond_10_year_denmark</code>.
@@ -293,16 +285,6 @@ public class Tables {
      * The table <code>public.scb_table_state</code>.
      */
     public static final ScbTableState SCB_TABLE_STATE = ScbTableState.SCB_TABLE_STATE;
-
-    /**
-     * The table <code>public.scrape_action_queue</code>.
-     */
-    public static final ScrapeActionQueue SCRAPE_ACTION_QUEUE = ScrapeActionQueue.SCRAPE_ACTION_QUEUE;
-
-    /**
-     * The table <code>public.series_configuration</code>.
-     */
-    public static final SeriesConfiguration SERIES_CONFIGURATION = SeriesConfiguration.SERIES_CONFIGURATION;
 
     /**
      * The table <code>public.swedish_government_bill_12_month</code>.

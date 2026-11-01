@@ -18,9 +18,11 @@ data:
 
 Build new image and make available to microk8s:
 
+From `macro-backend/`:
+
 ```
-mvn install
-sudo docker build -t macro-analyzer:latest .
+mvn clean package
+sudo docker build -t macro-analyzer:latest macro-analyzer
 sudo docker save macro-analyzer:latest | microk8s ctr image import -
 ```
 
@@ -35,8 +37,10 @@ sudo docker save macro-analyzer:latest | microk8s ctr image import -
 
 ### Build docker image
 
+From `macro-backend/`, after `mvn clean package`:
+
 ```
-sudo docker build -t macro-analyzer:latest .
+sudo docker build -t macro-analyzer:latest macro-analyzer
 ```
 
 ### Run docker image

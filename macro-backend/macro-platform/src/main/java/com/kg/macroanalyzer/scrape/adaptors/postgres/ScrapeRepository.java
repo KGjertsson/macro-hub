@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.SCRAPE_ACTION_QUEUE;
+import static com.kg.macroanalyzer.platform.jooq.generated.Tables.SCRAPE_ACTION_QUEUE;
 
 
 @Repository

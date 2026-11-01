@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  /** Backend base URL; unset defaults to http://localhost:8080, empty means same origin */
+  /** Backend base URL; unset or empty means same origin */
   readonly VITE_API_URL?: string;
 }
 

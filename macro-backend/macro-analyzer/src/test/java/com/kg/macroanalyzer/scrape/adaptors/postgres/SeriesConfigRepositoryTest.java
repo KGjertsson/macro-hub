@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.SERIES_CONFIGURATION;
+import static com.kg.macroanalyzer.platform.jooq.generated.Tables.SERIES_CONFIGURATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
