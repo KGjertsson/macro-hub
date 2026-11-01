@@ -20,6 +20,7 @@
         <module>macro-platform</module>
         <module>macro-analyzer</module>
         <module>regional-statistics-service</module>
+        <module>macro-series-service</module>
     </modules>
 
     <properties>

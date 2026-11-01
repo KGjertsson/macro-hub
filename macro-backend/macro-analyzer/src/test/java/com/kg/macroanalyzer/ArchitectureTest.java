@@ -34,11 +34,11 @@ class ArchitectureTest {
     static final String ROOT = "com.kg.macroanalyzer";
 
     // Modules that follow the domain / application / adaptors layout
-    private static final List<String> MODULES = List.of("scrape", "macroseries", "parliament", "election");
+    private static final List<String> MODULES = List.of("scrape", "parliament", "election");
 
     // Modules holding one business domain. They build on scrape, shared and the jOOQ model, and are only used from
     // outside where DOMAIN_MODULE_EXTRA_DEPENDENCIES allows it
-    private static final List<String> DOMAIN_MODULES = List.of("macroseries", "parliament", "election");
+    private static final List<String> DOMAIN_MODULES = List.of("parliament", "election");
 
     // What every domain module may use besides itself and classes outside the application
     private static final List<String> DOMAIN_MODULE_DEPENDENCIES = List.of("scrape", "shared", "jooq.generated");

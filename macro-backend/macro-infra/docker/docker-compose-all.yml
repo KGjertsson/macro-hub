@@ -10,6 +10,7 @@ services:
       POSTGRES_PASSWORD: macropassword
       # Read by postgres-init/ on an empty volume. An existing volume needs that script run by hand, see the guide
       REGIONAL_STATISTICS_DB_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
+      MACRO_SERIES_DB_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
     ports:
       - "5432:5432"
     volumes:
@@ -34,8 +35,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: macropassword
       SPRING_JOOQ_SQL_DIALECT: POSTGRES
       SPRING_PROFILES_ACTIVE: prod
-      RIKSBANKEN_PROD_SUBSCRIPTION_KEY: ${RIKSBANKEN_PROD_SUBSCRIPTION_KEY:-}
-      FED_PROD_SUBSCRIPTION_KEY: ${FED_PROD_SUBSCRIPTION_KEY:-}
     ports:
       - "8080:8080"
 
@@ -54,6 +53,21 @@ services:
     ports:
       - "8082:8082"
 
+  macro-series:
+    image: macro-series-service:latest
+    container_name: macrohub-macro-series
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/macro_series
+      SPRING_DATASOURCE_USERNAME: macro_series
+      SPRING_DATASOURCE_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
+      RIKSBANKEN_PROD_SUBSCRIPTION_KEY: ${RIKSBANKEN_PROD_SUBSCRIPTION_KEY:-}
+      FED_PROD_SUBSCRIPTION_KEY: ${FED_PROD_SUBSCRIPTION_KEY:-}
+    ports:
+      - "8083:8083"
+
   macro-frontend:
     build: ../../../macro-frontend
     image: macro-frontend:latest
@@ -61,11 +75,12 @@ services:
     depends_on:
       - macro-analyzer
       - regional-statistics
+      - macro-series
     environment:
       # nginx proxies each /macro-analyzer route here, so the browser only talks to :8081
       # scheme://host:port only: a trailing slash or path makes every proxied request 404
       # Write literal values: an empty one, as ${X:-} can give, makes nginx exit at startup
-      MACRO_SERIES_URL: http://macro-analyzer:8080
+      MACRO_SERIES_URL: http://macro-series:8083
       REGIONAL_STATISTICS_URL: http://regional-statistics:8082
       PARLIAMENT_URL: http://macro-analyzer:8080
       ELECTION_URL: http://macro-analyzer:8080

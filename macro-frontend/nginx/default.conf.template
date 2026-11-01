@@ -27,6 +27,10 @@ server {
         set $backend ${MACRO_SERIES_URL};
         proxy_pass $backend;
     }
+    location /macro-analyzer/scrape/macro-series/ {
+        set $backend ${MACRO_SERIES_URL};
+        proxy_pass $backend;
+    }
 
     # regional-statistics
     location /macro-analyzer/regional-statistics/ {

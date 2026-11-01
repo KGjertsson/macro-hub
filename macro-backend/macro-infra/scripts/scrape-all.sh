@@ -10,7 +10,7 @@ gateway="${1:-http://localhost:8081}"
 
 # The services that have moved, and the prefix of what is still in the monolith. Step 5 of the migration guide removes
 # the monolith's entry
-prefixes="macro-analyzer/scrape/regional-statistics macro-analyzer"
+prefixes="macro-analyzer/scrape/regional-statistics macro-analyzer/scrape/macro-series macro-analyzer"
 
 status=0
 for prefix in $prefixes; do

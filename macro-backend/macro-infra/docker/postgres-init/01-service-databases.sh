@@ -19,6 +19,7 @@ SQL
 }
 
 create_service_database regional_statistics "${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}"
+create_service_database macro_series "${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}"
 
 # Every role may connect to a database by default, so a service's boundary needs this on all of them: on its own
 # database against the other roles, and on the others (macroanalyzer, postgres, template1) against its role.
