@@ -27,7 +27,7 @@ The backend is being split into one service per domain ([ADRs](docs/adrs/README.
 
 The monolith still has its old `scb_*` tables and their jOOQ classes until the follow-up PR that drops them (step 2 of the guide). Nothing reads them. Everything below about a "module" holds in both applications; the rest of this file describes the monolith unless it names the service.
 
-**Databases: `localhost:31274` and `192.168.154.7:31274` can be the microk8s cluster's real database.** The service's defaults and the jOOQ codegen defaults never point there. The monolith's base properties and `dev` profile still do.
+**Databases: port 31274, on `localhost` and on `192.168.154.7`, is the microk8s cluster's Postgres NodePort and its real database.** No default points there: both applications' properties (the monolith's `dev` profile included) and the jOOQ codegen use the Compose Postgres on `localhost:5432`, and each application's `BaseConfigurationTest` pins that. To use the cluster's database, pass the URL deliberately (`SPRING_DATASOURCE_URL`). Only `k8s/java/deployment.yaml` names it, because the pod has no local Postgres.
 
 ## Build & Test Commands
 
@@ -49,11 +49,11 @@ The monolith still has its old `scb_*` tables and their jOOQ classes until the f
 
 **For working on the code**, run the backend with `mvnw` and the frontend with Vite. Vite proxies `/macro-analyzer` to the monolith on 8080 and the moved routes to `regional-statistics-service` on 8082, so the start order doesn't matter:
 
-1. **Postgres** (from repo root): `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:31274`. Both Compose files name their container `macrohub-postgres`, so stop the full stack first. **If microk8s is running, its Postgres NodePort answers on `localhost:31274` instead of this container**, and the `dev` profile then uses and migrates the cluster's database. Check with `psql -h localhost -p 31274 -U macrouser macroanalyzer -c 'select version()'` (Compose runs Postgres 16, the cluster 13).
+1. **Postgres** (from repo root): `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:5432`. **It can't run next to the full stack's Postgres as a second one:** both Compose files define the same `postgres` service (container `macrohub-postgres`, port 5432, Compose project `docker`, volume `docker_pgdata`). With the full stack up, this command leaves its Postgres running and warns about orphan containers (ignore it, and don't pass `--remove-orphans`), and you share that database, so only stop the stack's containers that hold 8080 or 8082. If `.env` sets `REGIONAL_STATISTICS_DB_PASSWORD`, pass the same `--env-file`, or Compose re-creates the container (on the same volume). Anything else on port 5432 makes it fail to start, and a `k port-forward` to 5432 would give the applications the cluster's database.
 2. **Backend** (from `macro-backend/`): `SPRING_DATASOURCE_PASSWORD=macropassword JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl macro-analyzer -am spring-boot:run -Dspring-boot.run.profiles=dev`. `-am` builds `macro-platform` with it; only the application module actually runs (`spring-boot.run.skip` in the poms). The working directory is `macro-analyzer/`, so `.env` is picked up. It serves on 8080 once `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/macro-analyzer/series-config` returns 200.
 3. **Frontend** (from `macro-frontend/`): `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run dev`. Open `http://localhost:5173`.
 
-**To work on `regional-statistics-service`** (from `macro-backend/`, with the full stack's Postgres on 5432; stop its container first if it holds 8082): `JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl regional-statistics-service -am spring-boot:run`. It needs no profile and no `.env`. Its base properties use `localhost:5432/regional_statistics`. With the dependencies-only Postgres, or any other database, set `SPRING_DATASOURCE_URL` explicitly.
+**To work on `regional-statistics-service`** (from `macro-backend/`, with the Compose Postgres on 5432; stop the full stack's service container first if it holds 8082): `JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl regional-statistics-service -am spring-boot:run`. It needs no profile and no `.env`. Its base properties use `localhost:5432/regional_statistics`. For any other database, set `SPRING_DATASOURCE_URL` explicitly.
 
 ### Backend (from `macro-backend/`)
 
@@ -72,16 +72,15 @@ mvn test -Dtest=MacroSeriesControllerTest#shouldReturnOk_whenValidBundleRetrieve
 
 # Generate the JOOQ models of macro-platform and macro-analyzer from the database schema. The phase is compile, not generate-sources: macro-analyzer can
 # only resolve macro-platform once that has been compiled. The database must be at the latest migration: the command
-# deletes the classes of tables it doesn't find. The default URL is the full stack's Postgres (docker-compose-all.yml,
+# deletes the classes of tables it doesn't find. The default URL is the Compose Postgres (either Compose file,
 # localhost:5432/macroanalyzer). For any other database, add -Djooq.codegen.url=...
 mvn -P jooq-codegen compile
 
 # Generate regional-statistics-service's JOOQ model. Its own profile, so -am leaves macro-platform's model alone. The
-# default is the full stack's localhost:5432/regional_statistics, with that service's role
+# default is the Compose Postgres' localhost:5432/regional_statistics, with that service's role
 mvn -P jooq-codegen-regional-statistics compile -pl regional-statistics-service -am
 
-# Run locally against the Docker Postgres. The dev profile points at localhost:31274: with microk8s running, this uses
-# and migrates the cluster's database, so do the psql check under "Starting the local stack" first
+# Run locally against the Docker Postgres (localhost:5432)
 SPRING_DATASOURCE_PASSWORD=macropassword ./mvnw -pl macro-analyzer -am spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
@@ -93,10 +92,10 @@ Flyway migrations run automatically on application startup via `spring-boot-star
 
 These are the monolith's. `regional-statistics-service` has one `application.properties`, with defaults for the Compose Postgres and no profiles besides `test`.
 
-- `application.properties` — base config; datasource points at the microk8s cluster (`192.168.154.7:31274`)
-- `application-dev.properties` — overrides datasource URL to `localhost:31274`
+- `application.properties` — base config; datasource points at the Compose Postgres (`localhost:5432/macroanalyzer`)
+- `application-dev.properties` — sets the same datasource URL, pinned with the base one by `BaseConfigurationTest`
 - `application-test.properties` — TestContainers datasource
-- `prod` profile (used by the Dockerfile and `docker-compose-all.yml`) has no properties file; config comes from env vars
+- `prod` profile (used by the Dockerfile and `docker-compose-all.yml`) has no properties file; config comes from env vars, and without `SPRING_DATASOURCE_URL` the base `localhost:5432` applies, which inside a container is nothing
 - Riksbanken and Fed scrapes require `riksbanken.prod.subscription.key` / `fed.prod.subscription.key` (env: `RIKSBANKEN_PROD_SUBSCRIPTION_KEY`, `FED_PROD_SUBSCRIPTION_KEY`)
   - Locally, put them in `macro-backend/macro-analyzer/.env` (copy `.env.example`; gitignored). Spring loads it via `spring.config.import=optional:file:.env[.properties]`, relative to the working directory, which is `macro-analyzer/` under `spring-boot:run` (run a jar from there too)
   - For `docker-compose-all.yml`, pass `--env-file macro-backend/macro-analyzer/.env`
@@ -126,7 +125,7 @@ npm run preview    # serve the production build
 ### Docker (from repo root)
 
 ```bash
-# Dependencies only (PostgreSQL on localhost:31274)
+# Dependencies only (PostgreSQL on localhost:5432, the same service as the full stack's, so not at the same time as a second one)
 docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up
 
 # Full stack (PostgreSQL + monolith on :8080 + regional-statistics-service on :8082 + frontend on :8081) — build the backend images first:

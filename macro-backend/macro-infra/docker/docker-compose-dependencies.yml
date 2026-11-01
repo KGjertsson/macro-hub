@@ -11,7 +11,7 @@ services:
       # Read by postgres-init/ on an empty volume. An existing volume needs that script run by hand, see the guide
       REGIONAL_STATISTICS_DB_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
     ports:
-      - "31274:5432"
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d:ro

@@ -29,7 +29,7 @@
         <spring-boot.run.skip>true</spring-boot.run.skip>
         <!-- mvn test -Dtest=X from the root: the modules without X must not fail the build -->
         <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
-        <!-- The full Compose stack's Postgres. Never a default on 31274: on a machine with microk8s, that is the cluster's database -->
+        <!-- The Compose Postgres. Never a default on 31274: on a machine with microk8s, that is the cluster's database -->
         <jooq.codegen.url>jdbc:postgresql://localhost:5432/macroanalyzer</jooq.codegen.url>
         <jooq.codegen.user>macrouser</jooq.codegen.user>
         <jooq.codegen.password>macropassword</jooq.codegen.password>

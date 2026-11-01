@@ -6,7 +6,7 @@ It is the template for the other services in [the migration guide](../../docs/mi
 
 ## Run it
 
-All Maven commands run from `macro-backend/`. Without settings it uses the Compose Postgres, `localhost:5432/regional_statistics`. Any other database needs `SPRING_DATASOURCE_URL`, and on a machine with microk8s, port 31274 can be the cluster's real database.
+All Maven commands run from `macro-backend/`. Without settings it uses the Compose Postgres, `localhost:5432/regional_statistics`. Any other database needs `SPRING_DATASOURCE_URL`, and on a machine with microk8s, port 31274 is the cluster's real database.
 
 ```bash
 JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl regional-statistics-service -am spring-boot:run

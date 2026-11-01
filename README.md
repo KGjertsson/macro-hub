@@ -55,11 +55,12 @@ EU27_2020 = European Union (27 countries as of 2020).
 
 ## Set Up Guide
 
-1. Configure the microk8s cluster
-2. Run postgres pod in the cluster
-3. Run the backend application in IntelliJ
-4. Install the frontend repo
-5. Run the frontend repo
-6. Run `macro-backend/macro-infra/scripts/scrape-all.sh` to populate the databases
+1. Start Postgres with `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:5432`, the backend's default
+2. Run the backend application in IntelliJ
+3. Install the frontend repo
+4. Run the frontend repo
+5. Run `macro-backend/macro-infra/scripts/scrape-all.sh` to populate the databases
 
 The backend is being split into one service per domain. See `CLAUDE.md` for what has moved and the current way to start the stack, and `docs/microservice-migration-guide.md` for the plan.
+
+To run the backend against the microk8s cluster's database instead (see `macro-backend/macro-infra/k8s/README.md`), set `SPRING_DATASOURCE_URL` to it. Nothing defaults to it.
