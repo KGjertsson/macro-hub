@@ -29,7 +29,7 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 | 0 | Record the decisions and start this guide | Done |
 | 1 | Prepare inside the monolith | Done |
 | 2 | Extract regional-statistics | Done |
-| 3 | Extract macro-series | Not started |
+| 3 | Extract macro-series | In progress: the service is extracted. Dropping the old tables is a follow-up PR |
 | 4 | Extract parliament, switch election to REST | Not started |
 | 5 | Retire the monolith | Not started |
 | 6 | First real Kubernetes deployment | Not started |
@@ -65,6 +65,7 @@ Steps 2 to 5 each use this checklist. `<service>` is the service's name, and `<d
   | monolith | 8080 |
   | frontend (Compose) | 8081 |
   | regional-statistics | 8082 |
+  | macro-series | 8083 |
   | Vite | 5173 |
 
 ### Flyway
@@ -83,6 +84,7 @@ Until step 5, `series_configuration` and `scrape_action_queue` are defined twice
 - [ ] Write a squashed baseline in the new service with the domain's tables and seed data, without the DDL for the two platform tables, taken from the current database (`pg_dump --schema-only -t ...` is a good start). The monolith's migrations stay there until step 5, and in git history after that.
 - [ ] Include the seed data that migrations added. Today that is `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. `local_governance` starts empty.
 - [ ] Copy the domain's `series_configuration` rows into the baseline, selected by `scrape_flow`. Keep `id` and `global_id` so `/series-config` keeps its order, and write `global_id` as literals so the baseline doesn't need the `uuid-ossp` extension (no column default uses it).
+- [ ] Keep the names of the tables' sequences and constraints, however odd. A data-only `pg_dump` calls `setval` by the source's sequence names, so a renamed sequence fails the restore. Compare `pg_dump --schema-only` of the new database's tables with the monolith's: the diff should be empty.
 - [ ] Set the `series_configuration` sequence past the copied ids. `scrape_action_queue` needs nothing as long as the baseline copies no queue rows.
 - [ ] Turn on the platform run for the service. The property goes in its `application.properties`, as it never runs without it.
 - [ ] Set `spring.flyway.baseline-on-migrate=true` and `spring.flyway.baseline-version=0` for the service run. After the platform run the schema is no longer empty but `flyway_schema_history` doesn't exist yet, and Flyway then refuses to migrate ("Found non-empty schema(s) ... but no schema history table"). Version 0 is needed because Flyway skips migrations at or below the baseline, and the default baseline version of 1 would skip the service's `V1`. Both were tried on Flyway 12.4.0 and Postgres 16.
@@ -94,14 +96,21 @@ Re-scraping is the default. Dump and restore only saves time on a local database
 | Service | Re-scrape time | Notes |
 | --- | --- | --- |
 | regional-statistics | About 9 to 12 minutes | 2.4 M rows, 377 MB on disk. Measured 2026-11-01: 8 min 49 s (6 min 35 s fetching, 2 min writing), the container peaked at 846 MiB on a JVM with default heap settings on a 31 GiB machine. A second run with unchanged tables took 13 s. |
-| macro-series | Not measured | Needs the Riksbanken and Fed keys. |
+| macro-series | About 1 to 2 minutes (**estimate**, not a full run) | Needs the Riksbanken and Fed keys. Scaled from 7 series fetched and stored on 2026-11-01: Riksbanken 1 to 1.5 s each (39 series), Fed 0.5 to 1.3 s (11), Eurostat about 0.25 s (58), one at a time. No full run was made, and rate limits on a full run are unknown. |
 | parliament | About 7 minutes for activity | Activity is only fetched for the latest two terms, so older activity in a local database isn't re-created. |
 | election | About 1.5 minutes | About 310 zips. |
 
 - [ ] Trigger the scrape through the service's manual path (`enqueue-all`, then `scrape-from-queue`), or wait for its cron during the 22:00 hour.
 - [ ] Skip the queue rows on a fresh start. If you keep a local database and it has pending rows, copy them by `dataset_name` (`status = 0`; all local rows are currently done).
 
-Optional time-saver, after Flyway has created the service's tables and **before the monolith's drop migration runs**, because that deletes what the dump reads. The monolith runs it as soon as it starts on a commit that has it, so a local database that is past it has to re-scrape. The commands below are the ones used for regional-statistics, whose tables V34 has dropped, so they no longer work as written. A later service names its own tables:
+Optional time-saver, after Flyway has created the service's tables and **before the monolith's drop migration runs**, because that deletes what the dump reads. The monolith runs it as soon as it starts on a commit that has it, so a local database that is past it has to re-scrape. The commands for macro-series work until the monolith's drop migration runs (V35 only deletes the config and queue rows, so they work after it too). The tables have no seed rows, so nothing needs truncating:
+
+```bash
+docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only -t 'euro_market_*' -t 'int_gov_bond_*' -t 'swedish_government_*' -t policy_rate_sweden -t exchange_usd_sek -t fed_series -t eurostat_national_debt_series macroanalyzer > ms.dump
+docker exec -i macrohub-postgres pg_restore -U macro_series --no-owner -d macro_series < ms.dump
+```
+
+Tried on a throwaway stack from a dump of the local database: 41 tables, 586,918 rows, an 18 MB dump, 3 s to restore. Checksums of all 41 tables matched, and the sequences were set. The commands used for regional-statistics follow. V34 has dropped its tables, so they no longer work as written:
 
 ```bash
 docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only -t scb_indicator -t scb_area_value -t scb_availability -t scb_table_state macroanalyzer > rs.dump
@@ -154,7 +163,7 @@ Note that `EnqueueService.enqueue` ignores unknown names. After a cut-over, `POS
 - [ ] The role can't connect to another service's database.
 - [ ] A manual scrape on `/macro-analyzer/scrape/<service>/` works through the gateway, and a second one during the run answers 409.
 
-The Compose files set fixed container names and ports, so verify on a throwaway project, and don't give it port 31274, which can be the cluster's real database. Give it an override file that sets another `container_name`, `image` and port for each service (`ports: !override` replaces the list rather than adding to it), and run `docker compose -p <name> -f docker-compose-all.yml -f <override> up -d`. `-p` also gives it its own volume. Check the override with `docker compose ... config` first. Docker installed as a snap can't read `/tmp`, so the Compose files and build contexts have to be under `$HOME`.
+The Compose files set fixed container names and ports, so verify on a throwaway project, and don't give it port 31274, which can be the cluster's real database. Give it an override file that sets another `container_name`, `image` and port for each service (`ports: !override` replaces the list rather than adding to it), and run `docker compose -p <name> -f docker-compose-all.yml -f <override> up -d`. `-p` also gives it its own volume. Check the override with `docker compose ... config` first, without `--env-file`, because `config` prints the values it reads, keys included. Set `SCHEDULER_ENABLED: "false"` on each application in the override unless you are testing the cron: during the 22:00 hour (UTC in the container) it would otherwise enqueue every series, against the real APIs. Docker installed as a snap can't read `/tmp`, so the Compose files and build contexts have to be under `$HOME`.
 
 ### Rollback
 
@@ -243,16 +252,30 @@ Revert the PR and re-create the local databases.
 
 **Tasks:**
 
-- [ ] Run the extraction checklist.
-- [ ] Move the `RIKSBANKEN_PROD_SUBSCRIPTION_KEY` and `FED_PROD_SUBSCRIPTION_KEY` settings to this service only, in `docker-compose-all.yml` and the service's `.env.example`.
-- [ ] Move `ChartSeriesConfigIntegrationTest` here, including its count of 108 and its category set. Move its checks on other flows to their owners.
-- [ ] Route `/macro-analyzer/series-config`, `/macro-analyzer/chart-data` and `/macro-analyzer/scrape/macro-series/` to the service. Add the image and its service in `docker-compose-all.yml`.
+- [x] Run the extraction checklist, except for dropping the old tables.
+- [x] Move the `RIKSBANKEN_PROD_SUBSCRIPTION_KEY` and `FED_PROD_SUBSCRIPTION_KEY` settings to this service only, in `docker-compose-all.yml` and the service's `.env.example`.
+- [x] Move `ChartSeriesConfigIntegrationTest` here, including its count of 108 and its category set. Move its checks on other flows to their owners.
+- [x] Route `/macro-analyzer/series-config`, `/macro-analyzer/chart-data` and `/macro-analyzer/scrape/macro-series/` to the service. Add the image and its service in `docker-compose-all.yml`.
+- [ ] Drop the 41 old tables with a monolith migration, and regenerate the monolith's jOOQ model. This is a separate small PR, after the owner's stack has been verified. V35, in the step's main PR, only deletes the `MACRO_POINT` config rows and their queue rows.
 
 **Verify:** the checklist's verify list, plus: `/series-config` lists 108 entries in the same order, and charts for a Riksbanken, a Fed and a Eurostat series render.
 
 **Rollback:** revert the PR and re-create the local databases.
 
-**What differed:** not started.
+**What differed:** the template held, with these details. The checklist above has been corrected where it turned out incomplete.
+
+- The module is `macro-series-service`, on port 8083 inside and outside the container. The Compose service is `macro-series`, and the jOOQ profile is `jooq-codegen-macro-series`. V35 is the monolith's migration. The model was generated from a throwaway database. Its profile selects `.*` minus the platform's tables, including `flyway_platform_schema_history`, rather than listing 41 names.
+- The local `.env` moved to `macro-backend/macro-series-service/.env`, next to the service that uses the keys and in a directory that step 5's rename doesn't touch. Compose reads it with `--env-file`, and Spring from the working directory under `spring-boot:run`, both tried with a Fed series that needs the key. An existing clone has to move its file. The monolith's `spring.config.import` and key properties are gone, as nothing there reads them. The optional database passwords are in the same file, so there is one `--env-file` for every Compose command.
+- The baseline is `pg_dump --schema-only` output rewritten per table, not the monolith's migrations, because those rename tables repeatedly. `pg_dump` of the result is identical to the monolith's for all 41 tables, including the old sequence and constraint names such as `euro_market_3_month_denmark_id_seq` and `swedish_government_bonds_7_month_id_seq` on `int_gov_bond_*` and `swedish_government_bonds_7_year`. Those names have to stay, because the dump's `setval` uses them.
+- `id` and order: `SeriesConfigRepository` reads in `id` order. `/series-config` uses that order, and `MacroSeriesService` filters that same list, so `/chart-data` returns series, and `ColorSelectionStrategy` gives colours, in `id` order whatever the request's order is. The baseline keeps the 108 ids (1 to 110, with gaps), which keeps both. `created` and `updated` of the config rows aren't copied, as no response uses them.
+- One intended change in behaviour: a `/chart-data` request naming a config of another domain (`MembersOfParliament`) answered 500 in the monolith, whose config list held it, and now is treated like any unknown name (204, or 200 with the other series). The frontend only sends names from `/series-config`.
+- Compared through the new gateway with the running stack, on a restored copy of the local database: `/series-config` byte for byte (108 entries, 33,182 bytes), and 2,310 `/chart-data` requests across every series, the 5 categories, the 13 subcategories, reversed orders and mixed sources, each with all 3 strategies and 5 time frames. All were identical in status and bytes: 1,881 answered 200 with real data and 429 answered 204 (a short time frame on a series with no point that recent, such as Eurostat's yearly debt figures). The 400 cases have the same status and differ only in their timestamp.
+- A real scrape of 7 series on an empty database stored the same data as the local database for 6 of them. `FEDDJ` differs at the start only: FRED serves the Dow Jones and S&P 500 for a rolling 10 years, so a re-scrape loses days a restored dump keeps. A second `scrape-from-queue` during the run answered 409.
+- The local database has every Fed series except `FEDEffectiveFederalFundsRate` about twice over (`FEDCPI`: 1,050 rows, 525 dates), from before this step. Charts aren't affected, as sampling keeps one point per date, and the responses match a clean scrape's. A restore copies the duplicates and a re-scrape doesn't have them. Fixing them is out of scope.
+- A stack that upgrades without `--no-deps` re-creates `macrohub-postgres`, on the same volume, because the service's password variable is new in its environment. That is harmless, but it restarts every service's connections.
+- The monolith's and the service's `TestJsonReader` differ: the monolith's lost `readMacroSeriesList`. `ChartSeriesConfigIntegrationTest`'s checks of other domains' configs moved to `MonolithSeriesConfigIntegrationTest`.
+- `scrape-all.sh` was only run against a stub gateway here, which saw all six calls: the point of this step's verification was not to call the external APIs for all 108 series.
+- CI needed no change.
 
 ## Step 4: Extract parliament, and switch election to REST
 

@@ -1,10 +1,10 @@
 ## marco-analyzer
 
 Java backend application for macro-hub. Built using domain driven design principles and the
-hexagonal architecture, split into one module per domain (`macroseries`, `parliament`, `election`)
+hexagonal architecture, split into one module per domain (`parliament`, `election`)
 plus the `scrape` core and `shared` infrastructure, which are built in the sibling Maven module
-`macro-platform`. `regionalstatistics` has moved to the sibling `regional-statistics-service`, and the
-other domains follow (see `docs/microservice-migration-guide.md`). See
+`macro-platform`. `regionalstatistics` and `macroseries` have moved to the siblings
+`regional-statistics-service` and `macro-series-service`, and the other domains follow (see `docs/microservice-migration-guide.md`). See
 [ARCHITECTURE.md](ARCHITECTURE.md) and the "Architecture" section of the repository's `CLAUDE.md`.
 
 Inside every module:
@@ -98,8 +98,8 @@ only use it on purpose. `BaseConfigurationTest` keeps the defaults away from it.
 
 ### Maven
 
-The reactor root is `macro-backend/`, the parent of this module, `macro-platform` and
-`regional-statistics-service`. Run Maven there.
+The reactor root is `macro-backend/`, the parent of this module, `macro-platform`,
+`regional-statistics-service` and `macro-series-service`. Run Maven there.
 
 generate the jooq models of this module and `macro-platform`, from a database at the latest migration. The default is the Compose
 Postgres, `localhost:5432/macroanalyzer`. For any other database, add `-Djooq.codegen.url=...`.

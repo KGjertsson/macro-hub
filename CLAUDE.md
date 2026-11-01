@@ -10,6 +10,7 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
   - **macro-platform/** — library with the `scrape` core and `shared` (no application class; its only migrations are `db/platform`, which only services that opt in run)
   - **macro-analyzer/** — the monolith: the domain modules that haven't moved yet, `MacroAnalyzerApplication`, its Flyway migrations and properties files
   - **regional-statistics-service/** — the first extracted service: the `regionalstatistics` module, `RegionalStatisticsApplication`, its own migrations and properties files
+  - **macro-series-service/** — the chart series: the `macroseries` module, `MacroSeriesApplication`, its own migrations and properties files, and the Riksbanken and Fed keys
 - **macro-frontend/** — Vite + React 18 + TypeScript + shadcn-ui dashboard (formerly the separate `macro-view-hub` repo, merged in via `git subtree`)
 - **macro-backend/macro-infra/** — Docker Compose files (`docker/`) and microk8s manifests (`k8s/`)
 
@@ -17,15 +18,15 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
 
 The backend is being split into one service per domain ([ADRs](docs/adrs/README.md), [migration guide](docs/microservice-migration-guide.md)).
 
-| | `regional-statistics-service` | `macro-analyzer` (the monolith) |
-| --- | --- | --- |
-| Domains | `regionalstatistics` | `macroseries`, `parliament`, `election` |
-| Host port | 8082 | 8080 |
-| Database and role | `regional_statistics`, role `regional_statistics` | `macroanalyzer`, role `macrouser` (superuser) |
-| Manual scrape paths | `/macro-analyzer/scrape/regional-statistics/{enqueue,enqueue-all,scrape-from-queue}` | `/macro-analyzer/{enqueue,enqueue-all,scrape-from-queue}` |
-| Migrations | `db/platform` (from `macro-platform`, history table `flyway_platform_schema_history`), then its own `db/migration` | `db/migration`, V1 to V34 |
+| | `regional-statistics-service` | `macro-series-service` | `macro-analyzer` (the monolith) |
+| --- | --- | --- | --- |
+| Domains | `regionalstatistics` | `macroseries` | `parliament`, `election` |
+| Host port | 8082 | 8083 | 8080 |
+| Database and role | `regional_statistics`, role `regional_statistics` | `macro_series`, role `macro_series` | `macroanalyzer`, role `macrouser` (superuser) |
+| Manual scrape paths | `/macro-analyzer/scrape/regional-statistics/{enqueue,enqueue-all,scrape-from-queue}` | `/macro-analyzer/scrape/macro-series/{enqueue,enqueue-all,scrape-from-queue}` | `/macro-analyzer/{enqueue,enqueue-all,scrape-from-queue}` |
+| Migrations | `db/platform` (from `macro-platform`, history table `flyway_platform_schema_history`), then its own `db/migration` | The same | `db/migration`, V1 to V35 |
 
-Everything below about a "module" holds in both applications; the rest of this file describes the monolith unless it names the service.
+Everything below about a "module" holds in all the applications; the rest of this file describes the monolith unless it names a service. The monolith still has the 41 macro-series data tables and their jOOQ classes, which nothing reads, until a follow-up migration drops them (see step 3 in the guide).
 
 **Databases: port 31274, on `localhost` and on `192.168.154.7`, is the microk8s cluster's Postgres NodePort and its real database.** No default points there: both applications' properties (the monolith's `dev` profile included) and the jOOQ codegen use the Compose Postgres on `localhost:5432`, and each application's `BaseConfigurationTest` pins that. To use the cluster's database, pass the URL deliberately (`SPRING_DATASOURCE_URL`). Only `k8s/java/deployment.yaml` names it, because the pod has no local Postgres.
 
@@ -43,17 +44,19 @@ Everything below about a "module" holds in both applications; the rest of this f
 
 **Default: Docker Compose** (from repo root; see "Docker" below for what it runs):
 
-1. **Check what is already running:** `docker ps` and `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|8082|5173)'`. On a fresh clone, also `cp macro-backend/macro-analyzer/.env.example macro-backend/macro-analyzer/.env`: step 3 fails with `couldn't find env file` without it. The keys in it can stay empty until you scrape Riksbanken or Fed series.
-2. **Build the backend images:** `(cd macro-backend && ./mvnw clean package && docker build -t macro-analyzer macro-analyzer && docker build -t regional-statistics-service regional-statistics-service)`.
-3. **Start everything:** `docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`. Open `http://localhost:8081`. Flyway migrations run on startup. On an **empty** volume, Postgres creates the `regional_statistics` database and role from `macro-infra/docker/postgres-init/`. An **existing** volume doesn't run that, and the service fails to start without the database. So first start Postgres if it isn't running (the same compose command with `up -d postgres`), then run `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh` (it can be re-run; add `-e REGIONAL_STATISTICS_DB_PASSWORD=...` after `-i` if you changed the password). The new database has no SCB data, so `/omraden` stays empty until a scrape: see "Data" in the [migration guide](docs/microservice-migration-guide.md#data). The monolith's V34 drops its copy of those tables, so there is nothing left to restore from.
+1. **Check what is already running:** `docker ps` and `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|8082|8083|5173)'`. On a fresh clone, also `cp macro-backend/macro-series-service/.env.example macro-backend/macro-series-service/.env`: step 3 fails with `couldn't find env file` without it. The keys in it can stay empty until you scrape Riksbanken or Fed series.
+2. **Build the backend images:** `(cd macro-backend && ./mvnw clean package && docker build -t macro-analyzer macro-analyzer && docker build -t regional-statistics-service regional-statistics-service && docker build -t macro-series-service macro-series-service)`.
+3. **Start everything:** `docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`. Open `http://localhost:8081`. Flyway migrations run on startup. On an **empty** volume, Postgres creates the `regional_statistics` and `macro_series` databases and roles from `macro-infra/docker/postgres-init/`. An **existing** volume doesn't run that, and a service fails to start without its database. So first start Postgres if it isn't running (the same compose command with `up -d postgres`), then run `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh` (it can be re-run; add `-e REGIONAL_STATISTICS_DB_PASSWORD=...` or `-e MACRO_SERIES_DB_PASSWORD=...` after `-i` if you changed a password). A new database has no data, so `/omraden` and the charts stay empty until a scrape or, for macro-series while the monolith still has its tables, a restore: see "Data" in the [migration guide](docs/microservice-migration-guide.md#data). The monolith's V34 dropped its copy of the SCB tables, so there is nothing left to restore those from.
 
-**For working on the code**, run the backend with `mvnw` and the frontend with Vite. Vite proxies `/macro-analyzer` to the monolith on 8080 and the moved routes to `regional-statistics-service` on 8082, so the start order doesn't matter:
+**For working on the code**, run the backend with `mvnw` and the frontend with Vite. Vite proxies `/macro-analyzer` to the monolith on 8080 and the moved routes to `regional-statistics-service` on 8082 and `macro-series-service` on 8083, so the start order doesn't matter:
 
-1. **Postgres** (from repo root): `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:5432`. **It can't run next to the full stack's Postgres as a second one:** both Compose files define the same `postgres` service (container `macrohub-postgres`, port 5432, Compose project `docker`, volume `docker_pgdata`). With the full stack up, this command leaves its Postgres running and warns about orphan containers (ignore it, and don't pass `--remove-orphans`), and you share that database, so only stop the stack's containers that hold 8080 or 8082. If `.env` sets `REGIONAL_STATISTICS_DB_PASSWORD`, pass the same `--env-file`, or Compose re-creates the container (on the same volume). Anything else on port 5432 makes it fail to start, and a `k port-forward` to 5432 would give the applications the cluster's database.
-2. **Backend** (from `macro-backend/`): `SPRING_DATASOURCE_PASSWORD=macropassword JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl macro-analyzer -am spring-boot:run -Dspring-boot.run.profiles=dev`. `-am` builds `macro-platform` with it; only the application module actually runs (`spring-boot.run.skip` in the poms). The working directory is `macro-analyzer/`, so `.env` is picked up. It serves on 8080 once `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/macro-analyzer/series-config` returns 200.
+1. **Postgres** (from repo root): `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:5432`. **It can't run next to the full stack's Postgres as a second one:** both Compose files define the same `postgres` service (container `macrohub-postgres`, port 5432, Compose project `docker`, volume `docker_pgdata`). With the full stack up, this command leaves its Postgres running and warns about orphan containers (ignore it, and don't pass `--remove-orphans`), and you share that database, so only stop the stack's containers that hold 8080, 8082 or 8083. If `.env` sets `REGIONAL_STATISTICS_DB_PASSWORD` or `MACRO_SERIES_DB_PASSWORD`, pass the same `--env-file`, or Compose re-creates the container (on the same volume). Anything else on port 5432 makes it fail to start, and a `k port-forward` to 5432 would give the applications the cluster's database.
+2. **Backend** (from `macro-backend/`): `SPRING_DATASOURCE_PASSWORD=macropassword JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl macro-analyzer -am spring-boot:run -Dspring-boot.run.profiles=dev`. `-am` builds `macro-platform` with it; only the application module actually runs (`spring-boot.run.skip` in the poms). It serves on 8080 once `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/macro-analyzer/parliament/parties` returns 200.
 3. **Frontend** (from `macro-frontend/`): `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run dev`. Open `http://localhost:5173`.
 
 **To work on `regional-statistics-service`** (from `macro-backend/`, with the Compose Postgres on 5432; stop the full stack's service container first if it holds 8082): `JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl regional-statistics-service -am spring-boot:run`. It needs no profile and no `.env`. Its base properties use `localhost:5432/regional_statistics`. For any other database, set `SPRING_DATASOURCE_URL` explicitly.
+
+**To work on `macro-series-service`** (from `macro-backend/`, with the Compose Postgres on 5432; stop the full stack's service container first if it holds 8083): `JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl macro-series-service -am spring-boot:run`. It needs no profile. The working directory is `macro-series-service/`, so `.env` there is picked up, which only a Riksbanken or Fed scrape needs. Its base properties use `localhost:5432/macro_series`. For any other database, set `SPRING_DATASOURCE_URL` explicitly.
 
 ### Backend (from `macro-backend/`)
 
@@ -80,6 +83,9 @@ mvn -P jooq-codegen compile
 # default is the Compose Postgres' localhost:5432/regional_statistics, with that service's role
 mvn -P jooq-codegen-regional-statistics compile -pl regional-statistics-service -am
 
+# The same for macro-series-service, whose default is localhost:5432/macro_series
+mvn -P jooq-codegen-macro-series compile -pl macro-series-service -am
+
 # Run locally against the Docker Postgres (localhost:5432)
 SPRING_DATASOURCE_PASSWORD=macropassword ./mvnw -pl macro-analyzer -am spring-boot:run -Dspring-boot.run.profiles=dev
 ```
@@ -90,15 +96,15 @@ Flyway migrations run automatically on application startup via `spring-boot-star
 
 ### Configuration profiles
 
-These are the monolith's. `regional-statistics-service` has one `application.properties`, with defaults for the Compose Postgres and no profiles besides `test`.
+These are the monolith's. `regional-statistics-service` and `macro-series-service` each have one `application.properties`, with defaults for the Compose Postgres and no profiles besides `test`.
 
 - `application.properties` — base config; datasource points at the Compose Postgres (`localhost:5432/macroanalyzer`)
 - `application-dev.properties` — sets the same datasource URL, pinned with the base one by `BaseConfigurationTest`
 - `application-test.properties` — TestContainers datasource
 - `prod` profile (used by the Dockerfile and `docker-compose-all.yml`) has no properties file; config comes from env vars, and without `SPRING_DATASOURCE_URL` the base `localhost:5432` applies, which inside a container is nothing
-- Riksbanken and Fed scrapes require `riksbanken.prod.subscription.key` / `fed.prod.subscription.key` (env: `RIKSBANKEN_PROD_SUBSCRIPTION_KEY`, `FED_PROD_SUBSCRIPTION_KEY`)
-  - Locally, put them in `macro-backend/macro-analyzer/.env` (copy `.env.example`; gitignored). Spring loads it via `spring.config.import=optional:file:.env[.properties]`, relative to the working directory, which is `macro-analyzer/` under `spring-boot:run` (run a jar from there too)
-  - For `docker-compose-all.yml`, pass `--env-file macro-backend/macro-analyzer/.env`
+- Riksbanken and Fed scrapes require `riksbanken.prod.subscription.key` / `fed.prod.subscription.key` (env: `RIKSBANKEN_PROD_SUBSCRIPTION_KEY`, `FED_PROD_SUBSCRIPTION_KEY`). They are `macro-series-service`'s, and only it gets them
+  - Locally, put them in `macro-backend/macro-series-service/.env` (copy `.env.example`; gitignored). Spring loads it via `spring.config.import=optional:file:.env[.properties]`, relative to the working directory, which is `macro-series-service/` under `spring-boot:run` (run a jar from there too). The monolith no longer reads a `.env`
+  - For `docker-compose-all.yml`, pass `--env-file macro-backend/macro-series-service/.env`. That one file also holds Compose's optional database passwords, so every service's Compose command uses it
   - `.githooks/pre-commit` rejects commits that stage `.env` files (even via `git add -f`). Enable it once per clone: `git config core.hooksPath .githooks`. The hook is opt-in, so CI's `frontend` job also fails if any `.env` file is tracked (same rule: `.env`, `.env.<anything>`, except `.env.example`)
 
 ### Frontend (from `macro-frontend/`)
@@ -119,7 +125,7 @@ npm run preview    # serve the production build
 - The Områdesstatistik page (`/omraden`, `src/pages/RegionalStatistics.tsx`, components in `src/components/regionalmap/`) is lazy-loaded so MapLibre GL (`maplibre-gl`, pinned exact; its worker is set via `setWorkerUrl` from a `?url` import because bundling breaks the library's own lookup) stays out of the main bundle. The basemap is OpenFreeMap's `positron` style (no API key; attribution OpenFreeMap/OpenMapTiles/OpenStreetMap comes from the style, SCB is added). The values' `geoVersion` picks which boundary file is fetched (TanStack Query, cached per version). Areas are coloured via feature-state: single-sign values in up to 9 blue classes (breaks at 1/7..5/7 and p90, p97, p99, or the mirror p1, p3, p10 and 2/7..6/7 when `median - p1 >= 1.5 * (p99 - median)` and `p1 > min`, so a long tail is not one wide class; ties can give fewer), values with both signs (e.g. flyttnetto) in 7 red–gray–blue diverging classes (3 quantile classes per side, gray around zero). Borders follow the class too: `borderColor` in `classification.ts` picks white or dark, whichever contrasts more with the fill as composited over the basemap, and `line-opacity` falls off below zoom 8 so country zoom doesn't turn grey. URL state: `l` (DeSO|RegSO), `i` (indicator id), `y` (year), `a` (area code); an indicator without DeSO data is shown at RegSO. Address search uses Photon (`photon.komoot.io`, bbox around Sweden, results filtered to `countrycode=SE`; Photon rejects `lang=sv`, so no lang is sent) and finds the containing area with d3-geo `geoContains`
 - shadcn-ui components live in `src/components/ui/` (configured via `components.json`)
 - Backend base URL is `rootUrl` in `src/models/Constants.ts`, set at build time by `VITE_API_URL` (trailing slash stripped). Unset or empty means same origin (relative `/macro-analyzer/...` URLs), which nginx and the Vite proxy serve. It calls `/macro-analyzer/series-config`, `/macro-analyzer/chart-data` and the parliament, election and `regional-statistics` endpoints
-- The dev server listens on port 5173. `vite.config.ts` proxies `/macro-analyzer` to the backends on `localhost` (8082 for the moved routes, 8080 for the rest), split per domain the same way as the nginx routes; `vite preview` (port 4173) uses the same proxy. A `.env.development` can't set these: the pre-commit hook and CI reject it. Backend CORS still allows all origins, for a build with `VITE_API_URL` set. That URL must be a gateway (nginx or Vite), not a backend: the monolith on `:8080` answers 404 on `/macro-analyzer/regional-statistics/*`
+- The dev server listens on port 5173. `vite.config.ts` proxies `/macro-analyzer` to the backends on `localhost` (8082 and 8083 for the moved routes, 8080 for the rest), split per domain the same way as the nginx routes; `vite preview` (port 4173) uses the same proxy. A `.env.development` can't set these: the pre-commit hook and CI reject it. Backend CORS still allows all origins, for a build with `VITE_API_URL` set. That URL must be a gateway (nginx or Vite), not a backend: the monolith on `:8080` answers 404 on `/macro-analyzer/regional-statistics/*`, `/macro-analyzer/series-config` and `/macro-analyzer/chart-data`
 - Package manager is npm; `package-lock.json` is the only lockfile (don't add `bun.lockb`/`yarn.lock`)
 
 ### Docker (from repo root)
@@ -128,15 +134,15 @@ npm run preview    # serve the production build
 # Dependencies only (PostgreSQL on localhost:5432, the same service as the full stack's, so not at the same time as a second one)
 docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up
 
-# Full stack (PostgreSQL + monolith on :8080 + regional-statistics-service on :8082 + frontend on :8081) — build the backend images first:
-#   (cd macro-backend && ./mvnw clean package && docker build -t macro-analyzer macro-analyzer && docker build -t regional-statistics-service regional-statistics-service)
+# Full stack (PostgreSQL + monolith on :8080 + regional-statistics-service on :8082 + macro-series-service on :8083 + frontend on :8081) — build the backend images first:
+#   (cd macro-backend && ./mvnw clean package && docker build -t macro-analyzer macro-analyzer && docker build -t regional-statistics-service regional-statistics-service && docker build -t macro-series-service macro-series-service)
 # The frontend image is built by compose (add --build after frontend changes)
-docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up
+docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up
 ```
 
 - The frontend container (`macro-frontend/Dockerfile`) builds with Node 22 and serves `dist/` with nginx on 8081; `nginx/default.conf.template` falls back to `index.html` for `BrowserRouter` routes
-- The image is built with `VITE_API_URL` empty (build arg, override with `--build-arg VITE_API_URL=...`, which must be a gateway, because no single backend serves every route), so the browser calls the backend on the frontend's own origin and nginx proxies it per domain, each route with its own variable (`scheme://host:port`, no trailing slash; the defaults are the compose services, `http://regional-statistics:8082` for the moved routes and `http://macro-analyzer:8080` for the rest):
-  - `MACRO_SERIES_URL`: `/macro-analyzer/series-config`, `/macro-analyzer/chart-data`
+- The image is built with `VITE_API_URL` empty (build arg, override with `--build-arg VITE_API_URL=...`, which must be a gateway, because no single backend serves every route), so the browser calls the backend on the frontend's own origin and nginx proxies it per domain, each route with its own variable (`scheme://host:port`, no trailing slash; the defaults are the compose services, `http://regional-statistics:8082` and `http://macro-series:8083` for the moved routes and `http://macro-analyzer:8080` for the rest):
+  - `MACRO_SERIES_URL`: `/macro-analyzer/series-config`, `/macro-analyzer/chart-data`, `/macro-analyzer/scrape/macro-series/`
   - `REGIONAL_STATISTICS_URL`: `/macro-analyzer/regional-statistics/`, `/macro-analyzer/scrape/regional-statistics/`
   - `PARLIAMENT_URL`: `/macro-analyzer/parliament/`
   - `ELECTION_URL`: `/macro-analyzer/municipalities/`, `/macro-analyzer/regions/`, `/macro-analyzer/constituencies/`
@@ -146,7 +152,7 @@ docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/mac
 
 ## Architecture
 
-The backend is split into **modules by domain**. Inside each module it follows **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**. Every class lives in a module under `com.kg.macroanalyzer`, except the application classes in the root package and the generated jOOQ models. `macroseries`, `parliament` and `election` run as one application, the monolith; `regionalstatistics` runs on its own. The Maven modules cut across this: `scrape`, `shared` and their jOOQ model are built in `macro-platform`, `regionalstatistics` in `regional-statistics-service` and the rest in `macro-analyzer`. The packages are the same as before the split, so component scanning from `MacroAnalyzerApplication` finds `macro-platform`'s beans.
+The backend is split into **modules by domain**. Inside each module it follows **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**. Every class lives in a module under `com.kg.macroanalyzer`, except the application classes in the root package and the generated jOOQ models. `parliament` and `election` run as one application, the monolith; `regionalstatistics` and `macroseries` each run on their own. The Maven modules cut across this: `scrape`, `shared` and their jOOQ model are built in `macro-platform`, `regionalstatistics` in `regional-statistics-service`, `macroseries` in `macro-series-service` and the rest in `macro-analyzer`. The packages are the same as before the split, so component scanning from `MacroAnalyzerApplication` finds `macro-platform`'s beans.
 
 ```
   REST ──→ adaptors.http ──→ port.in ──→ service ──→ port.out ←── adaptors.postgres ──→ PostgreSQL
@@ -171,7 +177,7 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
   - `application/port/in/` — `InPort` (enqueue, enqueue-all, scrape-from-queue) and its `ScrapeRun` result; `application/port/out/` — `ScrapeQueuePort` (queue reads/writes, `markAsDone`) and `SeriesConfigPort`
   - `application/service/` — `InPortImpl`, `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `RegisteredScrapeFlow` (see below)
   - `adaptors/http/` — `InsertionAdaptor` (enqueue/scrape endpoints); `adaptors/cron/` — `CronScrapeAdaptor` drains the queue every 60s, `CronEnqueueAdaptor` enqueues all series every minute during the 22:00 hour; `adaptors/postgres/` — queue and series-config repositories; `adaptors/config/` — preparer, series-config list and scheduler beans
-- **`macroseries/`** — chart time series (Riksbanken, Fed and Eurostat rates, bonds, bills, exchange rates and key figures):
+- **`macroseries/`** (Maven module `macro-series-service`, with its own jOOQ model in `macroseries.jooq.generated`) — chart time series (Riksbanken, Fed and Eurostat rates, bonds, bills, exchange rates and key figures):
   - `domain/` — `MacroSeries`, `MacroPoint`, `AlignedBundle`, `InvalidBundleDimensionException`, `MacroSeriesScrapeFlows` (the `MACRO_POINT` flow id)
   - `application/port/in/` — `MacroSeriesQueries` (aligned chart data, chart series configs) and its DTOs (`BuildChartDataParams` with the `Strategy` and `TimeFrame` enums, `ChartSeriesParam`, `ChartData`, `ChartDataWithLabels`); `application/port/out/` — `MacroSeriesRepositoryPort` and the scrape payload `ConfigWithMacroPoints`
   - `application/service/` — `MacroSeriesService` (the chart list is the configs of the `MACRO_POINT` flow), `LabelGenerationService`, in `bundleformat/` `TimeFilterService`, `AlignmentService` and the sample and time-filter strategies, and in `scrape/` `ExistingMacroPointFinder`, `MacroPointScraper` and `MacroPointPersister`
@@ -210,7 +216,7 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 
 ### Dependency rules (`ArchitectureTest`)
 
-Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTest.java` (ArchUnit, part of `mvn test`). `regional-statistics-service`'s has the same rules for its one module, and also only lets `adaptors.postgres` use its jOOQ model. `macro-analyzer`'s enforces:
+Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTest.java` (ArchUnit, part of `mvn test`). `regional-statistics-service`'s and `macro-series-service`'s have the same rules for their one module, and also only let `adaptors.postgres` use its jOOQ model. `macro-analyzer`'s enforces:
 
 - every class except `MacroAnalyzerApplication` resides in a module listed in `MODULES`/`SHARED_MODULES` or in `GENERATED_PACKAGES` (`jooq.generated`, `platform.jooq.generated`);
 - `shared` depends on no module;
@@ -235,6 +241,7 @@ Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTes
 - `POST /macro-analyzer/enqueue-all` — enqueue all of the monolith's series (202)
 - `POST /macro-analyzer/scrape-from-queue` — execute the monolith's pending scrapes (200, 409 while one is running)
 - `POST /macro-analyzer/scrape/regional-statistics/enqueue?name=`, `.../enqueue-all`, `.../scrape-from-queue` — the same on `regional-statistics-service`
+- `POST /macro-analyzer/scrape/macro-series/enqueue?name=`, `.../enqueue-all`, `.../scrape-from-queue` — the same on `macro-series-service`
 - `GET /macro-analyzer/parliament/elections` — official seat results per election (newest first)
 - `GET /macro-analyzer/parliament/composition` — live seats per party from currently serving MPs
 - `GET /macro-analyzer/parliament/parties` — party names, colours, ideology
@@ -269,15 +276,15 @@ Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTes
 
 ### Database
 
-PostgreSQL 16, one database per service on one instance. The monolith's Flyway migrations are in `macro-analyzer/src/main/resources/db/migration/` (V1–V34). `regional-statistics-service` runs Flyway twice: `macro-platform`'s `db/platform` (`series_configuration`, `scrape_action_queue`) when `macro.platform.flyway.enabled=true`, then its own `db/migration`, whose `V1` is a squashed baseline with its config row (a baseline at version 0 lets it run on the non-empty schema). JOOQ generates type-safe table access. Key tables: `series_configuration`, `scrape_action_queue`, various rate/bond/economic indicator tables, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`; in `regional_statistics`, `scb_indicator`/`scb_area_value`/`scb_availability`/`scb_table_state` and its own `series_configuration` and `scrape_action_queue`.
+PostgreSQL 16, one database per service on one instance. The monolith's Flyway migrations are in `macro-analyzer/src/main/resources/db/migration/` (V1–V35). `regional-statistics-service` and `macro-series-service` run Flyway twice: `macro-platform`'s `db/platform` (`series_configuration`, `scrape_action_queue`) when `macro.platform.flyway.enabled=true`, then their own `db/migration`, whose `V1` is a squashed baseline with their config rows (a baseline at version 0 lets it run on the non-empty schema). JOOQ generates type-safe table access. Key tables: `series_configuration`, `scrape_action_queue`, `swedish_members_of_parliament` (JSONB), `swedish_member_activity`, `riksdag_party`/`riksdag_election`/`riksdag_election_result`/`riksdag_organ`, `local_election_area`/`local_election_party_result`/`local_governance`; in `regional_statistics`, `scb_indicator`/`scb_area_value`/`scb_availability`/`scb_table_state` and its own `series_configuration` and `scrape_action_queue`; in `macro_series`, the 41 rate, bond, bill, exchange-rate, Fed and Eurostat tables and its own two.
 
-Chart series in `series_configuration` carry picker metadata (V27), returned by `/series-config`: `category` (`Räntor`, `Statsobligationer`, `Statsskuld`, `Valuta`, `Nyckeltal USA`), `subcategory` (e.g. `Styrränta`, `Euromarknadsränta`, `Statsskuldväxel`, `Nominell`), `unit` (short Swedish display form taken from the source: `%`, `% av BNP`, `mn EUR`, `mn USD`, `mdr USD`, `SEK/USD`, `punkter`, `index`), `country` (Swedish name, null when not country-specific) and `maturity_months` (rates/bonds/bills only). A new chart series must set them, and `scrape_flow = 'MACRO_POINT'`, in its migration; the chart series are exactly the `MACRO_POINT` configs. `ChartSeriesConfigIntegrationTest` checks that every chart series has a unit and subcategory, lists the exact category set and row count, and checks the flow of every non-`MACRO_POINT` config.
+Chart series in `macro_series`' `series_configuration` carry picker metadata, returned by `/series-config`: `category` (`Räntor`, `Statsobligationer`, `Statsskuld`, `Valuta`, `Nyckeltal USA`), `subcategory` (e.g. `Styrränta`, `Euromarknadsränta`, `Statsskuldväxel`, `Nominell`), `unit` (short Swedish display form taken from the source: `%`, `% av BNP`, `mn EUR`, `mn USD`, `mdr USD`, `SEK/USD`, `punkter`, `index`), `country` (Swedish name, null when not country-specific) and `maturity_months` (rates/bonds/bills only). A new chart series must set them, and `scrape_flow = 'MACRO_POINT'`, in its migration; the chart series are exactly the `MACRO_POINT` configs. `ChartSeriesConfigIntegrationTest` checks that every chart series has a unit and subcategory, and lists the exact category set and row count. `MonolithSeriesConfigIntegrationTest` checks the flow of every config still in the monolith. `/series-config` lists the configs in `id` order, and `/chart-data` gives a series its colour from its place in that order rather than the request's, so the baseline keeps the monolith's ids.
 
 ## Testing
 
 - JUnit 5 + Mockito for unit tests
 - TestContainers (PostgreSQL) for integration tests — Docker must be running for `mvn test`
-- Each Maven module has its own tests. `macro-platform` has the unit tests of `scrape` and `shared`. `SeriesConfigRepositoryTest` and `NoStaticResourceHandlersHttpTest` are in those packages but stay in `macro-analyzer`, because they need the application and its migrations (`regional-statistics-service` has its own copy of the latter). `TestSeriesConfigFactory` exists in both modules: a shared test-jar would be on the classpath as a jar, and `ArchitectureTest`'s `DoNotIncludeTests` would then import its classes as production code
+- Each Maven module has its own tests. `macro-platform` has the unit tests of `scrape` and `shared`. `SeriesConfigRepositoryTest` and `NoStaticResourceHandlersHttpTest` are in those packages but stay in `macro-analyzer`, because they need the application and its migrations (each service has its own copy of the latter). `TestSeriesConfigFactory` and `TestJsonReader` exist in several modules: a shared test-jar would be on the classpath as a jar, and `ArchitectureTest`'s `DoNotIncludeTests` would then import its classes as production code
 - `ArchitectureTest` (ArchUnit, one in each application) imports all of `com.kg.macroanalyzer` from the classpath, so it covers `macro-platform` too; `importIncludesMacroPlatform` fails if that ever stops. It checks the module boundaries: every class outside the root package lives in a module, `shared` or a generated jOOQ package (so no layer-first package can come back), `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; today `election` → `parliament`). Add a new module to `MODULES` (and to `DOMAIN_MODULES` for a business domain)
 - Test fixtures in `src/test/resources/json/`
 - `@ActiveProfiles("test")` activates `application-test.properties`

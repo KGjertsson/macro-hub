@@ -15,7 +15,7 @@ FROM nginx:1.27-alpine
 # BACKEND_URL is the catch-all /macro-analyzer/, which also carries the monolith's manual scrape endpoints.
 # These defaults matter: the template keeps ${X} literally for an unset variable. An empty value
 # makes nginx exit at startup. The resolver is read from /etc/resolv.conf (Docker: 127.0.0.11).
-ENV MACRO_SERIES_URL=http://macro-analyzer:8080 \
+ENV MACRO_SERIES_URL=http://macro-series:8083 \
     REGIONAL_STATISTICS_URL=http://regional-statistics:8082 \
     PARLIAMENT_URL=http://macro-analyzer:8080 \
     ELECTION_URL=http://macro-analyzer:8080 \
