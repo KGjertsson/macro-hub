@@ -90,12 +90,18 @@ erDiagram
 - [Commit message guidelines](https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53)
 - [Kafka with microk8s](https://medium.com/@prasanta.mohanty/deploy-kafka-cluster-on-microk8s-in-15-mins-f3d5081991e8)
 
+### Database
+
+The base properties and the `dev` profile both use the Compose Postgres, `localhost:5432/macroanalyzer`. Any other
+database needs `SPRING_DATASOURCE_URL`. Port 31274 is the microk8s cluster's Postgres NodePort, on `localhost` too, so
+only use it on purpose. `BaseConfigurationTest` keeps the defaults away from it.
+
 ### Maven
 
 The reactor root is `macro-backend/`, the parent of this module, `macro-platform` and
 `regional-statistics-service`. Run Maven there.
 
-generate the jooq models of this module and `macro-platform`, from a database at the latest migration. The default is the full Compose stack's
+generate the jooq models of this module and `macro-platform`, from a database at the latest migration. The default is the Compose
 Postgres, `localhost:5432/macroanalyzer`. For any other database, add `-Djooq.codegen.url=...`.
 
 ```

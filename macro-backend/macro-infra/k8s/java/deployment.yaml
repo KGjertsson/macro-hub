@@ -18,3 +18,7 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
+          env:
+            # The application's defaults are the Compose Postgres, so the cluster's database is named here
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://192.168.154.7:31274/macroanalyzer

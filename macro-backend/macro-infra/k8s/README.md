@@ -14,6 +14,12 @@ data:
 2. set the new namespace as active: `microk8s kubectl config set-context --current --namespace=macro-analyzer`
 3. run postgres container: ` k apply -f postgres/`
 
+## Database URL
+
+The application's defaults are the Compose Postgres, `localhost:5432`, which doesn't exist inside a pod. So `java/deployment.yaml` sets `SPRING_DATASOURCE_URL` to the cluster's Postgres, `192.168.154.7:31274`. 31274 is the Postgres service's NodePort. `postgres/postgres-service.yaml` doesn't pin it, so Kubernetes picked it, and it can change if the service is re-created: then update the manifest. Run `k apply -f java/` before deploying the next image: on a Deployment without this setting, the pod falls back to `localhost:5432` and fails to start.
+
+With microk8s running, the NodePort also answers on `localhost:31274`. To use the cluster's database from outside, pass the URL deliberately, for example `SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.154.7:31274/macroanalyzer`.
+
 ## Java
 
 Build new image and make available to microk8s:
@@ -46,7 +52,7 @@ sudo docker build -t macro-analyzer:latest macro-analyzer
 ### Run docker image
 
 ```
-docker run -e "SPRING_PROFILES_ACTIVE=prod -p 8080:8080 macro-analyzer
+docker run -e SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:<port>/macroanalyzer -p 8080:8080 macro-analyzer
 ```
 
 ### Upload build docker image to local microk8s storage
@@ -63,6 +69,8 @@ k apply -f postgres/
 
 ### Port forward db from microk8s to local
 
+Use a local port other than 5432. The applications default to `localhost:5432`, so forwarding the cluster's database to that port would connect them to it.
+
 ```
-k port-forward <pod-name> 5432:5432
+k port-forward <pod-name> 15432:5432
 ```
