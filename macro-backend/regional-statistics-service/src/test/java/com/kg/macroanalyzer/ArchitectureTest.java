@@ -61,8 +61,9 @@ class ArchitectureTest {
             .as("regionalstatistics domain and application do not depend on its adaptors");
 
     @ArchTest
-    static final ArchRule domainAndApplicationDoNotDependOnTheJooqModel = noClasses()
-            .that().resideInAnyPackage(MODULE + ".domain..", MODULE + ".application..")
+    static final ArchRule onlyPostgresAdaptorsUseTheJooqModel = noClasses()
+            .that().resideInAPackage(MODULE + "..")
+            .and().resideOutsideOfPackages(MODULE + ".adaptors.postgres..", MODULE + ".jooq.generated..")
             .should().dependOnClassesThat().resideInAPackage(MODULE + ".jooq.generated..")
             .as("only regionalstatistics' postgres adaptors use its jOOQ model");
 

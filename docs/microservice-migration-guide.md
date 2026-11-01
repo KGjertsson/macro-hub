@@ -78,6 +78,8 @@ Each service runs Flyway twice on start-up, against its own database:
 
 The platform run comes first, so the two tables exist before the service's baseline seeds its config rows. Each run has its own numbering, so no version range is needed. `spring.flyway.out-of-order=true` was rejected, because it would also weaken Flyway's ordering check on each service's own migrations. The platform's migrations stay outside `db/migration` so the monolith doesn't pick them up from the jar and try to create tables it already has.
 
+Until step 5, `series_configuration` and `scrape_action_queue` are defined twice, in the monolith's `db/migration` and in `db/platform`, and `macro-platform`'s jOOQ model is generated from the monolith's database. A column change therefore needs a monolith migration, a new `db/platform` version and a regenerated model, in the same PR. No test catches a drift between the two unless the code uses the new column.
+
 - [ ] Write a squashed baseline in the new service with the domain's tables and seed data, without the DDL for the two platform tables, taken from the current database (`pg_dump --schema-only -t ...` is a good start). V1 to V32 stay in the monolith until step 5, and in git history after that.
 - [ ] Include the seed data that migrations added. Today that is `scb_indicator`, `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. `local_governance` starts empty.
 - [ ] Copy the domain's `series_configuration` rows into the baseline, selected by `scrape_flow`. Keep `id` and `global_id` so `/series-config` keeps its order, and write `global_id` as literals so the baseline doesn't need the `uuid-ossp` extension (no column default uses it).
@@ -117,7 +119,7 @@ Tried on a throwaway database with 2.4 M rows: a 16 MB dump and 73 s to restore.
 - [ ] Generate a jOOQ model per service from its own database, in the package `com.kg.macroanalyzer.<module>.jooq.generated`. Give it a profile named after the service (`jooq-codegen-<service>`) that sets `jooq.codegen.url`, `.user` and `.password` to the Compose Postgres. With the shared name `jooq-codegen`, the `-am` the build needs would also run `macro-platform`'s codegen, and regenerate its model from whatever database the command names.
 - [ ] Move the module's tests and fixtures. Give the service its own `ArchitectureTest` for its layers, a copy of `NoStaticResourceHandlersHttpTest` and `ManualScrapePathsHttpTest`, and an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
 - [ ] Update the monolith's `ArchitectureTest` (`MODULES`, `DOMAIN_MODULES`).
-- [ ] Update `ChartSeriesConfigIntegrationTest`: `shouldRouteEveryNonChartConfig_toItsDomainsScrapeFlow` lists all six non-chart configs by name, so each service takes its own entries.
+- [ ] Update `ChartSeriesConfigIntegrationTest`: `shouldRouteEveryNonChartConfig_toItsDomainsScrapeFlow` lists the non-chart configs still in the monolith by name (five after step 2), so each service takes its own entries.
 
 ### Manual scrape endpoints
 
@@ -221,7 +223,7 @@ Revert the PR and re-create the local databases.
 - `REVOKE CONNECT` on the new database alone didn't give the boundary the checklist asked for: the new role could still connect to `macroanalyzer`. The script revokes it on every database. This limits `macrouser` in nothing, as it is a superuser.
 - The module is `regional-statistics-service`, on port 8082, inside and outside the container, so `mvnw` and Compose use the same port and Vite's proxy works with either. The Compose service is `regional-statistics`.
 - The jOOQ profile is `jooq-codegen-regional-statistics`, not `jooq-codegen`, because `-pl <service> -am` would otherwise also run `macro-platform`'s codegen. `jooq.codegen.user` and `.password` became properties in the parent pom. The root command (`-P jooq-codegen`) still covers `macro-platform` and `macro-analyzer`, and leaves the service's model alone. The parent's default URL moved from `localhost:31274` to `localhost:5432/macroanalyzer`, so no codegen default can reach the cluster's database. The monolith's base properties and `dev` profile still point at port 31274.
-- The model's package is `regionalstatistics.jooq.generated`, inside the module, so `ArchitectureTest` needs no extra generated package for it. The service's test forbids `domain` and `application` from using it.
+- The model's package is `regionalstatistics.jooq.generated`, inside the module, so `ArchitectureTest` needs no extra generated package for it. The service's `ArchitectureTest` only lets `adaptors.postgres` use it.
 - The service's `ArchitectureTest` is a short rewrite of the monolith's, not a copy, as most of that one deals with several domain modules. It imports `macro-platform` from the classpath in the same way.
 - `application-test.properties` is in `src/test/resources`, so it isn't in the jar, and uses `postgres:16` like Compose. The monolith keeps its copy in `src/main/resources` on 15.2.
 - The Compose healthcheck now uses TCP (`pg_isready -h 127.0.0.1`). During an empty volume's init scripts Postgres only listens on its socket, so the old check could report healthy before `regional_statistics` existed and before the temporary server shut down.
