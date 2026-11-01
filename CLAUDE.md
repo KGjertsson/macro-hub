@@ -152,7 +152,7 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
   - `application/service/` — `LocalElectionService` (party colours come from parliament's `PartyDirectory`), and in `scrape/` `ExistingLocalElectionFinder`, `LocalElectionScraper` and `LocalElectionPersister`
   - `adaptors/http/` — `ElectionController` (`/municipalities/*`, `/regions/*`, `/constituencies/*`); `adaptors/postgres/` — `ElectionPostgresAdaptor` and `LocalElectionRepository`; `adaptors/web/` — the Valmyndigheten index and result web adaptors, retry, connection builder and parsers; `adaptors/config/` — the Valmyndigheten web beans and the scrape flow
 - **`shared/`** — used by every module, depends on none of them: `config/` (CORS, Jackson, JDBC, Flyway catalog version) and `web/` (`WebPort`, `ScrapeException`, `WebAdaptorFlow`, `ConnectionBuilder`/`Getter`/`ResponseParser`, `HttpGetter`, `ZipEntryGetter`, `HttpResponses`)
-  - Jackson 3 (`tools.jackson`) is used throughout. `CorsConfiguration` (in `shared/config/`) has `@EnableWebMvc`, which disables Boot's MVC auto-config, so `JacksonConfiguration` registers its `JsonMapper` with MVC explicitly. It keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
+  - Jackson 3 (`tools.jackson`) is used throughout. `JacksonConfiguration` (in `shared/config/`) defines the `JsonMapper` bean, which Boot's MVC auto-config uses for the message converter; don't add `@EnableWebMvc`, which would turn that auto-config off. The bean keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
 - **`jooq/generated/`** — Auto-generated JOOQ classes (do not edit manually).
 
 ### Layers inside a module
