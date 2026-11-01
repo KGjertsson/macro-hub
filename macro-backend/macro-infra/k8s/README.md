@@ -16,7 +16,7 @@ data:
 
 ## Database URL
 
-The application's defaults are the Compose Postgres, `localhost:5432`, which doesn't exist inside a pod. So `java/deployment.yaml` sets `SPRING_DATASOURCE_URL` to the cluster's Postgres, `192.168.154.7:31274`. 31274 is the Postgres service's NodePort. `postgres/postgres-service.yaml` doesn't pin it, so Kubernetes picked it, and it can change if the service is re-created: then update the manifest.
+The application's defaults are the Compose Postgres, `localhost:5432`, which doesn't exist inside a pod. So `java/deployment.yaml` sets `SPRING_DATASOURCE_URL` to the cluster's Postgres, `192.168.154.7:31274`. 31274 is the Postgres service's NodePort. `postgres/postgres-service.yaml` doesn't pin it, so Kubernetes picked it, and it can change if the service is re-created: then update the manifest. Run `k apply -f java/` before deploying the next image: on a Deployment without this setting, the pod falls back to `localhost:5432` and fails to start.
 
 With microk8s running, the NodePort also answers on `localhost:31274`. To use the cluster's database from outside, pass the URL deliberately, for example `SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.154.7:31274/macroanalyzer`.
 
