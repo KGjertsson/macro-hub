@@ -19,7 +19,6 @@ import com.kg.macroanalyzer.jooq.generated.tables.EuroMarket_6MonthUsa;
 import com.kg.macroanalyzer.jooq.generated.tables.EurostatNationalDebtSeries;
 import com.kg.macroanalyzer.jooq.generated.tables.ExchangeUsdSek;
 import com.kg.macroanalyzer.jooq.generated.tables.FedSeries;
-import com.kg.macroanalyzer.jooq.generated.tables.FlywaySchemaHistory;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearDenmark;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearEur;
 import com.kg.macroanalyzer.jooq.generated.tables.IntGovBond_10YearFinland;
@@ -49,8 +48,6 @@ import com.kg.macroanalyzer.jooq.generated.tables.ScbAreaValue;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbAvailability;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbIndicator;
 import com.kg.macroanalyzer.jooq.generated.tables.ScbTableState;
-import com.kg.macroanalyzer.jooq.generated.tables.ScrapeActionQueue;
-import com.kg.macroanalyzer.jooq.generated.tables.SeriesConfiguration;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
@@ -159,11 +156,6 @@ public class Public extends SchemaImpl {
      * The table <code>public.fed_series</code>.
      */
     public final FedSeries FED_SERIES = FedSeries.FED_SERIES;
-
-    /**
-     * The table <code>public.flyway_schema_history</code>.
-     */
-    public final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
 
     /**
      * The table <code>public.int_gov_bond_10_year_denmark</code>.
@@ -311,16 +303,6 @@ public class Public extends SchemaImpl {
     public final ScbTableState SCB_TABLE_STATE = ScbTableState.SCB_TABLE_STATE;
 
     /**
-     * The table <code>public.scrape_action_queue</code>.
-     */
-    public final ScrapeActionQueue SCRAPE_ACTION_QUEUE = ScrapeActionQueue.SCRAPE_ACTION_QUEUE;
-
-    /**
-     * The table <code>public.series_configuration</code>.
-     */
-    public final SeriesConfiguration SERIES_CONFIGURATION = SeriesConfiguration.SERIES_CONFIGURATION;
-
-    /**
      * The table <code>public.swedish_government_bill_12_month</code>.
      */
     public final SwedishGovernmentBill_12Month SWEDISH_GOVERNMENT_BILL_12_MONTH = SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH;
@@ -428,7 +410,6 @@ public class Public extends SchemaImpl {
             EurostatNationalDebtSeries.EUROSTAT_NATIONAL_DEBT_SERIES,
             ExchangeUsdSek.EXCHANGE_USD_SEK,
             FedSeries.FED_SERIES,
-            FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY,
             IntGovBond_10YearDenmark.INT_GOV_BOND_10_YEAR_DENMARK,
             IntGovBond_10YearEur.INT_GOV_BOND_10_YEAR_EUR,
             IntGovBond_10YearFinland.INT_GOV_BOND_10_YEAR_FINLAND,
@@ -458,8 +439,6 @@ public class Public extends SchemaImpl {
             ScbAvailability.SCB_AVAILABILITY,
             ScbIndicator.SCB_INDICATOR,
             ScbTableState.SCB_TABLE_STATE,
-            ScrapeActionQueue.SCRAPE_ACTION_QUEUE,
-            SeriesConfiguration.SERIES_CONFIGURATION,
             SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH,
             SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH,
             SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH,

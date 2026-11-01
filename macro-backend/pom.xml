@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.2</version>
+        <relativePath/>
+    </parent>
+    <groupId>com.kg</groupId>
+    <artifactId>macro-backend</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>macro-backend</name>
+    <description>Macro Trends backend reactor</description>
+
+    <modules>
+        <module>macro-platform</module>
+        <module>macro-analyzer</module>
+    </modules>
+
+    <properties>
+        <java.version>25</java.version>
+        <archunit.version>1.5.1</archunit.version>
+        <!-- Only an application module turns this off, so -am spring-boot:run starts just that application -->
+        <spring-boot.run.skip>true</spring-boot.run.skip>
+        <!-- mvn test -Dtest=X from the root: the modules without X must not fail the build -->
+        <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
+        <!-- Override with -D if the port is taken: on a machine with microk8s, its NodePort answers on 31274 -->
+        <jooq.codegen.url>jdbc:postgresql://localhost:31274/macroanalyzer</jooq.codegen.url>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.kg</groupId>
+                <artifactId>macro-platform</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <excludes>
+                            <exclude>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <!-- What every module's jooq-codegen profile shares; each adds its package and table selection -->
+                <plugin>
+                    <groupId>org.jooq</groupId>
+                    <artifactId>jooq-codegen-maven</artifactId>
+                    <executions>
+                        <execution>
+                            <id>jooq-codegen</id>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.postgresql</groupId>
+                            <artifactId>postgresql</artifactId>
+                            <version>${postgresql.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <jdbc>
+                            <driver>org.postgresql.Driver</driver>
+                            <url>${jooq.codegen.url}</url>
+                            <user>macrouser</user>
+                            <password>macropassword</password>
+                        </jdbc>
+                        <generator>
+                            <database>
+                                <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                                <inputSchema>public</inputSchema>
+                            </database>
+                            <target>
+                                <directory>src/main/java</directory>
+                            </target>
+                        </generator>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- JDK 23+ no longer runs annotation processors implicitly -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

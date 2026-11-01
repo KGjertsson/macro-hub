@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.SERIES_CONFIGURATION;
+import static com.kg.macroanalyzer.platform.jooq.generated.Tables.SERIES_CONFIGURATION;
 
 @Repository
 public class SeriesConfigRepository {

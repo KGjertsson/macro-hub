@@ -2,7 +2,8 @@
 
 Java backend application for macro-hub. Built using domain driven design principles and the
 hexagonal architecture, split into one module per domain (`macroseries`, `regionalstatistics`,
-`parliament`, `election`) plus the `scrape` core and `shared` infrastructure. See
+`parliament`, `election`) plus the `scrape` core and `shared` infrastructure, which are built in the
+sibling Maven module `macro-platform`. See
 [ARCHITECTURE.md](ARCHITECTURE.md) and the "Architecture" section of the repository's `CLAUDE.md`.
 
 Inside every module:
@@ -90,10 +91,13 @@ erDiagram
 
 ### Maven
 
-generate jooq model
+The reactor root is `macro-backend/`, the parent of this module and `macro-platform`. Run Maven there.
+
+generate the jooq models of both modules, from a database at the latest migration (here the full Compose stack's
+Postgres). Name the database: the default `localhost:31274` can be the microk8s cluster's, see "Backend" in `CLAUDE.md`.
 
 ```
-mvn -P jooq-codegen generate-sources
+mvn -P jooq-codegen compile -Djooq.codegen.url=jdbc:postgresql://localhost:5432/macroanalyzer
 ```
 
 Flyway migrations (`src/main/resources/db/migration/`) run on application startup; there is no Flyway

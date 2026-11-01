@@ -6,7 +6,7 @@ import org.jooq.meta.CatalogVersionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.FLYWAY_SCHEMA_HISTORY;
+import static com.kg.macroanalyzer.platform.jooq.generated.Tables.FLYWAY_SCHEMA_HISTORY;
 
 @Configuration
 public class FlywayCatalogVersion implements CatalogVersionProvider {

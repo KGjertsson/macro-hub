@@ -18,17 +18,21 @@ The full package map, the dependency rules and the checklist for a new domain ar
   +-- election            Valmyndigheten kommun/region/valkrets results  (/municipalities/*, /regions/*,
   |                                                                       /constituencies/*)
   +-- shared              CORS, Jackson, JDBC, Flyway config; WebPort and the WebAdaptorFlow pipeline
-  +-- jooq.generated      generated jOOQ model
+  +-- jooq.generated      generated jOOQ model, except the tables below
+  +-- platform.jooq.generated  generated jOOQ model of series_configuration, scrape_action_queue, flyway_schema_history
 ```
+
+`scrape`, `shared` and `platform.jooq.generated` are built in the Maven module `macro-platform`, a plain library next
+to this module. Everything else is built here, and it all runs as one application.
 
 Allowed dependencies between modules:
 
 ```
   macroseries, regionalstatistics, parliament, election --> scrape, shared, jooq.generated
-  scrape                                                 --> shared, jooq.generated
+  scrape                                                 --> shared, platform.jooq.generated
   election                                               --> parliament.application.port.in (PartyDirectory)
                                                              parliament.domain (Party)
-  shared                                                 --> no module
+  shared                                                 --> no module; platform.jooq.generated
 ```
 
 The election edge is the only one between domain modules. No module uses another module's out-ports,

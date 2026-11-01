@@ -42,8 +42,14 @@ services:
     depends_on:
       - macro-analyzer
     environment:
-      # nginx proxies /macro-analyzer/ here, so the browser only talks to :8081
+      # nginx proxies each /macro-analyzer route here, so the browser only talks to :8081
       # scheme://host:port only: a trailing slash or path makes every proxied request 404
+      # Write literal values: an empty one, as ${X:-} can give, makes nginx exit at startup
+      MACRO_SERIES_URL: http://macro-analyzer:8080
+      REGIONAL_STATISTICS_URL: http://macro-analyzer:8080
+      PARLIAMENT_URL: http://macro-analyzer:8080
+      ELECTION_URL: http://macro-analyzer:8080
+      # The catch-all /macro-analyzer/, which also carries the manual scrape endpoints
       BACKEND_URL: http://macro-analyzer:8080
     ports:
       - "8081:80"

@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 macro-hub visualizes macro-economic trends from multiple data sources (Riksbanken, Eurostat, Federal Reserve, Swedish Parliament, Valmyndigheten, SCB). It consists of:
 
-- **macro-backend/macro-analyzer/** — Java 25 / Spring Boot 4.1.2 backend
+- **macro-backend/** — Java 25 / Spring Boot 4.1.2 backend, a Maven reactor (parent `pom.xml` and `mvnw` here):
+  - **macro-platform/** — library with the `scrape` core and `shared` (no application class, no migrations)
+  - **macro-analyzer/** — the application: the four domain modules, `MacroAnalyzerApplication`, the Flyway migrations and the properties files
 - **macro-frontend/** — Vite + React 18 + TypeScript + shadcn-ui dashboard (formerly the separate `macro-view-hub` repo, merged in via `git subtree`)
 - **macro-backend/macro-infra/** — Docker Compose files (`docker/`) and microk8s manifests (`k8s/`)
 
@@ -22,22 +24,25 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
 
 ### Starting the local stack (in this order)
 
-Both the backend and Vite want port 8080, and the frontend calls the backend at `http://localhost:8080`, so the order matters.
+**Default: Docker Compose** (from repo root; see "Docker" below for what it runs):
 
-1. **Check what is already running:** `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|31274)'`. If an older backend holds 8080, it must be restarted to serve new code.
-2. **Postgres** (from repo root): `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:31274`.
-3. **Backend** (from `macro-backend/macro-analyzer/`, so `.env` is picked up): `SPRING_DATASOURCE_PASSWORD=macropassword JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`. Wait until it serves requests on 8080 (e.g. `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/macro-analyzer/series-config` returns 200) before starting Vite. Flyway migrations run on startup.
-4. **Frontend** (from `macro-frontend/`): `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run dev`. With 8080 taken, Vite falls back to **8081**; open `http://localhost:8081`.
+1. **Check what is already running:** `docker ps` and `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|5173)'`. On a fresh clone, also `cp macro-backend/macro-analyzer/.env.example macro-backend/macro-analyzer/.env`: step 3 fails with `couldn't find env file` without it. The keys in it can stay empty until you scrape Riksbanken or Fed series.
+2. **Build the backend image:** `(cd macro-backend && ./mvnw clean package && docker build -t macro-analyzer macro-analyzer)`.
+3. **Start everything:** `docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`. Open `http://localhost:8081`. Flyway migrations run on startup.
 
-If Vite starts first it takes 8080 and the backend fails with "Port 8080 was already in use".
+**For working on the code**, run the backend with `mvnw` and the frontend with Vite. Vite proxies `/macro-analyzer` to the backend on 8080, so the start order doesn't matter:
 
-### Backend (from `macro-backend/macro-analyzer/`)
+1. **Postgres** (from repo root): `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:31274`. Both Compose files name their container `macrohub-postgres`, so stop the full stack first. **If microk8s is running, its Postgres NodePort answers on `localhost:31274` instead of this container**, and the `dev` profile then uses and migrates the cluster's database. Check with `psql -h localhost -p 31274 -U macrouser macroanalyzer -c 'select version()'` (Compose runs Postgres 16, the cluster 13).
+2. **Backend** (from `macro-backend/`): `SPRING_DATASOURCE_PASSWORD=macropassword JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl macro-analyzer -am spring-boot:run -Dspring-boot.run.profiles=dev`. `-am` builds `macro-platform` with it; only the application module actually runs (`spring-boot.run.skip` in the poms). The working directory is `macro-analyzer/`, so `.env` is picked up. It serves on 8080 once `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/macro-analyzer/series-config` returns 200.
+3. **Frontend** (from `macro-frontend/`): `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run dev`. Open `http://localhost:5173`.
+
+### Backend (from `macro-backend/`)
 
 ```bash
-# Build
+# Build (the application jar is macro-analyzer/target/macro-analyzer-1.0.0.jar, with macro-platform inside)
 mvn clean package
 
-# Run all tests
+# Run all tests of both modules
 mvn test
 
 # Run a single test class
@@ -46,11 +51,16 @@ mvn test -Dtest=MacroSeriesControllerTest
 # Run a single test method
 mvn test -Dtest=MacroSeriesControllerTest#shouldReturnOk_whenValidBundleRetrieved
 
-# Generate JOOQ model from database schema
-mvn -P jooq-codegen generate-sources
+# Generate both JOOQ models from the database schema. The phase is compile, not generate-sources: macro-analyzer can
+# only resolve macro-platform once that has been compiled. The database must be at the latest migration: the command
+# deletes the classes of tables it doesn't find. The default URL is localhost:31274, the dependencies-only Compose file
+# or, with microk8s running, the cluster's database (see the psql check under "Starting the local stack"), so name the
+# database when in doubt. The full stack (docker-compose-all.yml) publishes Postgres on 5432:
+mvn -P jooq-codegen compile -Djooq.codegen.url=jdbc:postgresql://localhost:5432/macroanalyzer
 
-# Run locally against the Docker Postgres (dev profile points at localhost:31274)
-SPRING_DATASOURCE_PASSWORD=macropassword ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+# Run locally against the Docker Postgres. The dev profile points at localhost:31274: with microk8s running, this uses
+# and migrates the cluster's database, so do the psql check under "Starting the local stack" first
+SPRING_DATASOURCE_PASSWORD=macropassword ./mvnw -pl macro-analyzer -am spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 A fresh database has series configs but no data points (`chart-data` returns 204). Populate it with `POST /macro-analyzer/enqueue-all` followed by `POST /macro-analyzer/scrape-from-queue`.
@@ -64,7 +74,7 @@ Flyway migrations run automatically on application startup via `spring-boot-star
 - `application-test.properties` — TestContainers datasource
 - `prod` profile (used by the Dockerfile and `docker-compose-all.yml`) has no properties file; config comes from env vars
 - Riksbanken and Fed scrapes require `riksbanken.prod.subscription.key` / `fed.prod.subscription.key` (env: `RIKSBANKEN_PROD_SUBSCRIPTION_KEY`, `FED_PROD_SUBSCRIPTION_KEY`)
-  - Locally, put them in `macro-backend/macro-analyzer/.env` (copy `.env.example`; gitignored). Spring loads it via `spring.config.import=optional:file:.env[.properties]`, relative to the working directory, so run the app from `macro-analyzer/`
+  - Locally, put them in `macro-backend/macro-analyzer/.env` (copy `.env.example`; gitignored). Spring loads it via `spring.config.import=optional:file:.env[.properties]`, relative to the working directory, which is `macro-analyzer/` under `spring-boot:run` (run a jar from there too)
   - For `docker-compose-all.yml`, pass `--env-file macro-backend/macro-analyzer/.env`
   - `.githooks/pre-commit` rejects commits that stage `.env` files (even via `git add -f`). Enable it once per clone: `git config core.hooksPath .githooks`. The hook is opt-in, so CI's `frontend` job also fails if any `.env` file is tracked (same rule: `.env`, `.env.<anything>`, except `.env.example`)
 
@@ -85,8 +95,8 @@ npm run preview    # serve the production build
 - DeSO/RegSO boundaries for the Områdesstatistik map are in `public/geo/deso_2018.topo.json`, `deso_2025.topo.json`, `regso_2020.topo.json` and `regso_2025.topo.json` (object name = file stem; properties `code` (desokod/regsokod without version suffix), `name` (`regsonamn`, or `"<kommunnamn> <desokod>"` for DeSO), `kommunkod`, and on DeSO also `regsokod`). They are generated from SCB's WFS (`geodata.scb.se/geoserver/stat/wfs`, CC0) by `scripts/build-geo-scb-areas.sh` (run from `macro-frontend/`; needs network, `npx` and `node`, ~2 min). The script fails if a layer's feature count differs from the WFS hit count or a code is missing/duplicated. SCB's 2025 layers extend into territorial waters, so the script clips them to the dissolved land outline of DeSO 2018 / RegSO 2020 (lakes stay inside areas in every version). Simplification is Douglas-Peucker with a tolerance scaled by area (~4 m for inner-city areas, up to 150 m for rural ones) to keep the files at ~3.0 MB (DeSO) and ~1.9 MB (RegSO); `quantization=1e6` keeps vertices within ~1.5 m for street-level zoom
 - The Områdesstatistik page (`/omraden`, `src/pages/RegionalStatistics.tsx`, components in `src/components/regionalmap/`) is lazy-loaded so MapLibre GL (`maplibre-gl`, pinned exact; its worker is set via `setWorkerUrl` from a `?url` import because bundling breaks the library's own lookup) stays out of the main bundle. The basemap is OpenFreeMap's `positron` style (no API key; attribution OpenFreeMap/OpenMapTiles/OpenStreetMap comes from the style, SCB is added). The values' `geoVersion` picks which boundary file is fetched (TanStack Query, cached per version). Areas are coloured via feature-state: single-sign values in up to 9 blue classes (breaks at 1/7..5/7 and p90, p97, p99, or the mirror p1, p3, p10 and 2/7..6/7 when `median - p1 >= 1.5 * (p99 - median)` and `p1 > min`, so a long tail is not one wide class; ties can give fewer), values with both signs (e.g. flyttnetto) in 7 red–gray–blue diverging classes (3 quantile classes per side, gray around zero). Borders follow the class too: `borderColor` in `classification.ts` picks white or dark, whichever contrasts more with the fill as composited over the basemap, and `line-opacity` falls off below zoom 8 so country zoom doesn't turn grey. URL state: `l` (DeSO|RegSO), `i` (indicator id), `y` (year), `a` (area code); an indicator without DeSO data is shown at RegSO. Address search uses Photon (`photon.komoot.io`, bbox around Sweden, results filtered to `countrycode=SE`; Photon rejects `lang=sv`, so no lang is sent) and finds the containing area with d3-geo `geoContains`
 - shadcn-ui components live in `src/components/ui/` (configured via `components.json`)
-- Backend base URL is `rootUrl` in `src/models/Constants.ts`, set at build time by `VITE_API_URL` (trailing slash stripped). Unset (e.g. `npm run dev`) it defaults to `http://localhost:8080`; an empty value means same origin (relative `/macro-analyzer/...` URLs). It calls `/macro-analyzer/series-config`, `/macro-analyzer/chart-data` and the parliament, election and `regional-statistics` endpoints
-- **Port clash:** `vite.config.ts` also sets the dev server to port 8080. Start the backend first so Vite falls back to the next free port (8081); if Vite starts first, Spring Boot fails to bind. Backend CORS allows all origins (the dev server calls `:8080` cross-origin).
+- Backend base URL is `rootUrl` in `src/models/Constants.ts`, set at build time by `VITE_API_URL` (trailing slash stripped). Unset or empty means same origin (relative `/macro-analyzer/...` URLs), which nginx and the Vite proxy serve. It calls `/macro-analyzer/series-config`, `/macro-analyzer/chart-data` and the parliament, election and `regional-statistics` endpoints
+- The dev server listens on port 5173. `vite.config.ts` proxies `/macro-analyzer` to the backend on `localhost:8080`, split per domain the same way as the nginx routes; `vite preview` (port 4173) uses the same proxy. A `.env.development` can't set these: the pre-commit hook and CI reject it. Backend CORS still allows all origins, for a build with `VITE_API_URL` set
 - Package manager is npm; `package-lock.json` is the only lockfile (don't add `bun.lockb`/`yarn.lock`)
 
 ### Docker (from repo root)
@@ -96,17 +106,24 @@ npm run preview    # serve the production build
 docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up
 
 # Full stack (PostgreSQL + backend on :8080 + frontend on :8081) — build the backend image first:
-#   (cd macro-backend/macro-analyzer && ./mvnw clean package && docker build -t macro-analyzer .)
+#   (cd macro-backend && ./mvnw clean package && docker build -t macro-analyzer macro-analyzer)
 # The frontend image is built by compose (add --build after frontend changes)
 docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up
 ```
 
-- The frontend container (`macro-frontend/Dockerfile`) builds with Node 22 and serves `dist/` with nginx; `nginx/default.conf.template` falls back to `index.html` for `BrowserRouter` routes. It replaces the Vite dev server on 8081, so stop Vite first
-- The image is built with `VITE_API_URL` empty (build arg, override with `--build-arg VITE_API_URL=...`), so the browser calls the backend on the frontend's own origin and nginx proxies `/macro-analyzer/` to `BACKEND_URL` (env, `scheme://host:port`, default `http://macro-analyzer:8080`, the compose service). The nginx image's envsubst entrypoint renders the template; the upstream is resolved per request with the resolver from `/etc/resolv.conf` (`NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1`), so nginx starts before the backend is up. nginx's resolver ignores resolv.conf search domains, so outside compose (e.g. a future k8s deployment; `k8s/` has no frontend manifest today) give `BACKEND_URL` a fully qualified name such as `http://macro-analyzer-service.default.svc.cluster.local:8080`
+- The frontend container (`macro-frontend/Dockerfile`) builds with Node 22 and serves `dist/` with nginx on 8081; `nginx/default.conf.template` falls back to `index.html` for `BrowserRouter` routes
+- The image is built with `VITE_API_URL` empty (build arg, override with `--build-arg VITE_API_URL=...`), so the browser calls the backend on the frontend's own origin and nginx proxies it per domain, each route with its own variable (`scheme://host:port`, no trailing slash; every default is `http://macro-analyzer:8080`, the compose service, so all routes reach the one backend):
+  - `MACRO_SERIES_URL`: `/macro-analyzer/series-config`, `/macro-analyzer/chart-data`
+  - `REGIONAL_STATISTICS_URL`: `/macro-analyzer/regional-statistics/`
+  - `PARLIAMENT_URL`: `/macro-analyzer/parliament/`
+  - `ELECTION_URL`: `/macro-analyzer/municipalities/`, `/macro-analyzer/regions/`, `/macro-analyzer/constituencies/`
+  - `BACKEND_URL`: the catch-all `/macro-analyzer/`, which carries the manual enqueue and scrape endpoints
+- A new variable needs a default in the Dockerfile, because the entrypoint leaves an unset one as the literal `${X}`. A variable set to an empty value makes nginx exit at startup (`invalid number of arguments in "set" directive`), so write literal values in Compose rather than `${X:-}`. The proxy settings, including the 30-minute `proxy_read_timeout`, are set once on the `server` and inherited by every route
+- The nginx image's envsubst entrypoint renders the template; each upstream is resolved per request with the resolver from `/etc/resolv.conf` (`NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1`), so nginx starts before the backend is up. nginx's resolver ignores resolv.conf search domains, so outside compose (e.g. a future k8s deployment; `k8s/` has no frontend manifest today) give the variables a fully qualified name such as `http://macro-analyzer-service.default.svc.cluster.local:8080`
 
 ## Architecture
 
-The backend is split into **modules by domain**. Inside each module it follows **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**. Every class lives in a module under `com.kg.macroanalyzer`, except `MacroAnalyzerApplication` in the root package and the generated jOOQ model.
+The backend is split into **modules by domain**. Inside each module it follows **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**. Every class lives in a module under `com.kg.macroanalyzer`, except `MacroAnalyzerApplication` in the root package and the generated jOOQ models. It all runs as one application. The Maven modules cut across this: `scrape`, `shared` and their jOOQ model are built in `macro-platform`, and everything else in `macro-analyzer`. The packages are the same as before the split, so component scanning from `MacroAnalyzerApplication` finds `macro-platform`'s beans.
 
 ```
   REST ──→ adaptors.http ──→ port.in ──→ service ──→ port.out ←── adaptors.postgres ──→ PostgreSQL
@@ -124,9 +141,9 @@ The backend is split into **modules by domain**. Inside each module it follows *
 
 ### Package structure (`com.kg.macroanalyzer`)
 
-The backend is organised by domain. Every module (`scrape`, `macroseries`, `regionalstatistics`, `parliament`, `election`) uses `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; besides them there is only `shared/`, the generated jOOQ model and `MacroAnalyzerApplication` in the root package.
+The backend is organised by domain. Every module (`scrape`, `macroseries`, `regionalstatistics`, `parliament`, `election`) uses `domain/`, `application/port/in/`, `application/port/out/`, `application/service/` and `adaptors/{http,postgres,web,config,cron}/`; besides them there is only `shared/`, the generated jOOQ models and `MacroAnalyzerApplication` in the root package.
 
-- **`scrape/`** — the scrape core, independent of the data sources:
+- **`scrape/`** (Maven module `macro-platform`) — the scrape core, independent of the data sources:
   - `domain/` — `ScrapeQueueItem`, `ScrapeResult`, `SeriesConfig` (every scrape flow's config, including the `scrapeFlow` id that routes it)
   - `application/port/in/` — `InPort` (enqueue, enqueue-all, scrape-from-queue) and its `ScrapeRun` result; `application/port/out/` — `ScrapeQueuePort` (queue reads/writes, `markAsDone`) and `SeriesConfigPort`
   - `application/service/` — `InPortImpl`, `ScrapeService`, `EnqueueService`, and in `scrapeflow/` the `ScrapeFlow` pipeline (`Preparer` → `ExistingFinder` → `Scraper` → `Persister`) and `RegisteredScrapeFlow` (see below)
@@ -151,10 +168,10 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
   - `application/port/in/` — `ElectionQueries` (results per type and year, one area's detail) and its DTOs; `application/port/out/` — `ElectionRepositoryPort`, the scrape payload `ConfigWithLocalElections`, `LocalElectionIndexRequest` and `LocalElectionFile`
   - `application/service/` — `LocalElectionService` (party colours come from parliament's `PartyDirectory`), and in `scrape/` `ExistingLocalElectionFinder`, `LocalElectionScraper` and `LocalElectionPersister`
   - `adaptors/http/` — `ElectionController` (`/municipalities/*`, `/regions/*`, `/constituencies/*`); `adaptors/postgres/` — `ElectionPostgresAdaptor` and `LocalElectionRepository`; `adaptors/web/` — the Valmyndigheten index and result web adaptors, retry, connection builder and parsers; `adaptors/config/` — the Valmyndigheten web beans and the scrape flow
-- **`shared/`** — used by every module, depends on none of them: `config/` (CORS, Jackson, JDBC, Flyway catalog version) and `web/` (`WebPort`, `ScrapeException`, `WebAdaptorFlow`, `ConnectionBuilder`/`Getter`/`ResponseParser`, `HttpGetter`, `ZipEntryGetter`, `HttpResponses`)
+- **`shared/`** (Maven module `macro-platform`) — used by every module, depends on none of them: `config/` (CORS, Jackson, JDBC, Flyway catalog version) and `web/` (`WebPort`, `ScrapeException`, `WebAdaptorFlow`, `ConnectionBuilder`/`Getter`/`ResponseParser`, `HttpGetter`, `ZipEntryGetter`, `HttpResponses`)
   - Jackson 3 (`tools.jackson`) is used throughout. `JacksonConfiguration` (in `shared/config/`) defines the `JsonMapper` bean, which Boot's MVC auto-config uses for the message converter; don't add `@EnableWebMvc`, which would turn that auto-config off. The bean keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
   - The backend is JSON-only, so `spring.web.resources.add-mappings=false` (base `application.properties`, every profile) turns off Boot's `/**` and `/webjars/**` resource handlers: nothing on a static location is served, and unknown paths answer 404 for every method, also CORS requests (the handler would answer them with 200 or 403). `NoStaticResourceHandlersHttpTest` pins this
-- **`jooq/generated/`** — Auto-generated JOOQ classes (do not edit manually).
+- **`jooq/generated/`** (`macro-analyzer`) and **`platform/jooq/generated/`** (`macro-platform`) — Auto-generated JOOQ classes (do not edit manually). `macro-platform`'s model holds `series_configuration`, `scrape_action_queue` and `flyway_schema_history`, for `scrape` and `shared`; the other holds every other table, for the domain modules. The tables are selected in each module's `jooq-codegen` profile
 
 ### Layers inside a module
 
@@ -172,7 +189,7 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 
 `src/test/java/com/kg/macroanalyzer/ArchitectureTest.java` (ArchUnit, part of `mvn test`) enforces:
 
-- every class except `MacroAnalyzerApplication` resides in a module listed in `MODULES`/`SHARED_MODULES` or in `jooq.generated`;
+- every class except `MacroAnalyzerApplication` resides in a module listed in `MODULES`/`SHARED_MODULES` or in `GENERATED_PACKAGES` (`jooq.generated`, `platform.jooq.generated`);
 - `shared` depends on no module;
 - a module's `domain` and `application` do not depend on its `adaptors`, and no `application.port` depends on any module's `application.service` (`scrape`'s included);
 - a domain module (`DOMAIN_MODULES`) only depends on itself, `scrape`, `shared` and `jooq.generated`, plus what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows. The only entry is `election` → `parliament.application.port.in` and `parliament.domain` (for `PartyDirectory`/`Party`); no module may use another module's out-ports, services or adaptors.
@@ -185,7 +202,7 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 4. Add a `*WebAdaptorConfiguration` for the `WebPort` beans and a `*ScrapeFlowConfiguration` that registers a `RegisteredScrapeFlow` under a new flow id.
 5. Define that flow id as a constant in the module's `domain/` (e.g. `<Module>ScrapeFlows`). Only `MACRO_POINT` configs appear in `/series-config`, so a new flow stays out of the chart picker without further changes.
 6. Add the module to `MODULES` and `DOMAIN_MODULES` in `ArchitectureTest` (and to `DOMAIN_MODULE_EXTRA_DEPENDENCIES` only if it must use another module's in-port).
-7. Add a Flyway migration with the module's tables and its `series_configuration` row, then regenerate the jOOQ model. The row needs a `scrape_url`, a `category` and its `scrape_flow` (the id from step 5); startup fails if no flow is registered under that id.
+7. Add a Flyway migration with the module's tables and its `series_configuration` row, then regenerate the jOOQ models. The row needs a `scrape_url`, a `category` and its `scrape_flow` (the id from step 5); startup fails if no flow is registered under that id.
 
 ### REST API Endpoints
 
@@ -236,7 +253,8 @@ Chart series in `series_configuration` carry picker metadata (V27), returned by 
 
 - JUnit 5 + Mockito for unit tests
 - TestContainers (PostgreSQL) for integration tests — Docker must be running for `mvn test`
-- `ArchitectureTest` (ArchUnit) checks the module boundaries: every class outside the root package lives in a module, `shared` or `jooq.generated` (so no layer-first package can come back), `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; today `election` → `parliament`). Add a new module to `MODULES` (and to `DOMAIN_MODULES` for a business domain)
+- Each Maven module has its own tests. `macro-platform` has the unit tests of `scrape` and `shared`. `SeriesConfigRepositoryTest` and `NoStaticResourceHandlersHttpTest` are in those packages but stay in `macro-analyzer`, because they need the application and its migrations. `TestSeriesConfigFactory` exists in both modules: a shared test-jar would be on the classpath as a jar, and `ArchitectureTest`'s `DoNotIncludeTests` would then import its classes as production code
+- `ArchitectureTest` (ArchUnit, in `macro-analyzer`) imports all of `com.kg.macroanalyzer` from the classpath, so it covers `macro-platform` too; `importIncludesMacroPlatform` fails if that ever stops. It checks the module boundaries: every class outside the root package lives in a module, `shared` or a generated jOOQ package (so no layer-first package can come back), `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; today `election` → `parliament`). Add a new module to `MODULES` (and to `DOMAIN_MODULES` for a business domain)
 - Test fixtures in `src/test/resources/json/`
 - `@ActiveProfiles("test")` activates `application-test.properties`
 
