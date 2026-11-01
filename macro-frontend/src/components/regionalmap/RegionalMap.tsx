@@ -7,7 +7,7 @@ import type { BBox } from 'geojson';
 import { Loader2 } from 'lucide-react';
 import { AreaGeometry } from '@/api/regionalStatistics';
 import { RegionalIndicator } from '@/models/RegionalStatistics';
-import { Classification, formatValue, NO_DATA_COLOR } from './classification';
+import { borderColor, Classification, formatValue, NO_DATA_COLOR } from './classification';
 
 // Bundling moves the library away from its worker file, so point it at the copy Vite emits
 maplibregl.setWorkerUrl(workerUrl);
@@ -16,6 +16,7 @@ const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 const SWEDEN_BOUNDS: LngLatBoundsLike = [[10.5, 55.0], [24.3, 69.1]];
 const SOURCE = 'areas';
 const FILL_LAYER = 'areas-fill';
+const BORDER_LAYER = 'areas-border';
 const HOVER_LAYER = 'areas-hover';
 const SELECTED_CASING_LAYER = 'areas-selected-casing';
 const SELECTED_LAYER = 'areas-selected';
@@ -123,13 +124,15 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
         paint: { 'fill-color': NO_DATA_COLOR, 'fill-opacity': 0.5 },
       }, firstLabel);
       map.addLayer({
-        id: 'areas-border',
+        id: BORDER_LAYER,
         type: 'line',
         source: SOURCE,
         paint: {
-          'line-color': '#ffffff',
-          'line-opacity': 0.7,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.2, 10, 0.6, 14, 1.2],
+          'line-color': borderColor(NO_DATA_COLOR),
+          // Faint at country zoom, where lines of thousands of small areas would otherwise grey out the fills.
+          // A line under 1 px still draws at over half strength, so width alone cannot thin them
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.12, 7, 0.3, 9, 0.7],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.2, 8, 0.4, 10, 0.7, 14, 1],
         },
       }, firstLabel);
       map.addLayer({
@@ -226,6 +229,11 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
       'match', classIndex,
       ...classification.classes.flatMap((c, i) => [i, c.color]),
       NO_DATA_COLOR,
+    ] as ExpressionSpecification);
+    map.setPaintProperty(BORDER_LAYER, 'line-color', classification.classes.length === 0 ? borderColor(NO_DATA_COLOR) : [
+      'match', classIndex,
+      ...classification.classes.flatMap((c, i) => [i, borderColor(c.color)]),
+      borderColor(NO_DATA_COLOR),
     ] as ExpressionSpecification);
     // Lighter at street level so the roads under the areas show through
     map.setPaintProperty(FILL_LAYER, 'fill-opacity', [
