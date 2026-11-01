@@ -44,7 +44,7 @@ Everything below about a "module" holds in all the applications; the rest of thi
 
 **Default: Docker Compose** (from repo root; see "Docker" below for what it runs):
 
-1. **Check what is already running:** `docker ps` and `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|8082|8083|5173)'`. On a fresh clone, also `cp macro-backend/macro-series-service/.env.example macro-backend/macro-series-service/.env`: step 3 fails with `couldn't find env file` without it. The keys in it can stay empty until you scrape Riksbanken or Fed series.
+1. **Check what is already running:** `docker ps` and `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|8082|8083|5173)'`. On a fresh clone, also `cp macro-backend/macro-series-service/.env.example macro-backend/macro-series-service/.env`: step 3 fails with `couldn't find env file` without it. The keys in it can stay empty until you scrape Riksbanken or Fed series. An existing clone has to move its file instead, or step 3 fails the same way: `mv macro-backend/macro-analyzer/.env macro-backend/macro-series-service/.env`.
 2. **Build the backend images:** `(cd macro-backend && ./mvnw clean package && docker build -t macro-analyzer macro-analyzer && docker build -t regional-statistics-service regional-statistics-service && docker build -t macro-series-service macro-series-service)`.
 3. **Start everything:** `docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`. Open `http://localhost:8081`. Flyway migrations run on startup. On an **empty** volume, Postgres creates the `regional_statistics` and `macro_series` databases and roles from `macro-infra/docker/postgres-init/`. An **existing** volume doesn't run that, and a service fails to start without its database. So first start Postgres if it isn't running (the same compose command with `up -d postgres`), then run `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh` (it can be re-run; add `-e REGIONAL_STATISTICS_DB_PASSWORD=...` or `-e MACRO_SERIES_DB_PASSWORD=...` after `-i` if you changed a password). A new database has no data, so `/omraden` and the charts stay empty until a scrape or, for macro-series while the monolith still has its tables, a restore: see "Data" in the [migration guide](docs/microservice-migration-guide.md#data). The monolith's V34 dropped its copy of the SCB tables, so there is nothing left to restore those from.
 
@@ -235,8 +235,8 @@ Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTes
 
 ### REST API Endpoints
 
-- `GET /macro-analyzer/series-config` — list the chart series configurations, in `id` (seed) order
-- `POST /macro-analyzer/chart-data` — retrieve aligned chart data (400 when `strategy`, `timeFrame` or `chartSeriesParams` is missing)
+- `GET /macro-analyzer/series-config` — on `macro-series-service`: list the chart series configurations, in `id` (seed) order
+- `POST /macro-analyzer/chart-data` — on `macro-series-service`: retrieve aligned chart data (400 when `strategy`, `timeFrame` or `chartSeriesParams` is missing)
 - `POST /macro-analyzer/enqueue?name={series}` — enqueue one of the monolith's series for scraping (202; a name it doesn't know, such as a moved series, also answers 202 and does nothing)
 - `POST /macro-analyzer/enqueue-all` — enqueue all of the monolith's series (202)
 - `POST /macro-analyzer/scrape-from-queue` — execute the monolith's pending scrapes (200, 409 while one is running)
@@ -256,7 +256,7 @@ Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTes
 
 - `MembersOfParliament` scrape upserts every person from `data.riksdagen.se/personlista` (JSONB, keyed on `intressent_id`); `MembersOfParliamentActivity` then fetches voting totals, speeches and motions per member of the latest two terms (~600 members, ~7 min, throttled)
 - Election seat counts are curated in `riksdag_election_result` (Flyway seed from Valmyndigheten) because Riksdagen only stores each person's *current* party. Add a new election as a migration (rows in `riksdag_election` + `riksdag_election_result`)
-- Riksdagen configs (category `Riksdagen`, flows `MEMBER_OF_PARLIAMENT` and `MEMBER_ACTIVITY`) are not in `/series-config`, which only lists `MACRO_POINT` configs, so they don't appear in the chart picker
+- Riksdagen configs (category `Riksdagen`, flows `MEMBER_OF_PARLIAMENT` and `MEMBER_ACTIVITY`) are in the monolith's database, so they aren't in `/series-config`, which `macro-series-service` serves from its own, and don't appear in the chart picker
 
 ### Kommun, region and Riksdag elections (Valmyndigheten)
 
@@ -264,7 +264,7 @@ Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTes
 - `ParliamentElections` (RD) uses the same pipeline, but its single zip (`s/rd/..._00_RD.zip`) holds all 29 valkretsar under `valkretsLista`, so the parser returns one area per valkrets (area code `01`..`29`, Gotland is `09`). Valkrets seats include the utjämningsmandat assigned to that valkrets (they sum to 349). The ~200 MB per-district `rostfordelning` file in the zip is streamed past, not parsed
 - `scrape_url` (`.../resultatfiler/val2026`) selects the election; point it at the next election's folder with a migration. Gotland has no regionfullmäktige
 - Who governs (`local_governance`) has no open data source and starts empty; add rows by migration (party abbreviations as in the results). The frontend only shows the "styre" section where a row exists
-- Configs use category `Valmyndigheten` and flow `LOCAL_ELECTION`, so they are not in `/series-config` either
+- Configs use category `Valmyndigheten` and flow `LOCAL_ELECTION`. They are in the monolith's database too, so they are not in `/series-config` either
 
 ### SCB regional statistics (DeSO / RegSO)
 

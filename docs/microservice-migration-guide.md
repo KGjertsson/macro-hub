@@ -128,7 +128,7 @@ Tried on a throwaway database with 2.4 M rows: a 16 MB dump and 73 s to restore.
 - [ ] Generate a jOOQ model per service from its own database, in the package `com.kg.macroanalyzer.<module>.jooq.generated`. Give it a profile named after the service (`jooq-codegen-<service>`) that sets `jooq.codegen.url`, `.user` and `.password` to the Compose Postgres. With the shared name `jooq-codegen`, the `-am` the build needs would also run `macro-platform`'s codegen, and regenerate its model from whatever database the command names.
 - [ ] Move the module's tests and fixtures. Give the service its own `ArchitectureTest` for its layers, a copy of `NoStaticResourceHandlersHttpTest` and `ManualScrapePathsHttpTest`, and an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
 - [ ] Update the monolith's `ArchitectureTest` (`MODULES`, `DOMAIN_MODULES`).
-- [ ] Update `ChartSeriesConfigIntegrationTest`: `shouldRouteEveryNonChartConfig_toItsDomainsScrapeFlow` lists the non-chart configs still in the monolith by name (five after step 2), so each service takes its own entries.
+- [ ] Update `MonolithSeriesConfigIntegrationTest`: `shouldRouteEveryConfig_toItsDomainsScrapeFlow` lists the configs still in the monolith by name (five after step 3), so each service takes its own entries.
 
 ### Manual scrape endpoints
 
