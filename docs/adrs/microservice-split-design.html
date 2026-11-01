@@ -95,7 +95,7 @@ svg .headw { fill: var(--warn); }
 
 <header>
   <h1>macro-hub microservice split</h1>
-  <p class="lede">The design for one service per business domain, based on the code at <code>b5f1411</code> and the row counts in the local database. The decisions were made on 2026-11-01. The app isn't deployed anywhere yet.</p>
+  <p class="lede">The design for one service per business domain, based on the code at <code>07c7482</code> and the row counts in the local database. The decisions were made on 2026-11-01. The app isn't deployed anywhere yet.</p>
   <div class="call"><p><strong>In short:</strong> four services behind a gateway, one Postgres instance with one database and role per service, and scrape code as a shared library. The only runtime call between services is election asking parliament for party colours, which is a cached REST call. No message broker is needed. Docker Compose runs it locally, and Kubernetes is the eventual deployment target.</p><p>The <a href="README.md">ADRs</a> are authoritative if they ever differ from this page.</p></div>
 </header>
 
@@ -271,7 +271,7 @@ svg .headw { fill: var(--warn); }
         <tr><td>Keep shared tables</td><td>Nothing</td><td>None</td><td>Lowest</td><td>Rejected. Services would break each other through schema changes.</td></tr>
         <tr class="pick"><td><strong>Database per service, one instance</strong></td><td>Postgres itself: a query can't reach another database</td><td>Re-scrape into the new database. Dump and restore is a local time-saver.</td><td>One Postgres and one volume, with one backup per database</td><td><span class="tag">Chosen</span></td></tr>
         <tr><td>Schema and role per service, one instance</td><td>Postgres grants</td><td><code>ALTER TABLE … SET SCHEMA</code>, with no data copied</td><td>One Postgres, one backup, one volume</td><td>The main alternative, and the draft's recommendation. It is easier to migrate and back up, but the boundary is one <code>GRANT</code> away from a cross-domain query.</td></tr>
-        <tr><td>Instance per service</td><td>Full isolation</td><td>Re-scrape into each new instance</td><td>Four volumes and four Postgres processes (one uses 555 MiB locally)</td><td>Too heavy for this data.</td></tr>
+        <tr><td>Instance per service</td><td>Full isolation</td><td>Re-scrape into each new instance</td><td>Four volumes and four Postgres processes (one <code>docker stats</code> reading of the local process showed 555 MiB)</td><td>Too heavy for this data.</td></tr>
       </tbody>
     </table>
   </div>
@@ -294,7 +294,7 @@ svg .headw { fill: var(--warn); }
       <tbody>
         <tr><td>Browser to service</td><td>HTTP through nginx</td><td>Replace the single <code>location /macro-analyzer/</code> with per-domain routes. Frontend API code stays the same. In dev, a Vite proxy replaces the direct call to <code>:8080</code>, which also ends the port clash.</td></tr>
         <tr><td>Election to parliament</td><td>Cached REST call to the existing <code>GET /parliament/parties</code></td><td>Election gets its own out-port with an HTTP adaptor in place of <code>PartyDirectory</code>. A contract test pins the fields it reads.</td></tr>
-        <tr><td>Starting scrapes</td><td>Each service's own cron</td><td>No traffic between services. Manual triggers stay reachable through the gateway, without authentication, on per-service paths, because <code>/enqueue?name=</code> can't be routed by nginx from a query parameter alone.</td></tr>
+        <tr><td>Starting scrapes</td><td>Each service's own cron</td><td>No traffic between services. Manual triggers stay reachable through the gateway, without authentication, on per-service paths, because routing <code>/enqueue?name=</code> would take an nginx map of every series name to its service.</td></tr>
         <tr><td>Events</td><td>None for now</td><td>Add a transactional outbox and a broker when a service must react to another's writes. Nothing does today.</td></tr>
       </tbody>
     </table>
@@ -340,7 +340,7 @@ svg .headw { fill: var(--warn); }
   <h2>What it costs</h2>
   <p>The modules are already well separated, so the code move is the easy part. The ongoing cost is operational, for what is about 10,000 lines of Java running as one replica.</p>
   <ul>
-    <li><strong>Memory:</strong> the monolith uses 609 MiB locally. Four JVMs would plausibly take 1.5–2 GiB. That is an estimate rather than a measurement, and it matters if this runs on small cluster nodes.</li>
+    <li><strong>Memory:</strong> a <code>docker stats</code> reading of the monolith showed 609 MiB, a number that moves with the JVM's heap (another reading showed 890 MiB). Four JVMs would plausibly take 1.5–2 GiB. That is an estimate rather than a measurement, and it matters if this runs on small cluster nodes.</li>
     <li><strong>Local dev:</strong> the start-up sequence becomes four services and a proxy, so <code>docker-compose-all.yml</code> becomes the default route and runs all services at each stage.</li>
     <li><strong>Deploys:</strong> four images, in Compose now and in Kubernetes manifests at the first deployment, and CI should build only what changed. A change to <code>macro-platform</code> still rebuilds everything.</li>
     <li><strong>What you get:</strong> scrapes that no longer block each other, SCB's memory spikes isolated, independent deploys, and boundaries enforced by the build and by separate databases.</li>

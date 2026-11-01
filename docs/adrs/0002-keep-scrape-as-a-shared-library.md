@@ -25,7 +25,7 @@ Nothing in the frontend calls the enqueue or scrape endpoints.
 ## Consequences
 
 - There are no calls between services for scraping, and each service has its own lock, so a 12-minute SCB run stops delaying the others.
-- The queue and the data sit in one database, so they can share a transaction. They don't today: the code has no `@Transactional`.
+- The queue and the data sit in one database, so they can share a transaction. They don't today: the persisters call `markAsDone` after the repositories' own jOOQ transactions have committed.
 - The global `enqueue-all` goes away. A small script that calls each service replaces it.
 - All four services would enqueue during the 22:00 hour (`CronEnqueueAdaptor`) and write concurrently. Stagger the hours if that strains Postgres.
 - A change to `macro-platform` rebuilds every service.

@@ -38,7 +38,7 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 
 | Question | What is known | Needed by |
 | --- | --- | --- |
-| What are the exact per-service manual trigger paths? | They must differ per service, because nginx can't route `/enqueue?name=` from a query parameter alone. Election has three URL prefixes and macro-series has none below a common prefix, so the existing prefixes alone don't give every service a home. `InsertionAdaptor` moves to `macro-platform` with fixed paths today, so the prefix has to become configurable. | Step 2 |
+| What are the exact per-service manual trigger paths? | They must differ per service, because nginx would need a map of every series name to its service to route `/enqueue?name=`. Election has three URL prefixes and macro-series has none below a common prefix, so the existing prefixes alone don't give every service a home. `InsertionAdaptor` moves to `macro-platform` with fixed paths today, so the prefix has to become configurable. | Step 2 |
 | How do `macro-platform` and service migrations stay ordered? | See "Flyway" in the checklist. A version range prevents collisions, but not ordering problems. | Step 2 |
 | Which is the gateway in the cluster: nginx in the frontend image, or Ingress routes? | `k8s/` has no frontend manifest. Compose keeps using nginx either way. With nginx, `BACKEND_URL`-style values need fully qualified service names. | Step 6 |
 | How do images reach the cluster? | `k8s/java/deployment.yaml` uses `imagePullPolicy: Never`, with images imported by hand. | Step 6 |
@@ -146,8 +146,8 @@ Revert the PR and re-create the local databases.
   - `/macro-analyzer/parliament/`
   - `/macro-analyzer/municipalities/`, `/macro-analyzer/regions/` and `/macro-analyzer/constituencies/`
   - `/macro-analyzer/` stays as the catch-all, which also carries the manual endpoints for now
-- [ ] Give each domain its own URL variable (**Suggested:** `MACRO_SERIES_URL` and so on), with a default in `macro-frontend/Dockerfile`. The template comment notes that only defined variables are substituted, so a variable with no value would reach nginx as literal text. Keep the rule from `BACKEND_URL`: `scheme://host:port`, with no trailing slash. Keep the 30-minute `proxy_read_timeout` on every route.
-- [ ] Add a Vite proxy for `/macro-analyzer` to the monolith, split the same way, and make the dev frontend call its own origin. `rootUrl` falls back to `http://localhost:8080` when `VITE_API_URL` is unset. A `.env.development` file isn't an option: the pre-commit hook and CI reject `.env.<anything>`. Change the fallback or set the variable in the `dev` script. Move Vite off 8080, which ends the port clash.
+- [ ] Give each domain its own URL variable (**Suggested:** `MACRO_SERIES_URL` and so on), with a default in `macro-frontend/Dockerfile`. The nginx entrypoint only substitutes variables that are defined: an unset variable stays as the literal `${X}`, and one set to an empty string leaves `set $backend ;`, so nginx fails to start. Both are easy to hit in Compose. Keep the rule from `BACKEND_URL`: `scheme://host:port`, with no trailing slash. Keep the 30-minute `proxy_read_timeout` on every route.
+- [ ] **Suggested:** add a Vite proxy for `/macro-analyzer` to the monolith, split the same way, make the dev frontend call its own origin and move Vite off 8080, which ends the port clash. `rootUrl` falls back to `http://localhost:8080` when `VITE_API_URL` is unset. A `.env.development` file isn't an option: the pre-commit hook and CI reject `.env.<anything>`. Change the fallback or set the variable in the `dev` script.
 - [ ] Update the local start-up steps in `CLAUDE.md`, with Compose as the default route. Running a service with `mvnw` and Vite stays possible, for working on one service.
 
 **Verify:** CI is green. The Compose stack and `npm run dev` both serve every page, and the manual endpoints still work through the gateway.
@@ -206,7 +206,7 @@ Revert the PR and re-create the local databases.
 **Tasks:**
 
 - [ ] Give election its own out-port for party colours, and use it in `LocalElectionService` in place of `PartyDirectory`.
-- [ ] Add the HTTP adaptor for `GET /macro-analyzer/parliament/parties`, with a configurable URL, a background refresh and the fallbacks from ADR 0005. It must accept the 204 the endpoint gives for an empty list, and must not block start-up. While both are in the monolith, it calls the monolith's own port.
+- [ ] Add the HTTP adaptor for `GET /macro-analyzer/parliament/parties`, with a configurable URL, a background refresh and the fallbacks from ADR 0005. It must accept the 204 the endpoint gives for an empty list, and must not block start-up. While both are in the monolith, the configurable URL points at the monolith itself (`http://localhost:8080`).
 - [ ] Add a contract test that pins `code` and `color`, and update `LocalElectionServiceTest`.
 - [ ] Remove the `election` entry from `DOMAIN_MODULE_EXTRA_DEPENDENCIES` in `ArchitectureTest`, and remove `PartyDirectory` from parliament.
 - [ ] Run the extraction checklist for parliament.
@@ -226,7 +226,7 @@ Revert the PR and re-create the local databases.
 
 **Tasks:**
 
-- [ ] Run the extraction checklist for election, with the new database `election`.
+- [ ] Run the extraction checklist for election, with the new database `election`. Skip the cut-over items that delete config rows, delete queue rows and drop old tables with a monolith migration: the monolith itself becomes election, so they have no target. The old tables go away with the `macroanalyzer` database.
 - [ ] Rename the `macro-analyzer` module, application class, image, jar and Compose service to election.
 - [ ] Delete V1 to V32 and the old jOOQ model from the tree. They stay in git history.
 - [ ] Add the `/macro-analyzer/enqueue`-style replacement for election, and remove the monolith's call from the script.

@@ -24,7 +24,7 @@ The draft design recommended a schema and role per service. The project owner ch
 
 - **Shared tables.** Rejected, because services would break each other through schema changes.
 - **Schema and role per service, one instance.** This was the draft's recommendation. Migrating is easier (`ALTER TABLE ... SET SCHEMA`, with no data copied) and there is one backup, but the boundary is weaker: it is only grants, one `GRANT` away from a cross-domain query.
-- **Instance per service.** Rejected as too heavy for this data: four Postgres processes and four volumes, where one process uses 555 MiB locally.
+- **Instance per service.** Rejected as too heavy for this data: four Postgres processes and four volumes, where one `docker stats` reading of the local process showed 555 MiB.
 
 ## Consequences
 
