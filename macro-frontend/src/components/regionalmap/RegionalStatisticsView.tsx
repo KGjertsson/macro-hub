@@ -189,8 +189,13 @@ const RegionalStatisticsView = () => {
             </SelectTrigger>
             <SelectContent>
               {groupByCategory(indicators ?? []).map(([category, members]) => (
-                <SelectGroup key={category}>
-                  <SelectLabel>{category}</SelectLabel>
+                <SelectGroup
+                  key={category}
+                  className="mt-1 border-t border-border pt-1 first:mt-0 first:border-t-0 first:pt-0"
+                >
+                  <SelectLabel className="pl-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {category}
+                  </SelectLabel>
                   {members.map(i => (
                     <SelectItem key={i.id} value={i.id} disabled={!withData.includes(i)}>
                       {i.label}
