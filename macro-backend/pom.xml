@@ -19,6 +19,7 @@
     <modules>
         <module>macro-platform</module>
         <module>macro-analyzer</module>
+        <module>regional-statistics-service</module>
     </modules>
 
     <properties>
@@ -30,6 +31,8 @@
         <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
         <!-- Override with -D if the port is taken: on a machine with microk8s, its NodePort answers on 31274 -->
         <jooq.codegen.url>jdbc:postgresql://localhost:31274/macroanalyzer</jooq.codegen.url>
+        <jooq.codegen.user>macrouser</jooq.codegen.user>
+        <jooq.codegen.password>macropassword</jooq.codegen.password>
     </properties>
 
     <dependencyManagement>
@@ -81,8 +84,8 @@
                         <jdbc>
                             <driver>org.postgresql.Driver</driver>
                             <url>${jooq.codegen.url}</url>
-                            <user>macrouser</user>
-                            <password>macropassword</password>
+                            <user>${jooq.codegen.user}</user>
+                            <password>${jooq.codegen.password}</password>
                         </jdbc>
                         <generator>
                             <database>

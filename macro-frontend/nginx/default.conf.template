@@ -33,6 +33,10 @@ server {
         set $backend ${REGIONAL_STATISTICS_URL};
         proxy_pass $backend;
     }
+    location /macro-analyzer/scrape/regional-statistics/ {
+        set $backend ${REGIONAL_STATISTICS_URL};
+        proxy_pass $backend;
+    }
 
     # parliament
     location /macro-analyzer/parliament/ {
@@ -54,7 +58,7 @@ server {
         proxy_pass $backend;
     }
 
-    # Everything else, which includes the manual enqueue and scrape endpoints
+    # Everything else, which includes the monolith's manual enqueue and scrape endpoints
     location /macro-analyzer/ {
         set $backend ${BACKEND_URL};
         proxy_pass $backend;

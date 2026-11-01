@@ -71,8 +71,7 @@ public class ChartSeriesConfigIntegrationTest {
                 "MembersOfParliamentActivity", "MEMBER_ACTIVITY",
                 "MunicipalElections", "LOCAL_ELECTION",
                 "RegionElections", "LOCAL_ELECTION",
-                "ParliamentElections", "LOCAL_ELECTION",
-                "ScbRegionalStatistics", "SCB_REGIONAL"
+                "ParliamentElections", "LOCAL_ELECTION"
         ), flowByName);
     }
 

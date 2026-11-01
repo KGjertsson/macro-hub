@@ -68,8 +68,8 @@ From the repo root of the main clone:
 
 1. Run `git pull` on `main`.
 2. Rebuild and restart only the containers the change affects, and only if step 1 found them running. Never start containers that weren't running.
-   - If the backend or frontend runs outside Docker (`spring-boot:run` or Vite; check `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|5173)'`), don't restart it. Tell the user it keeps serving the old code until they restart it.
+   - If the backend or frontend runs outside Docker (`spring-boot:run` or Vite; check `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8082|5173)'`), don't restart it. Tell the user it keeps serving the old code until they restart it.
    - Frontend: `docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build --no-deps macro-frontend`
-   - Backend: from `macro-backend/`, run `sh ./mvnw clean package && docker build -t macro-analyzer macro-analyzer`. Then, from the repo root, run the same compose command with `up -d --no-deps macro-analyzer`.
-3. Check with curl that each restarted service responds: `http://localhost:8081` for the frontend, `http://localhost:8080/macro-analyzer/series-config` for the backend.
+   - Backend: from `macro-backend/`, run `sh ./mvnw clean package`. Then `docker build -t macro-analyzer macro-analyzer` for the monolith, and `docker build -t regional-statistics-service regional-statistics-service` for that service. A change to `macro-platform` affects both. Then, from the repo root, run the same compose command with `up -d --no-deps macro-analyzer` and `up -d --no-deps regional-statistics`.
+3. Check with curl that each restarted service responds: `http://localhost:8081` for the frontend, `http://localhost:8080/macro-analyzer/series-config` for the monolith, `http://localhost:8082/macro-analyzer/regional-statistics/indicators` for regional-statistics.
 4. Once the change is in `main`, stop the implementer and reviewer sub-agents with TaskStop so none linger. Spawn fresh ones for the next change.

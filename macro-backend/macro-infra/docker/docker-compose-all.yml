@@ -8,12 +8,16 @@ services:
       POSTGRES_DB: macroanalyzer
       POSTGRES_USER: macrouser
       POSTGRES_PASSWORD: macropassword
+      # Read by postgres-init/ on an empty volume. An existing volume needs that script run by hand, see the guide
+      REGIONAL_STATISTICS_DB_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      # TCP: during an empty volume's init scripts, Postgres only answers on its socket
+      test: [ "CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -35,21 +39,37 @@ services:
     ports:
       - "8080:8080"
 
+  regional-statistics:
+    image: regional-statistics-service:latest
+    container_name: macrohub-regional-statistics
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/regional_statistics
+      SPRING_DATASOURCE_USERNAME: regional_statistics
+      SPRING_DATASOURCE_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
+    # No memory limit: a first full SCB scrape keeps every fetched value on the heap until it is stored. If a limit is
+    # added, leave room for that (see "SCB regional statistics" in CLAUDE.md for the measured peak)
+    ports:
+      - "8082:8082"
+
   macro-frontend:
     build: ../../../macro-frontend
     image: macro-frontend:latest
     container_name: macrohub-macro-frontend
     depends_on:
       - macro-analyzer
+      - regional-statistics
     environment:
       # nginx proxies each /macro-analyzer route here, so the browser only talks to :8081
       # scheme://host:port only: a trailing slash or path makes every proxied request 404
       # Write literal values: an empty one, as ${X:-} can give, makes nginx exit at startup
       MACRO_SERIES_URL: http://macro-analyzer:8080
-      REGIONAL_STATISTICS_URL: http://macro-analyzer:8080
+      REGIONAL_STATISTICS_URL: http://regional-statistics:8082
       PARLIAMENT_URL: http://macro-analyzer:8080
       ELECTION_URL: http://macro-analyzer:8080
-      # The catch-all /macro-analyzer/, which also carries the manual scrape endpoints
+      # The catch-all /macro-analyzer/, which also carries the monolith's manual scrape endpoints
       BACKEND_URL: http://macro-analyzer:8080
     ports:
       - "8081:80"
