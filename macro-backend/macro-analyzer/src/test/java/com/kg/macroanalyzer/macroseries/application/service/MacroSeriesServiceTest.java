@@ -103,9 +103,8 @@ public class MacroSeriesServiceTest {
         final var rate = SeriesConfig.builder().name("PolicyRateSweden").scrapeFlow(MacroSeriesScrapeFlows.MACRO_POINT).build();
         final var members = SeriesConfig.builder().name("MembersOfParliament").scrapeFlow("MEMBER_OF_PARLIAMENT").build();
         final var elections = SeriesConfig.builder().name("MunicipalElections").scrapeFlow("LOCAL_ELECTION").build();
-        final var scb = SeriesConfig.builder().name("ScbRegionalStatistics").scrapeFlow("SCB_REGIONAL").build();
         final var service = new MacroSeriesService(
-                repositoryPort, List.of(rate, members, elections, scb), alignmentService, timeFilterService);
+                repositoryPort, List.of(rate, members, elections), alignmentService, timeFilterService);
 
         // when
         final var chartList = service.getChartSeriesConfigList();

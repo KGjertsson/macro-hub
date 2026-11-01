@@ -1,9 +1,10 @@
 ## marco-analyzer
 
 Java backend application for macro-hub. Built using domain driven design principles and the
-hexagonal architecture, split into one module per domain (`macroseries`, `regionalstatistics`,
-`parliament`, `election`) plus the `scrape` core and `shared` infrastructure, which are built in the
-sibling Maven module `macro-platform`. See
+hexagonal architecture, split into one module per domain (`macroseries`, `parliament`, `election`)
+plus the `scrape` core and `shared` infrastructure, which are built in the sibling Maven module
+`macro-platform`. `regionalstatistics` has moved to the sibling `regional-statistics-service`, and the
+other domains follow (see `docs/microservice-migration-guide.md`). See
 [ARCHITECTURE.md](ARCHITECTURE.md) and the "Architecture" section of the repository's `CLAUDE.md`.
 
 Inside every module:
@@ -91,13 +92,14 @@ erDiagram
 
 ### Maven
 
-The reactor root is `macro-backend/`, the parent of this module and `macro-platform`. Run Maven there.
+The reactor root is `macro-backend/`, the parent of this module, `macro-platform` and
+`regional-statistics-service`. Run Maven there.
 
-generate the jooq models of both modules, from a database at the latest migration (here the full Compose stack's
-Postgres). Name the database: the default `localhost:31274` can be the microk8s cluster's, see "Backend" in `CLAUDE.md`.
+generate the jooq models of this module and `macro-platform`, from a database at the latest migration. The default is the full Compose stack's
+Postgres, `localhost:5432/macroanalyzer`. For any other database, add `-Djooq.codegen.url=...`.
 
 ```
-mvn -P jooq-codegen compile -Djooq.codegen.url=jdbc:postgresql://localhost:5432/macroanalyzer
+mvn -P jooq-codegen compile
 ```
 
 Flyway migrations (`src/main/resources/db/migration/`) run on application startup; there is no Flyway

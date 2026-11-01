@@ -60,4 +60,6 @@ EU27_2020 = European Union (27 countries as of 2020).
 3. Run the backend application in IntelliJ
 4. Install the frontend repo
 5. Run the frontend repo
-6. Run individual scrape queries below to populate the database
+6. Run `macro-backend/macro-infra/scripts/scrape-all.sh` to populate the databases
+
+The backend is being split into one service per domain. See `CLAUDE.md` for what has moved and the current way to start the stack, and `docs/microservice-migration-guide.md` for the plan.

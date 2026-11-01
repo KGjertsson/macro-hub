@@ -1,6 +1,6 @@
 package com.kg.macroanalyzer.regionalstatistics.adaptors.postgres;
 
-import com.kg.macroanalyzer.jooq.generated.tables.records.ScbIndicatorRecord;
+import com.kg.macroanalyzer.regionalstatistics.jooq.generated.tables.records.ScbIndicatorRecord;
 import com.kg.macroanalyzer.regionalstatistics.domain.GeoVersion;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbAreaValue;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbAvailability;
@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_AREA_VALUE;
-import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_AVAILABILITY;
-import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_INDICATOR;
-import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_TABLE_STATE;
+import static com.kg.macroanalyzer.regionalstatistics.jooq.generated.Tables.SCB_AREA_VALUE;
+import static com.kg.macroanalyzer.regionalstatistics.jooq.generated.Tables.SCB_AVAILABILITY;
+import static com.kg.macroanalyzer.regionalstatistics.jooq.generated.Tables.SCB_INDICATOR;
+import static com.kg.macroanalyzer.regionalstatistics.jooq.generated.Tables.SCB_TABLE_STATE;
 
 @Repository
 public class ScbRegionalRepository {

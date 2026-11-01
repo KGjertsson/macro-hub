@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.SCB_AREA_VALUE;
+import static com.kg.macroanalyzer.regionalstatistics.jooq.generated.Tables.SCB_AREA_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;

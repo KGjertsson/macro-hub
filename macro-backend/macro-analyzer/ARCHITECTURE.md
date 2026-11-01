@@ -13,7 +13,7 @@ The full package map, the dependency rules and the checklist for a new domain ar
   |
   +-- scrape              scrape queue, enqueue/scrape endpoints, cron jobs, the generic ScrapeFlow
   +-- macroseries         chart series: Riksbanken, Fed, Eurostat        (/chart-data, /series-config)
-  +-- regionalstatistics  SCB DeSO/RegSO indicators                      (/regional-statistics/*)
+  +-- regionalstatistics  SCB DeSO/RegSO indicators, in its own service  (/regional-statistics/*)
   +-- parliament          Riksdagen members, activity, parties, seats    (/parliament/*)
   +-- election            Valmyndigheten kommun/region/valkrets results  (/municipalities/*, /regions/*,
   |                                                                       /constituencies/*)
@@ -23,12 +23,15 @@ The full package map, the dependency rules and the checklist for a new domain ar
 ```
 
 `scrape`, `shared` and `platform.jooq.generated` are built in the Maven module `macro-platform`, a plain library next
-to this module. Everything else is built here, and it all runs as one application.
+to this module. `regionalstatistics` is built in `regional-statistics-service`, its own application on its own database,
+with its jOOQ model in `regionalstatistics.jooq.generated` and `RegionalStatisticsApplication` in the root package. What
+is left is built here and runs as one application. The layout below holds in both.
 
 Allowed dependencies between modules:
 
 ```
-  macroseries, regionalstatistics, parliament, election --> scrape, shared, jooq.generated
+  macroseries, parliament, election                      --> scrape, shared, jooq.generated
+  regionalstatistics                                     --> scrape, shared (and the model inside it)
   scrape                                                 --> shared, platform.jooq.generated
   election                                               --> parliament.application.port.in (PartyDirectory)
                                                              parliament.domain (Party)
@@ -97,7 +100,7 @@ continues, and the cron retries it on its next drain.
 | `MEMBER_OF_PARLIAMENT`  | `parliament.domain.ParliamentScrapeFlows`                         | `parliament.adaptors.config.MemberOfParliamentScrapeFlowConfiguration`  | `MembersOfParliament`                                      |
 | `MEMBER_ACTIVITY`       | `parliament.domain.ParliamentScrapeFlows`                         | `parliament.adaptors.config.MemberActivityScrapeFlowConfiguration`      | `MembersOfParliamentActivity`                              |
 | `LOCAL_ELECTION`        | `election.domain.ElectionScrapeFlows`                             | `election.adaptors.config.LocalElectionScrapeFlowConfiguration`         | `MunicipalElections`, `RegionElections`, `ParliamentElections` |
-| `SCB_REGIONAL`          | `regionalstatistics.domain.RegionalStatisticsScrapeFlows`         | `regionalstatistics.adaptors.config.ScbRegionalScrapeFlowConfiguration` | `ScbRegionalStatistics`                                    |
+| `SCB_REGIONAL` (its own service) | `regionalstatistics.domain.RegionalStatisticsScrapeFlows` | `regionalstatistics.adaptors.config.ScbRegionalScrapeFlowConfiguration` | `ScbRegionalStatistics`                                    |
 
 ## WebAdaptorFlow pipeline
 
@@ -143,6 +146,9 @@ continues, and the cron retries it on its next drain.
 
 
   WRITE PATH (enqueue + scrape):
+
+  Each application has its own queue and lock; the paths have its prefix (macro.scrape.path-prefix), for the
+  monolith /macro-analyzer and for regional-statistics-service /macro-analyzer/scrape/regional-statistics.
 
   POST /enqueue, /enqueue-all --> InsertionAdaptor --> InPort --> EnqueueService
        --> ScrapeQueuePort.persistScrapeQueueItem() --> ScrapeQueuePostgresAdaptor --> PostgreSQL
