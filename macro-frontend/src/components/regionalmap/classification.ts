@@ -23,6 +23,35 @@ const SEQUENTIAL = ['#cde2fb', '#abccf5', '#86b6ef', '#61a0ea', '#3987e5', '#277
 const DIVERGING = ['#8a2423', '#d44f48', '#f3aca6', '#f0efec', '#9ec5f4', '#3987e5', '#184f95'];
 export const NO_DATA_COLOR = '#b4b3ad';
 
+const LIGHT_BORDER = '#ffffff';
+// Softer than the #0b0b0b of the hover and selected lines, so those stay stronger
+const DARK_BORDER = '#262626';
+// The land colour of the positron basemap, which shows through the translucent fill
+const BASEMAP_LAND = '#f2f3f0';
+// Halfway between RegionalMap's fill opacity at zoom 9 (0.85) and zoom 14 (0.55)
+const TYPICAL_FILL_OPACITY = 0.7;
+
+const toRgb = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+
+// WCAG relative luminance
+const luminance = (rgb: number[]) => {
+  const [r, g, b] = rgb.map(channel => {
+    const c = channel / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+const contrast = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+// The border colour with the higher contrast against the fill as it looks on the map, not the opaque
+// colour: most of the ramp ends up mid-toned there, so white is only for the darkest fills
+export const borderColor = (fill: string) => {
+  const land = toRgb(BASEMAP_LAND);
+  const onMap = luminance(toRgb(fill).map((c, i) => c * TYPICAL_FILL_OPACITY + land[i] * (1 - TYPICAL_FILL_OPACITY)));
+  return contrast(luminance(toRgb(LIGHT_BORDER)), onMap) > contrast(luminance(toRgb(DARK_BORDER)), onMap) ? LIGHT_BORDER : DARK_BORDER;
+};
+
 export interface ValueClass {
   color: string;
   // Inclusive lower and upper value of the areas in the class
