@@ -281,7 +281,7 @@ svg .headw { fill: var(--warn); }
   <ul>
     <li><strong>Flyway:</strong> each service's database gets its own history table and starts from a squashed baseline of its tables and seed data. V1–V32 stay in git history as the record of how the shared database got here. A new database needs its role and database created first, and Postgres init scripts only run on an empty data volume.</li>
     <li><strong>jOOQ:</strong> each service generates a model from its own database only, so a query on another domain's table no longer compiles.</li>
-    <li><strong>Queue and config tables:</strong> <code>macro-platform</code> ships their DDL and its jOOQ model, and each service applies them in its own database. Their migrations need a version range that can't collide with the service's own.</li>
+    <li><strong>Queue and config tables:</strong> <code>macro-platform</code> ships their DDL and its jOOQ model, and each service applies them in its own database. Their migrations run in a separate Flyway run with its own history table, before the service's own.</li>
     <li><strong>Tests:</strong> <code>ArchitectureTest</code> shrinks to one per service plus Maven module boundaries. <code>ChartSeriesConfigIntegrationTest</code> moves to macro-series, and its checks on other flows move to their owners.</li>
   </ul>
 </section>
