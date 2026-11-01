@@ -105,8 +105,20 @@ public class ScrapeService {
         return items.stream();
     }
 
-    // An item without a series config stays pending in the queue, as the flows' own preparer would leave it
+    // One failing item must not stop the rest of the run. It stays pending and is retried on the next queue drain;
+    // items are read oldest first, so an exception escaping here would abort every later run at the same item
     private ScrapeResult scrape(ScrapeQueueItem scrapeQueueItem) {
+        try {
+            return route(scrapeQueueItem);
+        } catch (RuntimeException e) {
+            log.error("Scrape of %s failed".formatted(scrapeQueueItem.name()), e);
+
+            return ScrapeResult.FAILED;
+        }
+    }
+
+    // An item without a series config stays pending in the queue, as the flows' own preparer would leave it
+    private ScrapeResult route(ScrapeQueueItem scrapeQueueItem) {
         return seriesConfigPreparer.prepare(scrapeQueueItem)
                 .map(SeriesConfig::scrapeFlow)
                 .map(flowId -> {

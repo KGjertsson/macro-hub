@@ -2,7 +2,7 @@
 
 This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
 
-Statements about the current code were checked against commit `07c7482`. Anything marked **Suggested** or **Open** is not decided.
+Statements about the current code were checked against commit `07c7482`. The manual trigger paths and the Flyway ordering were decided on 2026-11-01, after that check. Anything marked **Suggested** or **Open** is not decided.
 
 ## Keeping this guide updated
 
@@ -38,8 +38,6 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 
 | Question | What is known | Needed by |
 | --- | --- | --- |
-| What are the exact per-service manual trigger paths? | They must differ per service, because nginx would need a map of every series name to its service to route `/enqueue?name=`. Election has three URL prefixes and macro-series has none below a common prefix, so the existing prefixes alone don't give every service a home. `InsertionAdaptor` moves to `macro-platform` with fixed paths today, so the prefix has to become configurable. | Step 2 |
-| How do `macro-platform` and service migrations stay ordered? | See "Flyway" in the checklist. A version range prevents collisions, but not ordering problems. | Step 2 |
 | Which is the gateway in the cluster: nginx in the frontend image, or Ingress routes? | `k8s/` has no frontend manifest. Compose keeps using nginx either way. With nginx, `BACKEND_URL`-style values need fully qualified service names. | Step 6 |
 | How do images reach the cluster? | `k8s/java/deployment.yaml` uses `imagePullPolicy: Never`, with images imported by hand. | Step 6 |
 
@@ -64,14 +62,19 @@ Steps 2 to 5 each use this checklist. `<service>` is the service's name, and `<d
 
 The monolith has no `spring.flyway.*` settings, so it uses the defaults: `classpath:db/migration` and `flyway_schema_history`.
 
-- [ ] Write a squashed baseline in the new service with the domain's tables and seed data, taken from the current database (`pg_dump --schema-only -t ...` is a good start). V1 to V32 stay in the monolith until step 5, and in git history after that.
+Each service runs Flyway twice on start-up, against its own database:
+
+1. **Platform run:** `macro-platform`'s migrations for `series_configuration` and `scrape_action_queue`, from `classpath:db/platform`, with their own history table (**Suggested** name: `flyway_platform_schema_history`).
+2. **Service run:** the service's own migrations, from the default `classpath:db/migration`, with the default `flyway_schema_history`.
+
+The platform run comes first, so the two tables exist before the service's baseline seeds its config rows. Each run has its own numbering, so no version range is needed. `spring.flyway.out-of-order=true` was rejected, because it would also weaken Flyway's ordering check on each service's own migrations. The platform's migrations stay outside `db/migration` so the monolith doesn't pick them up from the jar and try to create tables it already has.
+
+- [ ] Write a squashed baseline in the new service with the domain's tables and seed data, without the DDL for the two platform tables, taken from the current database (`pg_dump --schema-only -t ...` is a good start). V1 to V32 stay in the monolith until step 5, and in git history after that.
 - [ ] Include the seed data that migrations added. Today that is `scb_indicator`, `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. `local_governance` starts empty.
 - [ ] Copy the domain's `series_configuration` rows into the baseline, selected by `scrape_flow`. Keep `id` and `global_id` so `/series-config` keeps its order, and write `global_id` as literals so the baseline doesn't need the `uuid-ossp` extension (no column default uses it).
 - [ ] Set the `series_configuration` and `scrape_action_queue` sequences past the copied ids.
-- [ ] Apply `macro-platform`'s migrations for those two tables.
-  - They must live outside `db/migration` (**Suggested:** `db/platform`), so the monolith doesn't pick them up from the jar and try to create tables it already has. Each service adds that folder to `spring.flyway.locations`.
-  - They need a version range that can't collide with the service's own (**Suggested:** V1 to V99 for the platform, V100 and up for services).
-  - **Open:** a range alone doesn't solve ordering. Flyway rejects a migration below the highest applied version, so a new platform `V3` fails on a service already at `V100`. The options are `spring.flyway.out-of-order=true`, or a separate Flyway run and history table for the platform.
+- [ ] Turn on the platform run for the service.
+- [ ] Set `spring.flyway.baseline-on-migrate=true` and `spring.flyway.baseline-version=0` for the service run. After the platform run the schema is no longer empty but `flyway_schema_history` doesn't exist yet, and Flyway then refuses to migrate ("Found non-empty schema(s) ... but no schema history table"). Version 0 is needed because Flyway skips migrations at or below the baseline, and the default baseline version of 1 would skip the service's `V1`. Both were tried on Flyway 12.4.0 and Postgres 16.
 
 ### Data
 
@@ -84,7 +87,7 @@ Re-scraping is the default. Dump and restore only saves time on a local database
 | parliament | About 7 minutes for activity | Activity is only fetched for the latest two terms, so older activity in a local database isn't re-created. |
 | election | About 1.5 minutes | About 310 zips. |
 
-- [ ] Trigger the scrape through the service's manual path, or wait for its cron during the 22:00 hour.
+- [ ] Trigger the scrape through the service's manual path (`enqueue-all`, then `scrape-from-queue`), or wait for its cron during the 22:00 hour.
 - [ ] Skip the queue rows on a fresh start. If you keep a local database and it has pending rows, copy them by `dataset_name` (`status = 0`; all local rows are currently done).
 
 Optional time-saver, after Flyway has created the tables:
@@ -106,6 +109,19 @@ Try this on a throwaway database first. Check that foreign keys and sequences co
 - [ ] Update the monolith's `ArchitectureTest` (`MODULES`, `DOMAIN_MODULES`).
 - [ ] Update `ChartSeriesConfigIntegrationTest`: `shouldRouteEveryNonChartConfig_toItsDomainsScrapeFlow` lists all six non-chart configs by name, so each service takes its own entries.
 
+### Manual scrape endpoints
+
+Every service exposes the same three endpoints, where `<service>` is `macro-series`, `regional-statistics`, `parliament` or `election`:
+
+- `POST /macro-analyzer/scrape/<service>/enqueue?name=`
+- `POST /macro-analyzer/scrape/<service>/enqueue-all`
+- `POST /macro-analyzer/scrape/<service>/scrape-from-queue`
+
+Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so nginx needs no map of series names to services. The endpoints stay public, per [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md). The monolith keeps the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue` for what it still holds, and they go away when the last service has moved (step 5). The script that replaces the global `enqueue-all` loops over the four names.
+
+- [ ] Set the service's path prefix to `macro-analyzer/scrape/<service>`.
+- [ ] Add the route in nginx, with the same 30-minute `proxy_read_timeout` as the other routes, and in the Vite proxy.
+
 ### Cut over
 
 - [ ] Delete the domain's `series_configuration` rows from the monolith with a migration, **in the same PR that removes its flows**. `ScrapeService` refuses to start if a config names a flow that isn't registered.
@@ -124,7 +140,7 @@ Note that `EnqueueService.enqueue` ignores unknown names. After a cut-over, `POS
 - [ ] The full stack starts, and the monolith logs no failed flow registration.
 - [ ] Every page that uses the domain works through the gateway, and the responses match what the monolith returned.
 - [ ] The role can't connect to another service's database.
-- [ ] A manual scrape on the new service's path works, and a second one during the run answers 409.
+- [ ] A manual scrape on `/macro-analyzer/scrape/<service>/` works through the gateway, and a second one during the run answers 409.
 
 ### Rollback
 
@@ -164,13 +180,13 @@ Revert the PR and re-create the local databases.
 
 **Tasks:**
 
-- [ ] Answer the open questions on manual trigger paths and migration ordering, and record the answers here.
-- [ ] Make the manual trigger paths configurable per service in `macro-platform`.
-- [ ] Add the first version of the script that replaces `enqueue-all`, and update the "fresh database" note in `CLAUDE.md`. Until step 5 it also calls the monolith.
-- [ ] Add `macro-platform`'s migrations for the queue and config tables.
+- [ ] Make the path prefix configurable in `macro-platform`'s `InsertionAdaptor`, which has a fixed `@RequestMapping("macro-analyzer")` today. See "Manual scrape endpoints" in the checklist. The default stays `macro-analyzer`, so the monolith keeps its paths until step 5. **Suggested:** a property, `macro.scrape.path-prefix`, read with a placeholder in the mapping.
+- [ ] Add the first version of the script that replaces `enqueue-all`, and update the "fresh database" note in `CLAUDE.md`. It loops over the services that have moved. Until step 5 it also calls the monolith's old paths.
+- [ ] Add `macro-platform`'s migrations for the queue and config tables to `db/platform`.
+- [ ] Add the platform Flyway run to `macro-platform`, off by default. Component scanning finds `macro-platform`'s beans in the monolith too, and the monolith already has these tables from V1 to V32. **Suggested:** a `FlywayMigrationStrategy` bean (`org.springframework.boot.flyway.autoconfigure`, seen in `spring-boot-flyway` 4.1.2) enabled by a property. It migrates a second `Flyway` on the same data source, with the platform's location and history table, and then calls `migrate()` on the `Flyway` it was given.
 - [ ] Run the extraction checklist.
 - [ ] Add the image and its service in `docker-compose-all.yml`, and point the frontend's route variable at it. Leave room for the first scrape's heap if a memory limit is added.
-- [ ] Route `/macro-analyzer/regional-statistics/` to the service.
+- [ ] Route `/macro-analyzer/regional-statistics/` and `/macro-analyzer/scrape/regional-statistics/` to the service.
 
 **Verify:** the checklist's verify list, plus: the Områdesstatistik page (`/omraden`) shows data for DeSO and RegSO, and a second scrape with unchanged tables takes about 30 seconds. A running SCB scrape no longer delays a scrape in the monolith.
 
@@ -189,7 +205,7 @@ Revert the PR and re-create the local databases.
 - [ ] Run the extraction checklist.
 - [ ] Move the `RIKSBANKEN_PROD_SUBSCRIPTION_KEY` and `FED_PROD_SUBSCRIPTION_KEY` settings to this service only, in `docker-compose-all.yml` and the service's `.env.example`.
 - [ ] Move `ChartSeriesConfigIntegrationTest` here, including its count of 108 and its category set. Move its checks on other flows to their owners.
-- [ ] Route `/macro-analyzer/series-config` and `/macro-analyzer/chart-data` to the service. Add the image and its service in `docker-compose-all.yml`.
+- [ ] Route `/macro-analyzer/series-config`, `/macro-analyzer/chart-data` and `/macro-analyzer/scrape/macro-series/` to the service. Add the image and its service in `docker-compose-all.yml`.
 
 **Verify:** the checklist's verify list, plus: `/series-config` lists 108 entries in the same order, and charts for a Riksbanken, a Fed and a Eurostat series render.
 
@@ -210,7 +226,7 @@ Revert the PR and re-create the local databases.
 - [ ] Add a contract test that pins `code` and `color`, and update `LocalElectionServiceTest`.
 - [ ] Remove the `election` entry from `DOMAIN_MODULE_EXTRA_DEPENDENCIES` in `ArchitectureTest`, and remove `PartyDirectory` from parliament.
 - [ ] Run the extraction checklist for parliament.
-- [ ] Route `/macro-analyzer/parliament/` to the service, and point election's URL at it. Add the image and its service in `docker-compose-all.yml`.
+- [ ] Route `/macro-analyzer/parliament/` and `/macro-analyzer/scrape/parliament/` to the service, and point election's URL at it. Add the image and its service in `docker-compose-all.yml`.
 
 **Verify:** the checklist's verify list, plus: with parliament stopped, election pages still answer and keep Riksdag colours after a refresh fails. With parliament stopped and election just restarted, election pages still answer, with Valmyndigheten's colours.
 
@@ -229,7 +245,7 @@ Revert the PR and re-create the local databases.
 - [ ] Run the extraction checklist for election, with the new database `election`. Skip the cut-over items that delete config rows, delete queue rows and drop old tables with a monolith migration: the monolith itself becomes election, so they have no target. The old tables go away with the `macroanalyzer` database.
 - [ ] Rename the `macro-analyzer` module, application class, image, jar and Compose service to election.
 - [ ] Delete V1 to V32 and the old jOOQ model from the tree. They stay in git history.
-- [ ] Add the `/macro-analyzer/enqueue`-style replacement for election, and remove the monolith's call from the script.
+- [ ] Route `/macro-analyzer/scrape/election/` to election. Its new prefix removes the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue`, so remove the monolith's call from the script, which now only loops over the four names. Every service now sets its own prefix, so remove the `macro-analyzer` default.
 - [ ] Change the catch-all `location /macro-analyzer/` in nginx to answer 404. Without it, unknown API paths would fall through to `location /` and get `index.html` with a 200.
 - [ ] Remove `BACKEND_URL`, the `macroanalyzer` database from `POSTGRES_DB`, and the `macrouser` settings no service uses.
 - [ ] Rewrite the architecture and build sections of `CLAUDE.md`, and retire or rewrite `macro-backend/macro-analyzer/ARCHITECTURE.md`.

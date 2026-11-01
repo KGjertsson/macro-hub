@@ -16,7 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +55,7 @@ public class MacroPointPersisterTest {
 
         // then
         verify(scrapeQueuePort).markAsDone(seriesConfig);
+        verify(repositoryPort, never()).writeMacroPoints(any());
         assertEquals(ScrapeResult.EMPTY, result);
     }
 
@@ -71,9 +75,29 @@ public class MacroPointPersisterTest {
         final var result = macroPointPersister.persist(configWithMacroPoints);
 
         // then
-        verify(scrapeQueuePort).markAsDone(seriesConfig);
-        verify(repositoryPort).writeMacroPoints(configWithMacroPoints);
+        final var order = inOrder(repositoryPort, scrapeQueuePort);
+        order.verify(repositoryPort).writeMacroPoints(configWithMacroPoints);
+        order.verify(scrapeQueuePort).markAsDone(seriesConfig);
         assertEquals(ScrapeResult.SUCCESS, result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"json/single_macro_series.json"})
+    void shouldNotMarkAsDone_whenWriteThrows(String resource) {
+        // given
+        final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
+        final var macroSeries = testJsonReader.readMacroSeriesList(resource).getFirst();
+        final var configWithMacroPoints = ConfigWithMacroPoints.builder()
+                .seriesConfig(seriesConfig)
+                .macroPoints(macroSeries.macroPoints())
+                .build();
+
+        // when
+        when(repositoryPort.writeMacroPoints(any())).thenThrow(new RuntimeException("connection reset"));
+
+        // then
+        assertThrows(RuntimeException.class, () -> macroPointPersister.persist(configWithMacroPoints));
+        verify(scrapeQueuePort, never()).markAsDone(any());
     }
 
 }

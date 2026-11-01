@@ -18,6 +18,8 @@ The split is a natural moment to change this. The draft design recommended keepi
 
 The manual scrape endpoints, or their per-service replacements, stay reachable through the gateway without authentication. The split doesn't change this. The exact per-service paths are an open question in the [migration guide](../microservice-migration-guide.md).
 
+*Note, 2026-11-01:* the paths are now decided, under `/macro-analyzer/scrape/<service>/`. See "Manual scrape endpoints" in the guide.
+
 ## Alternatives considered
 
 - **Keep them off the gateway**, and reach each service directly when needed. This closes the exposure, but makes a manual scrape more awkward.

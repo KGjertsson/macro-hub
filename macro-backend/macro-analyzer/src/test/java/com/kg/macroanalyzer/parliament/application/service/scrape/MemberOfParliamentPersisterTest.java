@@ -15,6 +15,7 @@ import java.util.List;
 
 import static com.kg.macroanalyzer.parliament.domain.TestMemberFactory.member;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -59,8 +60,24 @@ public class MemberOfParliamentPersisterTest {
 
         // then
         assertEquals(ScrapeResult.SUCCESS, result);
-        verify(scrapeQueuePort).markAsDone(seriesConfig);
-        verify(repositoryPort).writeMembersOfParliament(members);
+        final var order = inOrder(repositoryPort, scrapeQueuePort);
+        order.verify(repositoryPort).writeMembersOfParliament(members);
+        order.verify(scrapeQueuePort).markAsDone(seriesConfig);
+    }
+
+    @Test
+    void shouldNotMarkAsDone_whenWriteThrows() {
+        // given
+        final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
+        final var members = List.of(member("1", "S", "Tjänstgörande riksdagsledamot", List.of()));
+        final var input = new ConfigWithMemberOfParliament(seriesConfig, members);
+
+        // when
+        when(repositoryPort.writeMembersOfParliament(members)).thenThrow(new RuntimeException("connection reset"));
+
+        // then
+        assertThrows(RuntimeException.class, () -> persister.persist(input));
+        verify(scrapeQueuePort, never()).markAsDone(any());
     }
 
 }
