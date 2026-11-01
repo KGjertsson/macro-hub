@@ -120,7 +120,7 @@ Every service exposes the same three endpoints, where `<service>` is `macro-seri
 Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so nginx needs no map of series names to services. The endpoints stay public, per [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md). The monolith keeps the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue` for what it still holds, and they go away when the last service has moved (step 5). The script that replaces the global `enqueue-all` loops over the four names.
 
 - [ ] Set the service's path prefix to `macro-analyzer/scrape/<service>`.
-- [ ] Add the route in nginx and in the Vite proxy, with the same 30-minute `proxy_read_timeout` as the other routes.
+- [ ] Add the route in nginx, with the same 30-minute `proxy_read_timeout` as the other routes, and in the Vite proxy.
 
 ### Cut over
 
