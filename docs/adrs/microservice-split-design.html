@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>macro-hub microservice split</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: an engineering design note. One text column, with figures and tables allowed to run wider. */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --ink: #1b2329;
+  --muted: #58656f;
+  --line: #c9d1d7;
+  --accent: #0b6b6f;
+  --accent-soft: #dff0f0;
+  --warn: #9a4d10;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14191d;
+    --surface: #1c2328;
+    --ink: #e6ebee;
+    --muted: #9aa7b0;
+    --line: #3a454d;
+    --accent: #5cc4c6;
+    --accent-soft: #1b3436;
+    --warn: #e0a262;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14191d;
+  --surface: #1c2328;
+  --ink: #e6ebee;
+  --muted: #9aa7b0;
+  --line: #3a454d;
+  --accent: #5cc4c6;
+  --accent-soft: #1b3436;
+  --warn: #e0a262;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--sans); }
+main { max-width: 1040px; margin: 0 auto; padding: 40px 20px 72px; display: grid; gap: 44px; }
+header, section { display: grid; gap: 14px; min-width: 0; }
+h1 { font-size: 34px; line-height: 1.15; font-weight: 600; margin: 0; text-wrap: balance; }
+h2 { font-size: 23px; line-height: 1.25; font-weight: 600; margin: 0; text-wrap: balance; }
+h3 { font-size: 17px; font-weight: 600; margin: 8px 0 0; }
+p, ul, ol { margin: 0; max-width: 68ch; }
+ul, ol { padding-left: 22px; display: grid; gap: 7px; }
+code { font: 0.88em var(--mono); overflow-wrap: anywhere; }
+a { color: var(--accent); }
+.lede { font-size: 18px; color: var(--muted); }
+.call { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; max-width: 76ch; }
+.call p { max-width: none; }
+figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.fig { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); padding: 14px; }
+.fig svg { display: block; width: 100%; height: auto; min-width: 760px; }
+figcaption { font-size: 14px; color: var(--muted); max-width: 80ch; }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 720px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); font-size: 13px; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.pick td { background: var(--accent-soft); }
+.tag { color: var(--accent); font-weight: 600; white-space: nowrap; }
+/* SVG vocabulary */
+svg text { font-family: var(--sans); font-size: 13px; fill: var(--ink); }
+svg .t-b { font-weight: 600; font-size: 14px; }
+svg .t-m { fill: var(--muted); font-size: 12px; }
+svg .t-c { font-family: var(--mono); font-size: 11.5px; fill: var(--muted); }
+svg .t-a { fill: var(--accent); font-weight: 600; font-size: 12.5px; }
+svg .t-w { fill: var(--warn); font-size: 12px; }
+svg .box { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
+svg .boxa { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
+svg .frame { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 5 4; }
+svg .wire { fill: none; stroke: var(--muted); stroke-width: 1.3; }
+svg .wirea { fill: none; stroke: var(--accent); stroke-width: 2; }
+svg .wirew { fill: none; stroke: var(--warn); stroke-width: 1.6; }
+svg .head { fill: var(--muted); }
+svg .heada { fill: var(--accent); }
+svg .headw { fill: var(--warn); }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <h1>macro-hub microservice split</h1>
+  <p class="lede">The design for one service per business domain, based on the code at <code>b5f1411</code> and the row counts in the local database. The decisions were made on 2026-11-01. The app isn't deployed anywhere yet.</p>
+  <div class="call"><p><strong>In short:</strong> four services behind a gateway, one Postgres instance with one database and role per service, and scrape code as a shared library. The only runtime call between services is election asking parliament for party colours, which is a cached REST call. No message broker is needed. Docker Compose runs it locally, and Kubernetes is the eventual deployment target.</p><p>The <a href="README.md">ADRs</a> are authoritative if they ever differ from this page.</p></div>
+</header>
+
+<section>
+  <h2>The target</h2>
+  <figure>
+    <div class="fig">
+      <svg viewBox="0 0 1000 490" role="img" aria-label="The browser calls nginx, which routes by path to four services. Each service uses its own database in one Postgres instance. The only call between services goes from election to parliament.">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="heada" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+
+        <rect class="box" x="20" y="225" width="110" height="70"/>
+        <text class="t-b" x="75" y="255" text-anchor="middle">Browser</text>
+        <text class="t-m" x="75" y="274" text-anchor="middle">React app</text>
+        <line class="wire" x1="130" y1="260" x2="170" y2="260" marker-end="url(#a1)"/>
+
+        <rect class="box" x="170" y="205" width="120" height="110"/>
+        <text class="t-b" x="230" y="245" text-anchor="middle">nginx</text>
+        <text class="t-m" x="230" y="265" text-anchor="middle">routes by path</text>
+        <text class="t-m" x="230" y="283" text-anchor="middle">URLs unchanged</text>
+
+        <path class="wire" d="M290 260H315"/>
+        <path class="wire" d="M315 88V420"/>
+        <line class="wire" x1="315" y1="88" x2="540" y2="88" marker-end="url(#a1)"/>
+        <line class="wire" x1="315" y1="192" x2="540" y2="192" marker-end="url(#a1)"/>
+        <line class="wire" x1="315" y1="296" x2="540" y2="296" marker-end="url(#a1)"/>
+        <line class="wire" x1="315" y1="420" x2="540" y2="420" marker-end="url(#a1)"/>
+        <text class="t-c" x="325" y="80">/series-config, /chart-data</text>
+        <text class="t-c" x="325" y="184">/regional-statistics/*</text>
+        <text class="t-c" x="325" y="288">/parliament/*</text>
+        <text class="t-c" x="325" y="397">/municipalities/*, /regions/*,</text>
+        <text class="t-c" x="325" y="412">/constituencies/*</text>
+
+        <rect class="box" x="540" y="48" width="190" height="80"/>
+        <text class="t-b" x="552" y="72">macro-series</text>
+        <text class="t-m" x="552" y="92">Riksbanken, Fed, Eurostat</text>
+        <text class="t-m" x="552" y="110">own cron and scrape queue</text>
+
+        <rect class="box" x="540" y="152" width="190" height="80"/>
+        <text class="t-b" x="552" y="176">regional-statistics</text>
+        <text class="t-m" x="552" y="196">SCB PxWeb</text>
+        <text class="t-m" x="552" y="214">own cron and scrape queue</text>
+
+        <rect class="box" x="540" y="256" width="190" height="80"/>
+        <text class="t-b" x="552" y="280">parliament</text>
+        <text class="t-m" x="552" y="300">Riksdagen</text>
+        <text class="t-m" x="552" y="318">own cron and scrape queue</text>
+
+        <rect class="box" x="540" y="380" width="190" height="80"/>
+        <text class="t-b" x="552" y="404">election</text>
+        <text class="t-m" x="552" y="424">Valmyndigheten</text>
+        <text class="t-m" x="552" y="442">own cron and scrape queue</text>
+
+        <line class="wirea" x1="635" y1="380" x2="635" y2="338" marker-end="url(#a2)"/>
+        <text class="t-a" x="627" y="363" text-anchor="end">REST: party colours</text>
+
+        <rect class="frame" x="790" y="10" width="194" height="466"/>
+        <text class="t-b" x="887" y="33" text-anchor="middle">One Postgres 16</text>
+
+        <rect class="box" x="804" y="48" width="166" height="80"/>
+        <text class="t-c" x="816" y="70">macro_series</text>
+        <text class="t-m" x="816" y="91">41 data tables</text>
+        <text class="t-m" x="816" y="109">108 config rows</text>
+
+        <rect class="box" x="804" y="152" width="166" height="80"/>
+        <text class="t-c" x="816" y="174">regional_statistics</text>
+        <text class="t-m" x="816" y="195">4 tables, 370 MB</text>
+        <text class="t-m" x="816" y="213">1 config row</text>
+
+        <rect class="box" x="804" y="256" width="166" height="80"/>
+        <text class="t-c" x="816" y="278">parliament</text>
+        <text class="t-m" x="816" y="299">6 tables</text>
+        <text class="t-m" x="816" y="317">2 config rows</text>
+
+        <rect class="box" x="804" y="380" width="166" height="80"/>
+        <text class="t-c" x="816" y="402">election</text>
+        <text class="t-m" x="816" y="423">3 tables</text>
+        <text class="t-m" x="816" y="441">3 config rows</text>
+
+        <line class="wire" x1="730" y1="88" x2="804" y2="88" marker-end="url(#a1)"/>
+        <line class="wire" x1="730" y1="192" x2="804" y2="192" marker-end="url(#a1)"/>
+        <line class="wire" x1="730" y1="296" x2="804" y2="296" marker-end="url(#a1)"/>
+        <line class="wire" x1="730" y1="420" x2="804" y2="420" marker-end="url(#a1)"/>
+      </svg>
+    </div>
+    <figcaption>Every service reaches only its own database, using its own role. The names in the Postgres frame are database names. The teal arrow is the only runtime call between services. Each database also holds its own <code>series_configuration</code> and <code>scrape_action_queue</code>.</figcaption>
+  </figure>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Service</th><th>From module</th><th>Java lines</th><th>Tables it owns</th><th>Scrape flows</th><th>Why it behaves differently</th></tr></thead>
+      <tbody>
+        <tr><td><strong>macro-series</strong></td><td><code>macroseries</code></td><td class="num">3,739</td><td>Rate, bond, bill, FX, Fed and Eurostat tables</td><td><code>MACRO_POINT</code></td><td>Most series, smallest payload per series. Needs the Riksbanken and Fed keys.</td></tr>
+        <tr><td><strong>regional-statistics</strong></td><td><code>regionalstatistics</code></td><td class="num">1,811</td><td><code>scb_indicator</code>, <code>scb_area_value</code>, <code>scb_availability</code>, <code>scb_table_state</code></td><td><code>SCB_REGIONAL</code></td><td>About 80% of the data. A first scrape takes 12 minutes and a few hundred MB of heap.</td></tr>
+        <tr><td><strong>parliament</strong></td><td><code>parliament</code></td><td class="num">1,886</td><td><code>swedish_members_of_parliament</code>, <code>swedish_member_activity</code>, <code>riksdag_party</code>, <code>riksdag_election</code>, <code>riksdag_election_result</code>, <code>riksdag_organ</code></td><td><code>MEMBER_OF_PARLIAMENT</code>, <code>MEMBER_ACTIVITY</code></td><td>Owns the party list that election needs.</td></tr>
+        <tr><td><strong>election</strong></td><td><code>election</code></td><td class="num">1,344</td><td><code>local_election_area</code>, <code>local_election_party_result</code>, <code>local_governance</code></td><td><code>LOCAL_ELECTION</code></td><td>Changes rarely. The only service that calls another.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The 924 lines of <code>scrape</code> and 340 of <code>shared</code> do not become a service. They become a library, <code>macro-platform</code>, built in the same Maven reactor. The repo stays a monorepo.</p>
+</section>
+
+<section>
+  <h2>Where the scrape module goes</h2>
+  <p><code>scrape</code> is the one module that doesn't map cleanly to a service, and this is the main design decision in the split. It holds no business data, and every domain plugs into it in-process through <code>RegisteredScrapeFlow</code>.</p>
+  <figure>
+    <div class="fig">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="Option A puts a central scrape service in front of the domains, adding remote calls for running flows and marking items done. Option B embeds cron and queue in each service with no calls between them.">
+        <defs>
+          <marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headw" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <text class="t-b" x="10" y="20">A. Central scrape service</text>
+        <rect class="box" x="10" y="100" width="130" height="84"/>
+        <text class="t-b" x="75" y="130" text-anchor="middle">scrape-service</text>
+        <text class="t-m" x="75" y="150" text-anchor="middle">cron, queue,</text>
+        <text class="t-m" x="75" y="167" text-anchor="middle">all configs</text>
+        <rect class="box" x="300" y="40" width="160" height="66"/>
+        <text class="t-b" x="380" y="68" text-anchor="middle">regional-statistics</text>
+        <text class="t-m" x="380" y="88" text-anchor="middle">flow, own data</text>
+        <rect class="box" x="300" y="178" width="160" height="66"/>
+        <text class="t-b" x="380" y="206" text-anchor="middle">election</text>
+        <text class="t-m" x="380" y="226" text-anchor="middle">flow, own data</text>
+        <path class="wirew" d="M140 120L300 72" marker-end="url(#b2)"/>
+        <path class="wirew" d="M300 92L140 140" marker-end="url(#b2)"/>
+        <path class="wirew" d="M140 164L300 200" marker-end="url(#b2)"/>
+        <path class="wirew" d="M300 222L140 178" marker-end="url(#b2)"/>
+        <text class="t-w" x="172" y="86">run flow</text>
+        <text class="t-w" x="238" y="130" text-anchor="middle">mark done</text>
+        <text class="t-w" x="10" y="264">Runs of up to 12 min over HTTP, and the queue update</text>
+        <text class="t-w" x="10" y="282">and the data write can never share a transaction.</text>
+
+        <line class="wire" x1="500" y1="10" x2="500" y2="285"/>
+
+        <text class="t-a" x="530" y="20">B. Library inside each service (chosen)</text>
+        <rect class="boxa" x="530" y="40" width="450" height="96"/>
+        <text class="t-b" x="544" y="62">regional-statistics</text>
+        <rect class="box" x="544" y="74" width="74" height="44"/><text x="581" y="101" text-anchor="middle">cron</text>
+        <rect class="box" x="650" y="74" width="74" height="44"/><text x="687" y="101" text-anchor="middle">queue</text>
+        <rect class="box" x="756" y="74" width="74" height="44"/><text x="793" y="101" text-anchor="middle">flow</text>
+        <rect class="box" x="862" y="74" width="104" height="44"/><text x="914" y="101" text-anchor="middle">own database</text>
+        <line class="wire" x1="618" y1="96" x2="650" y2="96" marker-end="url(#b1)"/>
+        <line class="wire" x1="724" y1="96" x2="756" y2="96" marker-end="url(#b1)"/>
+        <line class="wire" x1="830" y1="96" x2="862" y2="96" marker-end="url(#b1)"/>
+        <rect class="boxa" x="530" y="152" width="450" height="96"/>
+        <text class="t-b" x="544" y="174">election</text>
+        <rect class="box" x="544" y="186" width="74" height="44"/><text x="581" y="213" text-anchor="middle">cron</text>
+        <rect class="box" x="650" y="186" width="74" height="44"/><text x="687" y="213" text-anchor="middle">queue</text>
+        <rect class="box" x="756" y="186" width="74" height="44"/><text x="793" y="213" text-anchor="middle">flow</text>
+        <rect class="box" x="862" y="186" width="104" height="44"/><text x="914" y="213" text-anchor="middle">own database</text>
+        <line class="wire" x1="618" y1="208" x2="650" y2="208" marker-end="url(#b1)"/>
+        <line class="wire" x1="724" y1="208" x2="756" y2="208" marker-end="url(#b1)"/>
+        <line class="wire" x1="830" y1="208" x2="862" y2="208" marker-end="url(#b1)"/>
+        <text class="t-m" x="530" y="264">No calls between services. Queue and data share a database,</text>
+        <text class="t-m" x="530" y="282">so they can share a transaction.</text>
+      </svg>
+    </div>
+    <figcaption>Two of the services are shown in each option. In A, every scrape crosses the network twice. In B, those arrows disappear. B is the chosen option.</figcaption>
+  </figure>
+  <p>The price of B is that the global <code>enqueue-all</code> no longer exists. Nothing in the frontend calls the enqueue or scrape endpoints, so a small script that calls each service covers it. A central scrape dashboard would be the one reason to reconsider.</p>
+  <p>B also replaces today's single <code>scrapeLock</code>, which makes every domain wait for a running scrape. Each service gets its own lock, so a 12-minute SCB run stops delaying the others. All four would start at 22:00 and write concurrently, so stagger the cron hours if that strains Postgres.</p>
+</section>
+
+<section>
+  <h2>How to store the data</h2>
+  <p>The data is already nearly partitioned. No foreign key crosses a domain, and the only tables used across domains are <code>series_configuration</code> and <code>scrape_action_queue</code>. Those split cleanly: configs by <code>scrape_flow</code>, queue rows by series name.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Option</th><th>Boundary enforced by</th><th>Migrating today's data</th><th>Running cost</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Keep shared tables</td><td>Nothing</td><td>None</td><td>Lowest</td><td>Rejected. Services would break each other through schema changes.</td></tr>
+        <tr class="pick"><td><strong>Database per service, one instance</strong></td><td>Postgres itself: a query can't reach another database</td><td>Re-scrape into the new database. Dump and restore is a local time-saver.</td><td>One Postgres and one volume, with one backup per database</td><td><span class="tag">Chosen</span></td></tr>
+        <tr><td>Schema and role per service, one instance</td><td>Postgres grants</td><td><code>ALTER TABLE … SET SCHEMA</code>, with no data copied</td><td>One Postgres, one backup, one volume</td><td>The main alternative, and the draft's recommendation. It is easier to migrate and back up, but the boundary is one <code>GRANT</code> away from a cross-domain query.</td></tr>
+        <tr><td>Instance per service</td><td>Full isolation</td><td>Re-scrape into each new instance</td><td>Four volumes and four Postgres processes (one uses 555 MiB locally)</td><td>Too heavy for this data.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The shared instance remains a shared point of failure, and a heavy SCB write can still slow the others. That's a fair trade for one replica of each service. A service can move to its own server later by moving its database and changing its URL, for example if regional-statistics' load ever hurts the others.</p>
+  <p>Nothing is deployed, so today's shared database only exists on development machines. A new database starts empty and is re-scraped by default. Dump and restore per domain only saves time locally, mainly because the first SCB scrape takes about 12 minutes. Backups are per database once there is something to back up.</p>
+  <h3>What changes in the tooling</h3>
+  <ul>
+    <li><strong>Flyway:</strong> each service's database gets its own history table and starts from a squashed baseline of its tables and seed data. V1–V32 stay in git history as the record of how the shared database got here. A new database needs its role and database created first, and Postgres init scripts only run on an empty data volume.</li>
+    <li><strong>jOOQ:</strong> each service generates a model from its own database only, so a query on another domain's table no longer compiles.</li>
+    <li><strong>Queue and config tables:</strong> <code>macro-platform</code> ships their DDL and its jOOQ model, and each service applies them in its own database. Their migrations need a version range that can't collide with the service's own.</li>
+    <li><strong>Tests:</strong> <code>ArchitectureTest</code> shrinks to one per service plus Maven module boundaries. <code>ChartSeriesConfigIntegrationTest</code> moves to macro-series, and its checks on other flows move to their owners.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>How the services communicate</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Path</th><th>Mechanism</th><th>What it takes</th></tr></thead>
+      <tbody>
+        <tr><td>Browser to service</td><td>HTTP through nginx</td><td>Replace the single <code>location /macro-analyzer/</code> with per-domain routes. Frontend API code stays the same. In dev, a Vite proxy replaces the direct call to <code>:8080</code>, which also ends the port clash.</td></tr>
+        <tr><td>Election to parliament</td><td>Cached REST call to the existing <code>GET /parliament/parties</code></td><td>Election gets its own out-port with an HTTP adaptor in place of <code>PartyDirectory</code>. A contract test pins the fields it reads.</td></tr>
+        <tr><td>Starting scrapes</td><td>Each service's own cron</td><td>No traffic between services. Manual triggers stay reachable through the gateway, without authentication, on per-service paths, because <code>/enqueue?name=</code> can't be routed by nginx from a query parameter alone.</td></tr>
+        <tr><td>Events</td><td>None for now</td><td>Add a transactional outbox and a broker when a service must react to another's writes. Nothing does today.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <div class="fig">
+      <svg viewBox="0 0 1000 190" role="img" aria-label="Election reads party colours from a local cache, which refreshes over REST from parliament. If parliament is down the last list is kept. If there is no list, election uses Valmyndigheten's colours.">
+        <defs>
+          <marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="c2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="heada" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="headw" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <rect class="frame" x="10" y="10" width="520" height="170"/>
+        <text class="t-b" x="24" y="32">election</text>
+        <rect class="box" x="24" y="48" width="180" height="60"/>
+        <text x="114" y="74" text-anchor="middle">LocalElectionService</text>
+        <text class="t-m" x="114" y="93" text-anchor="middle">builds each response</text>
+        <rect class="box" x="330" y="48" width="180" height="60"/>
+        <text x="420" y="74" text-anchor="middle">In-memory party list</text>
+        <text class="t-m" x="420" y="93" text-anchor="middle">e.g. refreshed hourly</text>
+        <line class="wire" x1="204" y1="78" x2="330" y2="78" marker-end="url(#c1)"/>
+        <text class="t-m" x="267" y="70" text-anchor="middle">reads</text>
+        <rect class="box" x="710" y="48" width="130" height="60"/>
+        <text class="t-b" x="775" y="74" text-anchor="middle">parliament</text>
+        <text class="t-m" x="775" y="93" text-anchor="middle">/parties</text>
+        <rect class="box" x="880" y="48" width="108" height="60"/>
+        <text class="t-c" x="934" y="82" text-anchor="middle">riksdag_party</text>
+        <line class="wire" x1="840" y1="78" x2="880" y2="78" marker-end="url(#c1)"/>
+        <line class="wirea" x1="510" y1="78" x2="710" y2="78" marker-end="url(#c2)"/>
+        <text class="t-a" x="610" y="70" text-anchor="middle">GET, in the background</text>
+        <path class="wirew" d="M420 108V146H204" marker-end="url(#c3)"/>
+        <text class="t-w" x="214" y="138">parliament down: keep the last list</text>
+        <text class="t-w" x="214" y="166">no list yet: use Valmyndigheten's colour</text>
+      </svg>
+    </div>
+    <figcaption>A parliament outage never fails an election request. The worst case is the wrong party colour after a cold start, such as SD in Valmyndigheten's blue.</figcaption>
+  </figure>
+  <p>A cache suits this data because <code>riksdag_party</code> only changes through Flyway migrations (V22 and V24 so far). No scraper writes to it. The call would be needless if election kept its own copy of the colours, but then a new party or colour would need two migrations.</p>
+  <p>Kafka stays out. <code>kubernetes_setup.sh</code> still installs it, but the application doesn't use it, and it would be the largest process in the cluster with one low-value message to carry.</p>
+</section>
+
+<section>
+  <h2>What it costs</h2>
+  <p>The modules are already well separated, so the code move is the easy part. The ongoing cost is operational, for what is about 10,000 lines of Java running as one replica.</p>
+  <ul>
+    <li><strong>Memory:</strong> the monolith uses 609 MiB locally. Four JVMs would plausibly take 1.5–2 GiB. That is an estimate rather than a measurement, and it matters if this runs on small cluster nodes.</li>
+    <li><strong>Local dev:</strong> the start-up sequence becomes four services and a proxy, so <code>docker-compose-all.yml</code> becomes the default route and runs all services at each stage.</li>
+    <li><strong>Deploys:</strong> four images, in Compose now and in Kubernetes manifests at the first deployment, and CI should build only what changed. A change to <code>macro-platform</code> still rebuilds everything.</li>
+    <li><strong>What you get:</strong> scrapes that no longer block each other, SCB's memory spikes isolated, independent deploys, and boundaries enforced by the build and by separate databases.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Migration order</h2>
+  <p>Each step is a separate PR that leaves the app working. The <a href="../microservice-migration-guide.md">migration guide</a> is the living version of this list.</p>
+  <ol>
+    <li><strong>Prepare inside the monolith.</strong> Convert to a Maven reactor, extract <code>macro-platform</code>, and split the nginx routes while they all still point to the monolith.</li>
+    <li><strong>Extract regional-statistics.</strong> It has no dependents and the biggest operational gain, so it proves out the template: create the database and role, fill that domain's data, baseline, config rows, image and Compose service.</li>
+    <li><strong>Extract macro-series.</strong> This is the largest move, but it's mechanical once the template exists.</li>
+    <li><strong>Extract parliament, and switch election to REST.</strong> Election gets the cached HTTP adaptor while it's still in the monolith.</li>
+    <li><strong>Retire the monolith.</strong> What remains is election. Move its data to its own database, rename it and delete the leftovers.</li>
+    <li><strong>First real Kubernetes deployment.</strong> Manifests for all four services, routing, Postgres databases and roles, and image delivery.</li>
+  </ol>
+  <p>Each extraction must delete its config rows from the monolith in the same release, because <code>ScrapeService</code> refuses to start if a config names a flow that isn't registered.</p>
+</section>
+
+<section>
+  <h2>Decisions</h2>
+  <ol>
+    <li><a href="0001-split-backend-into-one-service-per-domain.md">0001: Split the backend into one service per domain</a></li>
+    <li><a href="0002-keep-scrape-as-a-shared-library.md">0002: Keep scrape as a shared library</a></li>
+    <li><a href="0003-one-database-per-service-on-one-postgres-instance.md">0003: One database per service on one Postgres instance</a></li>
+    <li><a href="0004-keep-manual-scrape-endpoints-public-for-now.md">0004: Keep manual scrape endpoints public for now</a>, an accepted risk to revisit</li>
+    <li><a href="0005-cached-rest-between-services-and-no-message-broker.md">0005: Cached REST between services and no message broker</a></li>
+    <li><a href="0006-kubernetes-as-eventual-deployment-target.md">0006: Kubernetes as the eventual deployment target</a>, with Docker Compose for local development</li>
+  </ol>
+  <p>One choice in the deployment stays open: whether the cluster's gateway is nginx in the frontend image or Ingress routes. The guide lists it with the other open questions.</p>
+</section>
+
+</main>
+</body>
+</html>
