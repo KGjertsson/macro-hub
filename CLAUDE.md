@@ -244,6 +244,8 @@ Chart series in `series_configuration` carry picker metadata (V27), returned by 
 
 Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent (Fable, or Opus when Fable credits run out) reviews it, then it is merged once the reviewer says LGTM. `main` is protected: every change needs a PR, and the `frontend` and `backend` jobs in `.github/workflows/ci.yml` (frontend: tracked-`.env` check, `npm run typecheck`, build, lint; backend: `mvn test`) must pass. No approval is required.
 
+Larger decisions are recorded as ADRs in `docs/adrs/`. The planned split into services is tracked in `docs/microservice-migration-guide.md`, which is updated in the same PR as each step; until it is finished, the rest of this file describes the current monolith.
+
 PRs also get an automatic Claude review comment from `.github/workflows/claude-review.yml` (comment-only, not a required check; a PR that changes that file is skipped, since the action requires it to match `main`). It needs the Claude GitHub App installed on the repo and a `CLAUDE_CODE_OAUTH_TOKEN` repo secret generated with `claude setup-token` (Pro/Max subscription).
 
 ## Commit Convention
