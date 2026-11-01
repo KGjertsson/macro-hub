@@ -27,7 +27,7 @@ The backend is being split into one service per domain ([ADRs](docs/adrs/README.
 
 The monolith still has its old `scb_*` tables and their jOOQ classes until the follow-up PR that drops them (step 2 of the guide). Nothing reads them. Everything below about a "module" holds in both applications; the rest of this file describes the monolith unless it names the service.
 
-**Databases: `localhost:31274` and `192.168.154.7:31274` can be the microk8s cluster's real database.** The service's defaults never point there.
+**Databases: `localhost:31274` and `192.168.154.7:31274` can be the microk8s cluster's real database.** The service's defaults and the jOOQ codegen defaults never point there. The monolith's base properties and `dev` profile still do.
 
 ## Build & Test Commands
 
@@ -72,10 +72,9 @@ mvn test -Dtest=MacroSeriesControllerTest#shouldReturnOk_whenValidBundleRetrieve
 
 # Generate the JOOQ models of macro-platform and macro-analyzer from the database schema. The phase is compile, not generate-sources: macro-analyzer can
 # only resolve macro-platform once that has been compiled. The database must be at the latest migration: the command
-# deletes the classes of tables it doesn't find. The default URL is localhost:31274, the dependencies-only Compose file
-# or, with microk8s running, the cluster's database (see the psql check under "Starting the local stack"), so name the
-# database when in doubt. The full stack (docker-compose-all.yml) publishes Postgres on 5432:
-mvn -P jooq-codegen compile -Djooq.codegen.url=jdbc:postgresql://localhost:5432/macroanalyzer
+# deletes the classes of tables it doesn't find. The default URL is the full stack's Postgres (docker-compose-all.yml,
+# localhost:5432/macroanalyzer). For any other database, add -Djooq.codegen.url=...
+mvn -P jooq-codegen compile
 
 # Generate regional-statistics-service's JOOQ model. Its own profile, so -am leaves macro-platform's model alone. The
 # default is the full stack's localhost:5432/regional_statistics, with that service's role
