@@ -26,7 +26,7 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
 
 **Default: Docker Compose** (from repo root; see "Docker" below for what it runs):
 
-1. **Check what is already running:** `docker ps` and `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|5173)'`.
+1. **Check what is already running:** `docker ps` and `lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(8080|8081|5173)'`. On a fresh clone, also `cp macro-backend/macro-analyzer/.env.example macro-backend/macro-analyzer/.env`: step 3 fails with `couldn't find env file` without it. The keys in it can stay empty until you scrape Riksbanken or Fed series.
 2. **Build the backend image:** `(cd macro-backend && ./mvnw clean package && docker build -t macro-analyzer macro-analyzer)`.
 3. **Start everything:** `docker compose --env-file macro-backend/macro-analyzer/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`. Open `http://localhost:8081`. Flyway migrations run on startup.
 
@@ -51,12 +51,15 @@ mvn test -Dtest=MacroSeriesControllerTest
 # Run a single test method
 mvn test -Dtest=MacroSeriesControllerTest#shouldReturnOk_whenValidBundleRetrieved
 
-# Generate both JOOQ models from the database schema. Needs a database at the latest migration on localhost:31274
-# (another one with -Djooq.codegen.url=jdbc:postgresql://localhost:<port>/macroanalyzer). The phase is compile, not
-# generate-sources: macro-analyzer can only resolve macro-platform once that has been compiled
-mvn -P jooq-codegen compile
+# Generate both JOOQ models from the database schema. The phase is compile, not generate-sources: macro-analyzer can
+# only resolve macro-platform once that has been compiled. The database must be at the latest migration: the command
+# deletes the classes of tables it doesn't find. The default URL is localhost:31274, the dependencies-only Compose file
+# or, with microk8s running, the cluster's database (see the psql check under "Starting the local stack"), so name the
+# database when in doubt. The full stack (docker-compose-all.yml) publishes Postgres on 5432:
+mvn -P jooq-codegen compile -Djooq.codegen.url=jdbc:postgresql://localhost:5432/macroanalyzer
 
-# Run locally against the Docker Postgres (dev profile points at localhost:31274)
+# Run locally against the Docker Postgres. The dev profile points at localhost:31274: with microk8s running, this uses
+# and migrates the cluster's database, so do the psql check under "Starting the local stack" first
 SPRING_DATASOURCE_PASSWORD=macropassword ./mvnw -pl macro-analyzer -am spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
