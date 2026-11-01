@@ -93,10 +93,11 @@ erDiagram
 
 The reactor root is `macro-backend/`, the parent of this module and `macro-platform`. Run Maven there.
 
-generate the jooq models of both modules
+generate the jooq models of both modules, from a database at the latest migration (here the full Compose stack's
+Postgres). Name the database: the default `localhost:31274` can be the microk8s cluster's, see "Backend" in `CLAUDE.md`.
 
 ```
-mvn -P jooq-codegen compile
+mvn -P jooq-codegen compile -Djooq.codegen.url=jdbc:postgresql://localhost:5432/macroanalyzer
 ```
 
 Flyway migrations (`src/main/resources/db/migration/`) run on application startup; there is no Flyway
