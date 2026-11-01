@@ -28,7 +28,7 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 | --- | --- | --- |
 | 0 | Record the decisions and start this guide | Done |
 | 1 | Prepare inside the monolith | Done |
-| 2 | Extract regional-statistics | Done when this PR merges, except for dropping the old tables, which is a follow-up PR |
+| 2 | Extract regional-statistics | Done |
 | 3 | Extract macro-series | Not started |
 | 4 | Extract parliament, switch election to REST | Not started |
 | 5 | Retire the monolith | Not started |
@@ -80,8 +80,8 @@ The platform run comes first, so the two tables exist before the service's basel
 
 Until step 5, `series_configuration` and `scrape_action_queue` are defined twice, in the monolith's `db/migration` and in `db/platform`, and `macro-platform`'s jOOQ model is generated from the monolith's database. A column change therefore needs a monolith migration, a new `db/platform` version and a regenerated model, in the same PR. No test catches a drift between the two unless the code uses the new column.
 
-- [ ] Write a squashed baseline in the new service with the domain's tables and seed data, without the DDL for the two platform tables, taken from the current database (`pg_dump --schema-only -t ...` is a good start). V1 to V32 stay in the monolith until step 5, and in git history after that.
-- [ ] Include the seed data that migrations added. Today that is `scb_indicator`, `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. `local_governance` starts empty.
+- [ ] Write a squashed baseline in the new service with the domain's tables and seed data, without the DDL for the two platform tables, taken from the current database (`pg_dump --schema-only -t ...` is a good start). The monolith's migrations stay there until step 5, and in git history after that.
+- [ ] Include the seed data that migrations added. Today that is `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. `local_governance` starts empty.
 - [ ] Copy the domain's `series_configuration` rows into the baseline, selected by `scrape_flow`. Keep `id` and `global_id` so `/series-config` keeps its order, and write `global_id` as literals so the baseline doesn't need the `uuid-ossp` extension (no column default uses it).
 - [ ] Set the `series_configuration` sequence past the copied ids. `scrape_action_queue` needs nothing as long as the baseline copies no queue rows.
 - [ ] Turn on the platform run for the service. The property goes in its `application.properties`, as it never runs without it.
@@ -101,7 +101,7 @@ Re-scraping is the default. Dump and restore only saves time on a local database
 - [ ] Trigger the scrape through the service's manual path (`enqueue-all`, then `scrape-from-queue`), or wait for its cron during the 22:00 hour.
 - [ ] Skip the queue rows on a fresh start. If you keep a local database and it has pending rows, copy them by `dataset_name` (`status = 0`; all local rows are currently done).
 
-Optional time-saver, after Flyway has created the tables:
+Optional time-saver, after Flyway has created the service's tables and **before the monolith's drop migration runs**, because that deletes what the dump reads. The monolith runs it as soon as it starts on a commit that has it, so a local database that is past it has to re-scrape. The commands below are the ones used for regional-statistics, whose tables V34 has dropped, so they no longer work as written. A later service names its own tables:
 
 ```bash
 docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only -t scb_indicator -t scb_area_value -t scb_availability -t scb_table_state macroanalyzer > rs.dump
@@ -140,7 +140,7 @@ Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so ngi
 - [ ] Delete the domain's `scrape_action_queue` rows from the monolith in the same migration. An item whose name matches no config stays pending, and fails with a warning on every cron run.
 - [ ] Switch the gateway routes to the new service, in nginx and in the Vite proxy.
 - [ ] Add the service to the enqueue-all replacement script.
-- [ ] After verifying the service locally, drop the old tables with a monolith migration and regenerate the monolith's jOOQ model. Do this in a separate small PR, after the owner's stack has been verified. The monolith's code no longer reads them at that point.
+- [ ] After verifying the service locally, drop the old tables with a monolith migration and regenerate the monolith's jOOQ model. Do this in a separate small PR, after the owner's stack has been verified. The monolith's code no longer reads them at that point. Generate from a throwaway database at the new migration (`-Djooq.codegen.url=...`): the default, the Compose Postgres, only gets there once its monolith has restarted on the new code, and generating from it before that changes nothing. The model's diff should only delete those tables and the references to them, and `macro-platform`'s model, which the same command regenerates, should not change.
 - [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. CI needs no change: the `backend` job runs every module of the reactor. Add the image to the after-merge commands in `.claude/skills/ship/SKILL.md`.
 - [ ] Update `CLAUDE.md`, `macro-backend/macro-analyzer/ARCHITECTURE.md`, `macro-backend/macro-analyzer/README.md` and this guide.
 
@@ -211,7 +211,7 @@ Revert the PR and re-create the local databases.
 - [x] Run the extraction checklist, except for dropping the old tables.
 - [x] Add the image and its service in `docker-compose-all.yml`, and point the frontend's route variable at it. Leave room for the first scrape's heap if a memory limit is added.
 - [x] Route `/macro-analyzer/regional-statistics/` and `/macro-analyzer/scrape/regional-statistics/` to the service.
-- [ ] Drop `scb_indicator`, `scb_area_value`, `scb_availability` and `scb_table_state` with a monolith migration, and regenerate the monolith's jOOQ model. This is a separate small PR, after the owner's stack has been verified. This step's monolith migration, V33, only deletes the `ScbRegionalStatistics` config row and its queue rows. Removing the flow and deleting those rows have to be in the same PR, but dropping the tables doesn't.
+- [x] Drop `scb_indicator`, `scb_area_value`, `scb_availability` and `scb_table_state` with a monolith migration, and regenerate the monolith's jOOQ model. This is a separate small PR, after the owner's stack has been verified. V33, in the step's main PR, only deletes the `ScbRegionalStatistics` config row and its queue rows, and V34 drops the tables. Removing the flow and deleting those rows have to be in the same PR, but dropping the tables doesn't.
 
 **Verify:** the checklist's verify list, plus: the Områdesstatistik page (`/omraden`) shows data for DeSO and RegSO, and a second scrape with unchanged tables takes about 30 seconds. A running SCB scrape no longer delays a scrape in the monolith.
 
@@ -219,7 +219,8 @@ Revert the PR and re-create the local databases.
 
 **What differed:** the suggested items were done as written (`macro.scrape.path-prefix`, a `FlywayMigrationStrategy` bean behind `macro.platform.flyway.enabled`, `flyway_platform_schema_history`, an init script mounted in both Compose files), with these details. The checklist above has been corrected where the template turned out wrong or incomplete.
 
-- The old tables stay for now, as the task above says, in a follow-up PR. The monolith's jOOQ model keeps their classes until then.
+- The old tables went in a follow-up PR, as the task above says, once the owner's stack had been verified. V34 lists them without `CASCADE` or `IF EXISTS`, so an unknown dependency fails the migration. It was applied on an empty database and on a restored dump of the local database at V33: the local database went from 464 MB to 84 MB, the two schemas came out identical, a second start migrated nothing, and both give the same jOOQ model. Its diff only deletes lines (the 8 classes, and references in `Keys`, `Public` and `Tables`), and `macro-platform`'s and the service's models didn't change. `regional-statistics-service`, on a restored copy of its database in the same Postgres, answered the 53 `/regional-statistics` requests compared like the running service.
+- With `core.autocrlf=true`, `git status` lists every regenerated file as modified, because jOOQ writes LF. `git diff` shows only the real changes.
 - `REVOKE CONNECT` on the new database alone didn't give the boundary the checklist asked for: the new role could still connect to `macroanalyzer`. The script revokes it on every database. This limits `macrouser` in nothing, as it is a superuser.
 - The module is `regional-statistics-service`, on port 8082, inside and outside the container, so `mvnw` and Compose use the same port and Vite's proxy works with either. The Compose service is `regional-statistics`.
 - The jOOQ profile is `jooq-codegen-regional-statistics`, not `jooq-codegen`, because `-pl <service> -am` would otherwise also run `macro-platform`'s codegen. `jooq.codegen.user` and `.password` became properties in the parent pom. The root command (`-P jooq-codegen`) still covers `macro-platform` and `macro-analyzer`, and leaves the service's model alone. The parent's default URL moved from `localhost:31274` to `localhost:5432/macroanalyzer`, so no codegen default can reach the cluster's database. The monolith's base properties and `dev` profile pointed at port 31274 until the follow-up described at the end of this list.
@@ -284,7 +285,7 @@ Revert the PR and re-create the local databases.
 
 - [ ] Run the extraction checklist for election, with the new database `election`. Skip the cut-over items that delete config rows, delete queue rows and drop old tables with a monolith migration: the monolith itself becomes election, so they have no target. The old tables go away with the `macroanalyzer` database.
 - [ ] Rename the `macro-analyzer` module, application class, image, jar and Compose service to election.
-- [ ] Delete V1 to V32 and the old jOOQ model from the tree. They stay in git history.
+- [ ] Delete the monolith's migrations (V1 to V34, and any that steps 3 and 4 add) and the old jOOQ model from the tree. They stay in git history.
 - [ ] Route `/macro-analyzer/scrape/election/` to election. Its new prefix removes the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue`, so remove the monolith's call from the script, which now only loops over the four names. Every service now sets its own prefix, so remove the `macro-analyzer` default.
 - [ ] Change the catch-all `location /macro-analyzer/` in nginx to answer 404. Without it, unknown API paths would fall through to `location /` and get `index.html` with a 200.
 - [ ] Remove `BACKEND_URL`, the `macroanalyzer` database from `POSTGRES_DB`, and the `macrouser` settings no service uses.

@@ -44,10 +44,6 @@ import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElection;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagOrgan;
 import com.kg.macroanalyzer.jooq.generated.tables.RiksdagParty;
-import com.kg.macroanalyzer.jooq.generated.tables.ScbAreaValue;
-import com.kg.macroanalyzer.jooq.generated.tables.ScbAvailability;
-import com.kg.macroanalyzer.jooq.generated.tables.ScbIndicator;
-import com.kg.macroanalyzer.jooq.generated.tables.ScbTableState;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_12Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_1Month;
 import com.kg.macroanalyzer.jooq.generated.tables.SwedishGovernmentBill_3Month;
@@ -283,26 +279,6 @@ public class Public extends SchemaImpl {
     public final RiksdagParty RIKSDAG_PARTY = RiksdagParty.RIKSDAG_PARTY;
 
     /**
-     * The table <code>public.scb_area_value</code>.
-     */
-    public final ScbAreaValue SCB_AREA_VALUE = ScbAreaValue.SCB_AREA_VALUE;
-
-    /**
-     * The table <code>public.scb_availability</code>.
-     */
-    public final ScbAvailability SCB_AVAILABILITY = ScbAvailability.SCB_AVAILABILITY;
-
-    /**
-     * The table <code>public.scb_indicator</code>.
-     */
-    public final ScbIndicator SCB_INDICATOR = ScbIndicator.SCB_INDICATOR;
-
-    /**
-     * The table <code>public.scb_table_state</code>.
-     */
-    public final ScbTableState SCB_TABLE_STATE = ScbTableState.SCB_TABLE_STATE;
-
-    /**
      * The table <code>public.swedish_government_bill_12_month</code>.
      */
     public final SwedishGovernmentBill_12Month SWEDISH_GOVERNMENT_BILL_12_MONTH = SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH;
@@ -435,10 +411,6 @@ public class Public extends SchemaImpl {
             RiksdagElectionResult.RIKSDAG_ELECTION_RESULT,
             RiksdagOrgan.RIKSDAG_ORGAN,
             RiksdagParty.RIKSDAG_PARTY,
-            ScbAreaValue.SCB_AREA_VALUE,
-            ScbAvailability.SCB_AVAILABILITY,
-            ScbIndicator.SCB_INDICATOR,
-            ScbTableState.SCB_TABLE_STATE,
             SwedishGovernmentBill_12Month.SWEDISH_GOVERNMENT_BILL_12_MONTH,
             SwedishGovernmentBill_1Month.SWEDISH_GOVERNMENT_BILL_1_MONTH,
             SwedishGovernmentBill_3Month.SWEDISH_GOVERNMENT_BILL_3_MONTH,
