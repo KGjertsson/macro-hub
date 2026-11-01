@@ -295,6 +295,26 @@ public class ScrapeServiceTest {
     }
 
     @Test
+    void shouldFailTheItemAndScrapeTheRest_whenAFlowThrows(CapturedOutput output) {
+        // given
+        final var now = LocalDateTime.now();
+        final var failing = ScrapeQueueItem.of("test-name");
+        final var next = ScrapeQueueItem.of("MembersOfParliament");
+
+        // when
+        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(failing, next));
+        when(macroPointScrapeFlow.run(failing)).thenThrow(new RuntimeException("connection reset"));
+        when(memberScrapeFlow.run(next)).thenReturn(ScrapeResult.SUCCESS);
+
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
+
+        // then
+        assertEquals(List.of(ScrapeResult.FAILED, ScrapeResult.SUCCESS), result);
+        assertTrue(output.getOut().contains("Scrape of test-name failed"), output.getOut());
+        verify(memberScrapeFlow).run(next);
+    }
+
+    @Test
     void shouldSkipScrape_whenAnotherScrapeIsInProgress() throws Exception {
         // given
         final var now = LocalDateTime.now();

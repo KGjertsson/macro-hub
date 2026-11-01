@@ -26,8 +26,10 @@ Nothing in the frontend calls the enqueue or scrape endpoints.
 
 - There are no calls between services for scraping, and each service has its own lock, so a 12-minute SCB run stops delaying the others.
 - The queue and the data sit in one database, so they can share a transaction. They don't today. The macro-series, parliament and election persisters call `markAsDone` before they write, so a failed write leaves the item marked done. `ScbRegionalPersister` marks the item done without writing when there is nothing new, and otherwise after its writes, leaving it pending if no indicator was written.
+  - *Note, 2026-11-01:* the order has been fixed. All the persisters now mark the item done after the write, and `ScrapeService` catches a failing item so the others still run. The write and the queue update still don't share a transaction.
 - The global `enqueue-all` goes away. A small script that calls each service replaces it.
 - All four services would enqueue during the 22:00 hour (`CronEnqueueAdaptor`) and write concurrently. Stagger the hours if that strains Postgres.
 - A change to `macro-platform` rebuilds every service.
 - `macro-platform` ships the DDL for the two tables, so its migrations must not collide with those of the services. The [migration guide](../microservice-migration-guide.md) lists how as an open question.
+  - *Note, 2026-11-01:* decided in the guide. The platform's migrations run in a separate Flyway run with their own history table, before the service's own.
 - A central view of all scrapes would need new work. Wanting one is the main reason to reconsider this decision.

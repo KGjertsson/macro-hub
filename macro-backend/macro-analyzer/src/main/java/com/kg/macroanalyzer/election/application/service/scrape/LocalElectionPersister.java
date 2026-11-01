@@ -14,13 +14,14 @@ public record LocalElectionPersister(ElectionRepositoryPort repositoryPort, Scra
     public ScrapeResult persist(ConfigWithLocalElections configWithLocalElections) {
         final var config = configWithLocalElections.seriesConfig();
         final var results = configWithLocalElections.results();
-        scrapeQueuePort.markAsDone(config);
         if (results.isEmpty()) {
             log.info("Found no new local election results for %s".formatted(config.name()));
+            scrapeQueuePort.markAsDone(config);
 
             return ScrapeResult.EMPTY;
         }
         final var persistedCount = repositoryPort.writeLocalElectionResults(results);
+        scrapeQueuePort.markAsDone(config);
         log.info("Upserted %s local election areas for %s".formatted(persistedCount, config.name()));
 
         return ScrapeResult.SUCCESS;

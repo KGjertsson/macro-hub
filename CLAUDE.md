@@ -117,7 +117,7 @@ The backend is split into **modules by domain**. Inside each module it follows *
                                                                     └──→ ScrapeService
   ScrapeService ──→ RegisteredScrapeFlow (picked by the config's scrape_flow id, built in each module's adaptors.config)
       Preparer ──→ ExistingFinder ──→ Scraper ──→ WebPort ←── adaptors.web ──→ external API
-                                      Persister ──→ port.out, ScrapeQueuePort.markAsDone
+                                      Persister ──→ port.out, then ScrapeQueuePort.markAsDone
 
   election ──→ parliament.application.port.in (PartyDirectory), parliament.domain (Party)
 ```
@@ -166,7 +166,7 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
 
 ### How a scrape flow plugs in
 
-Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `Preparer` and its own finder, scraper and persister, and registers it as a `RegisteredScrapeFlow` bean under a flow id. The ids are plain strings that each module owns as constants in its `domain/` (`MacroSeriesScrapeFlows.MACRO_POINT`, `ParliamentScrapeFlows.MEMBER_OF_PARLIAMENT`/`MEMBER_ACTIVITY`, `ElectionScrapeFlows.LOCAL_ELECTION`, `RegionalStatisticsScrapeFlows.SCB_REGIONAL`); `scrape` never names them. Every `series_configuration` row says which flow scrapes it in `scrape_flow` (NOT NULL, V31). `ScrapeService` routes a queue item by name → `SeriesConfig` (through the `SeriesConfigPreparer`) → `scrapeFlow` → flow; an item whose name matches no config is `FAILED` with a warning and stays pending. At startup it fails if two flows share an id or a config's `scrapeFlow` has no registered flow (the message names the config and the id), and only warns for a registered flow that no config uses. The configs are read once at startup, so a new row needs a restart. Persisters write through their module's repository port and call `ScrapeQueuePort.markAsDone`.
+Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `Preparer` and its own finder, scraper and persister, and registers it as a `RegisteredScrapeFlow` bean under a flow id. The ids are plain strings that each module owns as constants in its `domain/` (`MacroSeriesScrapeFlows.MACRO_POINT`, `ParliamentScrapeFlows.MEMBER_OF_PARLIAMENT`/`MEMBER_ACTIVITY`, `ElectionScrapeFlows.LOCAL_ELECTION`, `RegionalStatisticsScrapeFlows.SCB_REGIONAL`); `scrape` never names them. Every `series_configuration` row says which flow scrapes it in `scrape_flow` (NOT NULL, V31). `ScrapeService` routes a queue item by name → `SeriesConfig` (through the `SeriesConfigPreparer`) → `scrapeFlow` → flow; an item whose name matches no config is `FAILED` with a warning and stays pending. At startup it fails if two flows share an id or a config's `scrapeFlow` has no registered flow (the message names the config and the id), and only warns for a registered flow that no config uses. The configs are read once at startup, so a new row needs a restart. Persisters write through their module's repository port and then call `ScrapeQueuePort.markAsDone` (with nothing to write they only mark it done). The two don't share a transaction. An item that throws is `FAILED`, doesn't stop the others and stays pending, so the cron retries it about once a minute, re-fetching from the source.
 
 ### Dependency rules (`ArchitectureTest`)
 

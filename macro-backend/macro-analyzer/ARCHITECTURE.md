@@ -78,11 +78,14 @@ an id or a config names an id without a flow, and logs a warning for a flow that
   2. ExistingFinder   <module>.application.service.scrape   reads what is already stored
   3. Scraper          <module>.application.service.scrape   fetches through a WebPort
   4. Persister        <module>.application.service.scrape   writes through the module's port.out
-                                                            and calls ScrapeQueuePort.markAsDone
+                                                            and then calls ScrapeQueuePort.markAsDone
        |
        v
   ScrapeResult (SUCCESS | FAILED | EMPTY)
 ```
+
+`ScrapeService` catches a `RuntimeException` per item: the item is `FAILED` and stays pending, the rest of the run
+continues, and the cron retries it on its next drain.
 
 | Flow id (`scrape_flow`) | Constant                                                          | Flow built in                                                           | Configs                                                    |
 |-------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------------|------------------------------------------------------------|
