@@ -5,13 +5,18 @@ services:
     image: postgres:16
     container_name: macrohub-postgres
     environment:
-      POSTGRES_DB: macroanalyzer
+      # No application database: postgres-init/ creates one per service. Without this the image would create one named
+      # after POSTGRES_USER. An existing volume ignores all three
+      POSTGRES_DB: postgres
+      # The image's bootstrap superuser, for the init script and maintenance. No service logs in with it. It keeps its
+      # name because an existing volume has this role, and the init script connects as POSTGRES_USER
       POSTGRES_USER: macrouser
       POSTGRES_PASSWORD: macropassword
       # Read by postgres-init/ on an empty volume. An existing volume needs that script run by hand, see the guide
       REGIONAL_STATISTICS_DB_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
       MACRO_SERIES_DB_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
       PARLIAMENT_DB_PASSWORD: ${PARLIAMENT_DB_PASSWORD:-parliamentpassword}
+      ELECTION_DB_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
     ports:
       - "5432:5432"
     volumes:

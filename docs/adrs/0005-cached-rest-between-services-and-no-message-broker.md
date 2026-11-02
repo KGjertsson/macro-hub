@@ -25,6 +25,8 @@ Election gets its own out-port in place of `PartyDirectory`, with an HTTP adapto
 
 A contract test pins the fields election reads (`code` and `color`). There is no message broker.
 
+*Note, 2026-11-02:* the Flyway versions in the context were the monolith's, now gone from the tree. `riksdag_party` is written by `parliament-service`'s baseline and its later migrations. Election runs as `election-service`, and the behaviour here is unchanged.
+
 ## Alternatives considered
 
 - **Call parliament on every request.** This is the simplest, but a parliament outage would fail or slow election requests.

@@ -47,11 +47,24 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>${archunit.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
+        <!-- Its own name, not jooq-codegen: a service's profile is named after the service, so its -am doesn't run this one.
+             Every service's database has these tables, from db/platform. election's is the default because it is small -->
         <profile>
-            <id>jooq-codegen</id>
+            <id>jooq-codegen-platform</id>
+            <properties>
+                <jooq.codegen.url>jdbc:postgresql://localhost:5432/election</jooq.codegen.url>
+                <jooq.codegen.user>election</jooq.codegen.user>
+                <jooq.codegen.password>electionpassword</jooq.codegen.password>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -60,7 +73,8 @@
                         <configuration>
                             <generator>
                                 <database>
-                                    <!-- Only the tables this library's code reads and writes -->
+                                    <!-- Only the tables this library's code reads and writes. flyway_platform_schema_history
+                                         is Flyway's own: no code here reads it -->
                                     <includes>series_configuration|scrape_action_queue|flyway_schema_history</includes>
                                 </database>
                                 <target>

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Replaces the global POST /macro-analyzer/enqueue-all: enqueues every series on every service, then drains each queue.
+# Enqueues every series on every service, then drains each queue.
 # Usage: scrape-all.sh [gateway], where gateway defaults to http://localhost:8081 (Compose); Vite's is :5173.
 # Each service runs its own scrape, in parallel, and the calls return when it is done (SCB's first takes ~12 minutes).
 # The exception is a 409: that service's cron is already draining its queue, so the script exits 0 with that run still
@@ -8,12 +8,11 @@ set -u
 
 gateway="${1:-http://localhost:8081}"
 
-# The services that have moved, and the prefix of what is still in the monolith. Step 5 of the migration guide removes
-# the monolith's entry
-prefixes="macro-analyzer/scrape/regional-statistics macro-analyzer/scrape/macro-series macro-analyzer/scrape/parliament macro-analyzer"
+services="regional-statistics macro-series parliament election"
 
 status=0
-for prefix in $prefixes; do
+for service in $services; do
+    prefix="macro-analyzer/scrape/$service"
     code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$gateway/$prefix/enqueue-all")
     echo "POST /$prefix/enqueue-all: $code"
     [ "$code" = "202" ] || status=1
@@ -22,7 +21,8 @@ done
 
 results=$(mktemp) || exit 1
 trap 'rm -f "$results"' EXIT
-for prefix in $prefixes; do
+for service in $services; do
+    prefix="macro-analyzer/scrape/$service"
     (
         code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$gateway/$prefix/scrape-from-queue")
         # 409: the service's cron is already draining the queue, which is what this call would have done

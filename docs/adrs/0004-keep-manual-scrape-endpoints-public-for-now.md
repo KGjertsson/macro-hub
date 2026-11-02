@@ -20,6 +20,8 @@ The manual scrape endpoints, or their per-service replacements, stay reachable t
 
 *Note, 2026-11-01:* the paths are now decided, under `/macro-analyzer/scrape/<service>/`. See "Manual scrape endpoints" in the guide.
 
+*Note, 2026-11-02:* the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue` are gone with the monolith, and the gateway's `/macro-analyzer/` catch-all answers 404. The four per-service paths are still public, so this decision stands.
+
 ## Alternatives considered
 
 - **Keep them off the gateway**, and reach each service directly when needed. This closes the exposure, but makes a manual scrape more awkward.

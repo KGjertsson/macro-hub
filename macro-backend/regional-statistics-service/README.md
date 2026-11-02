@@ -24,7 +24,7 @@ An existing Postgres volume needs the database first. See "Starting the local st
 
 On start-up, Flyway runs twice against the service's own database:
 
-1. `macro-platform`'s `db/platform` creates `series_configuration` and `scrape_action_queue`, with the history table `flyway_platform_schema_history` (`macro.platform.flyway.enabled=true`).
+1. `macro-platform`'s `db/platform` creates `series_configuration` and `scrape_action_queue`, with the history table `flyway_platform_schema_history`.
 2. This module's `db/migration`, with the default `flyway_schema_history`. `V1` is a squashed baseline of the tables, the indicators and the config row. The schema isn't empty when this run starts, so it uses a baseline at version 0.
 
 To regenerate the jOOQ model (`regionalstatistics.jooq.generated`), from a database at the latest migration:

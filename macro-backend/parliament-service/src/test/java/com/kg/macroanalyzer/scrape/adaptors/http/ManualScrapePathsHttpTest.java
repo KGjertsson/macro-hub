@@ -13,7 +13,7 @@ import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** The gateway routes /macro-analyzer/scrape/parliament/ here; the monolith's paths are not this service's. */
+/** The gateway routes /macro-analyzer/scrape/parliament/ here; the old global paths are gone. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class ManualScrapePathsHttpTest {
@@ -30,7 +30,7 @@ class ManualScrapePathsHttpTest {
     }
 
     @Test
-    void shouldNotAnswer_onTheMonolithsPaths() throws Exception {
+    void shouldNotAnswer_onTheOldGlobalPaths() throws Exception {
         assertEquals(404, post("/macro-analyzer/enqueue?name=unknown"));
     }
 
