@@ -13,13 +13,13 @@ The whole app in one namespace, `macro-hub`, on a single-node microk8s: Postgres
 
 ## Before the first deployment
 
-- microk8s with `dns` and `hostpath-storage`, and your user in the `microk8s` group (`kubernetes_setup.sh` installs this). No other addon is needed: this doesn't use Ingress.
-- JDK 25 (`~/.sdkman/candidates/java/current`, or set `JAVA_HOME`) and Docker.
+- microk8s with `dns`, and your user in the `microk8s` group (`kubernetes_setup.sh` installs this). No other addon is needed: there is no Ingress, and the volumes are static, so they need no storage addon.
+- JDK 25 (`~/.sdkman/candidates/java/current`, or set `JAVA_HOME`), Docker and `openssl`.
 - The API keys in `macro-backend/macro-series-service/.env` (copy its `.env.example`).
 
 ## Bringing it up
 
-From anywhere in the clone, on the commit you want to deploy:
+From the repo root of the clone, on the commit you want to deploy:
 
 ```bash
 cd macro-backend/macro-infra/k8s
@@ -56,7 +56,12 @@ microk8s kubectl -n macro-hub exec deploy/regional-statistics-service -- cat /sy
 
 ## Deploying a new version
 
-Commit, then `./build-images.sh` and `./deploy.sh`. The images are tagged with the commit, so `kubectl -n macro-hub get deploy -o wide` shows what runs. Older tags stay in Docker and in containerd until you remove them by hand: `docker rmi macro-hub/<name>:<tag>`.
+Commit, then `./build-images.sh` and `./deploy.sh`. The images are tagged with the commit, so `kubectl -n macro-hub get deploy -o wide` shows what runs. Older tags stay in Docker and in containerd until you remove them by hand, from both:
+
+```bash
+docker rmi macro-hub/<name>:<tag>
+/snap/microk8s/current/bin/ctr --address /var/snap/microk8s/common/run/containerd.sock -n k8s.io images rm docker.io/macro-hub/<name>:<tag>
+```
 
 ## Taking it down
 
@@ -98,10 +103,11 @@ k exec deploy/postgres -- sh -c 'psql -U "$POSTGRES_USER" -d restore_check -c "S
 k exec deploy/postgres -- sh -c 'dropdb -U "$POSTGRES_USER" restore_check'
 ```
 
-To replace a service's database (here `election`) with a dump. Stop the service first, re-create the database with the init script, which also restores who may connect, and then restore as its owner:
+To replace a service's database (here `election`) with a dump. Stop the service and wait for its pod to go, re-create the database with the init script, which also restores who may connect, and then restore as its owner. Run these one at a time, and stop if one fails:
 
 ```bash
 k scale deployment/election-service --replicas=0
+k wait --for=delete pod -l app=election-service --timeout=90s
 k exec deploy/postgres -- sh -c 'dropdb -U "$POSTGRES_USER" election'
 k exec -i deploy/postgres -- sh -s < ../docker/postgres-init/01-service-databases.sh
 k exec deploy/postgres -- sh -c 'pg_restore -U "$POSTGRES_USER" -d election --exit-on-error /backups/election/<file>.dump'
@@ -131,7 +137,16 @@ microk8s kubectl -n macro-hub rollout restart deployment/postgres
 microk8s kubectl -n macro-hub rollout restart deployment/regional-statistics-service deployment/macro-series-service deployment/parliament-service deployment/election-service
 ```
 
+To change an API key: edit the env file, run `./create-secrets.sh`, then `microk8s kubectl -n macro-hub rollout restart deployment/macro-series-service`. `deploy.sh` doesn't restart anything for a changed Secret.
+
+## After WSL2 or microk8s restarts
+
+**This hasn't been tried.** Nothing here depends on a person being present: the images, volumes and Secrets persist, and the pods should come back by themselves. A service that starts before Postgres answers exits and is restarted with a backoff, so give it a few minutes. To check: `microk8s kubectl -n macro-hub get pods`, then open the URL. A CronJob run missed while the machine was off runs when it is back.
+
 ## Limits to know
+
+- **The cluster has no RBAC (`--authorization-mode=AlwaysAllow`), so a namespace is not a security boundary here.** Any Kubernetes credential can do anything in any namespace, which is why no pod here mounts a service account token. Treat the `kubectl` access of the `microk8s` group as cluster-admin.
+- **Backups share a disk with the data,** so they protect against a bad write or a bad migration, not a lost disk. Copy `/mnt/data/macro-hub/backups` elsewhere for that.
 
 - **One replica each.** `scrapeLock` is per process, so a second instance would scrape the same queue at the same time. Service and Postgres Deployments use `strategy: Recreate`, so there is a short gap during a deploy.
 - **The gateway has no authentication,** and anyone who can reach port 30081 can trigger scrapes ([ADR 0004](../../../docs/adrs/0004-keep-manual-scrape-endpoints-public-for-now.md)).

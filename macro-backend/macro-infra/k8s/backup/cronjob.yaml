@@ -23,6 +23,8 @@ spec:
           labels:
             app: postgres-backup
         spec:
+          # No workload calls the Kubernetes API, and this cluster has no RBAC, so a token here could do anything in any namespace
+          automountServiceAccountToken: false
           enableServiceLinks: false
           restartPolicy: Never
           containers:
@@ -52,6 +54,8 @@ spec:
                   for db in regional_statistics macro_series parliament election; do
                       dir="/backups/$db"
                       mkdir -p "$dir"
+                      # What a run left behind when it was killed mid-dump. Rotation only looks at *.dump
+                      rm -f "$dir"/*.partial
                       file="$dir/$db-$stamp.dump"
                       if pg_dump --format=custom --dbname="$db" --file="$file.partial"; then
                           mv "$file.partial" "$file"

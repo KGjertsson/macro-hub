@@ -15,7 +15,7 @@ microk8s start
 microk8s status --wait-ready
 
 k cluster-info
-microk8s enable dns storage
+microk8s enable dns
 
 k get all --all-namespaces
 k get nodes

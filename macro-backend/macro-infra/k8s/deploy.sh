@@ -54,8 +54,11 @@ k rollout status deployment/postgres --timeout=600s
 # volume the bootstrap superuser's password follows it too
 k exec -i deploy/postgres -- sh -s \
     < "$repo/macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh" >/dev/null
-k exec -i deploy/postgres -- sh -c \
-    'psql -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d postgres -v password="$POSTGRES_PASSWORD"' >/dev/null <<'SQL'
+# \getenv keeps it off psql's command line. If the statement fails, neither the server log nor psql's message quotes it
+k exec -i deploy/postgres -- sh -c 'psql -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d postgres' >/dev/null <<'SQL'
+\set VERBOSITY terse
+\getenv password POSTGRES_PASSWORD
+SET log_min_error_statement = panic;
 SELECT format('ALTER ROLE %I PASSWORD %L', current_user, :'password') \gexec
 SQL
 

@@ -9,7 +9,12 @@ run_psql() {
 }
 
 create_service_database() {
-    run_psql -v db="$1" -v password="$2" <<'SQL'
+    # \getenv keeps the password off psql's command line. If a statement fails, neither the server log nor psql's
+    # message quotes it
+    SERVICE_DB_PASSWORD="$2" run_psql -v db="$1" <<'SQL'
+\set VERBOSITY terse
+\getenv password SERVICE_DB_PASSWORD
+SET log_min_error_statement = panic;
 SELECT format('CREATE ROLE %I', :'db')
 WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'db') \gexec
 SELECT format('ALTER ROLE %I LOGIN PASSWORD %L', :'db', :'password') \gexec

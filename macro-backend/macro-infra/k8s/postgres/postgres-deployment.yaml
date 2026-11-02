@@ -18,6 +18,8 @@ spec:
       labels:
         app: postgres
     spec:
+      # No workload calls the Kubernetes API, and this cluster has no RBAC, so a token here could do anything in any namespace
+      automountServiceAccountToken: false
       enableServiceLinks: false
       terminationGracePeriodSeconds: 120
       containers:

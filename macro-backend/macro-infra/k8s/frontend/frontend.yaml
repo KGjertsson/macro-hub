@@ -17,6 +17,8 @@ spec:
       labels:
         app: macro-frontend
     spec:
+      # No workload calls the Kubernetes API, and this cluster has no RBAC, so a token here could do anything in any namespace
+      automountServiceAccountToken: false
       enableServiceLinks: false
       containers:
         - name: macro-frontend

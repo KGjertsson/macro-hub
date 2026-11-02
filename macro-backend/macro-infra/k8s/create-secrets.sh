@@ -30,15 +30,25 @@ done
 
 microk8s kubectl -n macro-hub apply -f "$here/namespace.yaml" >/dev/null
 
+# Into a temporary file first, so a failure or an interrupted run leaves no file that a later run would reuse
+generate_passwords() {
+    local temporary value name
+    mkdir -p "$(dirname "$passwords_file")"
+    temporary=$(mktemp "$passwords_file.XXXXXX")
+    trap 'rm -f "$temporary"' EXIT
+    for name in POSTGRES_PASSWORD $db_passwords; do
+        # On its own line, as set -e doesn't see a failure inside an echo's $(...)
+        value=$(openssl rand -hex 24)
+        [ -n "$value" ] || { echo "openssl gave no value" >&2; exit 1; }
+        echo "$name=$value" >> "$temporary"
+    done
+    mv "$temporary" "$passwords_file"
+    trap - EXIT
+}
+
 umask 077
 if [ ! -e "$passwords_file" ]; then
-    mkdir -p "$(dirname "$passwords_file")"
-    {
-        echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)"
-        for name in $db_passwords; do
-            echo "$name=$(openssl rand -hex 24)"
-        done
-    } > "$passwords_file"
+    generate_passwords
     echo "Generated database passwords in $passwords_file"
 else
     echo "Using the database passwords in $passwords_file"
@@ -46,6 +56,11 @@ fi
 
 # shellcheck disable=SC1090
 . "$passwords_file"
+
+# An empty one would make the init script fall back on its well-known Compose default
+for name in POSTGRES_PASSWORD $db_passwords; do
+    [ -n "${!name:-}" ] || { echo "$passwords_file has no value for $name" >&2; exit 1; }
+done
 
 {
     printf 'POSTGRES_PASSWORD=%s\n' "$POSTGRES_PASSWORD"

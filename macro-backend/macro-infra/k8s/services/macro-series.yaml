@@ -18,6 +18,8 @@ spec:
       labels:
         app: macro-series-service
     spec:
+      # No workload calls the Kubernetes API, and this cluster has no RBAC, so a token here could do anything in any namespace
+      automountServiceAccountToken: false
       enableServiceLinks: false
       terminationGracePeriodSeconds: 60
       containers:
@@ -25,6 +27,11 @@ spec:
           # deploy.sh replaces IMAGE_TAG with the commit that build-images.sh built and imported
           image: macro-hub/macro-series-service:IMAGE_TAG
           imagePullPolicy: Never
+          # The image runs as root, as under Compose, so at least take away what root could do with it
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ ALL ]
           ports:
             - name: http
               containerPort: 8083
@@ -52,10 +59,12 @@ spec:
             # Boot turns these two endpoints on by itself in a pod. Set here so that doesn't rest on its detection
             - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
               value: "true"
-            # The heap may take 70% of the limit, leaving the rest for metaspace, threads and the code cache. Exit on an
-            # OutOfMemoryError, so it shows as a restart rather than a service that carries on with a dead thread
+            # G1 set explicitly: below 1792 MiB the JVM would pick Serial by itself, and Compose runs G1. The heap may take 60% of
+            # the limit, which leaves about 410 MiB for metaspace, threads and the code cache, measured at 220 to 280 MiB. Exit
+            # on an OutOfMemoryError, so it shows as a restart rather than a service that carries on with a dead thread.
+            # -Xlog:gc is the evidence of what the heap really holds: the guide's step 6 has the reasoning
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError
+              value: -XX:+UseG1GC -XX:MaxRAMPercentage=60 -XX:+ExitOnOutOfMemoryError -Xlog:gc:stdout
           # Flyway runs before this first answers
           startupProbe:
             httpGet:
@@ -86,8 +95,8 @@ spec:
               cpu: 100m
               memory: 384Mi
             limits:
-              # The first full scrape peaked at 389 MiB
-              memory: 768Mi
+              # The first full scrape peaked at 389 MiB under Serial
+              memory: 1Gi
 ---
 apiVersion: v1
 kind: Service
