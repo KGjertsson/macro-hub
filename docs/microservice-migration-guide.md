@@ -125,11 +125,43 @@ Tried on a throwaway database with 2.4 M rows: a 16 MB dump and 73 s to restore.
 
 **Parliament's data is restored, not re-scraped**, while the monolith's tables exist (until its drop migration, which is a later PR than the extraction). A scrape only fetches activity for the latest two terms, members would get new `id`, `global_id` and `created` values, and `riksdag_*` is curated. An empty clone with nothing to restore fills by scraping as usual.
 
-The six tables can't hold duplicates: `swedish_members_of_parliament` has `UNIQUE (intressent_id)`, `swedish_member_activity` and the `riksdag_*` tables have primary keys on their natural keys. So, unlike macro-series, no later constraint rejects the data, the service's `V1` doesn't need a `SPRING_FLYWAY_TARGET`, and a checksum of each whole table is a fair comparison. The one sequence, `swedish_members_of_parliament_id_seq`, is owned by the table, so `pg_dump -t` includes it, and the baseline has the same name, so `setval` works. Compare it too: it is far past the row count, because every upsert uses a value. The baseline's seed rows have to go first, or the `COPY` fails on the primary keys, and the dump's own rows replace them. `TRUNCATE` runs on all four seeded tables at once because of the foreign keys, and `pg_dump` orders the data so that `pg_restore` loads the parents first, with the foreign keys enforced, as the service's role.
+The six tables can't hold duplicates: `swedish_members_of_parliament` has `UNIQUE (intressent_id)`, `swedish_member_activity` and the `riksdag_*` tables have primary keys on their natural keys. So, unlike macro-series, no later constraint rejects the data, the service's `V1` doesn't need a `SPRING_FLYWAY_TARGET`, and a checksum of each whole table is a fair comparison. The one sequence, `swedish_members_of_parliament_id_seq`, is owned by the table, so `pg_dump -t` includes it, and the baseline has the same name, so `setval` works. Compare it too: it is far past the row count, because every upsert uses a value. The baseline's seed rows have to go first, or the `COPY` fails on the primary keys, and the dump's own rows replace them. `TRUNCATE` names the tables together because of the foreign keys, and `pg_dump` orders the data so that `pg_restore` loads the parents first, with the foreign keys enforced, as the service's role.
 
-The order, from the repo root, with `DC="docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml"`. Not during the 22:00 hour (UTC in the containers), when the service's cron would start scraping into the new tables:
+Paste this in `bash`, from the repo root of a clone on the commit that has the service. It runs in a subshell and stops at the first failure with `RESTORE FAILED` and what to do next. The only write to `macroanalyzer` is the last monolith start's V37, after the checksums have matched, and that only deletes the two config rows and their queue rows. Everything before it writes to `parliament`, as a role that can't connect to `macroanalyzer`. The old monolith container stays stopped, not removed, until then, so `docker start` brings it back, on its old image, after a failure. The dump goes to a temporary directory outside the repo and is deleted at the end, whatever happens: the old tables stay the source until the follow-up PR. The block can be run again: it empties all six tables in `parliament` first. It refuses to run during the 22:00 hour (UTC in the containers), when the service's cron would start scraping into the new tables.
 
 ```bash
+(
+set -euo pipefail
+dc() { docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml "$@"; }
+tables="swedish_members_of_parliament swedish_member_activity riksdag_party riksdag_election riksdag_election_result riksdag_organ"
+checksums() {   # user, database
+  for t in $tables; do
+    docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U "$1" -d "$2" -At -c "SELECT '$t', count(*), md5(string_agg(md5(x::text), '' ORDER BY md5(x::text))) FROM $t x"
+  done
+  docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U "$1" -d "$2" -At -c "SELECT last_value, is_called FROM swedish_members_of_parliament_id_seq"
+}
+dump_dir=$(mktemp -d)
+old_tables_step=yes
+finish() {
+  rc=$?
+  rm -rf "$dump_dir"
+  if [ "$rc" -eq 0 ]; then echo "RESTORE OK"; exit 0; fi
+  echo "RESTORE FAILED (exit $rc). See the output above." >&2
+  if [ "$old_tables_step" = yes ]; then
+    echo "The monolith's old tables are unchanged. To go back to the old stack: docker stop macrohub-parliament; docker start macrohub-macro-analyzer" >&2
+    echo "Or fix the cause and run this block again." >&2
+  else
+    echo "The checksums matched and parliament is restored. Only starting the new monolith or frontend failed: fix the cause and run those two lines again." >&2
+  fi
+  exit "$rc"
+}
+trap finish EXIT
+
+[ "$(date -u +%H)" != 22 ] || { echo "Not during the 22:00 hour (UTC): the service's cron would start scraping" >&2; exit 1; }
+
+# Build first, while nothing has stopped. Without these images, Compose would bring back the old monolith
+(cd macro-backend && sh ./mvnw clean package && docker build -t macro-analyzer macro-analyzer && docker build -t parliament-service parliament-service)
+
 # The old tables stop changing: the monolith's cron is what writes them
 docker stop macrohub-macro-analyzer
 
@@ -137,28 +169,35 @@ docker stop macrohub-macro-analyzer
 docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh
 
 # Flyway creates the tables and the seed rows. Stop the service again before touching them
-$DC up -d --no-deps parliament
-until [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8084/macro-analyzer/parliament/parties)" = 200 ]; do sleep 2; done
+dc up -d --no-deps parliament
+attempts=0
+until [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8084/macro-analyzer/parliament/parties || true)" = 200 ]; do
+  attempts=$((attempts + 1))
+  if [ "$attempts" -ge 60 ]; then
+    docker logs --tail 30 macrohub-parliament >&2 || true
+    echo "parliament-service didn't answer within 2 minutes" >&2
+    exit 1
+  fi
+  sleep 2
+done
 docker stop macrohub-parliament
 
-docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only -t swedish_members_of_parliament -t swedish_member_activity -t riksdag_party -t riksdag_election -t riksdag_election_result -t riksdag_organ macroanalyzer > parliament.dump
-docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U parliament -d parliament -c 'TRUNCATE riksdag_party, riksdag_election, riksdag_election_result, riksdag_organ'
-docker exec -i macrohub-postgres pg_restore -U parliament --no-owner --exit-on-error --single-transaction -d parliament < parliament.dump
+docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only -t swedish_members_of_parliament -t swedish_member_activity -t riksdag_party -t riksdag_election -t riksdag_election_result -t riksdag_organ macroanalyzer > "$dump_dir/parliament.dump"
+docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U parliament -d parliament -c "TRUNCATE ${tables// /, }"
+docker exec -i macrohub-postgres pg_restore -U parliament --no-owner --exit-on-error --single-transaction -d parliament < "$dump_dir/parliament.dump"
 
-# Both must print the same six rows and the same sequence value
-for db in "macrouser macroanalyzer" "parliament parliament"; do set -- $db; echo "== $2"
-  for t in swedish_members_of_parliament swedish_member_activity riksdag_party riksdag_election riksdag_election_result riksdag_organ; do
-    docker exec macrohub-postgres psql -U "$1" -d "$2" -At -c "SELECT '$t', count(*), md5(string_agg(md5(x::text), '' ORDER BY md5(x::text))) FROM $t x"
-  done
-  docker exec macrohub-postgres psql -U "$1" -d "$2" -At -c "SELECT last_value, is_called FROM swedish_members_of_parliament_id_seq"
-done
+# All six tables and the sequence must match, or the monolith doesn't start
+diff <(checksums macrouser macroanalyzer) <(checksums parliament parliament)
+checksums parliament parliament
 
+old_tables_step=no
 docker start macrohub-parliament
-$DC up -d --no-deps macro-analyzer     # runs V37
-$DC up -d --build --no-deps macro-frontend
+dc up -d --no-deps macro-analyzer     # runs V37
+dc up -d --build --no-deps macro-frontend
+)
 ```
 
-V37 only deletes the two config rows and their queue rows, not the tables the dump reads. What has to come first is stopping the old monolith, so nothing writes them after the dump. No queue rows are copied: a pending row in the old queue (`status = 0`, none locally when this was written) is simply dropped, and the next cron or manual run enqueues again.
+A failed `diff` prints the rows that differ and exits there. The `TRUNCATE` covers the four seeded tables because the baseline's rows would otherwise fail the `COPY` on the primary keys, and the two others so that a second run works. No queue rows are copied: a pending row in the old queue (`status = 0`, none locally when this was written) is simply dropped, and the next cron or manual run enqueues again.
 
 ### Code
 
@@ -363,6 +402,7 @@ The extraction:
 - The tables moved with a new trigger function: `pg_dump -t` doesn't include `update_updated_column`, which the members table's trigger needs, so the baseline defines it. The checklist now says so. `pg_dump --schema-only` of the six tables is identical to the monolith's apart from the owner. The function differs only in line endings, because the monolith's migration was applied from a CRLF checkout.
 - `readParties` has no `ORDER BY`, and V24's `UPDATE` left SD last in the table. V22's seed order with V24 folded in would have moved SD on an empty database, with no difference in a checksum. The baseline seeds SD last, `ParliamentApplicationTests` pins it, and the checklist now says to look at the physical order. `/parliament/parties` and `/parliament/elections` on an empty database are byte for byte the running stack's.
 - **Parliament is restored**, unlike the two earlier services, as "Restoring parliament" describes. That block was run as written on a throwaway stack, only with the container names and ports replaced, starting from a copy of the local database at V36 and the old `macro-analyzer` image: all six checksums and the sequence (243072) matched, a 2.6 MB dump, under a second to restore, and the new monolith then ran V37 and loaded the colours 0.4 seconds after starting. There are no duplicates to consider, because every table has its natural key as a constraint.
+- The block's failures were tried the same way, with its image builds replaced by throwaway tags. A failed build stopped before anything else. A wrong `PARLIAMENT_DB_PASSWORD` in `.env` gave `RESTORE FAILED` with the service's log after 2 minutes. A checksum altered on purpose printed the differing row and stopped before the monolith started. In each case `macroanalyzer` stayed at V36 with 5 configs and the same checksum, the documented `docker stop` and `docker start` brought the old monolith back on its old image with `/parliament/parties` answering, and no dump was left behind. Running the block again after the failed checksum ended in `RESTORE OK`, with V37 applied and the old tables' checksum unchanged.
 - What a re-scrape would have changed, measured on an empty database: today, all 584 activity rows come back with the same values, keys and JSON, and 3,374 of 3,376 members have the same `member_data`, while `id`, `global_id`, `created`, `updated` and the sequence differ, so whole-table checksums differ. The local database holds no activity older than the latest two terms right now: all 584 rows were written by one run on 2026-11-01. So restoring protects little activity today. It does keep the members' identifiers, and the point about activity returns once a term has changed.
 - Compared through the new gateway with the running stack, on a restored copy: all 17 `/parliament/*` list requests (parties, elections, composition, members for all 11 election years, from 384 to 458 members each, and the unknown year and member cases), 295 member details (every third of the 584 members with activity, and every 28th of the other 2,792) and 690 election requests (every kommun, region and valkrets, with and without `?year=`, and the unknown cases) had the same status and bytes, 1,002 requests and 10 MB in all, except the two `/municipalities/elections` lists, which differed only in the order of parties with equal votes. Member details were a sample because each takes about a second on the running stack; the whole-table checksums cover the rest of the data they read.
 - This was the first real use of the Compose service name in `ELECTION_PARLIAMENT_URL`. On a start of the whole stack, the monolith was ready before parliament, its first attempt failed, and the next, 15 seconds later, logged `Loaded 11 party colours`. The monolith has no `depends_on` on parliament; the frontend does.

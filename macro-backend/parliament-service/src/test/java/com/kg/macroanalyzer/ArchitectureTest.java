@@ -65,7 +65,7 @@ class ArchitectureTest {
             .that().resideInAPackage(MODULE + "..")
             .and().resideOutsideOfPackages(MODULE + ".adaptors.postgres..", MODULE + ".jooq.generated..")
             .should().dependOnClassesThat().resideInAPackage(MODULE + ".jooq.generated..")
-            .as("only parliament' postgres adaptors use its jOOQ model");
+            .as("only parliament's postgres adaptors use its jOOQ model");
 
     // Ports are the contract the services implement and use, so they only refer to domain and port types
     @ArchTest
