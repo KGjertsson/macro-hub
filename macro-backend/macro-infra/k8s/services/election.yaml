@@ -1,0 +1,98 @@
+# One replica, and Recreate: scrapeLock is per process, so a second instance would scrape the same queue at the same time.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: election-service
+  namespace: macro-hub
+  labels:
+    app: election-service
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: election-service
+  template:
+    metadata:
+      labels:
+        app: election-service
+    spec:
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: election-service
+          # deploy.sh replaces IMAGE_TAG with the commit that build-images.sh built and imported
+          image: macro-hub/election-service:IMAGE_TAG
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8085
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres.macro-hub.svc.cluster.local:5432/election
+            - name: SPRING_DATASOURCE_USERNAME
+              value: election
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: election-db
+                  key: password
+            # Where election reads the party colours. Without an answer it uses Valmyndigheten's and keeps trying (ADR 0005)
+            - name: ELECTION_PARLIAMENT_URL
+              value: http://parliament-service.macro-hub.svc.cluster.local:8084
+            # Boot turns these two endpoints on by itself in a pod. Set here so that doesn't rest on its detection
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            # The heap may take 70% of the limit, leaving the rest for metaspace, threads and the code cache. Exit on an
+            # OutOfMemoryError, so it shows as a restart rather than a service that carries on with a dead thread
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError
+          # Flyway runs before this first answers
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          # Not the database: a Postgres restart shouldn't take the service out, as it reconnects by itself
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # 3 minutes without an answer, so a long scrape or a garbage collection doesn't get it killed. This can't catch
+          # a scrape stuck on a query that hangs (see "Database" in CLAUDE.md): the process still answers
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              # To be measured
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: election-service
+  namespace: macro-hub
+  labels:
+    app: election-service
+spec:
+  type: ClusterIP
+  selector:
+    app: election-service
+  ports:
+    - name: http
+      port: 8085
+      targetPort: http

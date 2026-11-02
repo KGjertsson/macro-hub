@@ -1,13 +1,16 @@
+# ClusterIP only: nothing outside the cluster connects to this Postgres. Use kubectl exec for maintenance.
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres
-  namespace: macro-analyzer
+  namespace: macro-hub
   labels:
     app: postgres
 spec:
-  type: NodePort
-  ports:
-    - port: 5432
+  type: ClusterIP
   selector:
     app: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres

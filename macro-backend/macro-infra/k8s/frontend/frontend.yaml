@@ -1,0 +1,74 @@
+# The gateway: nginx in the frontend image serves the bundle and proxies each /macro-analyzer route to its service
+# (ADR 0006). Its resolver ignores resolv.conf's search domains, so the names are fully qualified.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: macro-frontend
+  namespace: macro-hub
+  labels:
+    app: macro-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: macro-frontend
+  template:
+    metadata:
+      labels:
+        app: macro-frontend
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: macro-frontend
+          # deploy.sh replaces IMAGE_TAG with the commit that build-images.sh built and imported
+          image: macro-hub/macro-frontend:IMAGE_TAG
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            # scheme://host:port only: a trailing slash or a path makes every proxied request 404
+            - name: MACRO_SERIES_URL
+              value: http://macro-series-service.macro-hub.svc.cluster.local:8083
+            - name: REGIONAL_STATISTICS_URL
+              value: http://regional-statistics-service.macro-hub.svc.cluster.local:8082
+            - name: PARLIAMENT_URL
+              value: http://parliament-service.macro-hub.svc.cluster.local:8084
+            - name: ELECTION_URL
+              value: http://election-service.macro-hub.svc.cluster.local:8085
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
+---
+# NodePort, pinned so the URL stays the same when the Service is re-created
+apiVersion: v1
+kind: Service
+metadata:
+  name: macro-frontend
+  namespace: macro-hub
+  labels:
+    app: macro-frontend
+spec:
+  type: NodePort
+  selector:
+    app: macro-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30081

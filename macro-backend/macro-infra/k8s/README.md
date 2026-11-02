@@ -1,47 +1,133 @@
-## Ingress
-```
-1. microk8s enable ingress // enable ingress
-2. microk8s kubectl -n ingress get configmap // list config map
-3. microk8s kubectl -n ingress edit configmaps nginx-load-balancer-microk8s-conf // edit config map
-4. Add
-data:
-  use-forwarded-headers: "true"
-5. 
-```
+# Deploying macro-hub on microk8s
 
-## Configure pods on cluster using repo clone
-1. create namespace macro-analyzer: `k create namespace macro-analyzer`
-2. set the new namespace as active: `microk8s kubectl config set-context --current --namespace=macro-analyzer`
-3. run postgres container: ` k apply -f postgres/`
+The whole app in one namespace, `macro-hub`, on a single-node microk8s: Postgres 16, the four services, and the frontend, whose nginx is the gateway ([ADR 0006](../../../docs/adrs/0006-kubernetes-as-eventual-deployment-target.md)). Local development stays on Docker Compose (`CLAUDE.md`).
 
-## Status of these manifests
+**What these files don't manage:** the older namespace `macro-analyzer`, with its Postgres 13, its volume `postgres-pv` on `/mnt/data/postgres` and its NodePort 31274, and the namespace `gjertchenbot`. Every command here stays inside `macro-hub`, apart from the two PersistentVolumes named `macro-hub-*`.
 
-**The manifests have not caught up with the services, and nothing here deploys the application today.** `java/deployment.yaml` and `java/service.yaml` still describe the retired monolith: they name an image, `macro-analyzer:latest`, and a database, `macroanalyzer`, that no module builds or uses any more. With no such image imported, the pod stays in `ErrImageNeverPull`. The four services (`regional-statistics-service`, `macro-series-service`, `parliament-service`, `election-service`) have no manifests yet: that is step 6 of `docs/microservice-migration-guide.md`, which also lists what is wrong with the other files here. Until then, run the application with Docker Compose (see `CLAUDE.md`).
+| What | Where |
+| --- | --- |
+| The app | `http://localhost:30081` on this machine, also on the WSL2 address (`hostname -I`). A NodePort, pinned in `frontend/frontend.yaml` |
+| Postgres | `postgres.macro-hub.svc.cluster.local:5432`. ClusterIP only, no NodePort |
+| Data and dumps | `/mnt/data/macro-hub/postgres`, `/mnt/data/macro-hub/backups` (retained volumes) |
+| Database passwords | `~/.config/macro-hub/k8s-db-passwords.env`, outside the repo, generated once. Keep it |
 
-## Database URL
+## Before the first deployment
 
-The applications' defaults are the Compose Postgres, `localhost:5432`, which doesn't exist inside a pod, so a manifest has to set `SPRING_DATASOURCE_URL` to the cluster's Postgres, `192.168.154.7:31274`. 31274 is the Postgres service's NodePort. `postgres/postgres-service.yaml` doesn't pin it, so Kubernetes picked it, and it can change if the service is re-created.
+- microk8s with `dns` and `hostpath-storage`, and your user in the `microk8s` group (`kubernetes_setup.sh` installs this). No other addon is needed: this doesn't use Ingress.
+- JDK 25 (`~/.sdkman/candidates/java/current`, or set `JAVA_HOME`) and Docker.
+- The API keys in `macro-backend/macro-series-service/.env` (copy its `.env.example`).
 
-With microk8s running, the NodePort also answers on `localhost:31274`. To use the cluster's database from outside, pass the URL deliberately, with `SPRING_DATASOURCE_URL`. No default points there.
+## Bringing it up
 
-## Sources
- - [Run postgres on kubernetes](https://phoenixnap.com/kb/postgresql-kubernetes)
- - [Run kafka on kubernetes](https://phoenixnap.com/kb/kafka-on-kubernetes)
- - [Install microk8s on raspberry pis](https://ubuntu.com/tutorials/how-to-kubernetes-cluster-on-raspberry-pi#1-overview)
- - [Microk8s ingress](https://phoenixnap.com/kb/microk8s-ingress)
+From anywhere in the clone, on the commit you want to deploy:
 
-## Copied from higher readme
+```bash
+cd macro-backend/macro-infra/k8s
 
-### Apply postgres pods
+# 1. Build the images from the current commit and import them into microk8s. About 3 minutes
+./build-images.sh
 
-```
-k apply -f postgres/
+# 2. Create the namespace and the Secrets. Prints no values
+./create-secrets.sh
+
+# 3. Apply everything, in order, and wait for it. About 2 minutes
+./deploy.sh
 ```
 
-### Port forward db from microk8s to local
+Then look at it:
 
-Use a local port other than 5432. The applications default to `localhost:5432`, so forwarding the cluster's database to that port would connect them to it.
+```bash
+microk8s kubectl -n macro-hub get pods,svc,pvc,cronjob
+```
 
+A new database has its configs but no data. **Fill it once**, through the gateway, from the repo root. It calls the real external APIs with your keys:
+
+```bash
+macro-backend/macro-infra/scripts/scrape-all.sh http://localhost:30081
 ```
-k port-forward <pod-name> 15432:5432
+
+**Every service's cron also scrapes in the 22:00 UTC hour**, so the cluster and a running Compose stack both go to the same sources every night, from the same machine, with the same keys. Don't start a deployment or a manual scrape between 21:55 and 23:00 UTC.
+
+## Deploying a new version
+
+Commit, then `./build-images.sh` and `./deploy.sh`. The images are tagged with the commit, so `kubectl -n macro-hub get deploy -o wide` shows what runs. Older tags stay in Docker and in containerd until you remove them by hand: `docker rmi macro-hub/<name>:<tag>`.
+
+## Taking it down
+
+```bash
+./teardown.sh
 ```
+
+This removes what `deploy.sh` and `create-secrets.sh` made, by name. It keeps the namespace, both PersistentVolumes, their data and the passwords file, so `create-secrets.sh` and `deploy.sh` bring the same data back with no scrape. To delete the data as well, afterwards:
+
+```bash
+microk8s kubectl delete pv macro-hub-postgres-pv macro-hub-backups-pv
+sudo rm -rf /mnt/data/macro-hub
+rm ~/.config/macro-hub/k8s-db-passwords.env
+```
+
+## Backups
+
+A CronJob, `postgres-backup`, runs at 03:00 UTC and dumps each database with `pg_dump` to `/mnt/data/macro-hub/backups/<database>/<database>-<time>.dump`. It keeps the newest 7 per database, and a failed dump removes nothing. To run one now, and see the result:
+
+```bash
+microk8s kubectl -n macro-hub create job --from=cronjob/postgres-backup backup-by-hand
+microk8s kubectl -n macro-hub wait --for=condition=complete --timeout=600s job/backup-by-hand
+microk8s kubectl -n macro-hub logs job/backup-by-hand
+microk8s kubectl -n macro-hub delete job backup-by-hand
+```
+
+### Restoring a backup
+
+The Postgres pod mounts the dumps read-only at `/backups`.
+
+To look at a dump in a scratch database, without touching the service:
+
+```bash
+k() { microk8s kubectl -n macro-hub "$@"; }
+k exec deploy/postgres -- ls -l /backups/election
+k exec deploy/postgres -- sh -c 'createdb -U "$POSTGRES_USER" restore_check \
+  && pg_restore -U "$POSTGRES_USER" -d restore_check --no-owner --exit-on-error /backups/election/<file>.dump'
+k exec deploy/postgres -- sh -c 'psql -U "$POSTGRES_USER" -d restore_check -c "SELECT count(*) FROM local_election_area"'
+k exec deploy/postgres -- sh -c 'dropdb -U "$POSTGRES_USER" restore_check'
+```
+
+To replace a service's database (here `election`) with a dump. Stop the service first, re-create the database with the init script, which also restores who may connect, and then restore as its owner:
+
+```bash
+k scale deployment/election-service --replicas=0
+k exec deploy/postgres -- sh -c 'dropdb -U "$POSTGRES_USER" election'
+k exec -i deploy/postgres -- sh -s < ../docker/postgres-init/01-service-databases.sh
+k exec deploy/postgres -- sh -c 'pg_restore -U "$POSTGRES_USER" -d election --exit-on-error /backups/election/<file>.dump'
+k scale deployment/election-service --replicas=1
+```
+
+## Secrets
+
+`create-secrets.sh` makes these, and no value is in the repo:
+
+| Secret | Holds | Used by |
+| --- | --- | --- |
+| `postgres-bootstrap` | the bootstrap superuser's password and all four role passwords | Postgres (the init script), the backup job (only the superuser's) |
+| `<service>-db` (`regional-statistics-db`, `macro-series-db`, `parliament-db`, `election-db`) | that service's own password | that service |
+| `macro-series-api-keys` | the Riksbanken and Fed keys | `macro-series-service` only |
+
+Check them with `kubectl -n macro-hub describe secret <name>`, which shows sizes and no values.
+
+`deploy.sh` sets the roles' passwords on Postgres to the Secret's, every time. So to change passwords, or if the passwords file is lost, while keeping the data:
+
+```bash
+rm -f ~/.config/macro-hub/k8s-db-passwords.env   # if it still exists
+./create-secrets.sh
+# Pods read Secrets when they start, so Postgres first, to see the new values
+microk8s kubectl -n macro-hub rollout restart deployment/postgres
+./deploy.sh
+microk8s kubectl -n macro-hub rollout restart deployment/regional-statistics-service deployment/macro-series-service deployment/parliament-service deployment/election-service
+```
+
+## Limits to know
+
+- **One replica each.** `scrapeLock` is per process, so a second instance would scrape the same queue at the same time. Service and Postgres Deployments use `strategy: Recreate`, so there is a short gap during a deploy.
+- **The gateway has no authentication,** and anyone who can reach port 30081 can trigger scrapes ([ADR 0004](../../../docs/adrs/0004-keep-manual-scrape-endpoints-public-for-now.md)).
+- **A query that hangs isn't noticed.** With no `socketTimeout`, a service whose database host vanishes without closing its connections keeps `scrapeLock` until it is restarted ("Database" in `CLAUDE.md`). On one node, Postgres goes down with the services, so this is unlikely. A liveness probe wouldn't help, because the process still answers.
+- **A hostPath doesn't enforce the volume's size,** and images aren't protected from the kubelet's image garbage collection under disk pressure. If a pod says `ErrImageNeverPull`, run `./build-images.sh` again.

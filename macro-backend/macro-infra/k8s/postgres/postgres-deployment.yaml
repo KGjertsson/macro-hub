@@ -2,29 +2,90 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  namespace: macro-analyzer
+  namespace: macro-hub
+  labels:
+    app: postgres
 spec:
+  replicas: 1
+  # Two Postgres processes must never share a data directory
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: postgres
-  replicas: 1
   template:
     metadata:
       labels:
         app: postgres
     spec:
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 120
       containers:
         - name: postgres
-          image: postgres:13
+          image: postgres:16
+          imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 5432
+            - name: postgres
+              containerPort: 5432
+          env:
+            # No application database: the init script creates one per service. Unset, the image would create one named
+            # after POSTGRES_USER
+            - name: POSTGRES_DB
+              value: postgres
+            # The bootstrap superuser, for the init script, maintenance and backups. No service logs in with it
+            - name: POSTGRES_USER
+              value: macrouser
           envFrom:
-            - configMapRef:
-                name: postgres-config
+            # POSTGRES_PASSWORD, and the role passwords the init script reads. create-secrets.sh makes this Secret
+            - secretRef:
+                name: postgres-bootstrap
+          # All three go through TCP, because during an empty volume's init scripts Postgres only answers on its socket,
+          # and against the maintenance database, which always exists
+          startupProbe:
+            exec:
+              command: [ "sh", "-c", "pg_isready -h 127.0.0.1 -U \"$POSTGRES_USER\" -d postgres" ]
+            periodSeconds: 5
+            timeoutSeconds: 5
+            # 10 minutes, for initdb on an empty volume or crash recovery after a hard stop
+            failureThreshold: 120
+          readinessProbe:
+            exec:
+              command: [ "sh", "-c", "pg_isready -h 127.0.0.1 -U \"$POSTGRES_USER\" -d postgres" ]
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: [ "sh", "-c", "pg_isready -h 127.0.0.1 -U \"$POSTGRES_USER\" -d postgres" ]
+            periodSeconds: 30
+            timeoutSeconds: 10
+            # 3 minutes without an answer, so a heavy SCB write doesn't get it killed
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
           volumeMounts:
-            - name: postgres-storage
+            - name: data
               mountPath: /var/lib/postgresql/data
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+            # So a dump can be restored with kubectl exec, see "Restoring a backup" in the README
+            - name: backups
+              mountPath: /backups
+              readOnly: true
       volumes:
-        - name: postgres-storage
+        - name: data
           persistentVolumeClaim:
             claimName: postgres-pvc
+        - name: backups
+          persistentVolumeClaim:
+            claimName: postgres-backups-pvc
+        # deploy.sh makes this from docker/postgres-init/01-service-databases.sh, the same script Compose mounts
+        - name: init
+          configMap:
+            name: postgres-init
+            defaultMode: 0555
