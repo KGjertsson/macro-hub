@@ -34,17 +34,17 @@ class ArchitectureTest {
     static final String ROOT = "com.kg.macroanalyzer";
 
     // Modules that follow the domain / application / adaptors layout
-    private static final List<String> MODULES = List.of("scrape", "parliament", "election");
+    private static final List<String> MODULES = List.of("scrape", "election");
 
     // Modules holding one business domain. They build on scrape, shared and the jOOQ model, and are only used from
     // outside where DOMAIN_MODULE_EXTRA_DEPENDENCIES allows it
-    private static final List<String> DOMAIN_MODULES = List.of("parliament", "election");
+    private static final List<String> DOMAIN_MODULES = List.of("election");
 
     // What every domain module may use besides itself and classes outside the application
     private static final List<String> DOMAIN_MODULE_DEPENDENCIES = List.of("scrape", "shared", "jooq.generated");
 
     // What a module may use of other domain modules, on top of DOMAIN_MODULE_DEPENDENCIES. Only in-ports and domain
-    // types, never another module's out-ports, services or adaptors. None today: election reads parliament over HTTP
+    // types, never another module's out-ports, services or adaptors. None today: election reads the parliament service over HTTP
     private static final Map<String, List<String>> DOMAIN_MODULE_EXTRA_DEPENDENCIES = Map.of();
 
     // Modules every other module may use, and which use none of them

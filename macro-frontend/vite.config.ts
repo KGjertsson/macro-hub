@@ -7,7 +7,7 @@ import { componentTagger } from "lovable-tagger";
 // monolith on :8080 for the rest. Order matters: the first key that the request path starts with wins.
 const MACRO_SERIES_URL = "http://localhost:8083";
 const REGIONAL_STATISTICS_URL = "http://localhost:8082";
-const PARLIAMENT_URL = "http://localhost:8080";
+const PARLIAMENT_URL = "http://localhost:8084";
 const ELECTION_URL = "http://localhost:8080";
 const BACKEND_URL = "http://localhost:8080";
 
@@ -18,6 +18,7 @@ const proxy = {
   "/macro-analyzer/regional-statistics/": REGIONAL_STATISTICS_URL,
   "/macro-analyzer/scrape/regional-statistics/": REGIONAL_STATISTICS_URL,
   "/macro-analyzer/parliament/": PARLIAMENT_URL,
+  "/macro-analyzer/scrape/parliament/": PARLIAMENT_URL,
   "/macro-analyzer/municipalities/": ELECTION_URL,
   "/macro-analyzer/regions/": ELECTION_URL,
   "/macro-analyzer/constituencies/": ELECTION_URL,

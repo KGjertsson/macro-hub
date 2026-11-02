@@ -11,6 +11,7 @@ services:
       # Read by postgres-init/ on an empty volume. An existing volume needs that script run by hand, see the guide
       REGIONAL_STATISTICS_DB_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
       MACRO_SERIES_DB_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
+      PARLIAMENT_DB_PASSWORD: ${PARLIAMENT_DB_PASSWORD:-parliamentpassword}
     ports:
       - "5432:5432"
     volumes:

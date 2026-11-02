@@ -39,7 +39,7 @@ public class RefreshingPartyColorAdaptor implements PartyColorPort, AutoCloseabl
         return colors;
     }
 
-    // Not earlier: in the monolith the endpoint is this application, which listens from here on
+    // On its own thread, so start-up never waits for parliament, which may not be up yet
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
         schedule(Duration.ZERO);

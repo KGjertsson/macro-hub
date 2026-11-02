@@ -22,6 +22,8 @@ With microk8s running, the NodePort also answers on `localhost:31274`. To use th
 
 ## Java
 
+`java/deployment.yaml` only runs the monolith, which is what's left there of the API: the services that have moved (`regional-statistics-service`, `macro-series-service`, `parliament-service`) have no manifests until step 6 of `docs/microservice-migration-guide.md`. So in the cluster `/parliament/*` answers 404, and election uses Valmyndigheten's party colours, as it has no `ELECTION_PARLIAMENT_URL` to reach.
+
 Build new image and make available to microk8s:
 
 From `macro-backend/`:

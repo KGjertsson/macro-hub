@@ -17,7 +17,7 @@ FROM nginx:1.27-alpine
 # makes nginx exit at startup. The resolver is read from /etc/resolv.conf (Docker: 127.0.0.11).
 ENV MACRO_SERIES_URL=http://macro-series:8083 \
     REGIONAL_STATISTICS_URL=http://regional-statistics:8082 \
-    PARLIAMENT_URL=http://macro-analyzer:8080 \
+    PARLIAMENT_URL=http://parliament:8084 \
     ELECTION_URL=http://macro-analyzer:8080 \
     BACKEND_URL=http://macro-analyzer:8080 \
     NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1

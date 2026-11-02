@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.*;
+import static com.kg.macroanalyzer.parliament.jooq.generated.Tables.*;
 
 @Repository
 public class RiksdagElectionRepository {

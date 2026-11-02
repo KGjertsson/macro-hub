@@ -1,10 +1,10 @@
 ## marco-analyzer
 
 Java backend application for macro-hub. Built using domain driven design principles and the
-hexagonal architecture, split into one module per domain (`parliament`, `election`)
-plus the `scrape` core and `shared` infrastructure, which are built in the sibling Maven module
-`macro-platform`. `regionalstatistics` and `macroseries` have moved to the siblings
-`regional-statistics-service` and `macro-series-service`, and the other domains follow (see `docs/microservice-migration-guide.md`). See
+hexagonal architecture. What is left here is the `election` module, on top of the `scrape` core and
+`shared` infrastructure, which are built in the sibling Maven module `macro-platform`.
+`regionalstatistics`, `macroseries` and `parliament` have moved to the siblings
+`regional-statistics-service`, `macro-series-service` and `parliament-service`, and `election` follows (see `docs/microservice-migration-guide.md`). See
 [ARCHITECTURE.md](ARCHITECTURE.md) and the "Architecture" section of the repository's `CLAUDE.md`.
 
 Inside every module:
@@ -43,7 +43,7 @@ flowchart LR
 
 ```mermaid
 erDiagram
-    SERIES_CONFIG ||--}| MEMBERS_OF_PARLIAMENT : configures
+    SERIES_CONFIG ||--}| LOCAL_ELECTION_AREA : configures
     
     SERIES_CONFIG {
         integer id
@@ -61,13 +61,13 @@ erDiagram
         string scrape_flow
     }
     
-    MEMBERS_OF_PARLIAMENT {
-        integer id
-        uuid global_id
-        string member_name
-        jsonb member_data
-        datetime created
-        datetime updated
+    LOCAL_ELECTION_AREA {
+        string election_type
+        integer election_year
+        string area_code
+        string area_name
+        integer total_seats
+        string source_md5
     }
 ```
 
@@ -88,7 +88,7 @@ only use it on purpose. `BaseConfigurationTest` keeps the defaults away from it.
 ### Maven
 
 The reactor root is `macro-backend/`, the parent of this module, `macro-platform`,
-`regional-statistics-service` and `macro-series-service`. Run Maven there.
+`regional-statistics-service`, `macro-series-service` and `parliament-service`. Run Maven there.
 
 generate the jooq models of this module and `macro-platform`, from a database at the latest migration. The default is the Compose
 Postgres, `localhost:5432/macroanalyzer`. For any other database, add `-Djooq.codegen.url=...`.
@@ -99,3 +99,9 @@ mvn -P jooq-codegen compile
 
 Flyway migrations (`src/main/resources/db/migration/`) run on application startup; there is no Flyway
 Maven plugin.
+
+### Party colours
+
+Election reads the Riksdag parties' colours from `parliament-service` (`election.parliament.url`, default
+`http://localhost:8084`), cached in memory. It starts without that service, uses Valmyndigheten's colours and keeps
+trying every 15 seconds until the list has loaded.
