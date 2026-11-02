@@ -5,13 +5,18 @@ services:
     image: postgres:16
     container_name: macrohub-postgres
     environment:
-      POSTGRES_DB: macroanalyzer
+      # No application database: postgres-init/ creates one per service. Without this the image would create one named
+      # after POSTGRES_USER. An existing volume ignores all three
+      POSTGRES_DB: postgres
+      # The image's bootstrap superuser, for the init script and maintenance. No service logs in with it. It keeps its
+      # name because an existing volume has this role, and the init script connects as POSTGRES_USER
       POSTGRES_USER: macrouser
       POSTGRES_PASSWORD: macropassword
       # Read by postgres-init/ on an empty volume. An existing volume needs that script run by hand, see the guide
       REGIONAL_STATISTICS_DB_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
       MACRO_SERIES_DB_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
       PARLIAMENT_DB_PASSWORD: ${PARLIAMENT_DB_PASSWORD:-parliamentpassword}
+      ELECTION_DB_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
     ports:
       - "5432:5432"
     volumes:
@@ -23,24 +28,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-
-  macro-analyzer:
-    image: macro-analyzer:latest
-    container_name: macrohub-macro-analyzer
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/macroanalyzer
-      SPRING_DATASOURCE_USERNAME: macrouser
-      SPRING_DATASOURCE_PASSWORD: macropassword
-      SPRING_JOOQ_SQL_DIALECT: POSTGRES
-      SPRING_PROFILES_ACTIVE: prod
-      # Where election reads the party colours. No depends_on: it starts without parliament, uses Valmyndigheten's
-      # colours and keeps trying until the list has loaded (ADR 0005)
-      ELECTION_PARLIAMENT_URL: http://parliament:8084
-    ports:
-      - "8080:8080"
 
   regional-statistics:
     image: regional-statistics-service:latest
@@ -85,15 +72,31 @@ services:
     ports:
       - "8084:8084"
 
+  election:
+    image: election-service:latest
+    container_name: macrohub-election
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/election
+      SPRING_DATASOURCE_USERNAME: election
+      SPRING_DATASOURCE_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
+      # Where election reads the party colours. No depends_on: it starts without parliament, uses Valmyndigheten's
+      # colours and keeps trying until the list has loaded (ADR 0005)
+      ELECTION_PARLIAMENT_URL: http://parliament:8084
+    ports:
+      - "8085:8085"
+
   macro-frontend:
     build: ../../../macro-frontend
     image: macro-frontend:latest
     container_name: macrohub-macro-frontend
     depends_on:
-      - macro-analyzer
       - regional-statistics
       - macro-series
       - parliament
+      - election
     environment:
       # nginx proxies each /macro-analyzer route here, so the browser only talks to :8081
       # scheme://host:port only: a trailing slash or path makes every proxied request 404
@@ -101,9 +104,7 @@ services:
       MACRO_SERIES_URL: http://macro-series:8083
       REGIONAL_STATISTICS_URL: http://regional-statistics:8082
       PARLIAMENT_URL: http://parliament:8084
-      ELECTION_URL: http://macro-analyzer:8080
-      # The catch-all /macro-analyzer/, which also carries the monolith's manual scrape endpoints
-      BACKEND_URL: http://macro-analyzer:8080
+      ELECTION_URL: http://election:8085
     ports:
       - "8081:80"
 

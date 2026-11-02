@@ -18,8 +18,8 @@ import java.util.List;
 
 @Slf4j
 @RestController
-// Every service has its own prefix for the gateway to route on. The default is the monolith's, until step 5 of the migration
-@RequestMapping("${macro.scrape.path-prefix:macro-analyzer}")
+// Every service sets its own prefix for the gateway to route on. There is no default: a service without one doesn't start
+@RequestMapping("${macro.scrape.path-prefix}")
 public class InsertionAdaptor {
 
     private final InPort inPort;

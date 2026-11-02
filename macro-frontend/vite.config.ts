@@ -3,13 +3,12 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// Backends per route, the same split as nginx/default.conf.template: the moved services, and the
-// monolith on :8080 for the rest. Order matters: the first key that the request path starts with wins.
+// Backends per route, the same split as nginx/default.conf.template. Order matters: the first key that matches the
+// request path wins.
 const MACRO_SERIES_URL = "http://localhost:8083";
 const REGIONAL_STATISTICS_URL = "http://localhost:8082";
 const PARLIAMENT_URL = "http://localhost:8084";
-const ELECTION_URL = "http://localhost:8080";
-const BACKEND_URL = "http://localhost:8080";
+const ELECTION_URL = "http://localhost:8085";
 
 const proxy = {
   "/macro-analyzer/series-config": MACRO_SERIES_URL,
@@ -22,8 +21,10 @@ const proxy = {
   "/macro-analyzer/municipalities/": ELECTION_URL,
   "/macro-analyzer/regions/": ELECTION_URL,
   "/macro-analyzer/constituencies/": ELECTION_URL,
-  // The monolith's manual enqueue and scrape endpoints, and anything else
-  "/macro-analyzer/": BACKEND_URL,
+  "/macro-analyzer/scrape/election/": ELECTION_URL,
+  // Any other API path answers 404, like nginx. bypass returning false does that, so nothing reaches the target; without
+  // this entry the dev server would answer a GET with index.html and a 200
+  "^/macro-analyzer(/|\\?|$)": { target: ELECTION_URL, bypass: () => false as const },
 };
 
 // https://vitejs.dev/config/

@@ -14,25 +14,15 @@ data:
 2. set the new namespace as active: `microk8s kubectl config set-context --current --namespace=macro-analyzer`
 3. run postgres container: ` k apply -f postgres/`
 
+## Status of these manifests
+
+**The manifests have not caught up with the services, and nothing here deploys the application today.** `java/deployment.yaml` and `java/service.yaml` still describe the retired monolith: they name an image, `macro-analyzer:latest`, and a database, `macroanalyzer`, that no module builds or uses any more. With no such image imported, the pod stays in `ErrImageNeverPull`. The four services (`regional-statistics-service`, `macro-series-service`, `parliament-service`, `election-service`) have no manifests yet: that is step 6 of `docs/microservice-migration-guide.md`, which also lists what is wrong with the other files here. Until then, run the application with Docker Compose (see `CLAUDE.md`).
+
 ## Database URL
 
-The application's defaults are the Compose Postgres, `localhost:5432`, which doesn't exist inside a pod. So `java/deployment.yaml` sets `SPRING_DATASOURCE_URL` to the cluster's Postgres, `192.168.154.7:31274`. 31274 is the Postgres service's NodePort. `postgres/postgres-service.yaml` doesn't pin it, so Kubernetes picked it, and it can change if the service is re-created: then update the manifest. Run `k apply -f java/` before deploying the next image: on a Deployment without this setting, the pod falls back to `localhost:5432` and fails to start.
+The applications' defaults are the Compose Postgres, `localhost:5432`, which doesn't exist inside a pod, so a manifest has to set `SPRING_DATASOURCE_URL` to the cluster's Postgres, `192.168.154.7:31274`. 31274 is the Postgres service's NodePort. `postgres/postgres-service.yaml` doesn't pin it, so Kubernetes picked it, and it can change if the service is re-created.
 
-With microk8s running, the NodePort also answers on `localhost:31274`. To use the cluster's database from outside, pass the URL deliberately, for example `SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.154.7:31274/macroanalyzer`.
-
-## Java
-
-`java/deployment.yaml` only runs the monolith, which is what's left there of the API: the services that have moved (`regional-statistics-service`, `macro-series-service`, `parliament-service`) have no manifests until step 6 of `docs/microservice-migration-guide.md`. So in the cluster `/parliament/*` answers 404, and election uses Valmyndigheten's party colours, as it has no `ELECTION_PARLIAMENT_URL` to reach.
-
-Build new image and make available to microk8s:
-
-From `macro-backend/`:
-
-```
-mvn clean package
-sudo docker build -t macro-analyzer:latest macro-analyzer
-sudo docker save macro-analyzer:latest | microk8s ctr image import -
-```
+With microk8s running, the NodePort also answers on `localhost:31274`. To use the cluster's database from outside, pass the URL deliberately, with `SPRING_DATASOURCE_URL`. No default points there.
 
 ## Sources
  - [Run postgres on kubernetes](https://phoenixnap.com/kb/postgresql-kubernetes)
@@ -41,27 +31,6 @@ sudo docker save macro-analyzer:latest | microk8s ctr image import -
  - [Microk8s ingress](https://phoenixnap.com/kb/microk8s-ingress)
 
 ## Copied from higher readme
-
-
-### Build docker image
-
-From `macro-backend/`, after `mvn clean package`:
-
-```
-sudo docker build -t macro-analyzer:latest macro-analyzer
-```
-
-### Run docker image
-
-```
-docker run -e SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:<port>/macroanalyzer -p 8080:8080 macro-analyzer
-```
-
-### Upload build docker image to local microk8s storage
-
-```
-sudo docker save macro-analyzer:latest | microk8s ctr image import -
-```
 
 ### Apply postgres pods
 

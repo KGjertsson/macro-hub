@@ -1,3 +1,6 @@
+# Out of date, and not deployable as it is: the image macro-analyzer:latest and the database macroanalyzer belong to the
+# monolith, which step 5 of docs/microservice-migration-guide.md retired, and no module builds that image any more.
+# Step 6 of the guide replaces this file with manifests for the four services.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,6 +25,3 @@ spec:
             # The application's defaults are the Compose Postgres, so the cluster's database is named here
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://192.168.154.7:31274/macroanalyzer
-            # ELECTION_PARLIAMENT_URL isn't set, because parliament-service has no manifest yet (step 6 of the migration
-            # guide). Until then the default, localhost:8084, answers nothing in the pod: election starts and answers
-            # with Valmyndigheten's colours, and logs a warning at each 15 second retry

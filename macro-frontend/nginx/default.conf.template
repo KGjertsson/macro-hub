@@ -9,7 +9,7 @@ server {
     # is not up yet, and picks up a new address when its container is recreated.
     resolver ${NGINX_LOCAL_RESOLVERS} valid=10s ipv6=off;
 
-    # Settings of every /macro-analyzer route below. A location inherits these as long as it sets none
+    # Settings of every proxied /macro-analyzer route below. A location inherits these as long as it sets none
     # of the same directive itself.
     proxy_http_version 1.1;
     proxy_set_header Host $host;
@@ -66,10 +66,17 @@ server {
         proxy_pass $backend;
     }
 
-    # Everything else, which includes the monolith's manual enqueue and scrape endpoints
-    location /macro-analyzer/ {
-        set $backend ${BACKEND_URL};
+    location /macro-analyzer/scrape/election/ {
+        set $backend ${ELECTION_URL};
         proxy_pass $backend;
+    }
+
+    # Any other API path, for every method. Without these it would fall through to location / and get index.html with a 200
+    location /macro-analyzer/ {
+        return 404;
+    }
+    location = /macro-analyzer {
+        return 404;
     }
 
     # Hashed build assets never change, so they can be cached indefinitely
