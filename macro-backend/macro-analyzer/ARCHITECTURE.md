@@ -33,13 +33,13 @@ Allowed dependencies between modules:
   parliament, election                                   --> scrape, shared, jooq.generated
   regionalstatistics, macroseries                        --> scrape, shared (and the model inside each)
   scrape                                                 --> shared, platform.jooq.generated
-  election                                               --> parliament.application.port.in (PartyDirectory)
-                                                             parliament.domain (Party)
   shared                                                 --> no module; platform.jooq.generated
 ```
 
-The election edge is the only one between domain modules. No module uses another module's out-ports,
-services or adaptors.
+No domain module uses another's code, whether out-ports, services, adaptors or in-ports. The one runtime link is
+over HTTP: election reads the Riksdag parties' colours from `GET /macro-analyzer/parliament/parties`, cached in memory
+and refreshed in the background (`election.adaptors.web.RefreshingPartyColorAdaptor` behind the out-port
+`PartyColorPort`, see ADR 0005). `macro-backend/contracts/parliament-parties.json` pins the fields it reads.
 
 ## Inside a module
 

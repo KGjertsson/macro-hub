@@ -165,7 +165,7 @@ The backend is split into **modules by domain**. Inside each module it follows *
       Preparer ──→ ExistingFinder ──→ Scraper ──→ WebPort ←── adaptors.web ──→ external API
                                       Persister ──→ port.out, then ScrapeQueuePort.markAsDone
 
-  election ──→ parliament.application.port.in (PartyDirectory), parliament.domain (Party)
+  election ──→ PartyColorPort ←── adaptors.web ──→ GET /macro-analyzer/parliament/parties (cached, refreshed in the background)
 ```
 
 ### Package structure (`com.kg.macroanalyzer`)
@@ -189,14 +189,14 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
   - `adaptors/http/` — `RegionalStatisticsController` (`/regional-statistics/*`); `adaptors/postgres/` — `RegionalStatisticsPostgresAdaptor` and `ScbRegionalRepository`; `adaptors/web/` — SCB web adaptors, rate limiter, retry, connection builder and JSON-stat parsers; `adaptors/config/` — the SCB web beans and the scrape flow
 - **`parliament/`** — Riksdagen members, activity, parties and elections:
   - `domain/` — `MemberOfParliament`, `MemberActivity`, `Party`, `Election` and the other Riksdagen value types, `ParliamentScrapeFlows` (the `MEMBER_OF_PARLIAMENT` and `MEMBER_ACTIVITY` flow ids)
-  - `application/port/in/` — `ParliamentQueries` (parties, elections, composition, members) and its DTOs, and `PartyDirectory` (the `Party` records, for the election code's party colours); `application/port/out/` — `ParliamentRepositoryPort`, the scrape payloads `ConfigWithMemberOfParliament`/`ConfigWithMemberActivity` and `MemberActivityRequest`
+  - `application/port/in/` — `ParliamentQueries` (parties, elections, composition, members) and its DTOs; `application/port/out/` — `ParliamentRepositoryPort`, the scrape payloads `ConfigWithMemberOfParliament`/`ConfigWithMemberActivity` and `MemberActivityRequest`
   - `application/service/` — `ParliamentService` (implements both in-ports), and in `scrape/` the member and member-activity finders, scrapers and persisters
   - `adaptors/http/` — `ParliamentController` (`/parliament/*`); `adaptors/postgres/` — `ParliamentPostgresAdaptor`, `SweParMemberRepository`, `SweParActivityRepository` and `RiksdagElectionRepository`; `adaptors/web/` — `MembersOfParliamentWebAdaptor`, `RiksdagenActivityWebAdaptor`, the Riksdagen connection builders and response parsers; `adaptors/config/` — the Riksdagen web beans and both scrape flows
 - **`election/`** — Valmyndigheten kommun (KF), region (RF) and Riksdag valkrets (RD) elections:
   - `domain/` — `LocalElectionType`, `LocalElectionResult`, `LocalPartyResult`, `ElectedMember`, `Governance`, `ElectionScrapeFlows` (the `LOCAL_ELECTION` flow id)
-  - `application/port/in/` — `ElectionQueries` (results per type and year, one area's detail) and its DTOs; `application/port/out/` — `ElectionRepositoryPort`, the scrape payload `ConfigWithLocalElections`, `LocalElectionIndexRequest` and `LocalElectionFile`
-  - `application/service/` — `LocalElectionService` (party colours come from parliament's `PartyDirectory`), and in `scrape/` `ExistingLocalElectionFinder`, `LocalElectionScraper` and `LocalElectionPersister`
-  - `adaptors/http/` — `ElectionController` (`/municipalities/*`, `/regions/*`, `/constituencies/*`); `adaptors/postgres/` — `ElectionPostgresAdaptor` and `LocalElectionRepository`; `adaptors/web/` — the Valmyndigheten index and result web adaptors, retry, connection builder and parsers; `adaptors/config/` — the Valmyndigheten web beans and the scrape flow
+  - `application/port/in/` — `ElectionQueries` (results per type and year, one area's detail) and its DTOs; `application/port/out/` — `ElectionRepositoryPort`, `PartyColorPort`, the scrape payload `ConfigWithLocalElections`, `LocalElectionIndexRequest` and `LocalElectionFile`
+  - `application/service/` — `LocalElectionService` (party colours come from `PartyColorPort`), and in `scrape/` `ExistingLocalElectionFinder`, `LocalElectionScraper` and `LocalElectionPersister`
+  - `adaptors/http/` — `ElectionController` (`/municipalities/*`, `/regions/*`, `/constituencies/*`); `adaptors/postgres/` — `ElectionPostgresAdaptor` and `LocalElectionRepository`; `adaptors/web/` — `RefreshingPartyColorAdaptor` and `ParliamentPartiesClient` (party colours over REST), the Valmyndigheten index and result web adaptors, retry, connection builder and parsers; `adaptors/config/` — the Valmyndigheten web beans and the scrape flow
 - **`shared/`** (Maven module `macro-platform`) — used by every module, depends on none of them: `config/` (CORS, Jackson, JDBC, Flyway catalog version) and `web/` (`WebPort`, `ScrapeException`, `WebAdaptorFlow`, `ConnectionBuilder`/`Getter`/`ResponseParser`, `HttpGetter`, `ZipEntryGetter`, `HttpResponses`)
   - Jackson 3 (`tools.jackson`) is used throughout. `JacksonConfiguration` (in `shared/config/`) defines the `JsonMapper` bean, which Boot's MVC auto-config uses for the message converter; don't add `@EnableWebMvc`, which would turn that auto-config off. The bean keeps `WRITE_DATES_AS_TIMESTAMPS` enabled because the frontend expects date labels as arrays (`[1994,6]`).
   - The backend is JSON-only, so `spring.web.resources.add-mappings=false` (base `application.properties`, every profile) turns off Boot's `/**` and `/webjars/**` resource handlers: nothing on a static location is served, and unknown paths answer 404 for every method, also CORS requests (the handler would answer them with 200 or 403). `NoStaticResourceHandlersHttpTest` pins this
@@ -205,7 +205,7 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
 ### Layers inside a module
 
 - `domain/` — records and enums of the domain (Lombok only, no Spring).
-- `application/port/in/` — what the module offers: query interfaces (`*Queries`, `InPort`, `PartyDirectory`) and their DTOs/parameters.
+- `application/port/in/` — what the module offers: query interfaces (`*Queries`, `InPort`) and their DTOs/parameters.
 - `application/port/out/` — what the module needs: repository ports (`*RepositoryPort`) and the request/config-with-data records its scrapers pass around.
 - `application/service/` — implementations of the in-ports; `application/service/scrape/` holds the module's `ExistingFinder`/`Scraper`/`Persister`.
 - `adaptors/http/` (controllers), `adaptors/postgres/` (`*PostgresAdaptor` implementing the repository port, plus jOOQ repositories), `adaptors/web/` (`WebPort` implementations, connection builders, response parsers), `adaptors/config/` (`*WebAdaptorConfiguration` for the `WebPort` beans, `*ScrapeFlowConfiguration` for the scrape flow), `adaptors/cron/` (scrape only).
@@ -221,7 +221,7 @@ Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTes
 - every class except `MacroAnalyzerApplication` resides in a module listed in `MODULES`/`SHARED_MODULES` or in `GENERATED_PACKAGES` (`jooq.generated`, `platform.jooq.generated`);
 - `shared` depends on no module;
 - a module's `domain` and `application` do not depend on its `adaptors`, and no `application.port` depends on any module's `application.service` (`scrape`'s included);
-- a domain module (`DOMAIN_MODULES`) only depends on itself, `scrape`, `shared` and `jooq.generated`, plus what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows. The only entry is `election` → `parliament.application.port.in` and `parliament.domain` (for `PartyDirectory`/`Party`); no module may use another module's out-ports, services or adaptors.
+- a domain module (`DOMAIN_MODULES`) only depends on itself, `scrape`, `shared` and `jooq.generated`, plus what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows, which today is nothing: domain modules don't use each other's code, and election reads parliament's party list over HTTP (see "Kommun, region and Riksdag elections"). No module may use another module's out-ports, services or adaptors.
 
 ### Adding a new domain
 
@@ -265,6 +265,8 @@ Each application has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTes
 - `scrape_url` (`.../resultatfiler/val2026`) selects the election; point it at the next election's folder with a migration. Gotland has no regionfullmäktige
 - Who governs (`local_governance`) has no open data source and starts empty; add rows by migration (party abbreviations as in the results). The frontend only shows the "styre" section where a row exists
 - Configs use category `Valmyndigheten` and flow `LOCAL_ELECTION`. They are in the monolith's database too, so they are not in `/series-config` either
+- Riksdag parties get the colours of parliament's `GET /macro-analyzer/parliament/parties` ([ADR 0005](docs/adrs/0005-cached-rest-between-services-and-no-message-broker.md)); other parties keep Valmyndigheten's colour, then gray. `RefreshingPartyColorAdaptor` (behind `PartyColorPort`) holds the list in memory, so a request never calls parliament. `ParliamentPartiesClient` fetches it on the adaptor's own daemon thread, independent of `scheduler.enabled`: first when the application is ready, then every `election.parliament.refresh-interval` (1h), or every `retry-interval` (15s) until a first list has loaded. `timeout` (5s) covers the whole exchange. A failed refresh, a 204 or an empty list keeps the list held; with no list, Valmyndigheten's colours are used. `election.parliament.url` (env `ELECTION_PARLIAMENT_URL`) defaults to the monolith itself, `http://localhost:8080`, so set it if the monolith runs on another port
+- `macro-backend/contracts/parliament-parties.json` is the contract for that endpoint: the fields election reads. `ParliamentPartiesClientTest` and `PartiesContractHttpTest` hold each side to it, using only the file and HTTP. Changing `code` or `color` needs care, because `/parliament/parties` is an API between services
 
 ### SCB regional statistics (DeSO / RegSO)
 
@@ -287,7 +289,7 @@ Chart series in `macro_series`' `series_configuration` carry picker metadata, re
 - JUnit 5 + Mockito for unit tests
 - TestContainers (PostgreSQL) for integration tests — Docker must be running for `mvn test`
 - Each Maven module has its own tests. `macro-platform` has the unit tests of `scrape` and `shared`. `SeriesConfigRepositoryTest` and `NoStaticResourceHandlersHttpTest` are in those packages but stay in `macro-analyzer`, because they need the application and its migrations (each service has its own copy of the latter). `TestSeriesConfigFactory` and `TestJsonReader` exist in several modules: a shared test-jar would be on the classpath as a jar, and `ArchitectureTest`'s `DoNotIncludeTests` would then import its classes as production code
-- `ArchitectureTest` (ArchUnit, one in each application) imports all of `com.kg.macroanalyzer` from the classpath, so it covers `macro-platform` too; `importIncludesMacroPlatform` fails if that ever stops. It checks the module boundaries: every class outside the root package lives in a module, `shared` or a generated jOOQ package (so no layer-first package can come back), `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; today `election` → `parliament`). Add a new module to `MODULES` (and to `DOMAIN_MODULES` for a business domain)
+- `ArchitectureTest` (ArchUnit, one in each application) imports all of `com.kg.macroanalyzer` from the classpath, so it covers `macro-platform` too; `importIncludesMacroPlatform` fails if that ever stops. It checks the module boundaries: every class outside the root package lives in a module, `shared` or a generated jOOQ package (so no layer-first package can come back), `shared` doesn't depend on any module, and a module's `domain`/`application` don't depend on its `adaptors`. A domain module (`DOMAIN_MODULES`) depends only on itself, `scrape`, `shared` and `jooq.generated`, and nothing outside it depends on it, apart from what `DOMAIN_MODULE_EXTRA_DEPENDENCIES` allows per module (another module's `application/port/in` and `domain` only; no entries today). Add a new module to `MODULES` (and to `DOMAIN_MODULES` for a business domain)
 - Test fixtures in `src/test/resources/json/`
 - `@ActiveProfiles("test")` activates `application-test.properties`
 

@@ -8,13 +8,12 @@ import com.kg.macroanalyzer.election.application.port.in.LocalElectionDetailDto;
 import com.kg.macroanalyzer.election.application.port.in.LocalElectionSummaryDto;
 import com.kg.macroanalyzer.election.application.port.in.LocalPartyResultDto;
 import com.kg.macroanalyzer.election.application.port.out.ElectionRepositoryPort;
+import com.kg.macroanalyzer.election.application.port.out.PartyColorPort;
 import com.kg.macroanalyzer.election.domain.ElectedMember;
 import com.kg.macroanalyzer.election.domain.Governance;
 import com.kg.macroanalyzer.election.domain.LocalElectionResult;
 import com.kg.macroanalyzer.election.domain.LocalElectionType;
 import com.kg.macroanalyzer.election.domain.LocalPartyResult;
-import com.kg.macroanalyzer.parliament.application.port.in.PartyDirectory;
-import com.kg.macroanalyzer.parliament.domain.Party;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,19 +31,19 @@ public class LocalElectionService implements ElectionQueries {
     private static final String UNKNOWN_PARTY_COLOR = "#9CA3AF";
 
     private final ElectionRepositoryPort repositoryPort;
-    private final PartyDirectory partyDirectory;
+    private final PartyColorPort partyColorPort;
 
     @Autowired
-    public LocalElectionService(ElectionRepositoryPort repositoryPort, PartyDirectory partyDirectory) {
+    public LocalElectionService(ElectionRepositoryPort repositoryPort, PartyColorPort partyColorPort) {
         this.repositoryPort = repositoryPort;
-        this.partyDirectory = partyDirectory;
+        this.partyColorPort = partyColorPort;
     }
 
     @Override
     public List<LocalElectionSummaryDto> getLocalElectionResults(LocalElectionType type, Integer year) {
         return resolveYear(type, year)
                 .map(y -> {
-                    final var colors = partyColors();
+                    final var colors = partyColorPort.partyColors();
                     return repositoryPort.readLocalElectionResults(type, y).stream()
                             .map(result -> toSummary(result, colors))
                             .toList();
@@ -57,7 +56,7 @@ public class LocalElectionService implements ElectionQueries {
         return resolveYear(type, year)
                 .flatMap(y -> repositoryPort.readLocalElectionResult(type, y, areaCode)
                         .map(result -> {
-                            final var colors = partyColors();
+                            final var colors = partyColorPort.partyColors();
                             return LocalElectionDetailDto.builder()
                                     .summary(toSummary(result, colors))
                                     .elected(electedByParty(result, colors))
@@ -72,13 +71,6 @@ public class LocalElectionService implements ElectionQueries {
         return year != null
                 ? Optional.of(year)
                 : repositoryPort.readLatestLocalElectionYear(type);
-    }
-
-    // Riksdag parties use the app's own palette so a party has the same colour on every page;
-    // Valmyndigheten's own colours (e.g. blue for SD) are only kept for local parties
-    private Map<String, String> partyColors() {
-        return partyDirectory.listParties().stream()
-                .collect(Collectors.toMap(Party::code, Party::color, (a, b) -> a));
     }
 
     private static LocalElectionSummaryDto toSummary(LocalElectionResult result, Map<String, String> colors) {
@@ -150,6 +142,8 @@ public class LocalElectionService implements ElectionQueries {
                 .build();
     }
 
+    // Riksdag parties use the app's own palette so a party has the same colour on every page;
+    // Valmyndigheten's own colours (e.g. blue for SD) are only kept for local parties
     private static String colorOf(LocalPartyResult party, Map<String, String> colors) {
         final var riksdagColor = colors.get(party.abbreviation());
         if (riksdagColor != null) {

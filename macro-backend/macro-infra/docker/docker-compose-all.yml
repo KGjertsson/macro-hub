@@ -35,6 +35,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: macropassword
       SPRING_JOOQ_SQL_DIALECT: POSTGRES
       SPRING_PROFILES_ACTIVE: prod
+      # Where election reads the party colours. Parliament still runs in this service
+      ELECTION_PARLIAMENT_URL: http://macro-analyzer:8080
     ports:
       - "8080:8080"
 

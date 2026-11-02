@@ -44,10 +44,8 @@ class ArchitectureTest {
     private static final List<String> DOMAIN_MODULE_DEPENDENCIES = List.of("scrape", "shared", "jooq.generated");
 
     // What a module may use of other domain modules, on top of DOMAIN_MODULE_DEPENDENCIES. Only in-ports and domain
-    // types, never another module's out-ports, services or adaptors
-    private static final Map<String, List<String>> DOMAIN_MODULE_EXTRA_DEPENDENCIES = Map.of(
-            "election", List.of("parliament.application.port.in", "parliament.domain")
-    );
+    // types, never another module's out-ports, services or adaptors. None today: election reads parliament over HTTP
+    private static final Map<String, List<String>> DOMAIN_MODULE_EXTRA_DEPENDENCIES = Map.of();
 
     // Modules every other module may use, and which use none of them
     private static final List<String> SHARED_MODULES = List.of("shared");
