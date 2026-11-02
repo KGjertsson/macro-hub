@@ -218,7 +218,9 @@ Run this on a stack that still runs the old monolith, from the repo root of a cl
 - can be run again after a failure: it empties the three tables in `election` first. It refuses once `macrohub-macro-analyzer` is gone, because by then `election` is the live data, which a second restore would overwrite;
 - does **not** drop `macroanalyzer`. That is a separate command, below.
 
-`--no-deps` is still needed on every `up`, as in the block: without it Compose re-creates `macrohub-postgres`, because its environment changed. That is safe for the data, since the volume stays and an existing volume ignores `POSTGRES_*`, but it restarts every service's connections. Postgres no longer needs the monolith's database: on a new volume it isn't created, and on an existing volume the healthcheck keeps working after it is dropped, because `pg_isready` doesn't log in.
+`--no-deps` is still needed on every `up`, as in the block: without it Compose re-creates `macrohub-postgres`, because its environment changed. That is safe for the data, since the volume stays and an existing volume ignores `POSTGRES_*`, but **every service then answers 500 until it is restarted**: `JDBCConfiguration` holds one connection for the application's lifetime and doesn't reconnect.
+
+Postgres doesn't need the monolith's database any more: a new volume doesn't create it, and an existing volume keeps working once it is dropped (see below).
 
 No queue rows are copied: a pending row in the old queue (`status = 0`, none locally when this was written) is dropped, and the next cron or manual run enqueues again. If `.env` sets `ELECTION_DB_PASSWORD`, add `-e ELECTION_DB_PASSWORD=...` after `-i` on the line that runs the init script, because the running `macrohub-postgres` doesn't have that variable yet. Otherwise the service can't log in and the block fails after 2 minutes, with the service's log.
 
@@ -286,7 +288,7 @@ trap finish EXIT
 check_hour
 [ -d macro-backend/election-service ] || { echo "Run this from the repo root of a clone that has election-service" >&2; exit 1; }
 [ -f "$env_file" ] || { echo "$env_file is missing" >&2; exit 1; }
-docker inspect macrohub-macro-analyzer > /dev/null || { echo "macrohub-macro-analyzer is gone, so this has already run: election is the live data now" >&2; exit 1; }
+docker container inspect macrohub-macro-analyzer > /dev/null || { echo "macrohub-macro-analyzer is gone, so this has already run: election is the live data now" >&2; exit 1; }
 
 # Build first, while nothing has stopped. Keep the old frontend's image: the build replaces its tag
 docker image inspect macro-frontend:before-step5 > /dev/null 2>&1 || docker tag macro-frontend:latest macro-frontend:before-step5
@@ -331,7 +333,7 @@ docker rm macrohub-macro-analyzer
 )
 ```
 
-A failed `diff` prints the rows that differ and exits there. After `RESTORE OK`, open the pages and check them. Compose warns about no orphan after this, and `macro-analyzer:latest` and `macro-frontend:before-step5` stay as images until you `docker rmi` them.
+A failed `diff` prints the rows that differ and exits there. Compose warns about the orphan `macrohub-macro-analyzer` while the block runs, which is expected, so don't pass `--remove-orphans`. After `RESTORE OK`, open the pages and check them. `macro-analyzer:latest` and `macro-frontend:before-step5` stay as images until you `docker rmi` them.
 
 #### Dropping the old database
 
@@ -342,6 +344,12 @@ docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U macrouser -d postgres -
 ```
 
 Don't delete the volume instead: it holds `parliament`, the only copy of its data.
+
+The running `macrohub-postgres` still has `POSTGRES_DB=macroanalyzer` in its environment, and its healthcheck names that database. `pg_isready` doesn't log in, so the container stays healthy, but Postgres then logs `FATAL: database "macroanalyzer" does not exist` every 10 seconds. To stop that, re-create the container and restart the services, whose connections that closes, at a quiet moment:
+
+```bash
+docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --wait postgres && docker restart macrohub-regional-statistics macrohub-macro-series macrohub-parliament macrohub-election
+```
 
 ### Code
 
