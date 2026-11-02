@@ -75,7 +75,8 @@ spec:
               cpu: 100m
               memory: 768Mi
             limits:
-              # A first full SCB scrape keeps every fetched value on the heap until it is stored: 846 MiB in a container without a limit
+              # A first full SCB scrape keeps every fetched value on the heap until it is stored: it peaked at 1348 MiB here, with
+              # the heap at its limit, and at 846 MiB in Compose, which has no limit
               memory: 1536Mi
 ---
 apiVersion: v1

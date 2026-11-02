@@ -76,10 +76,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 512Mi
+              memory: 384Mi
             limits:
-              # To be measured
-              memory: 1Gi
+              # The first full scrape peaked at 467 MiB
+              memory: 768Mi
 ---
 apiVersion: v1
 kind: Service

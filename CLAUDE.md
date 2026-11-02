@@ -13,7 +13,7 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
   - **parliament-service/** — Riksdagen: the `parliament` module, `ParliamentApplication`, its own migrations and properties
   - **election-service/** — Valmyndigheten's elections: the `election` module, `ElectionApplication`, its own migrations and properties
 - **macro-frontend/** — Vite + React 18 + TypeScript + shadcn-ui dashboard (formerly the separate `macro-view-hub` repo, merged in via `git subtree`)
-- **macro-backend/macro-infra/** — Docker Compose files (`docker/`) and microk8s manifests (`k8s/`, which have not caught up with the services: step 6 of the guide)
+- **macro-backend/macro-infra/** — Docker Compose files (`docker/`) and the microk8s deployment (`k8s/`, see its README)
 
 ## Services
 
@@ -29,7 +29,7 @@ The backend is one service per domain ([ADRs](docs/adrs/README.md), and the [mig
 
 Every service runs `db/platform` (from `macro-platform`, history table `flyway_platform_schema_history`), then its own `db/migration`. Everything below about a "module" holds in all of them. The Java base package `com.kg.macroanalyzer` and the URL prefix `/macro-analyzer` are the project's old name, and every service keeps them.
 
-**Databases: port 31274, on `localhost` and on `192.168.154.7`, is the microk8s cluster's Postgres NodePort and its real database.** No default points there: every service's properties and every jOOQ codegen profile use the Compose Postgres on `localhost:5432`, and each service's `BaseConfigurationTest` pins that. To use the cluster's database, pass the URL deliberately (`SPRING_DATASOURCE_URL`).
+**Databases: port 31274, on `localhost` and on `192.168.154.7`, is the NodePort of the owner's older Postgres in the `macro-analyzer` namespace, a real database that nothing here manages.** No default points there: every service's properties and every jOOQ codegen profile use the Compose Postgres on `localhost:5432`, and each service's `BaseConfigurationTest` pins that. To use it, pass the URL deliberately (`SPRING_DATASOURCE_URL`). The deployed app's own Postgres is in the `macro-hub` namespace and has no port outside the cluster.
 
 ## Build & Test Commands
 
@@ -147,7 +147,19 @@ docker compose --env-file macro-backend/macro-series-service/.env -f macro-backe
   - `ELECTION_URL` (`http://election:8085`): `/macro-analyzer/municipalities/`, `/macro-analyzer/regions/`, `/macro-analyzer/constituencies/`, `/macro-analyzer/scrape/election/`
   - Any other path under `/macro-analyzer/`, and `/macro-analyzer` itself, answers 404 for every method. Without that it would fall through to `location /` and get `index.html` with a 200. The exception is a routed prefix without its slash, such as `/macro-analyzer/municipalities` or `/macro-analyzer/scrape/election`: nginx's automatic redirect answers those with a 301
 - A new variable needs a default in the Dockerfile, because the entrypoint leaves an unset one as the literal `${X}`. A variable set to an empty value makes nginx exit at startup (`invalid number of arguments in "set" directive`), so write literal values in Compose rather than `${X:-}`. The proxy settings, including the 30-minute `proxy_read_timeout`, are set once on the `server` and inherited by every route
-- The nginx image's envsubst entrypoint renders the template; each upstream is resolved per request with the resolver from `/etc/resolv.conf` (`NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1`), so nginx starts before the backend is up. nginx's resolver ignores resolv.conf search domains, so outside compose (e.g. a future k8s deployment; `k8s/` has no frontend manifest today) give the variables a fully qualified name such as `http://election-service.default.svc.cluster.local:8085`
+- The nginx image's envsubst entrypoint renders the template; each upstream is resolved per request with the resolver from `/etc/resolv.conf` (`NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1`), so nginx starts before the backend is up. nginx's resolver ignores resolv.conf search domains, so outside compose give the variables a fully qualified name, as `k8s/frontend/frontend.yaml` does (`http://election-service.macro-hub.svc.cluster.local:8085`)
+
+### Kubernetes (microk8s, from `macro-backend/macro-infra/k8s/`)
+
+`k8s/README.md` is the tested procedure: `./build-images.sh`, `./create-secrets.sh`, `./deploy.sh`, then `scrape-all.sh http://localhost:30081` once. The app is at `http://localhost:30081`. Compose stays the way to develop locally ([ADR 0006](docs/adrs/0006-kubernetes-as-eventual-deployment-target.md)).
+
+- **Namespace `macro-hub` holds everything,** plus two cluster-scoped PersistentVolumes named `macro-hub-*` (`Retain`, hostPath under `/mnt/data/macro-hub`). The namespaces `macro-analyzer` (Postgres 13, volume `postgres-pv`, NodePort 31274) and `gjertchenbot` are the owner's and no file here manages them. Scripts go through `microk8s kubectl -n macro-hub`, and `teardown.sh` deletes by name and keeps the volumes
+- **The gateway is the frontend image's nginx,** on a pinned NodePort, 30081, with the route variables set to fully qualified Service names. There is no Ingress. Services and Postgres are ClusterIP. A Service is named after its module (`election-service`), and `enableServiceLinks: false` keeps Kubernetes' `<NAME>_PORT` variables out of the pods
+- **One replica each, `strategy: Recreate`** for Postgres and the services: `scrapeLock` is per process. Probes use `/actuator/health/{liveness,readiness}` (`/actuator` isn't routed by the gateway), which don't look at the database, so a Postgres restart neither restarts nor unreadies a service
+- **Images** are `macro-hub/<name>:<commit>`, built from `git archive HEAD` in a directory under `$HOME` (Docker as a snap can't read `/tmp`) and imported with `microk8s images import`, because `microk8s ctr` asks for sudo. `imagePullPolicy: Never`, no registry. Compose's `<name>:latest` isn't touched. `deploy.sh` replaces `IMAGE_TAG` in the manifests
+- **Secrets** come from `create-secrets.sh`: the API keys from the env file, only to macro-series; the database passwords generated once into `~/.config/macro-hub/k8s-db-passwords.env`, outside the repo. They must match the roles on the retained volume, so `deploy.sh` re-runs the init script and sets the bootstrap password from the Secret each time
+- **Backups:** the CronJob `postgres-backup` dumps each database at 03:00 UTC, keeps the newest 7, and the Postgres pod mounts them read-only at `/backups` for `pg_restore` (README)
+- **Every service's cron runs in the cluster too,** so the cluster and a running Compose stack both scrape in the 22:00 UTC hour, from one machine with one set of keys
 
 ## Architecture
 

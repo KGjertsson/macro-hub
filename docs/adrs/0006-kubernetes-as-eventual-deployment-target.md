@@ -29,6 +29,8 @@ This ADR doesn't decide how routing works in the cluster. The choice between ngi
 
 *Note, 2026-11-02:* the monolith this ADR's context describes is retired, but the manifests below still name it. Step 6 of the [migration guide](../microservice-migration-guide.md) replaces them. The service name `macro-analyzer-service` below is the example from the old manifests.
 
+*Note, 2026-11-02:* step 6 made the first deployment, in its own namespace `macro-hub`. **The gateway in the cluster is nginx in the frontend image,** which the project owner decided, on a pinned NodePort (30081) with fully qualified service names. There are no Ingress routes and the `ingress` addon stays off: nginx already holds the routes, the 404s and the 30-minute timeout, and Compose and the cluster then behave the same. Images stay on `imagePullPolicy: Never`, tagged with the commit and imported by `k8s/build-images.sh`, with no registry. The other consequences below are done, and `k8s/README.md` is the procedure. The Context's list describes files that are gone.
+
 ## Alternatives considered
 
 - **Compose as the deployment target as well.** It already runs the whole stack, but the project owner wants to deploy on Kubernetes.

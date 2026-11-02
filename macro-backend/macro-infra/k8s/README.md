@@ -7,7 +7,7 @@ The whole app in one namespace, `macro-hub`, on a single-node microk8s: Postgres
 | What | Where |
 | --- | --- |
 | The app | `http://localhost:30081` on this machine, also on the WSL2 address (`hostname -I`). A NodePort, pinned in `frontend/frontend.yaml` |
-| Postgres | `postgres.macro-hub.svc.cluster.local:5432`. ClusterIP only, no NodePort |
+| Postgres | `postgres.macro-hub.svc.cluster.local:5432`. ClusterIP only, no NodePort. This machine's own routes do reach a ClusterIP (kube-proxy), also from its Docker containers, and every role needs its password there |
 | Data and dumps | `/mnt/data/macro-hub/postgres`, `/mnt/data/macro-hub/backups` (retained volumes) |
 | Database passwords | `~/.config/macro-hub/k8s-db-passwords.env`, outside the repo, generated once. Keep it |
 
@@ -27,7 +27,7 @@ cd macro-backend/macro-infra/k8s
 # 1. Build the images from the current commit and import them into microk8s. About 3 minutes
 ./build-images.sh
 
-# 2. Create the namespace and the Secrets. Prints no values
+# 2. Create the namespace and the Secrets. Prints no values. In a git worktree, or with the keys elsewhere, pass the env file
 ./create-secrets.sh
 
 # 3. Apply everything, in order, and wait for it. About 2 minutes
@@ -44,6 +44,12 @@ A new database has its configs but no data. **Fill it once**, through the gatewa
 
 ```bash
 macro-backend/macro-infra/scripts/scrape-all.sh http://localhost:30081
+```
+
+It took 8 minutes on the first run. Then check that no pod restarted (`RESTARTS` in `get pods`). The metrics addon is off, so read a pod's peak memory from its cgroup:
+
+```bash
+microk8s kubectl -n macro-hub exec deploy/regional-statistics-service -- cat /sys/fs/cgroup/memory.peak
 ```
 
 **Every service's cron also scrapes in the 22:00 UTC hour**, so the cluster and a running Compose stack both go to the same sources every night, from the same machine, with the same keys. Don't start a deployment or a manual scrape between 21:55 and 23:00 UTC.

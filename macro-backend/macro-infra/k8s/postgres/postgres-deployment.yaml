@@ -66,6 +66,8 @@ spec:
               cpu: 250m
               memory: 512Mi
             limits:
+              # Most of its use is page cache, which the kernel gives back: 1347 MiB at the first scrape's peak, of which 55 MiB
+              # was Postgres' own
               memory: 2Gi
           volumeMounts:
             - name: data

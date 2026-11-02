@@ -75,8 +75,8 @@ spec:
               cpu: 100m
               memory: 512Mi
             limits:
-              # To be measured
-              memory: 1Gi
+              # The first full scrape peaked at 932 MiB with a 1 GiB limit, near that limit's heap, so this leaves it more room
+              memory: 1280Mi
 ---
 apiVersion: v1
 kind: Service
