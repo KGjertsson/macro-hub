@@ -7,12 +7,6 @@ package com.kg.macroanalyzer.jooq.generated;
 import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionArea;
 import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionPartyResult;
 import com.kg.macroanalyzer.jooq.generated.tables.LocalGovernance;
-import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElection;
-import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
-import com.kg.macroanalyzer.jooq.generated.tables.RiksdagOrgan;
-import com.kg.macroanalyzer.jooq.generated.tables.RiksdagParty;
-import com.kg.macroanalyzer.jooq.generated.tables.SwedishMemberActivity;
-import com.kg.macroanalyzer.jooq.generated.tables.SwedishMembersOfParliament;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,36 +46,6 @@ public class Public extends SchemaImpl {
     public final LocalGovernance LOCAL_GOVERNANCE = LocalGovernance.LOCAL_GOVERNANCE;
 
     /**
-     * The table <code>public.riksdag_election</code>.
-     */
-    public final RiksdagElection RIKSDAG_ELECTION = RiksdagElection.RIKSDAG_ELECTION;
-
-    /**
-     * The table <code>public.riksdag_election_result</code>.
-     */
-    public final RiksdagElectionResult RIKSDAG_ELECTION_RESULT = RiksdagElectionResult.RIKSDAG_ELECTION_RESULT;
-
-    /**
-     * The table <code>public.riksdag_organ</code>.
-     */
-    public final RiksdagOrgan RIKSDAG_ORGAN = RiksdagOrgan.RIKSDAG_ORGAN;
-
-    /**
-     * The table <code>public.riksdag_party</code>.
-     */
-    public final RiksdagParty RIKSDAG_PARTY = RiksdagParty.RIKSDAG_PARTY;
-
-    /**
-     * The table <code>public.swedish_member_activity</code>.
-     */
-    public final SwedishMemberActivity SWEDISH_MEMBER_ACTIVITY = SwedishMemberActivity.SWEDISH_MEMBER_ACTIVITY;
-
-    /**
-     * The table <code>public.swedish_members_of_parliament</code>.
-     */
-    public final SwedishMembersOfParliament SWEDISH_MEMBERS_OF_PARLIAMENT = SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT;
-
-    /**
      * No further instances allowed
      */
     private Public() {
@@ -99,13 +63,7 @@ public class Public extends SchemaImpl {
         return Arrays.asList(
             LocalElectionArea.LOCAL_ELECTION_AREA,
             LocalElectionPartyResult.LOCAL_ELECTION_PARTY_RESULT,
-            LocalGovernance.LOCAL_GOVERNANCE,
-            RiksdagElection.RIKSDAG_ELECTION,
-            RiksdagElectionResult.RIKSDAG_ELECTION_RESULT,
-            RiksdagOrgan.RIKSDAG_ORGAN,
-            RiksdagParty.RIKSDAG_PARTY,
-            SwedishMemberActivity.SWEDISH_MEMBER_ACTIVITY,
-            SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT
+            LocalGovernance.LOCAL_GOVERNANCE
         );
     }
 }

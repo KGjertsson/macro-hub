@@ -39,7 +39,7 @@ The default is `localhost:5432/parliament`. For another database, add `-Djooq.co
 
 ## Fill it
 
-**A local database that has data is restored, not re-scraped**: a scrape only fetches activity for the latest two terms. See "Restoring parliament" in the guide. An empty one fills like this:
+**Keep a local database that has data rather than re-creating it**: a scrape only fetches activity for the latest two terms, and the monolith's V38 dropped the copy it was restored from. See "Restoring parliament" in the guide. An empty one fills like this:
 
 ```bash
 curl -X POST http://localhost:8081/macro-analyzer/scrape/parliament/enqueue-all
