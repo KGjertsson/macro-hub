@@ -1,6 +1,6 @@
 # Microservice migration guide
 
-This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. All steps are done: the monolith is gone, the app runs in a cluster, and `CLAUDE.md` describes what is there now. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
+This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. The monolith is gone and the app runs in a cluster, and `CLAUDE.md` describes what is there now. All that remains is step 6's browser check, by the project owner. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
 
 Statements about the current code were checked against commit `07c7482`, and the steps that are done say what changed since then. The manual trigger paths and the Flyway ordering were decided on 2026-11-01, after that check. Anything marked **Suggested** or **Open** is not decided.
 
@@ -32,7 +32,7 @@ When this guide started, nothing was deployed anywhere, and the steps up to 5 we
 | 3 | Extract macro-series | Done |
 | 4 | Extract parliament, switch election to REST | Done |
 | 5 | Retire the monolith | Done |
-| 6 | First real Kubernetes deployment | Done |
+| 6 | First real Kubernetes deployment | Done, except the browser check |
 
 ## Open questions
 
@@ -652,8 +652,10 @@ What was tried, on throwaway Compose projects:
 - [x] Set up image delivery: `build-images.sh`, with `imagePullPolicy: Never`, tagged with the commit, and no registry.
 - [x] Revisit [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md). The decision stands for now, and the owner's question about exposure is open.
 - [x] Backups per database: the CronJob `postgres-backup`, with a tested restore.
-- [x] Memory requests and limits, from the first scrape on the cluster: see below.
+- [x] Memory requests and limits, from the first scrape on the cluster and later read tests: see below.
 - [x] Kafka and Zookeeper are gone from `kubernetes_setup.sh`, with helm, which only they used. No application code uses Kafka.
+
+**Verify:** every page works through the cluster's gateway, and each service's first scrape completes. The scrapes completed. **The pages have not been opened in a browser, as none is available here: the project owner still has to open `http://localhost:30081`.**
 
 **Rollback:** `k8s/teardown.sh` removes the deployment and keeps the volumes. Nothing depends on it, and Compose's databases stay the source of truth.
 
@@ -665,28 +667,38 @@ What was tried, on throwaway Compose projects:
 - **The passwords live outside the repo in `~/.config/macro-hub/k8s-db-passwords.env`,** because a retained volume keeps its roles' passwords after the Secrets are gone. Generating new ones on every run would lock the services out.
 - **`deploy.sh` re-applies the roles and clears a Released volume's old claim uid.** `claimRef` keeps the claim's name, so only the same claim can bind it again.
 - **`enableServiceLinks: false`,** beyond the plan, because Kubernetes would otherwise put `<SERVICE>_PORT` and `POSTGRES_PORT` variables in the pods, next to the ones Spring and the image read. **`-XX:+ExitOnOutOfMemoryError`** is also beyond the plan, so a heap that runs out shows as a restart.
+- **No service account token in any pod (`automountServiceAccountToken: false`).** The API server here is `--authorization-mode=AlwaysAllow`, so any token could do anything in any namespace, and nothing here calls the Kubernetes API. So a namespace isn't a security boundary on this cluster. Found in review. The four services also run with `allowPrivilegeEscalation: false` and no capabilities. They are still uid 0, as under Compose, because the Dockerfiles' user is out of scope. nginx keeps root's defaults, and Postgres runs as uid 999 after its entrypoint.
+- **Passwords stay off psql's command line (`\getenv`), in `deploy.sh` and in the init script Compose shares,** and a failing statement isn't quoted (`log_min_error_statement = panic`, terse messages).
 - **`/actuator/health/{liveness,readiness}` don't check the database,** on purpose, and no application code changed. `/actuator` isn't on the gateway: it gets `index.html` like any SPA route.
 - **The metrics addon stays off,** so peaks come from each pod's `/sys/fs/cgroup/memory.peak`, also sampled every 10 s, and `kubectl top` isn't available.
 
-Memory in the first full scrape (`-XX:MaxRAMPercentage=70` everywhere). A JVM grows its heap before it collects, so a peak near a limit's heap is not proof that it needed that much. Against ADR 0001's estimate of 1.5 to 2 GiB for four JVMs: 1.1 GiB idle just after a restart, and 3.1 GiB if all four peak together.
+**Memory and the GC.** The first full scrape ran with `-XX:MaxRAMPercentage=70` everywhere and no GC set. Below 1792 MiB the JVM picks Serial by itself, so all of it ran under Serial, while Compose runs G1. The one allowed scrape has been used, so the choice below comes from what could be measured without another one, and **tonight's 22:00 UTC cron is the first real test of G1 and these limits, for scraping.**
 
-| Pod | Limit during the scrape | Peak | Own memory at its peak | Limit now | Request |
-| --- | --- | --- | --- | --- | --- |
-| regional-statistics | 1536 MiB | 1348 MiB | 1341 MiB | 1536 MiB | 768 MiB |
-| parliament | 1 GiB | 932 MiB | 926 MiB | 1280 MiB | 512 MiB |
-| election | 1 GiB | 467 MiB | 462 MiB | 768 MiB | 384 MiB |
-| macro-series | 1 GiB | 389 MiB | 383 MiB | 768 MiB | 384 MiB |
-| postgres | 2 GiB | 1347 MiB, mostly page cache | 55 MiB | 2 GiB | 512 MiB |
-| frontend | 256 MiB | 17 MiB | 12 MiB | 128 MiB | 32 MiB |
+| Pod | First scrape: limit, peak, under Serial | Reads, Serial: peak, heap committed, longest pause | Reads, G1: peak, heap committed, longest pause | Heap still used after a collection, G1 | Limit now, `MaxRAMPercentage` | Heap cap | Request |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| regional-statistics | 1536 MiB, 1348 MiB | 298, 55, 84 ms | 378, 70, 48 ms | 33 MiB | 1536 MiB, 70% | 1075 MiB | 768 MiB |
+| parliament | 1 GiB, 932 MiB | 1131, 852, 227 ms | 786, 520, 52 ms | 248 MiB | 1536 MiB, 70% | 1075 MiB | 512 MiB |
+| macro-series | 1 GiB, 389 MiB | not measured | 890, 616, 40 ms | 582 MiB | 1536 MiB, 70% | 1075 MiB | 384 MiB |
+| election | 1 GiB, 467 MiB | not measured | 350, 72, 47 ms | 37 MiB | 1 GiB, 60% | 616 MiB | 384 MiB |
+| postgres | 2 GiB, 1347 MiB, mostly page cache (55 MiB its own) | | | | 2 GiB | | 512 MiB |
+| frontend | 256 MiB, 17 MiB | | | | 128 MiB | | 32 MiB |
 
-The limits now have only had a re-deployment and small scrapes, not another full scrape, since that was to run once. The nightly cron is the next test of them.
+Reads are 84 to 255 requests per service through the gateway. Before this, 26 reads had taken parliament to 1151 MiB under Serial at a 1280 MiB limit, which is what the review found. Macro-series' reads include a chart of all 108 series by day, measured here at a 616 MiB heap cap, and again at the current one below.
+
+- **Why G1, set explicitly.** Serial lets the old generation fill with garbage until a full collection, so a pod's peak is close to its heap cap however little is live: parliament reached 852 MiB of committed heap under Serial, with 248 MiB left under G1 from the same requests, at under half the pause. That is what made a Serial peak near a limit look dangerous, and it is also why those peaks say little about what is needed. G1 is also what Compose runs, so its 846 MiB for a first full SCB scrape is a G1 number, on a JVM that could have grown to several GiB and didn't. G1's cost was about 30 MiB more outside the heap on regional-statistics.
+- **What isn't known.** No scrape of size has run under G1 with a cap. Compose's 846 MiB says SCB fits, but its heap was never constrained, so a G1 fallback to full collections at 1075 MiB is possible and untried. An `OutOfMemoryError` exits the JVM, so it would show as a restart, and the item stays in the queue.
+- **How limits and the percentage fit together.** Outside the heap, a pod takes 220 to 280 MiB (peak minus committed heap, with both GCs). The rule is that the rest of the limit, after the heap cap, leaves at least 380 MiB: at 70% that needs a limit of at least 1267 MiB, and the first choice of 768 MiB at 70% (heap 537 MiB, 230 MiB left) broke it, as a full heap there would have been an OOM kill, not an `OutOfMemoryError`. 1536 MiB at 70% leaves 461 MiB, and 1 GiB at 60% leaves 410 MiB. CPU has requests only.
+- **Why these limits.** The three services that have shown a large heap get the most room, and the node has 31 GiB, so a generous limit costs nothing until it is used. Macro-series was raised because a chart of all 108 series by day used 582 MiB of heap after a collection, at its then cap of 616 MiB, so a client could have stopped it with a large enough chart. Election stays lower, because nothing has come near its cap.
+- **`-Xlog:gc` stays on for now,** one line per collection, because tonight's log gives what the first night is meant to show: the heap left after a collection during the real scrape.
+
+Against ADR 0001's estimate of 1.5 to 2 GiB for four JVMs: 1.1 GiB idle just after a restart (under Serial), and the sum of the first scrape's peaks is 3.1 GiB.
 
 What was tried, on the real cluster, in `macro-hub`, on 2026-11-02:
 
 - **From a namespace that didn't exist:** the README's three commands brought everything up, in 1 min 5 s for `deploy.sh` after 1 min 24 s for the build. The one difference was passing the env file's path, as this ran in a git worktree.
 - **Teardown and back:** `teardown.sh` left the namespace with no pods, Secrets or claims of its own and both volumes Released. `create-secrets.sh` and `deploy.sh` brought it back in 36 s, on the same volumes, with every table's row count unchanged and the dumps still there. There is no scrape in that.
 - **The password change in the README:** done for real, all services back with no restarts. A partial first attempt, where `create-secrets.sh` was killed by the test's own `| head -1`, showed what a mismatch looks like: the services in `CrashLoopBackOff`, with `password authentication failed` in their logs, until the Secrets were right.
-- **Roles:** each of the four roles connected to its own database and was refused on the other three, `postgres` and `template1`, over TCP inside the pod.
+- **Roles:** each of the four roles connected to its own database and was refused on the other three, `postgres` and `template1`. Through the Service, as the services connect, a wrong password is refused too. Inside the pod, the image's `pg_hba.conf` trusts `127.0.0.1` and the socket, so a test on loopback doesn't check a password.
 - **Postgres from outside:** a ClusterIP with no NodePort or hostPort. Another machine has no route to it. **This machine's own routes do reach it,** as kube-proxy handles ClusterIPs for local traffic, including from its Docker containers, so `pg_isready` from a container on this machine said "accepting connections". Each role still needs its password there. A NetworkPolicy wasn't part of this step.
 - **The first full scrape, once, through the gateway with `scrape-all.sh`:** exit 0 after 8 min 5 s, with no `ERROR` log line, no failed item and no restart. Per service, in parallel: macro-series 55 s (108 series), election 2 min 3 s (3 configs), parliament 5 min 16 s (2 configs), regional-statistics 8 min 4 s. So the 30-minute timeout held past nginx's default, on the longest route, and `nginx -T` shows the one setting.
 - **Row counts against Compose:** the same in every table of `regional_statistics` (2,401,042 values), `parliament` and `election`, apart from the queues, which hold a database's own history. In `macro_series`, newer points from the sources: `policy_rate_sweden` 8,144 against 8,143, `exchange_usd_sek` 8,497 against 8,496, two Japanese bond series +1 each, and `fed_series` 33,406 against 33,416 (FRED's rolling 10-year window, see step 3).
@@ -695,6 +707,7 @@ What was tried, on the real cluster, in `macro-hub`, on 2026-11-02:
 - **Postgres killed while services ran, twice:** the pod deleted, and an immediate stop inside it, which restarted the container and ran crash recovery. Each time the services didn't restart. The only failures seen were a 500 on one route for 1 to 2 s.
 - **A service pod killed:** macro-series answered again after 12 s. **Colours:** with parliament scaled to 0, its routes answered 502 and election kept answering in 0.06 s with the colours held (SD `#FFCC00`). Election restarted with parliament down answered with Valmyndigheten's (SD `#4E83A3`), and 13 s after scaling parliament up the colours were back, over its Service name.
 - **Backups:** the CronJob, triggered by hand, wrote four dumps: regional_statistics 16 MB, macro_series 13 MB, parliament 2.6 MB, election 272 KB. It keeps 7 per database, tried with old-named files, and a run with a wrong password failed the job, removed nothing and left no partial file. **Both restores in the README were run:** `regional_statistics` into a scratch database in 10 s, with 2,401,042 rows, and `election` replacing the real database, after which its role's rights were the same as before, Flyway said "up to date", and `/municipalities/elections` was byte for byte the same.
-- **Not tried:** no page was opened in a browser, as none is available here. The 03:00 and 22:00 UTC schedules haven't fired yet, and neither has an OOM kill. A node failure isn't tried either: with one node, Postgres and the services go down together, so the "doesn't cover" case under "Database" in `CLAUDE.md` is unlikely, and a liveness probe wouldn't solve it, because the process still answers.
+- **After the review's fixes, on the running pods:** the `serviceaccount` directory is gone from all six, and the services still answer and reach Postgres and each other. `/proc/1/status` in the four services says uid 0, `NoNewPrivs: 1` and no capabilities. Small scrapes through the gateway work with that: one Riksbanken series, one election config (`index.md5` only), `MembersOfParliament` (13 s) and SCB with unchanged tables (about 2 min, as all its metadata is fetched). The init script was run on an empty volume and on an existing one in a scratch pod: passwords checked over a non-loopback address, a changed one takes effect and the old one is refused. `create-secrets.sh` with a failing `openssl` exits 1 and leaves no file, and with an empty value in the file it refuses to continue.
+- **Not tried:** no page was opened in a browser, as none is available here. A restart of WSL2 or microk8s, which is this machine's most likely real event: microk8s must not be restarted from here, so the README's section on it says what should happen, not what was seen. The 03:00 and 22:00 UTC schedules haven't fired yet, and neither has an OOM kill. A node failure isn't tried either: with one node, Postgres and the services go down together, so the "doesn't cover" case under "Database" in `CLAUDE.md` is unlikely, and a liveness probe wouldn't solve it, because the process still answers.
 
 **Nightly behaviour to expect:** every service's cron enqueues in the 22:00 UTC hour, so the cluster and Compose now both scrape, from one machine, with the same keys and at the same time. Macro-series fetches its series and parliament its members again every night, so the same API keys and sources see both runs. Election and SCB skip what hasn't changed. When SCB's tables change, both fetch them, each within SCB's 30 calls per 10 s but not together, so its retries may do more work on those nights. Whether a source minds this hasn't been seen yet: the first night will tell, in the logs' `FAILED` counts.

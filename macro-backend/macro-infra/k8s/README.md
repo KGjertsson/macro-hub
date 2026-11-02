@@ -46,7 +46,7 @@ A new database has its configs but no data. **Fill it once**, through the gatewa
 macro-backend/macro-infra/scripts/scrape-all.sh http://localhost:30081
 ```
 
-It took 8 minutes on the first run. Then check that no pod restarted (`RESTARTS` in `get pods`). The metrics addon is off, so read a pod's peak memory from its cgroup:
+It took 8 minutes on the first run. A pod's peak is close to its heap cap only under Serial; these run G1, whose collections are in the log (`-Xlog:gc`). Then check that no pod restarted (`RESTARTS` in `get pods`). The metrics addon is off, so read a pod's peak memory from its cgroup:
 
 ```bash
 microk8s kubectl -n macro-hub exec deploy/regional-statistics-service -- cat /sys/fs/cgroup/memory.peak

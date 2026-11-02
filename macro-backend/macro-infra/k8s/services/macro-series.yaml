@@ -59,12 +59,12 @@ spec:
             # Boot turns these two endpoints on by itself in a pod. Set here so that doesn't rest on its detection
             - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
               value: "true"
-            # G1 set explicitly: below 1792 MiB the JVM would pick Serial by itself, and Compose runs G1. The heap may take 60% of
-            # the limit, which leaves about 410 MiB for metaspace, threads and the code cache, measured at 220 to 280 MiB. Exit
+            # G1 set explicitly: below 1792 MiB the JVM would pick Serial by itself, and Compose runs G1. The heap may take 70% of
+            # the limit, which leaves about 461 MiB for metaspace, threads and the code cache, measured at 220 to 280 MiB. Exit
             # on an OutOfMemoryError, so it shows as a restart rather than a service that carries on with a dead thread.
             # -Xlog:gc is the evidence of what the heap really holds: the guide's step 6 has the reasoning
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:+UseG1GC -XX:MaxRAMPercentage=60 -XX:+ExitOnOutOfMemoryError -Xlog:gc:stdout
+              value: -XX:+UseG1GC -XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError -Xlog:gc:stdout
           # Flyway runs before this first answers
           startupProbe:
             httpGet:
@@ -95,8 +95,9 @@ spec:
               cpu: 100m
               memory: 384Mi
             limits:
-              # The first full scrape peaked at 389 MiB under Serial
-              memory: 1Gi
+              # The first full scrape peaked at 389 MiB under Serial. A chart of all 108 series by day needs far more: 582 MiB of heap
+              # still in use after a collection, 890 MiB in all, at a 616 MiB heap cap
+              memory: 1536Mi
 ---
 apiVersion: v1
 kind: Service

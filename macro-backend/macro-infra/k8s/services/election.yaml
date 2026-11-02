@@ -87,7 +87,7 @@ spec:
               cpu: 100m
               memory: 384Mi
             limits:
-              # The first full scrape peaked at 467 MiB under Serial
+              # The first full scrape peaked at 467 MiB under Serial, and reads under G1 at 350 MiB, with 37 MiB left after a collection
               memory: 1Gi
 ---
 apiVersion: v1
