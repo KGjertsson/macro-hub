@@ -9,7 +9,7 @@ repository's `CLAUDE.md`. Each Maven module's `ArchitectureTest` (ArchUnit) enfo
 ```
   macro-platform               library: no application class
     scrape                     scrape queue, enqueue/scrape endpoints, cron jobs, the generic ScrapeFlow
-    shared                     CORS, Jackson, JDBC, Flyway config; WebPort and the WebAdaptorFlow pipeline
+    shared                     CORS, Jackson, Flyway config; WebPort and the WebAdaptorFlow pipeline
     platform.jooq.generated    generated jOOQ model of series_configuration, scrape_action_queue, flyway_schema_history
 
   regional-statistics-service  regionalstatistics   SCB DeSO/RegSO indicators     (/regional-statistics/*)              :8082

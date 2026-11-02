@@ -12,12 +12,12 @@ import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.jooq.DSLContext;
-import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
@@ -216,10 +216,10 @@ class MacroPointWriteIntegrationTest {
         write(config("IntGovBondsUsa10Year"), point(DAY_1, 1.0));
 
         // then
-        assertThrows(DataAccessException.class, () -> dslContext.insertInto(
+        assertThrows(DuplicateKeyException.class, () -> dslContext.insertInto(
                 FED_SERIES, FED_SERIES.GLOBAL_ID, FED_SERIES.SERIES_NAME, FED_SERIES.VALUE, FED_SERIES.DATE
         ).values(UUID.randomUUID(), FED_NAME, 2.0, DAY_1).execute());
-        assertThrows(DataAccessException.class, () -> dslContext.insertInto(
+        assertThrows(DuplicateKeyException.class, () -> dslContext.insertInto(
                 INT_GOV_BOND_10_YEAR_USA,
                 INT_GOV_BOND_10_YEAR_USA.GLOBAL_ID,
                 INT_GOV_BOND_10_YEAR_USA.VALUE,
