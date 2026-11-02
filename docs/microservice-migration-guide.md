@@ -18,7 +18,7 @@ In the same PR as each step:
 Nothing is deployed anywhere. Local development uses Docker Compose, and Kubernetes is the eventual deployment target ([ADR 0006](adrs/0006-kubernetes-as-eventual-deployment-target.md)). There is no production data, downtime or live traffic to protect, and today's shared database only exists on development machines. So:
 
 - A new database starts empty and is **re-scraped by default**. Dump and restore is only a time-saver for a local database. The exception was parliament, whose local data **was restored** while the monolith still had its tables: see "Restoring parliament".
-- **Rollback for any step means reverting its PR and re-creating the local databases.** Re-creating them matters: Flyway refuses to start when the database has an applied migration that is missing from the code, which is what a reverted migration looks like. Only re-create the databases the step changed: since the monolith's V38, `parliament` is the only copy of its data.
+- **Rollback for any step means reverting its PR and re-creating the local databases it changed.** Re-creating them matters: Flyway refuses to start when the database has an applied migration that is missing from the code, which is what a reverted migration looks like. Don't re-create `parliament` or delete the volume that holds it: since the monolith's V38, it is the only copy of its data.
 - `docker-compose-all.yml` runs all services at each stage. The k8s files only need to keep working as far as they do today until step 6.
 - Steps are still one PR each, because that keeps `main` working and each change reviewable.
 
@@ -57,7 +57,7 @@ Steps 2 to 5 each use this checklist. `<service>` is the service's name, and `<d
   ```
 
   The `REVOKE` matters, because every role may connect to a database by default. On `<db>` alone it keeps the other roles out, but leaves `<db>`'s role able to connect to `macroanalyzer`, `postgres` and `template1`, so the script revokes it on all of them. Owners and superusers keep their access. `macrouser` is a superuser, so the monolith's role isn't limited by this until step 5 removes it.
-- [ ] Both Compose files mount `postgres-init/`. **Postgres init scripts only run on an empty data volume**, so an existing volume needs an explicit step before the service starts, or the service fails with `database "<db>" does not exist`: `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`. The alternative is to delete the volume and re-scrape.
+- [ ] Both Compose files mount `postgres-init/`. **Postgres init scripts only run on an empty data volume**, so an existing volume needs an explicit step before the service starts, or the service fails with `database "<db>" does not exist`: `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`. Don't delete the volume instead: it also holds `parliament`, the only copy of its data.
 - [ ] Pick the service's port and record it here:
 
   | Service | Port |
@@ -250,7 +250,7 @@ The Compose files set fixed container names and ports, so verify on a throwaway 
 
 ### Rollback
 
-Revert the PR and re-create the local databases.
+Revert the PR and re-create the databases the step changed. Don't delete the volume: see "Starting point".
 
 ## Step 1: Prepare inside the monolith
 
@@ -307,7 +307,7 @@ Revert the PR and re-create the local databases.
 
 **Verify:** the checklist's verify list, plus: the Områdesstatistik page (`/omraden`) shows data for DeSO and RegSO, and a second scrape with unchanged tables takes about 30 seconds. A running SCB scrape no longer delays a scrape in the monolith.
 
-**Rollback:** revert the PR and re-create the local databases.
+**Rollback:** revert the PR and re-create `macroanalyzer` and `regional_statistics`. Keep `parliament`: see "Starting point".
 
 **What differed:** the suggested items were done as written (`macro.scrape.path-prefix`, a `FlywayMigrationStrategy` bean behind `macro.platform.flyway.enabled`, `flyway_platform_schema_history`, an init script mounted in both Compose files), with these details. The checklist above has been corrected where the template turned out wrong or incomplete.
 
@@ -343,7 +343,7 @@ Revert the PR and re-create the local databases.
 
 **Verify:** the checklist's verify list, plus: `/series-config` lists 108 entries in the same order, and charts for a Riksbanken, a Fed and a Eurostat series render.
 
-**Rollback:** revert the PR and re-create the local databases.
+**Rollback:** revert the PR and re-create `macroanalyzer` and `macro_series`. Keep `parliament`: see "Starting point".
 
 **What differed:** the template held, with these details. The checklist above has been corrected where it turned out incomplete.
 
@@ -382,7 +382,7 @@ Revert the PR and re-create the local databases.
 
 **Verify:** the checklist's verify list, plus: with parliament stopped, election pages still answer and keep Riksdag colours after a refresh fails. With parliament stopped and election just restarted, election pages still answer, with Valmyndigheten's colours.
 
-**Rollback:** revert the PR and re-create the local databases.
+**Rollback:** revert the PR and re-create `macroanalyzer`, and keep `parliament`: since V38 it is the only copy. Reverting only the drop needs nothing more, as nothing reads the re-created tables. To go back to before the extraction, load the six tables from `parliament` into the re-created `macroanalyzer` first, as "Restoring parliament" does in the other direction.
 
 **What differed:**
 
@@ -441,9 +441,9 @@ The follow-up that dropped the old tables:
 - [ ] Remove `BACKEND_URL`, the `macroanalyzer` database from `POSTGRES_DB`, and the `macrouser` settings no service uses.
 - [ ] Rewrite the architecture and build sections of `CLAUDE.md`, and retire or rewrite `macro-backend/macro-analyzer/ARCHITECTURE.md`.
 
-**Verify:** the checklist's verify list, plus: on a clean checkout with empty volumes, `docker-compose-all.yml` starts all four services, the script fills them and every page works.
+**Verify:** the checklist's verify list, plus: on a clean checkout with empty volumes (a throwaway project, as under "Verify", not the volume that holds `parliament`), `docker-compose-all.yml` starts all four services, the script fills them and every page works.
 
-**Rollback:** revert the PR and re-create the local databases.
+**Rollback:** revert the PR and re-create `macroanalyzer` and `election`, and re-scrape election. Keep the volume and the other services' databases: `parliament` is the only copy of its data.
 
 **What differed:** not started.
 
