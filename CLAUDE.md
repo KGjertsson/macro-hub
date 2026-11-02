@@ -190,7 +190,7 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
 - **`parliament/`** — Riksdagen members, activity, parties and elections:
   - `domain/` — `MemberOfParliament`, `MemberActivity`, `Party`, `Election` and the other Riksdagen value types, `ParliamentScrapeFlows` (the `MEMBER_OF_PARLIAMENT` and `MEMBER_ACTIVITY` flow ids)
   - `application/port/in/` — `ParliamentQueries` (parties, elections, composition, members) and its DTOs; `application/port/out/` — `ParliamentRepositoryPort`, the scrape payloads `ConfigWithMemberOfParliament`/`ConfigWithMemberActivity` and `MemberActivityRequest`
-  - `application/service/` — `ParliamentService` (implements both in-ports), and in `scrape/` the member and member-activity finders, scrapers and persisters
+  - `application/service/` — `ParliamentService`, and in `scrape/` the member and member-activity finders, scrapers and persisters
   - `adaptors/http/` — `ParliamentController` (`/parliament/*`); `adaptors/postgres/` — `ParliamentPostgresAdaptor`, `SweParMemberRepository`, `SweParActivityRepository` and `RiksdagElectionRepository`; `adaptors/web/` — `MembersOfParliamentWebAdaptor`, `RiksdagenActivityWebAdaptor`, the Riksdagen connection builders and response parsers; `adaptors/config/` — the Riksdagen web beans and both scrape flows
 - **`election/`** — Valmyndigheten kommun (KF), region (RF) and Riksdag valkrets (RD) elections:
   - `domain/` — `LocalElectionType`, `LocalElectionResult`, `LocalPartyResult`, `ElectedMember`, `Governance`, `ElectionScrapeFlows` (the `LOCAL_ELECTION` flow id)

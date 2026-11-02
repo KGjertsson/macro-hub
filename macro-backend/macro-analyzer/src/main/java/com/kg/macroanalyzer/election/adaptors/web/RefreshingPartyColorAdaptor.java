@@ -50,8 +50,12 @@ public class RefreshingPartyColorAdaptor implements PartyColorPort, AutoCloseabl
     }
 
     private void refreshAndScheduleNext() {
-        refresh();
-        schedule(colors.isEmpty() ? retryInterval : refreshInterval);
+        try {
+            refresh();
+        } finally {
+            // Also after an Error, which would otherwise end the refreshing for good, unnoticed
+            schedule(colors.isEmpty() ? retryInterval : refreshInterval);
+        }
     }
 
     private void refresh() {

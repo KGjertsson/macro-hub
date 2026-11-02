@@ -18,7 +18,7 @@ import java.util.Map;
 
 import static org.awaitility.Awaitility.await;
 
-/** The wiring: the real application, with its default intervals, loads the list soon after it has started. */
+/** The wiring: the real application loads the list soon after it has started. The test profile's retry interval leaves it one attempt. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class PartyColorsAtStartupHttpTest {

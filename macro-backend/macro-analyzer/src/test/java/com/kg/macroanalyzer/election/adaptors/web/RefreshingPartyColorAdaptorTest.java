@@ -10,11 +10,13 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
@@ -69,6 +71,21 @@ class RefreshingPartyColorAdaptorTest {
         when(client.fetchPartyColors())
                 .thenThrow(new IOException("down"))
                 .thenReturn(Map.of())
+                .thenReturn(COLORS);
+        adaptor = adaptor(NOT_DURING_THE_TEST, SOON);
+
+        // when
+        adaptor.start();
+
+        // then
+        await().atMost(Duration.ofSeconds(5)).until(() -> COLORS.equals(adaptor.partyColors()));
+    }
+
+    @Test
+    void shouldKeepRefreshing_afterAnError() throws Exception {
+        // given
+        when(client.fetchPartyColors())
+                .thenThrow(new OutOfMemoryError("test"))
                 .thenReturn(COLORS);
         adaptor = adaptor(NOT_DURING_THE_TEST, SOON);
 
@@ -140,7 +157,7 @@ class RefreshingPartyColorAdaptorTest {
 
         // when
         assertTimeout(Duration.ofSeconds(1), adaptor::start);
-        entered.await();
+        assertTrue(entered.await(5, TimeUnit.SECONDS));
 
         // then
         assertTimeout(Duration.ofSeconds(1), () -> assertEquals(Map.of(), adaptor.partyColors()));
