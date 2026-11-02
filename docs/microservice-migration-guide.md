@@ -668,7 +668,7 @@ What was tried, on throwaway Compose projects:
 - **`/actuator/health/{liveness,readiness}` don't check the database,** on purpose, and no application code changed. `/actuator` isn't on the gateway: it gets `index.html` like any SPA route.
 - **The metrics addon stays off,** so peaks come from each pod's `/sys/fs/cgroup/memory.peak`, also sampled every 10 s, and `kubectl top` isn't available.
 
-Memory in the first full scrape (`-XX:MaxRAMPercentage=70` everywhere). A JVM grows its heap before it collects, so a peak near a limit's heap is not proof that it needed that much. Against ADR 0001's estimate of 1.5 to 2 GiB for four JVMs: 1.5 GiB idle, as all four rest near 390 MiB, and 3.1 GiB if all four peak together.
+Memory in the first full scrape (`-XX:MaxRAMPercentage=70` everywhere). A JVM grows its heap before it collects, so a peak near a limit's heap is not proof that it needed that much. Against ADR 0001's estimate of 1.5 to 2 GiB for four JVMs: 1.1 GiB idle just after a restart, and 3.1 GiB if all four peak together.
 
 | Pod | Limit during the scrape | Peak | Own memory at its peak | Limit now | Request |
 | --- | --- | --- | --- | --- | --- |
