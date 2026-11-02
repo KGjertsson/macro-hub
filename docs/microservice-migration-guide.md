@@ -30,7 +30,7 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 | 1 | Prepare inside the monolith | Done |
 | 2 | Extract regional-statistics | Done |
 | 3 | Extract macro-series | Done |
-| 4 | Extract parliament, switch election to REST | Not started |
+| 4 | Extract parliament, switch election to REST | In progress |
 | 5 | Retire the monolith | Not started |
 | 6 | First real Kubernetes deployment | Not started |
 
@@ -289,10 +289,10 @@ Revert the PR and re-create the local databases.
 
 **Tasks:**
 
-- [ ] Give election its own out-port for party colours, and use it in `LocalElectionService` in place of `PartyDirectory`.
-- [ ] Add the HTTP adaptor for `GET /macro-analyzer/parliament/parties`, with a configurable URL, a background refresh and the fallbacks from ADR 0005. It must accept the 204 the endpoint gives for an empty list, and must not block start-up. While both are in the monolith, the configurable URL points at the monolith itself (`http://localhost:8080`).
-- [ ] Add a contract test that pins `code` and `color`, and update `LocalElectionServiceTest`.
-- [ ] Remove the `election` entry from `DOMAIN_MODULE_EXTRA_DEPENDENCIES` in `ArchitectureTest`, and remove `PartyDirectory` from parliament.
+- [x] Give election its own out-port for party colours, and use it in `LocalElectionService` in place of `PartyDirectory`.
+- [x] Add the HTTP adaptor for `GET /macro-analyzer/parliament/parties`, with a configurable URL, a background refresh and the fallbacks from ADR 0005. It must accept the 204 the endpoint gives for an empty list, and must not block start-up. While both are in the monolith, the configurable URL points at the monolith itself (`http://localhost:8080`).
+- [x] Add a contract test that pins `code` and `color`, and update `LocalElectionServiceTest`.
+- [x] Remove the `election` entry from `DOMAIN_MODULE_EXTRA_DEPENDENCIES` in `ArchitectureTest`, and remove `PartyDirectory` from parliament.
 - [ ] Run the extraction checklist for parliament.
 - [ ] Route `/macro-analyzer/parliament/` and `/macro-analyzer/scrape/parliament/` to the service, and point election's URL at it. Add the image and its service in `docker-compose-all.yml`.
 
@@ -300,7 +300,21 @@ Revert the PR and re-create the local databases.
 
 **Rollback:** revert the PR and re-create the local databases.
 
-**What differed:** not started.
+**What differed:**
+
+Election's switch to REST (the extraction is still to come):
+
+- The out-port is `PartyColorPort` (colour by party code). `RefreshingPartyColorAdaptor` implements it from memory and `ParliamentPartiesClient` makes the call, so a request only reads a field. Election imports nothing from parliament.
+- ADR 0005 left the interval open. It is 1 hour (`election.parliament.refresh-interval`), and 15 seconds (`retry-interval`) until the first list has loaded. After that a failed refresh keeps the list and waits for the next hourly one. The whole exchange has a 5 second deadline (`timeout`), on the future rather than `HttpRequest.timeout`, which doesn't cover a body that stalls after the headers.
+- The first refresh runs on `ApplicationReadyEvent`, when the application listens, because in the monolith the endpoint is the application itself. On a restored copy the list had loaded 0.4 seconds after the application had started.
+- The refresh has its own daemon thread, not `@Scheduled`: `SchedulerConfig` turns `@Scheduled` off with `scheduler.enabled=false`, which would have left election on Valmyndigheten's colours.
+- A 204, or an empty list, doesn't replace a list already held, like a failed refresh. `riksdag_party` is only written by migrations, so an empty answer points to a broken parliament, not to parties having gone away. A 200 that isn't a list of parties with a `code` and a `color` counts as a failed refresh. With no list yet, both keep retrying.
+- The contract is a file, `macro-backend/contracts/parliament-parties.json`, with only the two fields election reads. `macro-analyzer`'s `pom.xml` puts it on the test classpath. `ParliamentPartiesClientTest` holds election to it, and `PartiesContractHttpTest` holds the real endpoint to it, on the migrated database. Neither imports the other side, so the second test moves with parliament. **The extraction has to add the same `testResource` to the new service's `pom.xml`.**
+- The test profile points the URL at a closed port, with a retry of an hour, so tests can't read a real stack on 8080. `PartyColorsAtStartupHttpTest` runs the real wiring against a stub.
+- Compose sets `ELECTION_PARLIAMENT_URL: http://macro-analyzer:8080`, which the extraction changes to the new service. `k8s/` isn't changed: the default, the application's own port on `localhost`, holds there while parliament is in the monolith.
+- `ParliamentServiceTest` tested `listParties`, which is gone, so it now tests `getParties`.
+- Compared with the running stack on a restored copy of the local database: 690 requests over every kommun, region and valkrets (the database only has 2026), with and without `?year=`, and the unknown year and area cases. 688 were identical in status and bytes. The two `/municipalities/elections` lists differed only in the order of parties with equal votes, as in step 3.
+- With a stub for parliament: a closed port, a server that never answers, a body that stalls, 500, 204 and HTML with no list yet all gave start-ups of the same 8 seconds and fast answers with Valmyndigheten's colours (SD `#4E83A3`). With a list held, the same failures and a stopped stub kept the stub's colours, and a stub-only colour for SD proved they come from REST.
 
 ## Step 5: Retire the monolith
 

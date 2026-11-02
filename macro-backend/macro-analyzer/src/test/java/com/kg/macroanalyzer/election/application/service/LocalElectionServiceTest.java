@@ -3,13 +3,12 @@ package com.kg.macroanalyzer.election.application.service;
 import com.kg.macroanalyzer.election.application.port.in.ElectedMemberDto;
 import com.kg.macroanalyzer.election.application.port.in.GovernanceDto;
 import com.kg.macroanalyzer.election.application.port.out.ElectionRepositoryPort;
+import com.kg.macroanalyzer.election.application.port.out.PartyColorPort;
 import com.kg.macroanalyzer.election.domain.ElectedMember;
 import com.kg.macroanalyzer.election.domain.Governance;
 import com.kg.macroanalyzer.election.domain.LocalElectionResult;
 import com.kg.macroanalyzer.election.domain.LocalElectionType;
 import com.kg.macroanalyzer.election.domain.LocalPartyResult;
-import com.kg.macroanalyzer.parliament.application.port.in.PartyDirectory;
-import com.kg.macroanalyzer.parliament.domain.Party;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,13 +32,13 @@ public class LocalElectionServiceTest {
     @Mock
     ElectionRepositoryPort repositoryPort;
     @Mock
-    PartyDirectory partyDirectory;
+    PartyColorPort partyColorPort;
 
     LocalElectionService service;
 
     @BeforeEach
     void setUp() {
-        service = new LocalElectionService(repositoryPort, partyDirectory);
+        service = new LocalElectionService(repositoryPort, partyColorPort);
     }
 
     @Test
@@ -61,15 +61,24 @@ public class LocalElectionServiceTest {
     @Test
     void shouldUseRiksdagPartyColour_overValmyndighetensColour() {
         // when
-        when(partyDirectory.listParties()).thenReturn(List.of(
-                new Party("M", "Moderaterna", "#52BDEC", "Liberal Conservatism", true)
-        ));
+        when(partyColorPort.partyColors()).thenReturn(Map.of("M", "#52BDEC"));
         when(repositoryPort.readLocalElectionResults(LocalElectionType.KF, 2026)).thenReturn(List.of(lund()));
         final var summary = service.getLocalElectionResults(LocalElectionType.KF, 2026).getFirst();
 
         // then
         assertEquals("#52BDEC", summary.parties().get(1).color());
         assertEquals("#E8112D", summary.parties().get(0).color());
+    }
+
+    @Test
+    void shouldUseValmyndighetensColourThenGray_whenNoPartyListYet() {
+        // when
+        when(partyColorPort.partyColors()).thenReturn(Map.of());
+        when(repositoryPort.readLocalElectionResults(LocalElectionType.KF, 2026)).thenReturn(List.of(lund()));
+        final var summary = service.getLocalElectionResults(LocalElectionType.KF, 2026).getFirst();
+
+        // then
+        assertEquals(List.of("#E8112D", "#66BEE6", "#9CA3AF"), summary.parties().stream().map(p -> p.color()).toList());
     }
 
     @Test

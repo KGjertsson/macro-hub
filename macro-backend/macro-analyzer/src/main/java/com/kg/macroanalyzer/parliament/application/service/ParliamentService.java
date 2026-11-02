@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
-public class ParliamentService implements ParliamentQueries, PartyDirectory {
+public class ParliamentService implements ParliamentQueries {
 
     // Matches e.g. "Tjänstgörande ersättare" and "Förste vice talman (tjänstgörande riksdagsledamot)", but not "Tjänstledig"
     private static final String SERVING_STATUS_MARKER = "tjänstgörande";
@@ -37,11 +37,6 @@ public class ParliamentService implements ParliamentQueries, PartyDirectory {
     ParliamentService(ParliamentRepositoryPort repositoryPort, Clock clock) {
         this.repositoryPort = repositoryPort;
         this.clock = clock;
-    }
-
-    @Override
-    public List<Party> listParties() {
-        return repositoryPort.readParties();
     }
 
     @Override

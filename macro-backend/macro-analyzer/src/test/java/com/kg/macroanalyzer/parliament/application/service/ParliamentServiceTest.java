@@ -54,10 +54,10 @@ public class ParliamentServiceTest {
     @Test
     void shouldListParties_asStored() {
         // when
-        final var result = parliamentService.listParties();
+        final var result = parliamentService.getParties();
 
         // then
-        assertEquals(List.of("S", "M"), result.stream().map(Party::code).toList());
+        assertEquals(List.of("S", "M"), result.stream().map(p -> p.code()).toList());
         assertEquals("#52BDEC", result.get(1).color());
     }
 

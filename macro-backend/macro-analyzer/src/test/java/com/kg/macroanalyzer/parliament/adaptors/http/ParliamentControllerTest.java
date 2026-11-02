@@ -116,6 +116,16 @@ public class ParliamentControllerTest {
     }
 
     @Test
+    public void shouldReturnNoContent_whenNoParties() {
+        // when
+        when(parliamentQueries.getParties()).thenReturn(List.of());
+        final var response = parliamentController.getParties();
+
+        // then
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
     public void shouldReturnNoContent_whenNoElections() {
         // when
         when(parliamentQueries.getElections()).thenReturn(List.of());
