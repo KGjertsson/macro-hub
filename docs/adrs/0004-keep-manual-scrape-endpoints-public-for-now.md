@@ -22,7 +22,7 @@ The manual scrape endpoints, or their per-service replacements, stay reachable t
 
 *Note, 2026-11-02:* the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue` are gone with the monolith, and the gateway's `/macro-analyzer/` catch-all answers 404. The four per-service paths are still public, so this decision stands.
 
-*Note, 2026-11-02, revisited at the first deployment (step 6):* the decision stands for now. The gateway's NodePort, 30081, answers on every address of the WSL2 machine, so whatever can reach that network can read the app and trigger the four manual scrape paths, with no authentication. **Still open, as the project owner's question:** how far that network reaches, and whether the exposure is acceptable or should be narrowed.
+*Note, 2026-11-02, revisited at the first deployment (step 6):* the decision stands for now. The gateway's NodePort, 30081, answers on every address of the WSL2 machine, so whatever can reach that network can read the app and trigger the four manual scrape paths, with no authentication. **Still open, as the project owner's question:** how far that network reaches, and whether the exposure is acceptable or should be narrowed. The answer also bears on `POST /macro-analyzer/chart-data`, which isn't a scrape path: it needs no authentication either, and a chart of all 108 series takes 681 MiB of heap after a collection. Two at once would probably exceed macro-series' 1075 MiB cap and restart the service (inferred from that measurement, not tried).
 
 ## Alternatives considered
 
