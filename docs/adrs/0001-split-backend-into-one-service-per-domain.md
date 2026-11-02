@@ -33,6 +33,6 @@ The split happens in the steps listed in the [migration guide](../microservice-m
 
 - Scrapes no longer block each other, SCB's memory spikes are isolated and each service deploys on its own.
 - Boundaries are enforced by the build and by separate databases ([0003](0003-one-database-per-service-on-one-postgres-instance.md)).
-- Memory use goes up. A `docker stats` reading of the monolith showed 609 MiB (the number moves with the JVM's heap; another reading showed 890 MiB), and four JVMs would plausibly take 1.5 to 2 GiB. That is an estimate, not a measurement, so don't size memory limits from it.
+- Memory use goes up. A `docker stats` reading of the monolith showed 609 MiB (the number moves with the JVM's heap; another reading showed 890 MiB), and four JVMs would plausibly take 1.5 to 2 GiB. That is an estimate, not a measurement, so don't size memory limits from it. *Note, 2026-11-02:* step 6 of the guide measured it on the cluster, with the table there: about 1.1 GiB idle just after a restart, and 3.1 GiB for the first scrape's peaks together, under Serial. The guide explains why those peaks overstate the need, and why the services now run G1.
 - Local start-up becomes four services and a proxy, and there are four images to build and deliver.
 - This is a lot of operational surface for about 10,000 lines of Java running as one replica. It is an accepted cost.

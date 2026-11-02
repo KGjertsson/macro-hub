@@ -1,0 +1,105 @@
+# One replica, and Recreate: scrapeLock is per process, so a second instance would scrape the same queue at the same time.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: regional-statistics-service
+  namespace: macro-hub
+  labels:
+    app: regional-statistics-service
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: regional-statistics-service
+  template:
+    metadata:
+      labels:
+        app: regional-statistics-service
+    spec:
+      # No workload calls the Kubernetes API, and this cluster has no RBAC, so a token here could do anything in any namespace
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: regional-statistics-service
+          # deploy.sh replaces IMAGE_TAG with the commit that build-images.sh built and imported
+          image: macro-hub/regional-statistics-service:IMAGE_TAG
+          imagePullPolicy: Never
+          # The image runs as root, as under Compose, so at least take away what root could do with it
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ ALL ]
+          ports:
+            - name: http
+              containerPort: 8082
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres.macro-hub.svc.cluster.local:5432/regional_statistics
+            - name: SPRING_DATASOURCE_USERNAME
+              value: regional_statistics
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: regional-statistics-db
+                  key: password
+            # Boot turns these two endpoints on by itself in a pod. Set here so that doesn't rest on its detection
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            # G1 set explicitly: below 1792 MiB the JVM would pick Serial by itself, and Compose runs G1. The heap may take 70% of
+            # the limit, which leaves about 461 MiB for metaspace, threads and the code cache, measured at 220 to 290 MiB. Exit
+            # on an OutOfMemoryError, so it shows as a restart rather than a service that carries on with a dead thread.
+            # -Xlog:gc is the evidence of what the heap really holds: the guide's step 6 has the reasoning
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:+UseG1GC -XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError -Xlog:gc:stdout
+          # Flyway runs before this first answers
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          # Not the database: a Postgres restart shouldn't take the service out, as it reconnects by itself
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # 3 minutes without an answer, so a long scrape or a garbage collection doesn't get it killed. This can't catch
+          # a scrape stuck on a query that hangs (see "Database" in CLAUDE.md): the process still answers
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 100m
+              memory: 768Mi
+            limits:
+              # A first full SCB scrape keeps every fetched value on the heap until it is stored: 1348 MiB here under Serial, with
+              # the heap at its cap, and 846 MiB in Compose under G1
+              memory: 1536Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: regional-statistics-service
+  namespace: macro-hub
+  labels:
+    app: regional-statistics-service
+spec:
+  type: ClusterIP
+  selector:
+    app: regional-statistics-service
+  ports:
+    - name: http
+      port: 8082
+      targetPort: http

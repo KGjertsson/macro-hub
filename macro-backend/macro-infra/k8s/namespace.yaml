@@ -1,0 +1,6 @@
+# Everything of this deployment lives here. The cluster also holds the owner's older namespace macro-analyzer, which
+# these files don't manage.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: macro-hub

@@ -1,15 +1,23 @@
+# Retain, and held for the one claim below by claimRef, so the data outlives the namespace's contents and no other claim
+# can take it. A hostPath doesn't enforce the capacity: it is what the volume is sized for, on a data set of about 500 MB.
+# After teardown.sh the volume is Released, and deploy.sh makes it available to the same claim again.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: postgres-pv
-  namespace: macro-analyzer
+  name: macro-hub-postgres-pv
   labels:
     app: postgres
 spec:
   capacity:
-    storage: 1Gi
+    storage: 10Gi
   accessModes:
     - ReadWriteOnce
-  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: macro-hub-manual
+  claimRef:
+    namespace: macro-hub
+    name: postgres-pvc
   hostPath:
-    path: "/mnt/data/postgres"
+    # Its own directory: /mnt/data/postgres is the owner's older cluster database
+    path: /mnt/data/macro-hub/postgres
+    type: DirectoryOrCreate
