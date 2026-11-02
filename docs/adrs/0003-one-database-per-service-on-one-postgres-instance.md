@@ -20,6 +20,8 @@ Each service gets its own database and its own role, all on one Postgres instanc
 
 The draft design recommended a schema and role per service. The project owner chose a database per service instead.
 
+*Note, 2026-11-02:* every service now has its database (`regional_statistics`, `macro_series`, `parliament`, `election`). A new Postgres volume has no other application database. Its one bootstrap superuser, `macrouser`, is only for the init script and maintenance: no service logs in with it. Its name stays because an existing volume has that role.
+
 ## Alternatives considered
 
 - **Shared tables.** Rejected, because services would break each other through schema changes.

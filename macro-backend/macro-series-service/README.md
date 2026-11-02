@@ -28,10 +28,10 @@ An existing Postgres volume needs the database first. See "Starting the local st
 
 On start-up, Flyway runs twice against the service's own database:
 
-1. `macro-platform`'s `db/platform` creates `series_configuration` and `scrape_action_queue`, with the history table `flyway_platform_schema_history` (`macro.platform.flyway.enabled=true`).
+1. `macro-platform`'s `db/platform` creates `series_configuration` and `scrape_action_queue`, with the history table `flyway_platform_schema_history`.
 2. This module's `db/migration`, with the default `flyway_schema_history`. `V1` is a squashed baseline of the 41 tables and the 108 config rows. The schema isn't empty when this run starts, so it uses a baseline at version 0. `V2` removes duplicates, keeping the newest row, and adds a unique constraint on series and date to all 41 tables, so scrapes can upsert.
 
-The config rows keep the monolith's `id`s. `/series-config` lists them in that order, and `/chart-data` picks each series' colour from it.
+The config rows keep their `id`s from before the split. `/series-config` lists them in that order, and `/chart-data` picks each series' colour from it.
 
 To regenerate the jOOQ model (`macroseries.jooq.generated`), from a database at the latest migration:
 

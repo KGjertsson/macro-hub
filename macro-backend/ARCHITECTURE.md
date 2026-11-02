@@ -1,45 +1,40 @@
-# Architecture — macro-analyzer
+# Architecture of the backend
 
-The backend is split into modules by domain, each laid out as a small hexagon (ports and adaptors).
-The full package map, the dependency rules and the checklist for a new domain are in the
-"Architecture" section of the repository's `CLAUDE.md`; `ArchitectureTest` (ArchUnit) enforces the rules.
+The backend is four services and one library, each domain module laid out as a small hexagon (ports and adaptors).
+The full package map, the dependency rules and the checklist for a new domain are in the "Architecture" section of the
+repository's `CLAUDE.md`. Each Maven module's `ArchitectureTest` (ArchUnit) enforces the rules.
 
-## Modules
-
-```
-  com.kg.macroanalyzer
-  |
-  +-- MacroAnalyzerApplication        (the only class in the root package)
-  |
-  +-- scrape              scrape queue, enqueue/scrape endpoints, cron jobs, the generic ScrapeFlow
-  +-- macroseries         chart series, in its own service               (/chart-data, /series-config)
-  +-- regionalstatistics  SCB DeSO/RegSO indicators, in its own service  (/regional-statistics/*)
-  +-- parliament          Riksdagen members, activity, parties, seats, in its own service (/parliament/*)
-  +-- election            Valmyndigheten kommun/region/valkrets results  (/municipalities/*, /regions/*,
-  |                                                                       /constituencies/*)
-  +-- shared              CORS, Jackson, JDBC, Flyway config; WebPort and the WebAdaptorFlow pipeline
-  +-- jooq.generated      generated jOOQ model, except the tables below
-  +-- platform.jooq.generated  generated jOOQ model of series_configuration, scrape_action_queue, flyway_schema_history
-```
-
-`scrape`, `shared` and `platform.jooq.generated` are built in the Maven module `macro-platform`, a plain library next
-to this module. `regionalstatistics` is built in `regional-statistics-service`, `macroseries` in `macro-series-service` and `parliament` in `parliament-service`. Each is its own
-application on its own database, with its jOOQ model inside the module (`<module>.jooq.generated`) and its application
-class in the root package. What is left is built here and runs as one application. The layout below holds in all of them.
-
-Allowed dependencies between modules:
+## Maven modules
 
 ```
-  election                                               --> scrape, shared, jooq.generated
-  regionalstatistics, macroseries, parliament            --> scrape, shared (and the model inside each)
+  macro-platform               library: no application class
+    scrape                     scrape queue, enqueue/scrape endpoints, cron jobs, the generic ScrapeFlow
+    shared                     CORS, Jackson, JDBC, Flyway config; WebPort and the WebAdaptorFlow pipeline
+    platform.jooq.generated    generated jOOQ model of series_configuration, scrape_action_queue, flyway_schema_history
+
+  regional-statistics-service  regionalstatistics   SCB DeSO/RegSO indicators     (/regional-statistics/*)              :8082
+  macro-series-service         macroseries          chart series                  (/chart-data, /series-config)         :8083
+  parliament-service           parliament           Riksdagen members, activity, parties, seats (/parliament/*)         :8084
+  election-service             election             Valmyndigheten's kommun, region and valkrets results
+                                                                    (/municipalities/*, /regions/*, /constituencies/*)  :8085
+```
+
+Each service is its own application on its own database, with its jOOQ model inside the module
+(`<module>.jooq.generated`) and its application class in the root package, `com.kg.macroanalyzer`, so its component
+scanning finds `macro-platform`'s beans. The layout below holds in all of them.
+
+Allowed dependencies:
+
+```
+  regionalstatistics, macroseries, parliament, election  --> scrape, shared (and the model inside each)
   scrape                                                 --> shared, platform.jooq.generated
   shared                                                 --> no module; platform.jooq.generated
 ```
 
-No domain module uses another's code, whether out-ports, services, adaptors or in-ports. The one runtime link is
-over HTTP: election reads the Riksdag parties' colours from `GET /macro-analyzer/parliament/parties`, cached in memory
-and refreshed in the background (`election.adaptors.web.RefreshingPartyColorAdaptor` behind the out-port
-`PartyColorPort`, see ADR 0005). `macro-backend/contracts/parliament-parties.json` pins the fields it reads.
+No service uses another's code. The one runtime link is over HTTP: election reads the Riksdag parties' colours from
+`GET /macro-analyzer/parliament/parties`, cached in memory and refreshed in the background
+(`election.adaptors.web.RefreshingPartyColorAdaptor` behind the out-port `PartyColorPort`, see ADR 0005).
+`macro-backend/contracts/parliament-parties.json` pins the fields it reads.
 
 ## Inside a module
 
@@ -96,11 +91,11 @@ continues, and the cron retries it on its next drain.
 
 | Flow id (`scrape_flow`) | Constant                                                          | Flow built in                                                           | Configs                                                    |
 |-------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------------|------------------------------------------------------------|
-| `MACRO_POINT` (its own service) | `macroseries.domain.MacroSeriesScrapeFlows`               | `macroseries.adaptors.config.MacroPointScrapeFlowConfiguration`         | every chart series (the only configs in `/series-config`)  |
-| `MEMBER_OF_PARLIAMENT` (its own service) | `parliament.domain.ParliamentScrapeFlows`                         | `parliament.adaptors.config.MemberOfParliamentScrapeFlowConfiguration`  | `MembersOfParliament`                                      |
-| `MEMBER_ACTIVITY` (its own service) | `parliament.domain.ParliamentScrapeFlows`                         | `parliament.adaptors.config.MemberActivityScrapeFlowConfiguration`      | `MembersOfParliamentActivity`                              |
+| `MACRO_POINT` | `macroseries.domain.MacroSeriesScrapeFlows`               | `macroseries.adaptors.config.MacroPointScrapeFlowConfiguration`         | every chart series (the only configs in `/series-config`)  |
+| `MEMBER_OF_PARLIAMENT` | `parliament.domain.ParliamentScrapeFlows`                         | `parliament.adaptors.config.MemberOfParliamentScrapeFlowConfiguration`  | `MembersOfParliament`                                      |
+| `MEMBER_ACTIVITY` | `parliament.domain.ParliamentScrapeFlows`                         | `parliament.adaptors.config.MemberActivityScrapeFlowConfiguration`      | `MembersOfParliamentActivity`                              |
 | `LOCAL_ELECTION`        | `election.domain.ElectionScrapeFlows`                             | `election.adaptors.config.LocalElectionScrapeFlowConfiguration`         | `MunicipalElections`, `RegionElections`, `ParliamentElections` |
-| `SCB_REGIONAL` (its own service) | `regionalstatistics.domain.RegionalStatisticsScrapeFlows` | `regionalstatistics.adaptors.config.ScbRegionalScrapeFlowConfiguration` | `ScbRegionalStatistics`                                    |
+| `SCB_REGIONAL` | `regionalstatistics.domain.RegionalStatisticsScrapeFlows` | `regionalstatistics.adaptors.config.ScbRegionalScrapeFlowConfiguration` | `ScbRegionalStatistics`                                    |
 
 ## WebAdaptorFlow pipeline
 
@@ -147,10 +142,8 @@ continues, and the cron retries it on its next drain.
 
   WRITE PATH (enqueue + scrape):
 
-  Each application has its own queue and lock; the paths have its prefix (macro.scrape.path-prefix), for the
-  monolith /macro-analyzer, for regional-statistics-service /macro-analyzer/scrape/regional-statistics, for
-  macro-series-service /macro-analyzer/scrape/macro-series and for parliament-service
-  /macro-analyzer/scrape/parliament.
+  Each service has its own queue and lock, and its paths have its prefix (macro.scrape.path-prefix):
+  /macro-analyzer/scrape/{regional-statistics,macro-series,parliament,election}.
 
   POST /enqueue, /enqueue-all --> InsertionAdaptor --> InPort --> EnqueueService
        --> ScrapeQueuePort.persistScrapeQueueItem() --> ScrapeQueuePostgresAdaptor --> PostgreSQL
@@ -159,4 +152,19 @@ continues, and the cron retries it on its next drain.
   (CronScrapeAdaptor calls InPort every 60 s; CronEnqueueAdaptor calls enqueueAll during the 22:00 hour)
        --> ScrapeQueuePort.getItemsToScrape() --> PostgreSQL
        --> for each item: RegisteredScrapeFlow named by its config's scrapeFlow --> ScrapeFlow.run() (see above)
+```
+
+## Scraping, as a flowchart
+
+```mermaid
+flowchart LR
+    InsertionAdaptor --> InPort
+    CronScrapeAdaptor --> InPort
+    CronEnqueueAdaptor --> InPort
+    InPort --> EnqueueService --> ScrapeQueuePort
+    InPort --> ScrapeService
+    ScrapeService -- SeriesConfig.scrapeFlow --> RegisteredScrapeFlow
+    RegisteredScrapeFlow --> Preparer --> ExistingFinder --> Scraper --> Persister
+    Persister --> RepositoryPort[module port.out]
+    Persister --> ScrapeQueuePort
 ```

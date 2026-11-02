@@ -274,9 +274,10 @@ finish() {
       echo "Or fix the cause and run this block again." >&2 ;;
     switching)
       echo "The checksums matched, so election holds the data, and macroanalyzer is unchanged. Starting the new containers failed." >&2
-      echo "Fix the cause and run this block again, or go back to the old stack, from the clone's previous commit:" >&2
+      echo "Fix the cause and run this block again, or go back to the old stack, on the commit before election-service:" >&2
       echo "  docker tag macro-frontend:before-step5 macro-frontend:latest; docker rm -f macrohub-macro-frontend macrohub-election; docker start macrohub-macro-analyzer" >&2
-      echo "  git switch --detach HEAD~1; docker compose --env-file $env_file -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --no-build --no-deps macro-frontend" >&2 ;;
+      echo '  git switch --detach "$(git log --diff-filter=A --format=%H -1 -- macro-backend/election-service/pom.xml)~1"' >&2
+      echo "  docker compose --env-file $env_file -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --no-build --no-deps macro-frontend" >&2 ;;
   esac
   exit "$rc"
 }

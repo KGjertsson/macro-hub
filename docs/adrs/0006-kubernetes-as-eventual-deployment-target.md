@@ -27,6 +27,8 @@ The k8s files only need to keep working as far as they do today until the first 
 
 This ADR doesn't decide how routing works in the cluster. The choice between nginx in the frontend image and Ingress routes is an open question in the guide.
 
+*Note, 2026-11-02:* the monolith this ADR's context describes is retired, but the manifests below still name it. Step 6 of the [migration guide](../microservice-migration-guide.md) replaces them. The service name `macro-analyzer-service` below is the example from the old manifests.
+
 ## Alternatives considered
 
 - **Compose as the deployment target as well.** It already runs the whole stack, but the project owner wants to deploy on Kubernetes.

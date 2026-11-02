@@ -55,12 +55,18 @@ EU27_2020 = European Union (27 countries as of 2020).
 
 ## Set Up Guide
 
-1. Start Postgres with `docker compose -f macro-backend/macro-infra/docker/docker-compose-dependencies.yml up -d`. It listens on `localhost:5432`, the backend's default
-2. Run the backend application in IntelliJ
-3. Install the frontend repo
-4. Run the frontend repo
-5. Run `macro-backend/macro-infra/scripts/scrape-all.sh` to populate the databases
+The backend is four services and a shared library, in `macro-backend/`, and the dashboard is in `macro-frontend/`. See `CLAUDE.md` for the architecture and all the ways to run them, and `macro-backend/ARCHITECTURE.md` for diagrams.
 
-The backend is being split into one service per domain. See `CLAUDE.md` for what has moved and the current way to start the stack, and `docs/microservice-migration-guide.md` for the plan.
+1. `cp macro-backend/macro-series-service/.env.example macro-backend/macro-series-service/.env`. The keys in it are only needed to scrape Riksbanken and Fed series
+2. Build the backend images: `(cd macro-backend && ./mvnw clean package && docker build -t regional-statistics-service regional-statistics-service && docker build -t macro-series-service macro-series-service && docker build -t parliament-service parliament-service && docker build -t election-service election-service)`
+3. Start everything: `docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`, and open `http://localhost:8081`
+4. Run `macro-backend/macro-infra/scripts/scrape-all.sh` to populate the databases, which takes about 8 minutes
 
-To run the backend against the microk8s cluster's database instead (see `macro-backend/macro-infra/k8s/README.md`), set `SPRING_DATASOURCE_URL` to it. Nothing defaults to it.
+`docs/microservice-migration-guide.md` records how the backend was split into services. Nothing defaults to the microk8s cluster's database (see `macro-backend/macro-infra/k8s/README.md`).
+
+## Sources
+
+- [Riksbanken REST API](https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/hamta-rantor-och-valutakurser-via-api/)
+- [Riksbanken series](https://www.riksbank.se/sv/statistik/sok-rantor--valutakurser/oppet-api/serier-for-webbservices/)
+- [Hexagonal architecture](https://medium.com/ssense-tech/hexagonal-architecture-there-are-always-two-sides-to-every-story-bc0780ed7d9c)
+- [Commit message guidelines](https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53)

@@ -22,6 +22,8 @@ Split the backend into four services, one per business domain: macro-series, reg
 
 The split happens in the steps listed in the [migration guide](../microservice-migration-guide.md).
 
+*Note, 2026-11-02:* the split is done. The monolith is retired (step 5 of the [migration guide](../microservice-migration-guide.md)), and `election-service` holds what was left of it. The base package `com.kg.macroanalyzer` and the URL prefix `/macro-analyzer` stay, as this ADR says URLs don't change. Renaming the package was out of scope.
+
 ## Alternatives considered
 
 - **Extract only regional-statistics and keep the other three together.** This captures most of the runtime benefit for one extra JVM. Rejected in favour of the full split.

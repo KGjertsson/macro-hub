@@ -26,8 +26,8 @@ An existing Postgres volume needs the database first. See "Starting the local st
 
 On start-up, Flyway runs twice against the service's own database:
 
-1. `macro-platform`'s `db/platform` creates `series_configuration` and `scrape_action_queue`, with the history table `flyway_platform_schema_history` (`macro.platform.flyway.enabled=true`).
-2. This module's `db/migration`, with the default `flyway_schema_history`. `V1` is a squashed baseline of the six tables, the curated rows of `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`, and the two config rows, which keep the monolith's `id` and `global_id`. The schema isn't empty when this run starts, so it uses a baseline at version 0.
+1. `macro-platform`'s `db/platform` creates `series_configuration` and `scrape_action_queue`, with the history table `flyway_platform_schema_history`.
+2. This module's `db/migration`, with the default `flyway_schema_history`. `V1` is a squashed baseline of the six tables, the curated rows of `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`, and the two config rows, which keep their `id` and `global_id` from before the split. The schema isn't empty when this run starts, so it uses a baseline at version 0.
 
 To regenerate the jOOQ model (`parliament.jooq.generated`), from a database at the latest migration:
 
@@ -39,7 +39,7 @@ The default is `localhost:5432/parliament`. For another database, add `-Djooq.co
 
 ## Fill it
 
-**Keep a local database that has data rather than re-creating it**: a scrape only fetches activity for the latest two terms, and the monolith's V38 dropped the copy it was restored from. See "Restoring parliament" in the guide. An empty one fills like this:
+**Keep a local database that has data rather than re-creating it**: a scrape only fetches activity for the latest two terms, and nothing else holds a copy. See "Restoring parliament" in the guide. An empty one fills like this:
 
 ```bash
 curl -X POST http://localhost:8081/macro-analyzer/scrape/parliament/enqueue-all
