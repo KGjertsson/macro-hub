@@ -143,6 +143,11 @@ public class FedSeries extends TableImpl<FedSeriesRecord> {
     }
 
     @Override
+    public List<UniqueKey<FedSeriesRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.FED_SERIES_SERIES_NAME_DATE_KEY);
+    }
+
+    @Override
     public FedSeries as(String alias) {
         return new FedSeries(DSL.name(alias), this);
     }

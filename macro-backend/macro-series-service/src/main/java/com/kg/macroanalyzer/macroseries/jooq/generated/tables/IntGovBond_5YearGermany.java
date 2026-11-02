@@ -10,7 +10,9 @@ import com.kg.macroanalyzer.macroseries.jooq.generated.tables.records.IntGovBond
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.jooq.Condition;
@@ -128,6 +130,11 @@ public class IntGovBond_5YearGermany extends TableImpl<IntGovBond_5YearGermanyRe
     @Override
     public UniqueKey<IntGovBond_5YearGermanyRecord> getPrimaryKey() {
         return Keys.EURO_MARKET_5_YEAR_GERMANY_PKEY;
+    }
+
+    @Override
+    public List<UniqueKey<IntGovBond_5YearGermanyRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.INT_GOV_BOND_5_YEAR_GERMANY_DATE_KEY);
     }
 
     @Override
