@@ -100,9 +100,9 @@ class ParliamentApplicationTests {
         assertEquals(43, dslContext.fetchCount(RIKSDAG_ORGAN));
     }
 
-    // /parliament/parties answers in the table's order, which the monolith's update of SD's colour left with SD last
+    // /parliament/parties answers in the table's order, which the update of SD's colour left with SD last
     @Test
-    void shouldSeedThePartiesInTheMonolithsOrder_withSdsColour() {
+    void shouldSeedThePartiesWithSdLast_andSdsColour() {
         // when
         final var codes = dslContext.select(RIKSDAG_PARTY.CODE).from(RIKSDAG_PARTY).fetch(RIKSDAG_PARTY.CODE);
         final var sdColor = dslContext.select(RIKSDAG_PARTY.COLOR)
