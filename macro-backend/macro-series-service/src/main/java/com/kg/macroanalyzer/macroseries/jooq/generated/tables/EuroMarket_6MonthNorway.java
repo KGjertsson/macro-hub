@@ -10,7 +10,9 @@ import com.kg.macroanalyzer.macroseries.jooq.generated.tables.records.EuroMarket
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.jooq.Condition;
@@ -128,6 +130,11 @@ public class EuroMarket_6MonthNorway extends TableImpl<EuroMarket_6MonthNorwayRe
     @Override
     public UniqueKey<EuroMarket_6MonthNorwayRecord> getPrimaryKey() {
         return Keys.EURO_MARKET_6_MONTH_NORWAY_PKEY;
+    }
+
+    @Override
+    public List<UniqueKey<EuroMarket_6MonthNorwayRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.EURO_MARKET_6_MONTH_NORWAY_DATE_KEY);
     }
 
     @Override

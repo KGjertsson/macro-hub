@@ -10,7 +10,9 @@ import com.kg.macroanalyzer.macroseries.jooq.generated.tables.records.ExchangeUs
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.jooq.Condition;
@@ -126,6 +128,11 @@ public class ExchangeUsdSek extends TableImpl<ExchangeUsdSekRecord> {
     @Override
     public UniqueKey<ExchangeUsdSekRecord> getPrimaryKey() {
         return Keys.EXCHANGE_USD_SEK_PKEY;
+    }
+
+    @Override
+    public List<UniqueKey<ExchangeUsdSekRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.EXCHANGE_USD_SEK_USD_SEK_DATE_KEY);
     }
 
     @Override

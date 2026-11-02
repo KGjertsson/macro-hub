@@ -10,7 +10,9 @@ import com.kg.macroanalyzer.macroseries.jooq.generated.tables.records.PolicyRate
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.jooq.Condition;
@@ -126,6 +128,11 @@ public class PolicyRateSweden extends TableImpl<PolicyRateSwedenRecord> {
     @Override
     public UniqueKey<PolicyRateSwedenRecord> getPrimaryKey() {
         return Keys.POLICY_RATE_SWEDEN_PKEY;
+    }
+
+    @Override
+    public List<UniqueKey<PolicyRateSwedenRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.POLICY_RATE_SWEDEN_POLICY_RATE_DATE_KEY);
     }
 
     @Override
