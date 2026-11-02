@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.SWEDISH_MEMBERS_OF_PARLIAMENT;
+import static com.kg.macroanalyzer.parliament.jooq.generated.Tables.SWEDISH_MEMBERS_OF_PARLIAMENT;
 
 @Repository
 public class SweParMemberRepository {

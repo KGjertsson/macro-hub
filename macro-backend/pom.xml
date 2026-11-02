@@ -21,6 +21,7 @@
         <module>macro-analyzer</module>
         <module>regional-statistics-service</module>
         <module>macro-series-service</module>
+        <module>parliament-service</module>
     </modules>
 
     <properties>

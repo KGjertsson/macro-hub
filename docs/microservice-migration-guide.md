@@ -17,7 +17,7 @@ In the same PR as each step:
 
 Nothing is deployed anywhere. Local development uses Docker Compose, and Kubernetes is the eventual deployment target ([ADR 0006](adrs/0006-kubernetes-as-eventual-deployment-target.md)). There is no production data, downtime or live traffic to protect, and today's shared database only exists on development machines. So:
 
-- A new database starts empty and is **re-scraped by default**. Dump and restore is only a time-saver for a local database.
+- A new database starts empty and is **re-scraped by default**. Dump and restore is only a time-saver for a local database. The exception is parliament, whose local data **is restored**: see "Restoring parliament".
 - **Rollback for any step means reverting its PR and re-creating the local databases.** Re-creating them matters: Flyway refuses to start when the database has an applied migration that is missing from the code, which is what a reverted migration looks like.
 - `docker-compose-all.yml` runs all services at each stage. The k8s files only need to keep working as far as they do today until step 6.
 - Steps are still one PR each, because that keeps `main` working and each change reviewable.
@@ -66,6 +66,7 @@ Steps 2 to 5 each use this checklist. `<service>` is the service's name, and `<d
   | frontend (Compose) | 8081 |
   | regional-statistics | 8082 |
   | macro-series | 8083 |
+  | parliament | 8084 |
   | Vite | 5173 |
 
 ### Flyway
@@ -82,22 +83,22 @@ The platform run comes first, so the two tables exist before the service's basel
 Until step 5, `series_configuration` and `scrape_action_queue` are defined twice, in the monolith's `db/migration` and in `db/platform`, and `macro-platform`'s jOOQ model is generated from the monolith's database. A column change therefore needs a monolith migration, a new `db/platform` version and a regenerated model, in the same PR. No test catches a drift between the two unless the code uses the new column.
 
 - [ ] Write a squashed baseline in the new service with the domain's tables and seed data, without the DDL for the two platform tables, taken from the current database (`pg_dump --schema-only -t ...` is a good start). The monolith's migrations stay there until step 5, and in git history after that.
-- [ ] Include the seed data that migrations added. Today that is `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. `local_governance` starts empty.
+- [ ] Include the seed data that migrations added. Today that is `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. `local_governance` starts empty. Compare the seed tables with the source by checksum, and seed them in the source's physical order (`SELECT ctid, ...`): a read with no `ORDER BY` answers in that order, and an `UPDATE` in a later migration has moved rows. `RiksdagElectionRepository.readParties` is one such read.
 - [ ] Copy the domain's `series_configuration` rows into the baseline, selected by `scrape_flow`. Keep `id` and `global_id` so `/series-config` keeps its order, and write `global_id` as literals so the baseline doesn't need the `uuid-ossp` extension (no column default uses it).
-- [ ] Keep the names of the tables' sequences and constraints, however odd. A data-only `pg_dump` calls `setval` by the source's sequence names, so a renamed sequence fails the restore. Compare `pg_dump --schema-only` of the new database's tables with the monolith's: the diff should be empty.
+- [ ] Keep the names of the tables' sequences and constraints, however odd. A data-only `pg_dump` calls `setval` by the source's sequence names, so a renamed sequence fails the restore. Compare `pg_dump --schema-only` of the new database's tables with the monolith's: the diff should be empty. `pg_dump -t` leaves out functions, so a trigger's function, such as `update_updated_column`, has to be added by hand and compared on its own (`pg_get_functiondef`).
 - [ ] Set the `series_configuration` sequence past the copied ids. `scrape_action_queue` needs nothing as long as the baseline copies no queue rows.
 - [ ] Turn on the platform run for the service. The property goes in its `application.properties`, as it never runs without it.
 - [ ] Set `spring.flyway.baseline-on-migrate=true` and `spring.flyway.baseline-version=0` for the service run. After the platform run the schema is no longer empty but `flyway_schema_history` doesn't exist yet, and Flyway then refuses to migrate ("Found non-empty schema(s) ... but no schema history table"). Version 0 is needed because Flyway skips migrations at or below the baseline, and the default baseline version of 1 would skip the service's `V1`. Both were tried on Flyway 12.4.0 and Postgres 16.
 
 ### Data
 
-Re-scraping is the default. Dump and restore only saves time on a local database.
+Re-scraping is the default. Dump and restore only saves time on a local database, except for parliament, which is restored (see "Restoring parliament").
 
 | Service | Re-scrape time | Notes |
 | --- | --- | --- |
 | regional-statistics | About 9 to 12 minutes | 2.4 M rows, 377 MB on disk. Measured 2026-11-01: 8 min 49 s (6 min 35 s fetching, 2 min writing), the container peaked at 846 MiB on a JVM with default heap settings on a 31 GiB machine. A second run with unchanged tables took 13 s. |
 | macro-series | About 1 to 2 minutes (**estimate**, not a full run) | Needs the Riksbanken and Fed keys. Scaled from 7 series fetched and stored on 2026-11-01: Riksbanken 1 to 1.5 s each (39 series), Fed 0.5 to 1.3 s (11), Eurostat about 0.25 s (58), one at a time. No full run was made, and rate limits on a full run are unknown. |
-| parliament | About 7 minutes for activity | Activity is only fetched for the latest two terms, so older activity in a local database isn't re-created. |
+| parliament | About 9 minutes | Restored rather than re-scraped: see "Restoring parliament". Measured 2026-11-02 on an empty database: 9 min 3 s, of which 16 s for 3,376 members and 8 min 47 s for 584 members' activity. Activity is only fetched for the latest two terms, so older activity in a local database isn't re-created. |
 | election | About 1.5 minutes | About 310 zips. |
 
 - [ ] Trigger the scrape through the service's manual path (`enqueue-all`, then `scrape-from-queue`), or wait for its cron during the 22:00 hour.
@@ -120,6 +121,84 @@ docker exec -i macrohub-postgres pg_restore -U regional_statistics --no-owner -d
 
 Tried on a throwaway database with 2.4 M rows: a 16 MB dump and 73 s to restore. It runs as the service's role, so the foreign keys stay enforced, and `pg_restore` loads `scb_indicator` first. Counts and checksums matched, and the SCB tables have no sequences. Other services have to check their own sequences (`pg_dump -t` only includes those a named table owns, and `--data-only` then sets them).
 
+#### Restoring parliament
+
+**Parliament's data is restored, not re-scraped**, while the monolith's tables exist (until its drop migration, which is a later PR than the extraction). A scrape only fetches activity for the latest two terms, members would get new `id`, `global_id` and `created` values, and `riksdag_*` is curated. An empty clone with nothing to restore fills by scraping as usual.
+
+The six tables can't hold duplicates: `swedish_members_of_parliament` has `UNIQUE (intressent_id)`, `swedish_member_activity` and the `riksdag_*` tables have primary keys on their natural keys. So, unlike macro-series, no later constraint rejects the data, the service's `V1` doesn't need a `SPRING_FLYWAY_TARGET`, and a checksum of each whole table is a fair comparison. The one sequence, `swedish_members_of_parliament_id_seq`, is owned by the table, so `pg_dump -t` includes it, and the baseline has the same name, so `setval` works. Compare it too: it is far past the row count, because every upsert uses a value. The baseline's seed rows have to go first, or the `COPY` fails on the primary keys, and the dump's own rows replace them. `TRUNCATE` names the tables together because of the foreign keys, and `pg_dump` orders the data so that `pg_restore` loads the parents first, with the foreign keys enforced, as the service's role.
+
+Paste this in `bash`, from the repo root of a clone on the commit that has the service. It runs in a subshell and stops at the first failure with `RESTORE FAILED` and what to do next. The only write to `macroanalyzer` is the last monolith start's V37, after the checksums have matched, and that only deletes the two config rows and their queue rows. Everything before it writes to `parliament`, as a role that can't connect to `macroanalyzer`. The old monolith container stays stopped, not removed, until then, so `docker start` brings it back, on its old image, after a failure. The dump goes to a temporary directory outside the repo and is deleted at the end, whatever happens: the old tables stay the source until the follow-up PR. The block can be run again: it empties all six tables in `parliament` first. It refuses to run during the 22:00 hour (UTC in the containers), when the service's cron would start scraping into the new tables.
+
+```bash
+(
+set -euo pipefail
+dc() { docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml "$@"; }
+tables="swedish_members_of_parliament swedish_member_activity riksdag_party riksdag_election riksdag_election_result riksdag_organ"
+checksums() {   # user, database
+  for t in $tables; do
+    docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U "$1" -d "$2" -At -c "SELECT '$t', count(*), md5(string_agg(md5(x::text), '' ORDER BY md5(x::text))) FROM $t x"
+  done
+  docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U "$1" -d "$2" -At -c "SELECT last_value, is_called FROM swedish_members_of_parliament_id_seq"
+}
+dump_dir=$(mktemp -d)
+old_tables_step=yes
+finish() {
+  rc=$?
+  rm -rf "$dump_dir"
+  if [ "$rc" -eq 0 ]; then echo "RESTORE OK"; exit 0; fi
+  echo "RESTORE FAILED (exit $rc). See the output above." >&2
+  if [ "$old_tables_step" = yes ]; then
+    echo "The monolith's old tables are unchanged. To go back to the old stack: docker stop macrohub-parliament; docker start macrohub-macro-analyzer" >&2
+    echo "Or fix the cause and run this block again." >&2
+  else
+    echo "The checksums matched and parliament is restored. Only starting the new monolith or frontend failed: fix the cause and run those two lines again." >&2
+  fi
+  exit "$rc"
+}
+trap finish EXIT
+
+[ "$(date -u +%H)" != 22 ] || { echo "Not during the 22:00 hour (UTC): the service's cron would start scraping" >&2; exit 1; }
+
+# Build first, while nothing has stopped. Without these images, Compose would bring back the old monolith
+(cd macro-backend && sh ./mvnw clean package && docker build -t macro-analyzer macro-analyzer && docker build -t parliament-service parliament-service)
+
+# The old tables stop changing: the monolith's cron is what writes them
+docker stop macrohub-macro-analyzer
+
+# An existing volume has no parliament database (add -e PARLIAMENT_DB_PASSWORD=... after -i if .env sets it)
+docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh
+
+# Flyway creates the tables and the seed rows. Stop the service again before touching them
+dc up -d --no-deps parliament
+attempts=0
+until [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8084/macro-analyzer/parliament/parties || true)" = 200 ]; do
+  attempts=$((attempts + 1))
+  if [ "$attempts" -ge 60 ]; then
+    docker logs --tail 30 macrohub-parliament >&2 || true
+    echo "parliament-service didn't answer within 2 minutes" >&2
+    exit 1
+  fi
+  sleep 2
+done
+docker stop macrohub-parliament
+
+docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only -t swedish_members_of_parliament -t swedish_member_activity -t riksdag_party -t riksdag_election -t riksdag_election_result -t riksdag_organ macroanalyzer > "$dump_dir/parliament.dump"
+docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U parliament -d parliament -c "TRUNCATE ${tables// /, }"
+docker exec -i macrohub-postgres pg_restore -U parliament --no-owner --exit-on-error --single-transaction -d parliament < "$dump_dir/parliament.dump"
+
+# All six tables and the sequence must match, or the monolith doesn't start
+diff <(checksums macrouser macroanalyzer) <(checksums parliament parliament)
+checksums parliament parliament
+
+old_tables_step=no
+docker start macrohub-parliament
+dc up -d --no-deps macro-analyzer     # runs V37
+dc up -d --build --no-deps macro-frontend
+)
+```
+
+A failed `diff` prints the rows that differ and exits there. The `TRUNCATE` covers the four seeded tables because the baseline's rows would otherwise fail the `COPY` on the primary keys, and the two others so that a second run works. No queue rows are copied: a pending row in the old queue (`status = 0`, none locally when this was written) is simply dropped, and the next cron or manual run enqueues again.
+
 ### Code
 
 - [ ] Create the service's Maven module, with its own `*Application` in the package `com.kg.macroanalyzer`. `@SpringBootApplication` scans from its own package, so that is what finds the `macro-platform` beans. Set `spring-boot.run.skip` to false, and add it to `<modules>` in the parent pom.
@@ -128,7 +207,7 @@ Tried on a throwaway database with 2.4 M rows: a 16 MB dump and 73 s to restore.
 - [ ] Generate a jOOQ model per service from its own database, in the package `com.kg.macroanalyzer.<module>.jooq.generated`. Give it a profile named after the service (`jooq-codegen-<service>`) that sets `jooq.codegen.url`, `.user` and `.password` to the Compose Postgres. With the shared name `jooq-codegen`, the `-am` the build needs would also run `macro-platform`'s codegen, and regenerate its model from whatever database the command names.
 - [ ] Move the module's tests and fixtures. Give the service its own `ArchitectureTest` for its layers, a copy of `NoStaticResourceHandlersHttpTest` and `ManualScrapePathsHttpTest`, and an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
 - [ ] Update the monolith's `ArchitectureTest` (`MODULES`, `DOMAIN_MODULES`).
-- [ ] Update `MonolithSeriesConfigIntegrationTest`: `shouldRouteEveryConfig_toItsDomainsScrapeFlow` lists the configs still in the monolith by name (five after step 3), so each service takes its own entries.
+- [ ] Update `MonolithSeriesConfigIntegrationTest`: `shouldRouteEveryConfig_toItsDomainsScrapeFlow` lists the configs still in the monolith by name (three after step 4), so each service takes its own entries.
 
 ### Manual scrape endpoints
 
@@ -293,8 +372,9 @@ Revert the PR and re-create the local databases.
 - [x] Add the HTTP adaptor for `GET /macro-analyzer/parliament/parties`, with a configurable URL, a background refresh and the fallbacks from ADR 0005. It must accept the 204 the endpoint gives for an empty list, and must not block start-up. While both are in the monolith, the configurable URL points at the monolith itself (`http://localhost:8080`).
 - [x] Add a contract test that pins `code` and `color`, and update `LocalElectionServiceTest`.
 - [x] Remove the `election` entry from `DOMAIN_MODULE_EXTRA_DEPENDENCIES` in `ArchitectureTest`, and remove `PartyDirectory` from parliament.
-- [ ] Run the extraction checklist for parliament.
-- [ ] Route `/macro-analyzer/parliament/` and `/macro-analyzer/scrape/parliament/` to the service, and point election's URL at it. Add the image and its service in `docker-compose-all.yml`.
+- [x] Run the extraction checklist for parliament, except for dropping the old tables.
+- [x] Route `/macro-analyzer/parliament/` and `/macro-analyzer/scrape/parliament/` to the service, and point election's URL at it. Add the image and its service in `docker-compose-all.yml`.
+- [ ] Drop the six old tables with a monolith migration, and regenerate the monolith's jOOQ model. This is a separate small PR, after the owner's stack has been verified: until then they are what "Restoring parliament" reads. V37, in the step's main PR, only deletes the two config rows and their queue rows.
 
 **Verify:** the checklist's verify list, plus: with parliament stopped, election pages still answer and keep Riksdag colours after a refresh fails. With parliament stopped and election just restarted, election pages still answer, with Valmyndigheten's colours.
 
@@ -302,7 +382,7 @@ Revert the PR and re-create the local databases.
 
 **What differed:**
 
-Election's switch to REST (the extraction is still to come):
+Election's switch to REST:
 
 - The out-port is `PartyColorPort` (colour by party code). `RefreshingPartyColorAdaptor` implements it from memory and `ParliamentPartiesClient` makes the call, so a request only reads a field. Election imports nothing from parliament.
 - ADR 0005 left the interval open. It is 1 hour (`election.parliament.refresh-interval`), and 15 seconds (`retry-interval`) until the first list has loaded. After that a failed refresh keeps the list and waits for the next hourly one. The whole exchange has a 5 second deadline (`timeout`), on the future rather than `HttpRequest.timeout`, which doesn't cover a body that stalls after the headers.
@@ -315,6 +395,24 @@ Election's switch to REST (the extraction is still to come):
 - `ParliamentServiceTest` tested `listParties`, which is gone, so it now tests `getParties`.
 - Compared with the running stack on a restored copy of the local database: 690 requests over every kommun, region and valkrets (the database only has 2026), with and without `?year=`, and the unknown year and area cases. 688 were identical in status and bytes. The two `/municipalities/elections` lists differed only in the order of parties with equal votes, as in step 3.
 - With a stub for parliament: a closed port, a server that never answers, a body that stalls, 500, 204 and HTML with no list yet all gave start-ups of the same 8 seconds and fast answers with Valmyndigheten's colours (SD `#4E83A3`). With a list held, the same failures and a stopped stub kept the stub's colours, and a stub-only colour for SD proved they come from REST.
+
+The extraction:
+
+- The template held. The module is `parliament-service`, on port 8084 inside and outside the container, the Compose service is `parliament`, and the jOOQ profile is `jooq-codegen-parliament`. V37 is the monolith's migration. The model was generated from a throwaway database. CI needed no change.
+- The tables moved with a new trigger function: `pg_dump -t` doesn't include `update_updated_column`, which the members table's trigger needs, so the baseline defines it. The checklist now says so. `pg_dump --schema-only` of the six tables is identical to the monolith's apart from the owner. The function differs only in line endings, because the monolith's migration was applied from a CRLF checkout.
+- `readParties` has no `ORDER BY`, and V24's `UPDATE` left SD last in the table. V22's seed order with V24 folded in would have moved SD on an empty database, with no difference in a checksum. The baseline seeds SD last, `ParliamentApplicationTests` pins it, and the checklist now says to look at the physical order. `/parliament/parties` and `/parliament/elections` on an empty database are byte for byte the running stack's.
+- **Parliament is restored**, unlike the two earlier services, as "Restoring parliament" describes. That block was run as written on a throwaway stack, only with the container names and ports replaced, starting from a copy of the local database at V36 and the old `macro-analyzer` image: all six checksums and the sequence (243072) matched, a 2.6 MB dump, under a second to restore, and the new monolith then ran V37 and loaded the colours 0.4 seconds after starting. There are no duplicates to consider, because every table has its natural key as a constraint.
+- The block's failures were tried the same way, with its image builds replaced by throwaway tags. A failed build stopped before anything else. A wrong `PARLIAMENT_DB_PASSWORD` in `.env` gave `RESTORE FAILED` with the service's log after 2 minutes. A checksum altered on purpose printed the differing row and stopped before the monolith started. In each case `macroanalyzer` stayed at V36 with 5 configs and the same checksum, the documented `docker stop` and `docker start` brought the old monolith back on its old image with `/parliament/parties` answering, and no dump was left behind. Running the block again after the failed checksum ended in `RESTORE OK`, with V37 applied and the old tables' checksum unchanged.
+- What a re-scrape would have changed, measured on an empty database: today, all 584 activity rows come back with the same values, keys and JSON, and 3,374 of 3,376 members have the same `member_data`, while `id`, `global_id`, `created`, `updated` and the sequence differ, so whole-table checksums differ. The local database holds no activity older than the latest two terms right now: all 584 rows were written by one run on 2026-11-01. So restoring protects little activity today. It does keep the members' identifiers, and the point about activity returns once a term has changed.
+- Compared through the new gateway with the running stack, on a restored copy: all 17 `/parliament/*` list requests (parties, elections, composition, members for all 11 election years, from 384 to 458 members each, and the unknown year and member cases), 295 member details (every third of the 584 members with activity, and every 28th of the other 2,792) and 690 election requests (every kommun, region and valkrets, with and without `?year=`, and the unknown cases) had the same status and bytes, 1,002 requests and 10 MB in all, except the two `/municipalities/elections` lists, which differed only in the order of parties with equal votes. Member details were a sample because each takes about a second on the running stack; the whole-table checksums cover the rest of the data they read.
+- This was the first real use of the Compose service name in `ELECTION_PARLIAMENT_URL`. On a start of the whole stack, the monolith was ready before parliament, its first attempt failed, and the next, 15 seconds later, logged `Loaded 11 party colours`. The monolith has no `depends_on` on parliament; the frontend does.
+- With the `parliament` container stopped, on a restored copy with `ELECTION_PARLIAMENT_REFRESH_INTERVAL=20s`: refreshes failed and logged `keeping the 11 held`, and `/municipalities/elections` kept answering 200 in about 0.1 s with SD `#FFCC00` and S `#E8112d`. After restarting the monolith with parliament still stopped, election answered 13 s after the restart, with Valmyndigheten's colours (SD `#4E83A3`, S `#FF0000`). After `docker start` of parliament, the colours were back 25 s later, 13 s after parliament logged that it had started; the retry interval of 15 s is the upper bound on that part. `/macro-analyzer/parliament/*` answers 502 through the gateway while it is stopped.
+- Election's default URL had to change, because this application no longer serves `/parliament/parties`. It is `http://localhost:8084`, pinned by the monolith's `BaseConfigurationTest`, and run under `mvnw` with both applications it loaded the colours from the service. The test profile still points at a closed port. `k8s/` isn't changed apart from a comment: it has no parliament manifest, so in a pod the default answers nothing, `/parliament/*` answers 404, and election uses Valmyndigheten's colours and logs a warning every 15 seconds until step 6.
+- `MonolithSeriesConfigIntegrationTest` now lists the three election configs, and its check of empty chart metadata uses `MunicipalElections`. `ParliamentApplicationTests` has the Riksdagen configs' version. The monolith's `TestSeriesConfigFactory` had no user left and is gone. The `PartiesContractHttpTest` and its contract `testResource` moved with the service, and the monolith keeps the same `testResource` for `ParliamentPartiesClientTest`.
+- A real scrape through the gateway on an empty database: `enqueue-all` answered 202, `scrape-from-queue` answered 200 after 9 min 3 s, both queue rows were done, and a second call during the run answered 409. The estimate of about 7 minutes for activity was 8 min 47 s.
+- The role `parliament` is refused on `macroanalyzer`, `postgres`, `template1`, `macro_series` and `regional_statistics`, and the roles `macro_series` and `regional_statistics` on `parliament`. All four applications started on empty databases.
+- `npm run dev` was checked with curl, with `parliament-service` under `mvnw` on 8084 and a throwaway database: `/parliament/*` and a `POST` to `/scrape/parliament/enqueue` reached the service (seen in its log), and `/municipalities/*` and `/series-config` reached the running stack with GET. No page was opened in a browser. `scrape-all.sh` was only run against a stub gateway, which saw all eight calls: the parliament scrape's one real run had already been used.
+- The old tables stay until the follow-up PR, which should compare each table again first, as they are the only local copy until then.
 
 ## Step 5: Retire the monolith
 
@@ -347,7 +445,7 @@ It comes last here, but it doesn't depend on the split being finished, so it can
 **Tasks:**
 
 - [ ] Fix or replace the existing manifests in `macro-backend/macro-infra/k8s/`. `java/service.yaml` selects a label the pods don't have, `ingress/test-ingress.yaml` names a Service that doesn't exist, and `postgres/postgres-deployment.yaml` uses `postgres:13` while Compose uses `postgres:16`.
-- [ ] Add manifests for all four services, with database settings and API keys. **Open:** how secrets are stored. `postgres-configmap.yaml` holds the password in plain text today.
+- [ ] Add manifests for all four services, with database settings and API keys, and `ELECTION_PARLIAMENT_URL` on election (until then its default, `localhost:8084`, answers nothing in a pod, so it uses Valmyndigheten's colours). **Open:** how secrets are stored. `postgres-configmap.yaml` holds the password in plain text today.
 - [ ] Add routing. **Open:** a frontend manifest with nginx (using fully qualified service names as `CLAUDE.md` describes), or Ingress routes.
 - [ ] Create the Postgres databases and roles. **Open:** how, given that init scripts only run on an empty volume.
 - [ ] Set up image delivery for four images plus the frontend. **Open:** keep `imagePullPolicy: Never` with hand-imported images, or use a registry.

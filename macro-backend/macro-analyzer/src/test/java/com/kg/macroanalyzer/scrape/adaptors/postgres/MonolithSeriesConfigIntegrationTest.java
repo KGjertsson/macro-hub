@@ -29,8 +29,6 @@ class MonolithSeriesConfigIntegrationTest {
 
         // then
         assertEquals(Map.of(
-                "MembersOfParliament", "MEMBER_OF_PARLIAMENT",
-                "MembersOfParliamentActivity", "MEMBER_ACTIVITY",
                 "MunicipalElections", "LOCAL_ELECTION",
                 "RegionElections", "LOCAL_ELECTION",
                 "ParliamentElections", "LOCAL_ELECTION"
@@ -40,16 +38,16 @@ class MonolithSeriesConfigIntegrationTest {
     @Test
     void shouldLeaveTheChartMetadataEmpty() {
         // when
-        final var membersOfParliament = seriesConfigPort.readSeriesConfigList().stream()
-                .filter(c -> c.name().equals("MembersOfParliament"))
+        final var municipalElections = seriesConfigPort.readSeriesConfigList().stream()
+                .filter(c -> c.name().equals("MunicipalElections"))
                 .findFirst()
                 .orElseThrow();
 
         // then
-        assertNull(membersOfParliament.unit());
-        assertNull(membersOfParliament.subcategory());
-        assertNull(membersOfParliament.country());
-        assertNull(membersOfParliament.maturityMonths());
+        assertNull(municipalElections.unit());
+        assertNull(municipalElections.subcategory());
+        assertNull(municipalElections.country());
+        assertNull(municipalElections.maturityMonths());
     }
 
 }

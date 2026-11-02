@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.kg.macroanalyzer.jooq.generated.Tables.SWEDISH_MEMBER_ACTIVITY;
+import static com.kg.macroanalyzer.parliament.jooq.generated.Tables.SWEDISH_MEMBER_ACTIVITY;
 
 @Repository
 public class SweParActivityRepository {

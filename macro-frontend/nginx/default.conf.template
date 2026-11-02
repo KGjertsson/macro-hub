@@ -47,6 +47,10 @@ server {
         set $backend ${PARLIAMENT_URL};
         proxy_pass $backend;
     }
+    location /macro-analyzer/scrape/parliament/ {
+        set $backend ${PARLIAMENT_URL};
+        proxy_pass $backend;
+    }
 
     # election
     location /macro-analyzer/municipalities/ {

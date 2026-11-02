@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.io.ClassPathResource;
@@ -23,6 +24,16 @@ class BaseConfigurationTest {
 
         // then
         assertEquals("jdbc:postgresql://localhost:5432/macroanalyzer", properties.getProperty("spring.datasource.url"));
+    }
+
+    // Parliament is its own service, so this application's own port no longer answers /parliament/parties
+    @Test
+    void shouldReadThePartyColoursFromTheParliamentService() throws IOException {
+        // when
+        final var properties = PropertiesLoaderUtils.loadProperties(new ClassPathResource("application.properties"));
+
+        // then
+        assertEquals("http://localhost:8084", properties.getProperty("election.parliament.url"));
     }
 
 }
