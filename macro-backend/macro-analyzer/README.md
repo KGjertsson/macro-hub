@@ -43,7 +43,6 @@ flowchart LR
 
 ```mermaid
 erDiagram
-    SERIES_CONFIG ||--|| MACRO_SERIES : configures
     SERIES_CONFIG ||--}| MEMBERS_OF_PARLIAMENT : configures
     
     SERIES_CONFIG {
@@ -60,16 +59,6 @@ erDiagram
         string country
         integer maturity_months
         string scrape_flow
-    }
-    
-    MACRO_SERIES {
-        integer id
-        uuid global_id
-        string series_name
-        double value
-        datetime date
-        datetime created
-        datetime updated
     }
     
     MEMBERS_OF_PARLIAMENT {

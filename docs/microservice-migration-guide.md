@@ -29,7 +29,7 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 | 0 | Record the decisions and start this guide | Done |
 | 1 | Prepare inside the monolith | Done |
 | 2 | Extract regional-statistics | Done |
-| 3 | Extract macro-series | In progress: the service is extracted. Dropping the old tables is a follow-up PR |
+| 3 | Extract macro-series | Done |
 | 4 | Extract parliament, switch election to REST | Not started |
 | 5 | Retire the monolith | Not started |
 | 6 | First real Kubernetes deployment | Not started |
@@ -103,14 +103,14 @@ Re-scraping is the default. Dump and restore only saves time on a local database
 - [ ] Trigger the scrape through the service's manual path (`enqueue-all`, then `scrape-from-queue`), or wait for its cron during the 22:00 hour.
 - [ ] Skip the queue rows on a fresh start. If you keep a local database and it has pending rows, copy them by `dataset_name` (`status = 0`; all local rows are currently done).
 
-Optional time-saver, after Flyway has created the service's tables and **before the monolith's drop migration runs**, because that deletes what the dump reads. The monolith runs it as soon as it starts on a commit that has it, so a local database that is past it has to re-scrape. The commands for macro-series work until the monolith's drop migration runs (V35 only deletes the config and queue rows, so they work after it too). The tables have no seed rows, so nothing needs truncating:
+Optional time-saver, after Flyway has created the service's tables and **before the monolith's drop migration runs**, because that deletes what the dump reads. The monolith runs it as soon as it starts on a commit that has it, so a local database that is past it has to re-scrape. The commands below are the ones used for macro-series and regional-statistics, whose tables V36 and V34 have dropped, so they no longer work as written. A later service names its own tables. The macro-series tables have no seed rows, so nothing needed truncating:
 
 ```bash
 docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only -t 'euro_market_*' -t 'int_gov_bond_*' -t 'swedish_government_*' -t policy_rate_sweden -t exchange_usd_sek -t fed_series -t eurostat_national_debt_series macroanalyzer > ms.dump
 docker exec -i macrohub-postgres pg_restore -U macro_series --no-owner -d macro_series < ms.dump
 ```
 
-Tried on a throwaway stack from a dump of the local database: 41 tables, 586,918 rows, an 18 MB dump, 3 s to restore. Checksums of all 41 tables matched, and the sequences were set. The commands used for regional-statistics follow. V34 has dropped its tables, so they no longer work as written:
+Tried on a throwaway stack from a dump of the local database: 41 tables, 586,918 rows, an 18 MB dump, 3 s to restore. Checksums of all 41 tables matched, and the sequences were set. The commands used for regional-statistics:
 
 ```bash
 docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only -t scb_indicator -t scb_area_value -t scb_availability -t scb_table_state macroanalyzer > rs.dump
@@ -149,7 +149,7 @@ Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so ngi
 - [ ] Delete the domain's `scrape_action_queue` rows from the monolith in the same migration. An item whose name matches no config stays pending, and fails with a warning on every cron run.
 - [ ] Switch the gateway routes to the new service, in nginx and in the Vite proxy.
 - [ ] Add the service to the enqueue-all replacement script.
-- [ ] After verifying the service locally, drop the old tables with a monolith migration and regenerate the monolith's jOOQ model. Do this in a separate small PR, after the owner's stack has been verified. The monolith's code no longer reads them at that point. Generate from a throwaway database at the new migration (`-Djooq.codegen.url=...`): the default, the Compose Postgres, only gets there once its monolith has restarted on the new code, and generating from it before that changes nothing. The model's diff should only delete those tables and the references to them, and `macro-platform`'s model, which the same command regenerates, should not change.
+- [ ] After verifying the service locally, drop the old tables with a monolith migration and regenerate the monolith's jOOQ model. Do this in a separate small PR, after the owner's stack has been verified. The monolith's code no longer reads them at that point. First compare each table's row count in the two local databases: the drop deletes the local copy, and not everything can be re-scraped (see parliament's activity under "Data"). Generate from a throwaway database at the new migration (`-Djooq.codegen.url=...`): the default, the Compose Postgres, only gets there once its monolith has restarted on the new code, and generating from it before that changes nothing. The model's diff should only delete those tables and the references to them (and `Sequences.java`, if it has no sequence left), and `macro-platform`'s model, which the same command regenerates, should not change.
 - [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. CI needs no change: the `backend` job runs every module of the reactor. Add the image to the after-merge commands in `.claude/skills/ship/SKILL.md`.
 - [ ] Update `CLAUDE.md`, `macro-backend/macro-analyzer/ARCHITECTURE.md`, `macro-backend/macro-analyzer/README.md` and this guide.
 
@@ -159,7 +159,7 @@ Note that `EnqueueService.enqueue` ignores unknown names. After a cut-over, `POS
 
 - [ ] `mvn test` passes for the service and the monolith, and CI is green.
 - [ ] The full stack starts, and the monolith logs no failed flow registration.
-- [ ] Every page that uses the domain works through the gateway, and the responses match what the monolith returned.
+- [ ] Every page that uses the domain works through the gateway, and the responses match what the monolith returned. On a restored copy, compare `/municipalities/elections` and the other election responses without the order of parties that have equal votes: `LocalElectionRepository` sorts by votes only, so a restore alone reorders them.
 - [ ] The role can't connect to another service's database.
 - [ ] A manual scrape on `/macro-analyzer/scrape/<service>/` works through the gateway, and a second one during the run answers 409.
 
@@ -256,7 +256,7 @@ Revert the PR and re-create the local databases.
 - [x] Move the `RIKSBANKEN_PROD_SUBSCRIPTION_KEY` and `FED_PROD_SUBSCRIPTION_KEY` settings to this service only, in `docker-compose-all.yml` and the service's `.env.example`.
 - [x] Move `ChartSeriesConfigIntegrationTest` here, including its count of 108 and its category set. Move its checks on other flows to their owners.
 - [x] Route `/macro-analyzer/series-config`, `/macro-analyzer/chart-data` and `/macro-analyzer/scrape/macro-series/` to the service. Add the image and its service in `docker-compose-all.yml`.
-- [ ] Drop the 41 old tables with a monolith migration, and regenerate the monolith's jOOQ model. This is a separate small PR, after the owner's stack has been verified. V35, in the step's main PR, only deletes the `MACRO_POINT` config rows and their queue rows.
+- [x] Drop the 41 old tables with a monolith migration, and regenerate the monolith's jOOQ model. This is a separate small PR, after the owner's stack has been verified. V35, in the step's main PR, only deletes the `MACRO_POINT` config rows and their queue rows, and V36 drops the tables.
 
 **Verify:** the checklist's verify list, plus: `/series-config` lists 108 entries in the same order, and charts for a Riksbanken, a Fed and a Eurostat series render.
 
@@ -276,6 +276,10 @@ Revert the PR and re-create the local databases.
 - The monolith's and the service's `TestJsonReader` differ: the monolith's lost `readMacroSeriesList`. `ChartSeriesConfigIntegrationTest`'s checks of other domains' configs moved to `MonolithSeriesConfigIntegrationTest`.
 - `scrape-all.sh` was only run against a stub gateway here, which saw all six calls: the point of this step's verification was not to call the external APIs for all 108 series.
 - CI needed no change.
+- The old tables went in a follow-up PR, once the owner's stack had been verified. V36 lists all 41 without `CASCADE` or `IF EXISTS`. Before it, the local `macroanalyzer` and `macro_series` databases held the same row count in each table (586,918 in all). It was applied on an empty database and on a restored dump of the local database at V35: the copy went from 95 MB to 19 MB, the two schemas came out identical, a second start migrated nothing, and both give the same jOOQ model.
+- The model's diff only deletes lines, in 87 files: the 82 table and record classes, references in `Keys`, `Indexes`, `Public` and `Tables`, and `Sequences.java`. That file only held 21 sequences of these tables, with old names such as `euro_market_10_year_denmark_id_seq`, so jOOQ no longer generates it. `macro-platform`'s and the services' models didn't change.
+- The monolith's model is regenerated with `compile`, as `CLAUDE.md` says. `generate-sources` fails on `macro-analyzer`, because `macro-platform` isn't built by then.
+- On the restored copy at V36, 401 of 403 parliament and election requests matched the running stack (at V35) byte for byte, with every kommun, region, valkrets, election year and 40 members. `/municipalities/elections`, with and without `?year=2026`, differed only in the order of parties with equal votes in 144 of 290 kommuner. A copy restored at V35, without V36, differs from the stack in the same way, in 201 kommuner, so V36 isn't the cause: the repository sorts by votes only. The checklist's verify list now says so. Fixing the order is out of scope.
 
 ## Step 4: Extract parliament, and switch election to REST
 
@@ -308,7 +312,7 @@ Revert the PR and re-create the local databases.
 
 - [ ] Run the extraction checklist for election, with the new database `election`. Skip the cut-over items that delete config rows, delete queue rows and drop old tables with a monolith migration: the monolith itself becomes election, so they have no target. The old tables go away with the `macroanalyzer` database.
 - [ ] Rename the `macro-analyzer` module, application class, image, jar and Compose service to election.
-- [ ] Delete the monolith's migrations (V1 to V34, and any that steps 3 and 4 add) and the old jOOQ model from the tree. They stay in git history.
+- [ ] Delete the monolith's migrations (V1 to V36, and any that step 4 adds) and the old jOOQ model from the tree. They stay in git history.
 - [ ] Route `/macro-analyzer/scrape/election/` to election. Its new prefix removes the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue`, so remove the monolith's call from the script, which now only loops over the four names. Every service now sets its own prefix, so remove the `macro-analyzer` default.
 - [ ] Change the catch-all `location /macro-analyzer/` in nginx to answer 404. Without it, unknown API paths would fall through to `location /` and get `index.html` with a 200.
 - [ ] Remove `BACKEND_URL`, the `macroanalyzer` database from `POSTGRES_DB`, and the `macrouser` settings no service uses.
