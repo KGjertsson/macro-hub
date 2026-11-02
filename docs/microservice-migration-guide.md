@@ -17,8 +17,8 @@ In the same PR as each step:
 
 Nothing is deployed anywhere. Local development uses Docker Compose, and Kubernetes is the eventual deployment target ([ADR 0006](adrs/0006-kubernetes-as-eventual-deployment-target.md)). There is no production data, downtime or live traffic to protect, and today's shared database only exists on development machines. So:
 
-- A new database starts empty and is **re-scraped by default**. Dump and restore is only a time-saver for a local database. The exception is parliament, whose local data **is restored**: see "Restoring parliament".
-- **Rollback for any step means reverting its PR and re-creating the local databases.** Re-creating them matters: Flyway refuses to start when the database has an applied migration that is missing from the code, which is what a reverted migration looks like.
+- A new database starts empty and is **re-scraped by default**. Dump and restore is only a time-saver for a local database. The exception was parliament, whose local data **was restored** while the monolith still had its tables: see "Restoring parliament".
+- **Rollback for any step means reverting its PR and re-creating the local databases it changed.** Re-creating them matters: Flyway refuses to start when the database has an applied migration that is missing from the code, which is what a reverted migration looks like. Don't re-create `parliament` or delete the volume that holds it: since the monolith's V38, it is the only copy of its data.
 - `docker-compose-all.yml` runs all services at each stage. The k8s files only need to keep working as far as they do today until step 6.
 - Steps are still one PR each, because that keeps `main` working and each change reviewable.
 
@@ -30,7 +30,7 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 | 1 | Prepare inside the monolith | Done |
 | 2 | Extract regional-statistics | Done |
 | 3 | Extract macro-series | Done |
-| 4 | Extract parliament, switch election to REST | In progress |
+| 4 | Extract parliament, switch election to REST | Done |
 | 5 | Retire the monolith | Not started |
 | 6 | First real Kubernetes deployment | Not started |
 
@@ -57,7 +57,7 @@ Steps 2 to 5 each use this checklist. `<service>` is the service's name, and `<d
   ```
 
   The `REVOKE` matters, because every role may connect to a database by default. On `<db>` alone it keeps the other roles out, but leaves `<db>`'s role able to connect to `macroanalyzer`, `postgres` and `template1`, so the script revokes it on all of them. Owners and superusers keep their access. `macrouser` is a superuser, so the monolith's role isn't limited by this until step 5 removes it.
-- [ ] Both Compose files mount `postgres-init/`. **Postgres init scripts only run on an empty data volume**, so an existing volume needs an explicit step before the service starts, or the service fails with `database "<db>" does not exist`: `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`. The alternative is to delete the volume and re-scrape.
+- [ ] Both Compose files mount `postgres-init/`. **Postgres init scripts only run on an empty data volume**, so an existing volume needs an explicit step before the service starts, or the service fails with `database "<db>" does not exist`: `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`. Don't delete the volume instead: it also holds `parliament`, the only copy of its data.
 - [ ] Pick the service's port and record it here:
 
   | Service | Port |
@@ -83,7 +83,7 @@ The platform run comes first, so the two tables exist before the service's basel
 Until step 5, `series_configuration` and `scrape_action_queue` are defined twice, in the monolith's `db/migration` and in `db/platform`, and `macro-platform`'s jOOQ model is generated from the monolith's database. A column change therefore needs a monolith migration, a new `db/platform` version and a regenerated model, in the same PR. No test catches a drift between the two unless the code uses the new column.
 
 - [ ] Write a squashed baseline in the new service with the domain's tables and seed data, without the DDL for the two platform tables, taken from the current database (`pg_dump --schema-only -t ...` is a good start). The monolith's migrations stay there until step 5, and in git history after that.
-- [ ] Include the seed data that migrations added. Today that is `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. `local_governance` starts empty. Compare the seed tables with the source by checksum, and seed them in the source's physical order (`SELECT ctid, ...`): a read with no `ORDER BY` answers in that order, and an `UPDATE` in a later migration has moved rows. `RiksdagElectionRepository.readParties` is one such read.
+- [ ] Include the seed data that migrations added. For parliament that was `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. Election has none: `local_governance` starts empty. Compare the seed tables with the source by checksum, and seed them in the source's physical order (`SELECT ctid, ...`): a read with no `ORDER BY` answers in that order, and an `UPDATE` in a later migration has moved rows. `RiksdagElectionRepository.readParties` is one such read.
 - [ ] Copy the domain's `series_configuration` rows into the baseline, selected by `scrape_flow`. Keep `id` and `global_id` so `/series-config` keeps its order, and write `global_id` as literals so the baseline doesn't need the `uuid-ossp` extension (no column default uses it).
 - [ ] Keep the names of the tables' sequences and constraints, however odd. A data-only `pg_dump` calls `setval` by the source's sequence names, so a renamed sequence fails the restore. Compare `pg_dump --schema-only` of the new database's tables with the monolith's: the diff should be empty. `pg_dump -t` leaves out functions, so a trigger's function, such as `update_updated_column`, has to be added by hand and compared on its own (`pg_get_functiondef`).
 - [ ] Set the `series_configuration` sequence past the copied ids. `scrape_action_queue` needs nothing as long as the baseline copies no queue rows.
@@ -92,13 +92,13 @@ Until step 5, `series_configuration` and `scrape_action_queue` are defined twice
 
 ### Data
 
-Re-scraping is the default. Dump and restore only saves time on a local database, except for parliament, which is restored (see "Restoring parliament").
+Re-scraping is the default. Dump and restore only saves time on a local database. Parliament was the exception, and was restored (see "Restoring parliament").
 
 | Service | Re-scrape time | Notes |
 | --- | --- | --- |
 | regional-statistics | About 9 to 12 minutes | 2.4 M rows, 377 MB on disk. Measured 2026-11-01: 8 min 49 s (6 min 35 s fetching, 2 min writing), the container peaked at 846 MiB on a JVM with default heap settings on a 31 GiB machine. A second run with unchanged tables took 13 s. |
 | macro-series | About 1 to 2 minutes (**estimate**, not a full run) | Needs the Riksbanken and Fed keys. Scaled from 7 series fetched and stored on 2026-11-01: Riksbanken 1 to 1.5 s each (39 series), Fed 0.5 to 1.3 s (11), Eurostat about 0.25 s (58), one at a time. No full run was made, and rate limits on a full run are unknown. |
-| parliament | About 9 minutes | Restored rather than re-scraped: see "Restoring parliament". Measured 2026-11-02 on an empty database: 9 min 3 s, of which 16 s for 3,376 members and 8 min 47 s for 584 members' activity. Activity is only fetched for the latest two terms, so older activity in a local database isn't re-created. |
+| parliament | About 9 minutes | Local data was restored rather than re-scraped, and past V38 a new database can only be re-scraped: see "Restoring parliament". Measured 2026-11-02 on an empty database: 9 min 3 s, of which 16 s for 3,376 members and 8 min 47 s for 584 members' activity. Activity is only fetched for the latest two terms, so older activity in a local database isn't re-created. |
 | election | About 1.5 minutes | About 310 zips. |
 
 - [ ] Trigger the scrape through the service's manual path (`enqueue-all`, then `scrape-from-queue`), or wait for its cron during the 22:00 hour.
@@ -123,11 +123,15 @@ Tried on a throwaway database with 2.4 M rows: a 16 MB dump and 73 s to restore.
 
 #### Restoring parliament
 
-**Parliament's data is restored, not re-scraped**, while the monolith's tables exist (until its drop migration, which is a later PR than the extraction). A scrape only fetches activity for the latest two terms, members would get new `id`, `global_id` and `created` values, and `riksdag_*` is curated. An empty clone with nothing to restore fills by scraping as usual.
+**Parliament's data was restored, not re-scraped**, while the monolith's tables existed. A scrape only fetches activity for the latest two terms, members would get new `id`, `global_id` and `created` values, and `riksdag_*` is curated. An empty clone with nothing to restore fills by scraping as usual.
+
+**V38 has dropped those tables, so a database at V38 has nothing to restore from**, and the local `parliament` database is the only copy: don't re-create it without need. A local database still before V38, with no restored `parliament` yet, has to run the block below before anything else starts the monolith on a commit that has V38. Its last start then runs V38, after the checksums have matched. Past V38 the block stops at its `pg_dump` (`no matching tables were found`), before it touches `parliament`'s rows, and leaves the monolith and `parliament` containers stopped: `docker start` both.
 
 The six tables can't hold duplicates: `swedish_members_of_parliament` has `UNIQUE (intressent_id)`, `swedish_member_activity` and the `riksdag_*` tables have primary keys on their natural keys. So, unlike macro-series, no later constraint rejects the data, the service's `V1` doesn't need a `SPRING_FLYWAY_TARGET`, and a checksum of each whole table is a fair comparison. The one sequence, `swedish_members_of_parliament_id_seq`, is owned by the table, so `pg_dump -t` includes it, and the baseline has the same name, so `setval` works. Compare it too: it is far past the row count, because every upsert uses a value. The baseline's seed rows have to go first, or the `COPY` fails on the primary keys, and the dump's own rows replace them. `TRUNCATE` names the tables together because of the foreign keys, and `pg_dump` orders the data so that `pg_restore` loads the parents first, with the foreign keys enforced, as the service's role.
 
-Paste this in `bash`, from the repo root of a clone on the commit that has the service. It runs in a subshell and stops at the first failure with `RESTORE FAILED` and what to do next. The only write to `macroanalyzer` is the last monolith start's V37, after the checksums have matched, and that only deletes the two config rows and their queue rows. Everything before it writes to `parliament`, as a role that can't connect to `macroanalyzer`. The old monolith container stays stopped, not removed, until then, so `docker start` brings it back, on its old image, after a failure. The dump goes to a temporary directory outside the repo and is deleted at the end, whatever happens: the old tables stay the source until the follow-up PR. The block can be run again: it empties all six tables in `parliament` first. It refuses to run during the 22:00 hour (UTC in the containers), when the service's cron would start scraping into the new tables.
+Paste this in `bash`, from the repo root of a clone on the commit that has the service. It runs in a subshell and stops at the first failure with `RESTORE FAILED` and what to do next. The only write to `macroanalyzer` is the last monolith start's migrations, after the checksums have matched: V37, which only deletes the two config rows and their queue rows, and on a commit that has it V38, which drops the tables. Everything before it writes to `parliament`, as a role that can't connect to `macroanalyzer`. The old monolith container stays stopped, not removed, until then, so `docker start` brings it back, on its old image, after a failure. The dump goes to a temporary directory outside the repo and is deleted at the end, whatever happens: the old tables are the source until V38 drops them. The block can be run again: it empties all six tables in `parliament` first. It refuses to run during the 22:00 hour (UTC in the containers), when the service's cron would start scraping into the new tables.
+
+With `core.autocrlf=true`, a checkout of this guide has CRLF line endings, so strip the `\r` from a block taken from the file, or copy it from a rendered page.
 
 ```bash
 (
@@ -192,7 +196,7 @@ checksums parliament parliament
 
 old_tables_step=no
 docker start macrohub-parliament
-dc up -d --no-deps macro-analyzer     # runs V37
+dc up -d --no-deps macro-analyzer     # runs V37, and V38 on a commit that has it
 dc up -d --build --no-deps macro-frontend
 )
 ```
@@ -228,7 +232,7 @@ Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so ngi
 - [ ] Delete the domain's `scrape_action_queue` rows from the monolith in the same migration. An item whose name matches no config stays pending, and fails with a warning on every cron run.
 - [ ] Switch the gateway routes to the new service, in nginx and in the Vite proxy.
 - [ ] Add the service to the enqueue-all replacement script.
-- [ ] After verifying the service locally, drop the old tables with a monolith migration and regenerate the monolith's jOOQ model. Do this in a separate small PR, after the owner's stack has been verified. The monolith's code no longer reads them at that point. First compare each table in the two local databases, by row count, or by its distinct keys if the service has removed duplicates: the drop deletes the local copy, and not everything can be re-scraped (see parliament's activity under "Data"). Generate from a throwaway database at the new migration (`-Djooq.codegen.url=...`): the default, the Compose Postgres, only gets there once its monolith has restarted on the new code, and generating from it before that changes nothing. The model's diff should only delete those tables and the references to them (and `Sequences.java`, if it has no sequence left), and `macro-platform`'s model, which the same command regenerates, should not change.
+- [ ] After verifying the service locally, drop the old tables with a monolith migration and regenerate the monolith's jOOQ model. Do this in a separate small PR, after the owner's stack has been verified. The monolith's code no longer reads them at that point. Drop a trigger's function in the same migration if nothing else uses it (`pg_trigger`; jOOQ's model doesn't show it). First compare each table in the two local databases, by checksum or row count, or by its distinct keys if the service has removed duplicates: the drop deletes the local copy, and not everything can be re-scraped (see parliament's activity under "Data"). Generate from a throwaway database at the new migration (`-Djooq.codegen.url=...`): the default, the Compose Postgres, only gets there once its monolith has restarted on the new code, and generating from it before that changes nothing. The model's diff should only delete those tables and the references to them (and `Sequences.java` or `Indexes.java`, if it has no sequence or index left), and `macro-platform`'s model, which the same command regenerates, should not change.
 - [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. CI needs no change: the `backend` job runs every module of the reactor. Add the image to the after-merge commands in `.claude/skills/ship/SKILL.md`.
 - [ ] Update `CLAUDE.md`, `macro-backend/macro-analyzer/ARCHITECTURE.md`, `macro-backend/macro-analyzer/README.md` and this guide.
 
@@ -246,7 +250,7 @@ The Compose files set fixed container names and ports, so verify on a throwaway 
 
 ### Rollback
 
-Revert the PR and re-create the local databases.
+Revert the PR and re-create the databases the step changed. Don't delete the volume: see "Starting point".
 
 ## Step 1: Prepare inside the monolith
 
@@ -303,7 +307,7 @@ Revert the PR and re-create the local databases.
 
 **Verify:** the checklist's verify list, plus: the Områdesstatistik page (`/omraden`) shows data for DeSO and RegSO, and a second scrape with unchanged tables takes about 30 seconds. A running SCB scrape no longer delays a scrape in the monolith.
 
-**Rollback:** revert the PR and re-create the local databases.
+**Rollback:** revert the PR and re-create `macroanalyzer` and `regional_statistics`. Keep `parliament`: see "Starting point".
 
 **What differed:** the suggested items were done as written (`macro.scrape.path-prefix`, a `FlywayMigrationStrategy` bean behind `macro.platform.flyway.enabled`, `flyway_platform_schema_history`, an init script mounted in both Compose files), with these details. The checklist above has been corrected where the template turned out wrong or incomplete.
 
@@ -339,7 +343,7 @@ Revert the PR and re-create the local databases.
 
 **Verify:** the checklist's verify list, plus: `/series-config` lists 108 entries in the same order, and charts for a Riksbanken, a Fed and a Eurostat series render.
 
-**Rollback:** revert the PR and re-create the local databases.
+**Rollback:** revert the PR and re-create `macroanalyzer` and `macro_series`. Keep `parliament`: see "Starting point".
 
 **What differed:** the template held, with these details. The checklist above has been corrected where it turned out incomplete.
 
@@ -374,11 +378,11 @@ Revert the PR and re-create the local databases.
 - [x] Remove the `election` entry from `DOMAIN_MODULE_EXTRA_DEPENDENCIES` in `ArchitectureTest`, and remove `PartyDirectory` from parliament.
 - [x] Run the extraction checklist for parliament, except for dropping the old tables.
 - [x] Route `/macro-analyzer/parliament/` and `/macro-analyzer/scrape/parliament/` to the service, and point election's URL at it. Add the image and its service in `docker-compose-all.yml`.
-- [ ] Drop the six old tables with a monolith migration, and regenerate the monolith's jOOQ model. This is a separate small PR, after the owner's stack has been verified: until then they are what "Restoring parliament" reads. V37, in the step's main PR, only deletes the two config rows and their queue rows.
+- [x] Drop the six old tables with a monolith migration, and regenerate the monolith's jOOQ model. This is a separate small PR, after the owner's stack has been verified: until then they are what "Restoring parliament" reads. V37, in the step's main PR, only deletes the two config rows and their queue rows, and V38 drops the tables.
 
 **Verify:** the checklist's verify list, plus: with parliament stopped, election pages still answer and keep Riksdag colours after a refresh fails. With parliament stopped and election just restarted, election pages still answer, with Valmyndigheten's colours.
 
-**Rollback:** revert the PR and re-create the local databases.
+**Rollback:** revert the PR and re-create `macroanalyzer`, and keep `parliament`: since V38 it is the only copy. Reverting only the drop needs nothing more, as nothing reads the re-created tables. To go back to before the extraction, load the six tables from `parliament` into the re-created `macroanalyzer` first, as "Restoring parliament" does in the other direction.
 
 **What differed:**
 
@@ -412,7 +416,14 @@ The extraction:
 - A real scrape through the gateway on an empty database: `enqueue-all` answered 202, `scrape-from-queue` answered 200 after 9 min 3 s, both queue rows were done, and a second call during the run answered 409. The estimate of about 7 minutes for activity was 8 min 47 s.
 - The role `parliament` is refused on `macroanalyzer`, `postgres`, `template1`, `macro_series` and `regional_statistics`, and the roles `macro_series` and `regional_statistics` on `parliament`. All four applications started on empty databases.
 - `npm run dev` was checked with curl, with `parliament-service` under `mvnw` on 8084 and a throwaway database: `/parliament/*` and a `POST` to `/scrape/parliament/enqueue` reached the service (seen in its log), and `/municipalities/*` and `/series-config` reached the running stack with GET. No page was opened in a browser. `scrape-all.sh` was only run against a stub gateway, which saw all eight calls: the parliament scrape's one real run had already been used.
-- The old tables stay until the follow-up PR, which should compare each table again first, as they are the only local copy until then.
+
+The follow-up that dropped the old tables:
+
+- V38 lists all six without `CASCADE` or `IF EXISTS`, `riksdag_election_result` first because of its foreign keys. Just before writing it, the local `macroanalyzer` and `parliament` databases had the same row count and checksum in all six tables (3,376 members, 584 activity rows, 11 parties, 11 elections, 81 results, 43 organs) and the same sequence value (243072), so no scrape had run in `parliament` since the restore.
+- `update_updated_column()` was only used by the members table's trigger (`pg_trigger`, and V19 is the only migration that names it), so V38 drops it too, also without `CASCADE`. `parliament-service`'s baseline has its own. The monolith's database now has no trigger or function of its own, so step 5's baseline needs none. The `uuid-ossp` extension stays until the database goes in step 5.
+- V38 was applied on an empty database and on a restored dump of the local database at V37: the copy went from 19 MB to 9.4 MB, the two schemas came out identical, a second start migrated nothing, and both give the same jOOQ model.
+- The model's diff is 16 files: the 12 table and record classes and `Indexes.java`, whose only index was on these tables, are deleted, and `Keys`, `Public` and `Tables` lose their references. Its one added line is a comma moving in `Public`. jOOQ never generated a class for the trigger function, so dropping it changes nothing there. `macro-platform`'s and the services' models didn't change.
+- On the restored copy at V38, with colours from the running `parliament`, all 690 election requests (every kommun, region and valkrets, with and without `?year=`, and the unknown cases) matched the running stack (at V37) byte for byte, except the two `/municipalities/elections` lists, which differ only in the order of parties with equal votes. With no parliament reachable, election answered with Valmyndigheten's colours (SD `#4E83A3`, S `#FF0000`), and an empty database at V38 answered 204.
 
 ## Step 5: Retire the monolith
 
@@ -424,15 +435,15 @@ The extraction:
 
 - [ ] Run the extraction checklist for election, with the new database `election`. Skip the cut-over items that delete config rows, delete queue rows and drop old tables with a monolith migration: the monolith itself becomes election, so they have no target. The old tables go away with the `macroanalyzer` database.
 - [ ] Rename the `macro-analyzer` module, application class, image, jar and Compose service to election.
-- [ ] Delete the monolith's migrations (V1 to V36, and any that step 4 adds) and the old jOOQ model from the tree. They stay in git history.
+- [ ] Delete the monolith's migrations (V1 to V38) and the old jOOQ model from the tree. They stay in git history.
 - [ ] Route `/macro-analyzer/scrape/election/` to election. Its new prefix removes the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue`, so remove the monolith's call from the script, which now only loops over the four names. Every service now sets its own prefix, so remove the `macro-analyzer` default.
 - [ ] Change the catch-all `location /macro-analyzer/` in nginx to answer 404. Without it, unknown API paths would fall through to `location /` and get `index.html` with a 200.
 - [ ] Remove `BACKEND_URL`, the `macroanalyzer` database from `POSTGRES_DB`, and the `macrouser` settings no service uses.
 - [ ] Rewrite the architecture and build sections of `CLAUDE.md`, and retire or rewrite `macro-backend/macro-analyzer/ARCHITECTURE.md`.
 
-**Verify:** the checklist's verify list, plus: on a clean checkout with empty volumes, `docker-compose-all.yml` starts all four services, the script fills them and every page works.
+**Verify:** the checklist's verify list, plus: on a clean checkout with empty volumes (a throwaway project, as under "Verify", not the volume that holds `parliament`), `docker-compose-all.yml` starts all four services, the script fills them and every page works.
 
-**Rollback:** revert the PR and re-create the local databases.
+**Rollback:** revert the PR and re-create `macroanalyzer` and `election`, and re-scrape election. Keep the volume and the other services' databases: `parliament` is the only copy of its data.
 
 **What differed:** not started.
 

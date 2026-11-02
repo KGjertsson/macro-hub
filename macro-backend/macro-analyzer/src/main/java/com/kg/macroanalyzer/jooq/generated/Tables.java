@@ -7,12 +7,6 @@ package com.kg.macroanalyzer.jooq.generated;
 import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionArea;
 import com.kg.macroanalyzer.jooq.generated.tables.LocalElectionPartyResult;
 import com.kg.macroanalyzer.jooq.generated.tables.LocalGovernance;
-import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElection;
-import com.kg.macroanalyzer.jooq.generated.tables.RiksdagElectionResult;
-import com.kg.macroanalyzer.jooq.generated.tables.RiksdagOrgan;
-import com.kg.macroanalyzer.jooq.generated.tables.RiksdagParty;
-import com.kg.macroanalyzer.jooq.generated.tables.SwedishMemberActivity;
-import com.kg.macroanalyzer.jooq.generated.tables.SwedishMembersOfParliament;
 
 
 /**
@@ -35,34 +29,4 @@ public class Tables {
      * The table <code>public.local_governance</code>.
      */
     public static final LocalGovernance LOCAL_GOVERNANCE = LocalGovernance.LOCAL_GOVERNANCE;
-
-    /**
-     * The table <code>public.riksdag_election</code>.
-     */
-    public static final RiksdagElection RIKSDAG_ELECTION = RiksdagElection.RIKSDAG_ELECTION;
-
-    /**
-     * The table <code>public.riksdag_election_result</code>.
-     */
-    public static final RiksdagElectionResult RIKSDAG_ELECTION_RESULT = RiksdagElectionResult.RIKSDAG_ELECTION_RESULT;
-
-    /**
-     * The table <code>public.riksdag_organ</code>.
-     */
-    public static final RiksdagOrgan RIKSDAG_ORGAN = RiksdagOrgan.RIKSDAG_ORGAN;
-
-    /**
-     * The table <code>public.riksdag_party</code>.
-     */
-    public static final RiksdagParty RIKSDAG_PARTY = RiksdagParty.RIKSDAG_PARTY;
-
-    /**
-     * The table <code>public.swedish_member_activity</code>.
-     */
-    public static final SwedishMemberActivity SWEDISH_MEMBER_ACTIVITY = SwedishMemberActivity.SWEDISH_MEMBER_ACTIVITY;
-
-    /**
-     * The table <code>public.swedish_members_of_parliament</code>.
-     */
-    public static final SwedishMembersOfParliament SWEDISH_MEMBERS_OF_PARLIAMENT = SwedishMembersOfParliament.SWEDISH_MEMBERS_OF_PARLIAMENT;
 }
