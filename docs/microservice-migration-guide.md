@@ -1,6 +1,6 @@
 # Microservice migration guide
 
-This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. Steps 0 to 5 are done, so the monolith is gone, and `CLAUDE.md` describes what is there now. What is left is step 6. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
+This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. All steps are done: the monolith is gone, the app runs in a cluster, and `CLAUDE.md` describes what is there now. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
 
 Statements about the current code were checked against commit `07c7482`, and the steps that are done say what changed since then. The manual trigger paths and the Flyway ordering were decided on 2026-11-01, after that check. Anything marked **Suggested** or **Open** is not decided.
 
@@ -15,7 +15,7 @@ In the same PR as each step:
 
 ## Starting point
 
-Nothing is deployed anywhere. Local development uses Docker Compose, and Kubernetes is the eventual deployment target ([ADR 0006](adrs/0006-kubernetes-as-eventual-deployment-target.md)). There is no production data, downtime or live traffic to protect, and today's shared database only exists on development machines. So:
+When this guide started, nothing was deployed anywhere, and the steps up to 5 were planned on that basis. Local development uses Docker Compose, and Kubernetes is the eventual deployment target ([ADR 0006](adrs/0006-kubernetes-as-eventual-deployment-target.md)). There is no production data, downtime or live traffic to protect, and today's shared database only exists on development machines. So:
 
 - A new database starts empty and is **re-scraped by default**. Dump and restore is only a time-saver for a local database. The exception was parliament, whose local data **was restored** while the monolith still had its tables: see "Restoring parliament".
 - **Rollback for any step means reverting its PR and re-creating the local databases it changed.** Re-creating them matters: Flyway refuses to start when the database has an applied migration that is missing from the code, which is what a reverted migration looks like. Don't re-create `parliament` or delete the volume that holds it: since the monolith's V38, it is the only copy of its data.
@@ -32,14 +32,11 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 | 3 | Extract macro-series | Done |
 | 4 | Extract parliament, switch election to REST | Done |
 | 5 | Retire the monolith | Done |
-| 6 | First real Kubernetes deployment | Not started |
+| 6 | First real Kubernetes deployment | Done |
 
 ## Open questions
 
-| Question | What is known | Needed by |
-| --- | --- | --- |
-| Which is the gateway in the cluster: nginx in the frontend image, or Ingress routes? | `k8s/` has no frontend manifest. Compose keeps using nginx either way. With nginx, the route variables (`ELECTION_URL` and so on) need fully qualified service names. | Step 6 |
-| How do images reach the cluster? | `k8s/java/deployment.yaml` uses `imagePullPolicy: Never`, with images imported by hand. | Step 6 |
+None for the migration. The project owner's question about how far the gateway's network exposure reaches is recorded in [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md).
 
 ## Extraction checklist
 
@@ -644,24 +641,60 @@ What was tried, on throwaway Compose projects:
 
 ## Step 6: First real Kubernetes deployment
 
-**Goal:** the app runs in a cluster for the first time. This step is only an outline. It needs its own design when it starts.
-
-It comes last here, but it doesn't depend on the split being finished, so it can move earlier. The k8s files aren't kept in step with the services before this, so expect them to need catching up.
+**Goal:** the app runs in a cluster for the first time. `macro-backend/macro-infra/k8s/README.md` is the procedure.
 
 **Tasks:**
 
-- [ ] Fix or replace the existing manifests in `macro-backend/macro-infra/k8s/`. `java/deployment.yaml` and `java/service.yaml` still describe the retired monolith, with its image `macro-analyzer:latest` and database `macroanalyzer`, and only a comment and `k8s/README.md` say so: step 5 left them alone, so that this step designs them once. `postgres/postgres-configmap.yaml` also still has `POSTGRES_DB: macroanalyzer`. `java/service.yaml` selects a label the pods don't have, `ingress/test-ingress.yaml` names a Service that doesn't exist, and `postgres/postgres-deployment.yaml` uses `postgres:13` while Compose uses `postgres:16`.
-- [ ] Add manifests for all four services, with database settings and API keys, and `ELECTION_PARLIAMENT_URL` on election (until then its default, `localhost:8084`, answers nothing in a pod, so it uses Valmyndigheten's colours). **Open:** how secrets are stored. `postgres-configmap.yaml` holds the password in plain text today.
-- [ ] Add routing. **Open:** a frontend manifest with nginx (using fully qualified service names as `CLAUDE.md` describes), or Ingress routes.
-- [ ] Create the Postgres databases and roles. **Open:** how, given that init scripts only run on an empty volume.
-- [ ] Set up image delivery for four images plus the frontend. **Open:** keep `imagePullPolicy: Never` with hand-imported images, or use a registry.
-- [ ] Revisit [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md), because the manual scrape endpoints become reachable by whoever can reach the gateway.
-- [ ] **Open:** backups per database, which [ADR 0003](adrs/0003-one-database-per-service-on-one-postgres-instance.md) notes. The repo has none today.
-- [ ] **Open:** memory requests and limits, including room for SCB's first full scrape. Measure against the estimate in ADR 0001.
-- [ ] Decide whether Kafka stays in `kubernetes_setup.sh`. No application code uses it.
+- [x] Replace the existing manifests in `macro-backend/macro-infra/k8s/`. `java/`, `ingress/` and `kcat/` are gone, and `postgres/` describes the new Postgres 16, with no plain-text password.
+- [x] Add manifests for all four services, with database settings and API keys, and `ELECTION_PARLIAMENT_URL` on election. Secrets are Kubernetes Secrets made by `create-secrets.sh`, from the env file and generated values. No value is in the repo.
+- [x] Add routing: a frontend manifest with nginx, on NodePort 30081 ([ADR 0006](adrs/0006-kubernetes-as-eventual-deployment-target.md)).
+- [x] Create the Postgres databases and roles: the same init script as Compose, through a ConfigMap on an empty volume. `deploy.sh` also runs it on a retained volume, where it keeps the roles' passwords the same as the Secret's.
+- [x] Set up image delivery: `build-images.sh`, with `imagePullPolicy: Never`, tagged with the commit, and no registry.
+- [x] Revisit [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md). The decision stands for now, and the owner's question about exposure is open.
+- [x] Backups per database: the CronJob `postgres-backup`, with a tested restore.
+- [x] Memory requests and limits, from the first scrape on the cluster: see below.
+- [x] Kafka and Zookeeper are gone from `kubernetes_setup.sh`, with helm, which only they used. No application code uses Kafka.
 
-**Verify:** every page works through the cluster's gateway, and each service's first scrape completes.
+**Rollback:** `k8s/teardown.sh` removes the deployment and keeps the volumes. Nothing depends on it, and Compose's databases stay the source of truth.
 
-**Rollback:** remove the deployment. Nothing depends on it yet.
+**What differed:**
 
-**What differed:** not started.
+- **A new namespace and a new Postgres,** `macro-hub`, rather than the old manifests' namespace. The owner's `macro-analyzer` namespace, its Postgres 13, volume `postgres-pv` and NodePort 31274 are untouched and no longer described by these files.
+- **`microk8s images import` rather than `microk8s ctr image import`,** because here `microk8s ctr` runs through sudo, which needs a password. `images import` only needs the `microk8s` group. `deploy.sh` checks that the tag has been imported with the snap's `ctr` binary directly, which the group can also use, on containerd's socket.
+- **`build-images.sh` builds from `git archive HEAD`,** so a tag says exactly what is in the image, in a non-hidden directory under `$HOME`, as Docker as a snap can't read `/tmp` or hidden directories.
+- **The passwords live outside the repo in `~/.config/macro-hub/k8s-db-passwords.env`,** because a retained volume keeps its roles' passwords after the Secrets are gone. Generating new ones on every run would lock the services out.
+- **`deploy.sh` re-applies the roles and clears a Released volume's old claim uid.** `claimRef` keeps the claim's name, so only the same claim can bind it again.
+- **`enableServiceLinks: false`,** beyond the plan, because Kubernetes would otherwise put `<SERVICE>_PORT` and `POSTGRES_PORT` variables in the pods, next to the ones Spring and the image read. **`-XX:+ExitOnOutOfMemoryError`** is also beyond the plan, so a heap that runs out shows as a restart.
+- **`/actuator/health/{liveness,readiness}` don't check the database,** on purpose, and no application code changed. `/actuator` isn't on the gateway: it gets `index.html` like any SPA route.
+- **The metrics addon stays off,** so peaks come from each pod's `/sys/fs/cgroup/memory.peak`, also sampled every 10 s, and `kubectl top` isn't available.
+
+Memory in the first full scrape (`-XX:MaxRAMPercentage=70` everywhere). A JVM grows its heap before it collects, so a peak near a limit's heap is not proof that it needed that much. Against ADR 0001's estimate of 1.5 to 2 GiB for four JVMs: 1.5 GiB idle, as all four rest near 390 MiB, and 3.1 GiB if all four peak together.
+
+| Pod | Limit during the scrape | Peak | Own memory at its peak | Limit now | Request |
+| --- | --- | --- | --- | --- | --- |
+| regional-statistics | 1536 MiB | 1348 MiB | 1341 MiB | 1536 MiB | 768 MiB |
+| parliament | 1 GiB | 932 MiB | 926 MiB | 1280 MiB | 512 MiB |
+| election | 1 GiB | 467 MiB | 462 MiB | 768 MiB | 384 MiB |
+| macro-series | 1 GiB | 389 MiB | 383 MiB | 768 MiB | 384 MiB |
+| postgres | 2 GiB | 1347 MiB, mostly page cache | 55 MiB | 2 GiB | 512 MiB |
+| frontend | 256 MiB | 17 MiB | 12 MiB | 128 MiB | 32 MiB |
+
+The limits now have only had a re-deployment and small scrapes, not another full scrape, since that was to run once. The nightly cron is the next test of them.
+
+What was tried, on the real cluster, in `macro-hub`, on 2026-11-02:
+
+- **From a namespace that didn't exist:** the README's three commands brought everything up, in 1 min 5 s for `deploy.sh` after 1 min 24 s for the build. The one difference was passing the env file's path, as this ran in a git worktree.
+- **Teardown and back:** `teardown.sh` left the namespace with no pods, Secrets or claims of its own and both volumes Released. `create-secrets.sh` and `deploy.sh` brought it back in 36 s, on the same volumes, with every table's row count unchanged and the dumps still there. There is no scrape in that.
+- **The password change in the README:** done for real, all services back with no restarts. A partial first attempt, where `create-secrets.sh` was killed by the test's own `| head -1`, showed what a mismatch looks like: the services in `CrashLoopBackOff`, with `password authentication failed` in their logs, until the Secrets were right.
+- **Roles:** each of the four roles connected to its own database and was refused on the other three, `postgres` and `template1`, over TCP inside the pod.
+- **Postgres from outside:** a ClusterIP with no NodePort or hostPort. Another machine has no route to it. **This machine's own routes do reach it,** as kube-proxy handles ClusterIPs for local traffic, including from its Docker containers, so `pg_isready` from a container on this machine said "accepting connections". Each role still needs its password there. A NetworkPolicy wasn't part of this step.
+- **The first full scrape, once, through the gateway with `scrape-all.sh`:** exit 0 after 8 min 5 s, with no `ERROR` log line, no failed item and no restart. Per service, in parallel: macro-series 55 s (108 series), election 2 min 3 s (3 configs), parliament 5 min 16 s (2 configs), regional-statistics 8 min 4 s. So the 30-minute timeout held past nginx's default, on the longest route, and `nginx -T` shows the one setting.
+- **Row counts against Compose:** the same in every table of `regional_statistics` (2,401,042 values), `parliament` and `election`, apart from the queues, which hold a database's own history. In `macro_series`, newer points from the sources: `policy_rate_sweden` 8,144 against 8,143, `exchange_usd_sek` 8,497 against 8,496, two Japanese bond series +1 each, and `fed_series` 33,406 against 33,416 (FRED's rolling 10-year window, see step 3).
+- **Through the gateway, against Compose on `http://localhost:8081`, 512 requests at a low rate:** all 348 election requests (every kommun, region and valkrets, unknown codes included, with the colours) and all 85 `regional-statistics` requests are the same, ignoring the order of parties with equal votes. Of 55 macro-series requests, 4 differ, all by being longer: the same newer points. Of 24 parliament requests, 3 differ: two members' status, in two lists, and one member's new motion. Riksdagen has changed since Compose last scraped.
+- **Gateway:** unknown API paths, `/macro-analyzer` itself, the old `/enqueue-all` and an unknown `/scrape/` name answer 404 for GET, POST and OPTIONS. `/` and SPA routes answer the same `index.html` as Compose's, with a 200. A manual `enqueue?name=` and `scrape-from-queue` on macro-series answered 202 and 200.
+- **Postgres killed while services ran, twice:** the pod deleted, and an immediate stop inside it, which restarted the container and ran crash recovery. Each time the services didn't restart. The only failures seen were a 500 on one route for 1 to 2 s.
+- **A service pod killed:** macro-series answered again after 12 s. **Colours:** with parliament scaled to 0, its routes answered 502 and election kept answering in 0.06 s with the colours held (SD `#FFCC00`). Election restarted with parliament down answered with Valmyndigheten's (SD `#4E83A3`), and 13 s after scaling parliament up the colours were back, over its Service name.
+- **Backups:** the CronJob, triggered by hand, wrote four dumps: regional_statistics 16 MB, macro_series 13 MB, parliament 2.6 MB, election 272 KB. It keeps 7 per database, tried with old-named files, and a run with a wrong password failed the job, removed nothing and left no partial file. **Both restores in the README were run:** `regional_statistics` into a scratch database in 10 s, with 2,401,042 rows, and `election` replacing the real database, after which its role's rights were the same as before, Flyway said "up to date", and `/municipalities/elections` was byte for byte the same.
+- **Not tried:** no page was opened in a browser, as none is available here. The 03:00 and 22:00 UTC schedules haven't fired yet, and neither has an OOM kill. A node failure isn't tried either: with one node, Postgres and the services go down together, so the "doesn't cover" case under "Database" in `CLAUDE.md` is unlikely, and a liveness probe wouldn't solve it, because the process still answers.
+
+**Nightly behaviour to expect:** every service's cron enqueues in the 22:00 UTC hour, so the cluster and Compose now both scrape, from one machine, with the same keys and at the same time. Macro-series fetches its series and parliament its members again every night, so the same API keys and sources see both runs. Election and SCB skip what hasn't changed. When SCB's tables change, both fetch them, each within SCB's 30 calls per 10 s but not together, so its retries may do more work on those nights. Whether a source minds this hasn't been seen yet: the first night will tell, in the logs' `FAILED` counts.
