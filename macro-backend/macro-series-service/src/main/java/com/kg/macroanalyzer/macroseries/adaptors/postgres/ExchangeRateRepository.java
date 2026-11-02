@@ -3,13 +3,10 @@ package com.kg.macroanalyzer.macroseries.adaptors.postgres;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -32,31 +29,15 @@ public class ExchangeRateRepository {
                 .map(this::toMacroPoint);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertExchangeRateUsdSek() {
-        return exchangeRateUsdSekList -> {
-            if (!exchangeRateUsdSekList.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EXCHANGE_USD_SEK,
-                                EXCHANGE_USD_SEK.GLOBAL_ID,
-                                EXCHANGE_USD_SEK.USD_SEK,
-                                EXCHANGE_USD_SEK.USD_SEK_DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                exchangeRateUsdSekList.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EXCHANGE_USD_SEK,
+                EXCHANGE_USD_SEK.GLOBAL_ID,
+                EXCHANGE_USD_SEK.USD_SEK,
+                EXCHANGE_USD_SEK.USD_SEK_DATE,
+                EXCHANGE_USD_SEK.UPDATED
+        );
     }
 
     private MacroPoint toMacroPoint(Record r) {

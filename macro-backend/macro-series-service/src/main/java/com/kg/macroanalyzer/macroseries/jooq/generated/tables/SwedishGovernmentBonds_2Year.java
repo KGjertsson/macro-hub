@@ -10,7 +10,9 @@ import com.kg.macroanalyzer.macroseries.jooq.generated.tables.records.SwedishGov
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.jooq.Condition;
@@ -130,6 +132,11 @@ public class SwedishGovernmentBonds_2Year extends TableImpl<SwedishGovernmentBon
     @Override
     public UniqueKey<SwedishGovernmentBonds_2YearRecord> getPrimaryKey() {
         return Keys.SWEDISH_GOVERNMENT_BONDS_2_MONTH_PKEY;
+    }
+
+    @Override
+    public List<UniqueKey<SwedishGovernmentBonds_2YearRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.SWEDISH_GOVERNMENT_BONDS_2_YEAR_DATE_KEY);
     }
 
     @Override

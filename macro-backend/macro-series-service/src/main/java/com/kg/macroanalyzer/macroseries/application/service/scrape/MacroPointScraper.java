@@ -22,6 +22,7 @@ public record MacroPointScraper(
             final var config = configWithMacroPoints.seriesConfig();
             final var existingMacroPoints = configWithMacroPoints.macroPoints();
             final var scrapedMacroPoints = webPort.fetch(config);
+            // Compares value and date, so a revised value passes and the upsert replaces the stored one
             final var novelScraped = scrapedMacroPoints
                     .filter(i -> !existingMacroPoints.contains(i))
                     .toList();

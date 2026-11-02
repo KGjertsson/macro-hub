@@ -147,6 +147,11 @@ public class EurostatNationalDebtSeries extends TableImpl<EurostatNationalDebtSe
     }
 
     @Override
+    public List<UniqueKey<EurostatNationalDebtSeriesRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.EUROSTAT_NATIONAL_DEBT_SERIES_SERIES_NAME_DATE_KEY);
+    }
+
+    @Override
     public EurostatNationalDebtSeries as(String alias) {
         return new EurostatNationalDebtSeries(DSL.name(alias), this);
     }

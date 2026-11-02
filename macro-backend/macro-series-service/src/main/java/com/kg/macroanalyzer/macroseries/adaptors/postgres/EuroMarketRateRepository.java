@@ -2,13 +2,10 @@ package com.kg.macroanalyzer.macroseries.adaptors.postgres;
 
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import org.jooq.DSLContext;
-import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -169,317 +166,136 @@ public class EuroMarketRateRepository {
                 );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthDenmark() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_3_MONTH_DENMARK,
-                                EURO_MARKET_3_MONTH_DENMARK.GLOBAL_ID,
-                                EURO_MARKET_3_MONTH_DENMARK.VALUE,
-                                EURO_MARKET_3_MONTH_DENMARK.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_3_MONTH_DENMARK,
+                EURO_MARKET_3_MONTH_DENMARK.GLOBAL_ID,
+                EURO_MARKET_3_MONTH_DENMARK.VALUE,
+                EURO_MARKET_3_MONTH_DENMARK.DATE,
+                EURO_MARKET_3_MONTH_DENMARK.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthEur() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_3_MONTH_EUR,
-                                EURO_MARKET_3_MONTH_EUR.GLOBAL_ID,
-                                EURO_MARKET_3_MONTH_EUR.VALUE,
-                                EURO_MARKET_3_MONTH_EUR.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_3_MONTH_EUR,
+                EURO_MARKET_3_MONTH_EUR.GLOBAL_ID,
+                EURO_MARKET_3_MONTH_EUR.VALUE,
+                EURO_MARKET_3_MONTH_EUR.DATE,
+                EURO_MARKET_3_MONTH_EUR.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthGB() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_3_MONTH_GB,
-                                EURO_MARKET_3_MONTH_GB.GLOBAL_ID,
-                                EURO_MARKET_3_MONTH_GB.VALUE,
-                                EURO_MARKET_3_MONTH_GB.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_3_MONTH_GB,
+                EURO_MARKET_3_MONTH_GB.GLOBAL_ID,
+                EURO_MARKET_3_MONTH_GB.VALUE,
+                EURO_MARKET_3_MONTH_GB.DATE,
+                EURO_MARKET_3_MONTH_GB.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthJapan() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_3_MONTH_JAPAN,
-                                EURO_MARKET_3_MONTH_JAPAN.GLOBAL_ID,
-                                EURO_MARKET_3_MONTH_JAPAN.VALUE,
-                                EURO_MARKET_3_MONTH_JAPAN.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_3_MONTH_JAPAN,
+                EURO_MARKET_3_MONTH_JAPAN.GLOBAL_ID,
+                EURO_MARKET_3_MONTH_JAPAN.VALUE,
+                EURO_MARKET_3_MONTH_JAPAN.DATE,
+                EURO_MARKET_3_MONTH_JAPAN.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthNorway() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_3_MONTH_NORWAY,
-                                EURO_MARKET_3_MONTH_NORWAY.GLOBAL_ID,
-                                EURO_MARKET_3_MONTH_NORWAY.VALUE,
-                                EURO_MARKET_3_MONTH_NORWAY.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_3_MONTH_NORWAY,
+                EURO_MARKET_3_MONTH_NORWAY.GLOBAL_ID,
+                EURO_MARKET_3_MONTH_NORWAY.VALUE,
+                EURO_MARKET_3_MONTH_NORWAY.DATE,
+                EURO_MARKET_3_MONTH_NORWAY.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate3MonthUsa() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_3_MONTH_USA,
-                                EURO_MARKET_3_MONTH_USA.GLOBAL_ID,
-                                EURO_MARKET_3_MONTH_USA.VALUE,
-                                EURO_MARKET_3_MONTH_USA.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_3_MONTH_USA,
+                EURO_MARKET_3_MONTH_USA.GLOBAL_ID,
+                EURO_MARKET_3_MONTH_USA.VALUE,
+                EURO_MARKET_3_MONTH_USA.DATE,
+                EURO_MARKET_3_MONTH_USA.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthDenmark() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_6_MONTH_DENMARK,
-                                EURO_MARKET_6_MONTH_DENMARK.GLOBAL_ID,
-                                EURO_MARKET_6_MONTH_DENMARK.VALUE,
-                                EURO_MARKET_6_MONTH_DENMARK.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_6_MONTH_DENMARK,
+                EURO_MARKET_6_MONTH_DENMARK.GLOBAL_ID,
+                EURO_MARKET_6_MONTH_DENMARK.VALUE,
+                EURO_MARKET_6_MONTH_DENMARK.DATE,
+                EURO_MARKET_6_MONTH_DENMARK.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthEur() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_6_MONTH_EUR,
-                                EURO_MARKET_6_MONTH_EUR.GLOBAL_ID,
-                                EURO_MARKET_6_MONTH_EUR.VALUE,
-                                EURO_MARKET_6_MONTH_EUR.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_6_MONTH_EUR,
+                EURO_MARKET_6_MONTH_EUR.GLOBAL_ID,
+                EURO_MARKET_6_MONTH_EUR.VALUE,
+                EURO_MARKET_6_MONTH_EUR.DATE,
+                EURO_MARKET_6_MONTH_EUR.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthGB() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_6_MONTH_GB,
-                                EURO_MARKET_6_MONTH_GB.GLOBAL_ID,
-                                EURO_MARKET_6_MONTH_GB.VALUE,
-                                EURO_MARKET_6_MONTH_GB.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_6_MONTH_GB,
+                EURO_MARKET_6_MONTH_GB.GLOBAL_ID,
+                EURO_MARKET_6_MONTH_GB.VALUE,
+                EURO_MARKET_6_MONTH_GB.DATE,
+                EURO_MARKET_6_MONTH_GB.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthJapan() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_6_MONTH_JAPAN,
-                                EURO_MARKET_6_MONTH_JAPAN.GLOBAL_ID,
-                                EURO_MARKET_6_MONTH_JAPAN.VALUE,
-                                EURO_MARKET_6_MONTH_JAPAN.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_6_MONTH_JAPAN,
+                EURO_MARKET_6_MONTH_JAPAN.GLOBAL_ID,
+                EURO_MARKET_6_MONTH_JAPAN.VALUE,
+                EURO_MARKET_6_MONTH_JAPAN.DATE,
+                EURO_MARKET_6_MONTH_JAPAN.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthNorway() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_6_MONTH_NORWAY,
-                                EURO_MARKET_6_MONTH_NORWAY.GLOBAL_ID,
-                                EURO_MARKET_6_MONTH_NORWAY.VALUE,
-                                EURO_MARKET_6_MONTH_NORWAY.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_6_MONTH_NORWAY,
+                EURO_MARKET_6_MONTH_NORWAY.GLOBAL_ID,
+                EURO_MARKET_6_MONTH_NORWAY.VALUE,
+                EURO_MARKET_6_MONTH_NORWAY.DATE,
+                EURO_MARKET_6_MONTH_NORWAY.UPDATED
+        );
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Function<List<MacroPoint>, Integer> insertEuroMarketRate6MonthUsa() {
-        return scraped -> {
-            if (!scraped.isEmpty()) {
-                final var insertQuery = dslContext.batch(
-                        dslContext.insertInto(
-                                EURO_MARKET_6_MONTH_USA,
-                                EURO_MARKET_6_MONTH_USA.GLOBAL_ID,
-                                EURO_MARKET_6_MONTH_USA.VALUE,
-                                EURO_MARKET_6_MONTH_USA.DATE
-                        ).values(DSL.val((UUID) null), DSL.val(0.0), DSL.val(LocalDate.MIN))
-                );
-                scraped.forEach(exchangeRateUsdSek -> insertQuery.bind(
-                        UUID.randomUUID(),
-                        exchangeRateUsdSek.value(),
-                        exchangeRateUsdSek.date()
-                ));
-                final var response = insertQuery.execute();
-
-                return response.length;
-            }
-
-            return 0;
-        };
+        return MacroPointUpsert.writer(
+                dslContext,
+                EURO_MARKET_6_MONTH_USA,
+                EURO_MARKET_6_MONTH_USA.GLOBAL_ID,
+                EURO_MARKET_6_MONTH_USA.VALUE,
+                EURO_MARKET_6_MONTH_USA.DATE,
+                EURO_MARKET_6_MONTH_USA.UPDATED
+        );
     }
 
 }
