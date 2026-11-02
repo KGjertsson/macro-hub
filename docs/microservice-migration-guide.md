@@ -214,7 +214,7 @@ Run this on a stack that still runs the old monolith, from the repo root of a cl
 - only reads `macroanalyzer`, as `macrouser`. Everything it writes goes to `election`, as the role `election`, which can't connect to `macroanalyzer`;
 - gates on a checksum of the three tables and the three config rows (the latter without `created` and `updated`, which aren't copied): the old data and the new must match, or the gateway isn't switched;
 - keeps the dump in a temporary directory outside the repo and deletes it at the end, whatever happens;
-- keeps the old `macrohub-macro-analyzer` container stopped, not removed, until everything has worked, and removes it as its last step. It keeps the old frontend's image as `macro-frontend:before-step5`, for going back;
+- keeps the old `macrohub-macro-analyzer` container stopped, not removed, until everything has worked, and removes it as its last step. It keeps the old frontend's image as `macro-frontend:before-step5`, for going back. The `macro-analyzer:latest` image stays too, so Compose can bring the container back even after that;
 - can be run again after a failure: it empties the three tables in `election` first. It refuses once `macrohub-macro-analyzer` is gone, because by then `election` is the live data, which a second restore would overwrite;
 - does **not** drop `macroanalyzer`. That is a separate command, below.
 
@@ -263,23 +263,28 @@ check_hour() {
 }
 dump_dir=$(mktemp -d)
 stage=preparing
+way_back() {
+  echo "Fix the cause and run this block again, or go back to the old stack, on the commit before election-service:" >&2
+  echo "  docker tag macro-frontend:before-step5 macro-frontend:latest; docker rm -f macrohub-macro-frontend macrohub-election" >&2
+  echo '  git switch --detach "$(git log --diff-filter=A --format=%H -1 -- macro-backend/election-service/pom.xml)~1"' >&2
+  echo "  docker compose --env-file $env_file -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --no-build --no-deps macro-analyzer macro-frontend" >&2
+}
 finish() {
   rc=$?
   rm -rf "$dump_dir"
   if [ "$rc" -eq 0 ]; then echo "RESTORE OK"; exit 0; fi
   echo "RESTORE FAILED (exit $rc). See the output above." >&2
-  case "$stage" in
-    preparing)
+  case "$stage:$(docker container inspect -f '{{.State.Running}}' macrohub-macro-analyzer 2>/dev/null || true)" in
+    preparing:true)
       echo "Nothing was stopped: the old stack still runs. Fix the cause and run this block again." >&2 ;;
-    restoring)
-      echo "macroanalyzer is unchanged. To go back to the old stack: docker stop macrohub-election; docker start macrohub-macro-analyzer" >&2
-      echo "Or fix the cause and run this block again." >&2 ;;
-    switching)
-      echo "The checksums matched, so election holds the data, and macroanalyzer is unchanged. Starting the new containers failed." >&2
-      echo "Fix the cause and run this block again, or go back to the old stack, on the commit before election-service:" >&2
-      echo "  docker tag macro-frontend:before-step5 macro-frontend:latest; docker rm -f macrohub-macro-frontend macrohub-election; docker start macrohub-macro-analyzer" >&2
-      echo '  git switch --detach "$(git log --diff-filter=A --format=%H -1 -- macro-backend/election-service/pom.xml)~1"' >&2
-      echo "  docker compose --env-file $env_file -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --no-build --no-deps macro-frontend" >&2 ;;
+    preparing:)
+      echo "This run changed nothing." >&2 ;;
+    preparing:*)
+      echo "This run stopped nothing, but an earlier run left macrohub-macro-analyzer stopped." >&2; way_back ;;
+    restoring:*)
+      echo "macroanalyzer is unchanged." >&2; way_back ;;
+    switching:*)
+      echo "The checksums matched, so election holds the data, and macroanalyzer is unchanged. Starting the new containers failed." >&2; way_back ;;
   esac
   exit "$rc"
 }
@@ -333,7 +338,7 @@ docker rm macrohub-macro-analyzer
 )
 ```
 
-A failed `diff` prints the rows that differ and exits there. Compose warns about the orphan `macrohub-macro-analyzer` while the block runs, which is expected, so don't pass `--remove-orphans`. After `RESTORE OK`, open the pages and check them. `macro-analyzer:latest` and `macro-frontend:before-step5` stay as images until you `docker rmi` them.
+A failed `diff` prints the rows that differ and exits there. Compose warns about the orphan `macrohub-macro-analyzer` while the block runs, which is expected, so don't pass `--remove-orphans`. After `RESTORE OK`, open the pages and check them. If they are wrong, go back as under step 5's "Rollback", which works until `macroanalyzer` is dropped. `macro-analyzer:latest` and `macro-frontend:before-step5` stay as images until you `docker rmi` them.
 
 #### Dropping the old database
 
@@ -382,7 +387,7 @@ Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so ngi
 - [ ] Add the service to the enqueue-all replacement script.
 - [ ] After verifying the service locally, drop the old tables with a monolith migration and regenerate the monolith's jOOQ model. Do this in a separate small PR, after the owner's stack has been verified. The monolith's code no longer reads them at that point. Drop a trigger's function in the same migration if nothing else uses it (`pg_trigger`; jOOQ's model doesn't show it). First compare each table in the two local databases, by checksum or row count, or by its distinct keys if the service has removed duplicates: the drop deletes the local copy, and not everything can be re-scraped (see parliament's activity under "Data"). Generate from a throwaway database at the new migration (`-Djooq.codegen.url=...`): the default, the Compose Postgres, only gets there once its monolith has restarted on the new code, and generating from it before that changes nothing. The model's diff should only delete those tables and the references to them (and `Sequences.java` or `Indexes.java`, if it has no sequence or index left), and `macro-platform`'s model, which the same command regenerates, should not change.
 - [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. CI needs no change: the `backend` job runs every module of the reactor. Add the image to the after-merge commands in `.claude/skills/ship/SKILL.md`.
-- [ ] Update `CLAUDE.md`, `macro-backend/macro-analyzer/ARCHITECTURE.md`, `macro-backend/macro-analyzer/README.md` and this guide.
+- [ ] Update `CLAUDE.md`, `macro-backend/ARCHITECTURE.md`, the service's own README and this guide.
 
 Note that `EnqueueService.enqueue` ignores unknown names: `POST .../enqueue?name=<another service's series>` answers 202 and does nothing.
 
@@ -591,7 +596,18 @@ The follow-up that dropped the old tables:
 
 **Verify:** the checklist's verify list, plus: on a clean checkout with empty volumes (a throwaway project, as under "Verify", not the volume that holds `parliament`), `docker-compose-all.yml` starts all four services, the script fills them and every page works.
 
-**Rollback:** until "Dropping the old database" has run, `macroanalyzer` is untouched: revert the PR, go back as `RESTORE FAILED` describes, and drop `election`. After that, revert the PR, re-create `macroanalyzer`, which the monolith migrates to V38 on its next start, and re-scrape election. Keep the volume and the other services' databases: `parliament` is the only copy of its data.
+**Rollback:** until "Dropping the old database" has run, `macroanalyzer` is untouched, and the old monolith can come back on it, also after `RESTORE OK` has removed its container. From the repo root of the clone:
+
+```bash
+docker tag macro-frontend:before-step5 macro-frontend:latest
+docker rm -f macrohub-macro-frontend macrohub-election
+git switch --detach "$(git log --diff-filter=A --format=%H -1 -- macro-backend/election-service/pom.xml)~1"
+docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --no-build --no-deps macro-analyzer macro-frontend
+```
+
+The old commit's Compose file defines `macro-analyzer`, and `--no-deps` keeps `macrohub-postgres` as it is. Those are the block's last printed lines, for every stage. The old monolith serves the data as it was when the block ran, so anything scraped into `election` since then isn't there. Then revert the PR, and drop `election` once nothing needs it. The other three services keep running on the new images, which answer the same.
+
+After `macroanalyzer` has been dropped, revert the PR, re-create `macroanalyzer`, which the monolith migrates to V38 on its next start, and re-scrape election. Keep the volume and the other services' databases: `parliament` is the only copy of its data.
 
 **What differed:**
 
@@ -620,7 +636,7 @@ What was tried, on throwaway Compose projects:
 - **Gateway:** unknown API paths, `/macro-analyzer` itself, the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue` and an unknown `/scrape/` name answer 404 for GET, POST and OPTIONS, with and without an `Origin` header. `/` and the SPA routes return `index.html` with a 200. A second `scrape-from-queue` during a run answered 409.
 - **Party colours:** with `parliament` stopped, its routes answered 502 and election kept answering in 0.07 s with the colours held (SD `#FFCC00`). After restarting election with parliament still stopped, it answered with Valmyndigheten's (SD `#4E83A3`). After starting parliament they were back within 22 s.
 - **"Restoring election" was run as written**, with only the names and ports swapped, from a copy of the running stack's databases and the old images, including the real builds: `RESTORE OK`, all three tables and the config rows matched, a 280 KB dump, and `macrohub-postgres`' stand-in wasn't re-created. **A real election scrape on the restored copy said `Fetching 0 of 290`, `0 of 20` and `0 of 1` files, in 0.45 s, so the md5 state came across.**
-- Its failures were tried the same way. During the hour (a fake `date`): refused before anything else. A failed build: nothing stopped, and the old stack kept answering. A wrong `ELECTION_DB_PASSWORD`: `RESTORE FAILED` with the service's log after 2 minutes. A checksum altered on purpose: the differing row printed, and the gateway not switched. In these, `macroanalyzer` stayed at V38 with its 339 rows, no dump was left behind, and the printed commands brought the old monolith back. Running the block again after the altered checksum ended in `RESTORE OK`. A failure after the new frontend had started (the last stage): the printed commands, on the previous commit, brought back the old gateway and monolith, with `/enqueue` answering. Once the old container is gone, the block refuses before stopping anything. That preflight first used `docker inspect`, which also matches images, so it became `docker container inspect`.
+- Its failures were tried the same way. During the hour (a fake `date`): refused before anything else. A failed build: nothing stopped, and the old stack kept answering. A wrong `ELECTION_DB_PASSWORD`: `RESTORE FAILED` with the service's log after 2 minutes. A checksum altered on purpose: the differing row printed, and the gateway not switched. In these, `macroanalyzer` stayed at V38 with its 339 rows, no dump was left behind, and the printed commands brought the old monolith back. Running the block again after the altered checksum ended in `RESTORE OK`. @@ROLLBACK_TESTS@@ Once the old container is gone, the block refuses before stopping anything. That preflight first used `docker inspect`, which also matches images, so it became `docker container inspect`.
 - `DROP DATABASE macroanalyzer` on the copy: the stack kept answering, the init script could be re-run, and re-creating Postgres from the new Compose file kept the data, with the services needing the restart described above.
 - `npm run dev`: only the backends' ports replaced, to the throwaway stack: all reads and the POST on all four `/scrape/` routes reached the right service (seen in its log), and unknown paths answered 404. `npm run typecheck`, `build` and `lint` pass.
 - **No page was opened in a browser.**
