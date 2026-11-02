@@ -49,7 +49,7 @@ spec:
             - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
               value: "true"
             # G1 set explicitly: below 1792 MiB the JVM would pick Serial by itself, and Compose runs G1. The heap may take 70% of
-            # the limit, which leaves about 461 MiB for metaspace, threads and the code cache, measured at 220 to 280 MiB. Exit
+            # the limit, which leaves about 461 MiB for metaspace, threads and the code cache, measured at 220 to 290 MiB. Exit
             # on an OutOfMemoryError, so it shows as a restart rather than a service that carries on with a dead thread.
             # -Xlog:gc is the evidence of what the heap really holds: the guide's step 6 has the reasoning
             - name: JAVA_TOOL_OPTIONS
