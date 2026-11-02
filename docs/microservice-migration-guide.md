@@ -1,6 +1,6 @@
 # Microservice migration guide
 
-This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
+This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. Steps 0 to 5 are done, so the monolith is gone, and `CLAUDE.md` describes what is there now. What is left is step 6. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
 
 Statements about the current code were checked against commit `07c7482`, and the steps that are done say what changed since then. The manual trigger paths and the Flyway ordering were decided on 2026-11-01, after that check. Anything marked **Suggested** or **Open** is not decided.
 
@@ -31,19 +31,19 @@ Nothing is deployed anywhere. Local development uses Docker Compose, and Kuberne
 | 2 | Extract regional-statistics | Done |
 | 3 | Extract macro-series | Done |
 | 4 | Extract parliament, switch election to REST | Done |
-| 5 | Retire the monolith | Not started |
+| 5 | Retire the monolith | Done |
 | 6 | First real Kubernetes deployment | Not started |
 
 ## Open questions
 
 | Question | What is known | Needed by |
 | --- | --- | --- |
-| Which is the gateway in the cluster: nginx in the frontend image, or Ingress routes? | `k8s/` has no frontend manifest. Compose keeps using nginx either way. With nginx, `BACKEND_URL`-style values need fully qualified service names. | Step 6 |
+| Which is the gateway in the cluster: nginx in the frontend image, or Ingress routes? | `k8s/` has no frontend manifest. Compose keeps using nginx either way. With nginx, the route variables (`ELECTION_URL` and so on) need fully qualified service names. | Step 6 |
 | How do images reach the cluster? | `k8s/java/deployment.yaml` uses `imagePullPolicy: Never`, with images imported by hand. | Step 6 |
 
 ## Extraction checklist
 
-Steps 2 to 5 each use this checklist. `<service>` is the service's name, and `<db>` its database (`regional_statistics`, `macro_series`, `parliament`, `election`).
+Steps 2 to 5 each used this checklist, and a new service can use it as it stands. Step 5 has retired the monolith, so an item that names it, `macro-analyzer` or `macroanalyzer` describes how the work was done, not something still to do: the new service has no monolith to update. `<service>` is the service's name, and `<db>` its database (`regional_statistics`, `macro_series`, `parliament`, `election`).
 
 ### Database and role
 
@@ -56,38 +56,35 @@ Steps 2 to 5 each use this checklist. `<service>` is the service's name, and `<d
   REVOKE CONNECT ON DATABASE ... FROM PUBLIC;
   ```
 
-  The `REVOKE` matters, because every role may connect to a database by default. On `<db>` alone it keeps the other roles out, but leaves `<db>`'s role able to connect to `macroanalyzer`, `postgres` and `template1`, so the script revokes it on all of them. Owners and superusers keep their access. `macrouser` is a superuser, so the monolith's role isn't limited by this until step 5 removes it.
+  The `REVOKE` matters, because every role may connect to a database by default. On `<db>` alone it keeps the other roles out, but leaves `<db>`'s role able to connect to `postgres` and `template1`, so the script revokes it on all of them. Owners and superusers keep their access. `POSTGRES_USER` (`macrouser`) is the image's bootstrap superuser, which only the script and maintenance use.
 - [ ] Both Compose files mount `postgres-init/`. **Postgres init scripts only run on an empty data volume**, so an existing volume needs an explicit step before the service starts, or the service fails with `database "<db>" does not exist`: `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`. Don't delete the volume instead: it also holds `parliament`, the only copy of its data.
 - [ ] Pick the service's port and record it here:
 
   | Service | Port |
   | --- | --- |
-  | monolith | 8080 |
   | frontend (Compose) | 8081 |
   | regional-statistics | 8082 |
   | macro-series | 8083 |
   | parliament | 8084 |
+  | election | 8085 |
   | Vite | 5173 |
 
 ### Flyway
 
-The monolith has no `spring.flyway.*` settings, so it uses the defaults: `classpath:db/migration` and `flyway_schema_history`.
-
 Each service runs Flyway twice on start-up, against its own database:
 
-1. **Platform run:** `macro-platform`'s migrations for `series_configuration` and `scrape_action_queue`, from `classpath:db/platform`, with their own history table, `flyway_platform_schema_history`. Set `macro.platform.flyway.enabled=true`.
+1. **Platform run:** `macro-platform`'s migrations for `series_configuration` and `scrape_action_queue`, from `classpath:db/platform`, with their own history table, `flyway_platform_schema_history`. It needs no setting: since step 5 every service runs it.
 2. **Service run:** the service's own migrations, from the default `classpath:db/migration`, with the default `flyway_schema_history`.
 
-The platform run comes first, so the two tables exist before the service's baseline seeds its config rows. Each run has its own numbering, so no version range is needed. `spring.flyway.out-of-order=true` was rejected, because it would also weaken Flyway's ordering check on each service's own migrations. The platform's migrations stay outside `db/migration` so the monolith doesn't pick them up from the jar and try to create tables it already has.
+The platform run comes first, so the two tables exist before the service's baseline seeds its config rows. Each run has its own numbering, so no version range is needed. `spring.flyway.out-of-order=true` was rejected, because it would also weaken Flyway's ordering check on each service's own migrations. The platform's migrations stay in `db/platform`, outside each service's `db/migration`.
 
-Until step 5, `series_configuration` and `scrape_action_queue` are defined twice, in the monolith's `db/migration` and in `db/platform`, and `macro-platform`'s jOOQ model is generated from the monolith's database. A column change therefore needs a monolith migration, a new `db/platform` version and a regenerated model, in the same PR. No test catches a drift between the two unless the code uses the new column.
+`series_configuration` and `scrape_action_queue` are defined once, in `db/platform`. A column change needs a new `db/platform` version and a regenerated `macro-platform` model, in the same PR, and every service picks it up at its next start. The model is generated by the profile `jooq-codegen-platform` from any service's database. The default is `localhost:5432/election`, and `includes` selects the three tables, so `flyway_platform_schema_history` doesn't get into it. `flyway_schema_history` does, because `FlywayCatalogVersion` reads it, and it exists in every service's database, from the service run. **Don't edit `db/platform/V1` or a service's `V1`, even a comment:** Flyway's checksum covers the comments, and an existing database then fails validation. That is why a few baselines still mention the monolith.
 
 - [ ] Write a squashed baseline in the new service with the domain's tables and seed data, without the DDL for the two platform tables, taken from the current database (`pg_dump --schema-only -t ...` is a good start). The monolith's migrations stay there until step 5, and in git history after that.
 - [ ] Include the seed data that migrations added. For parliament that was `riksdag_party`, `riksdag_election`, `riksdag_election_result` and `riksdag_organ`. Election has none: `local_governance` starts empty. Compare the seed tables with the source by checksum, and seed them in the source's physical order (`SELECT ctid, ...`): a read with no `ORDER BY` answers in that order, and an `UPDATE` in a later migration has moved rows. `RiksdagElectionRepository.readParties` is one such read.
 - [ ] Copy the domain's `series_configuration` rows into the baseline, selected by `scrape_flow`. Keep `id` and `global_id` so `/series-config` keeps its order, and write `global_id` as literals so the baseline doesn't need the `uuid-ossp` extension (no column default uses it).
 - [ ] Keep the names of the tables' sequences and constraints, however odd. A data-only `pg_dump` calls `setval` by the source's sequence names, so a renamed sequence fails the restore. Compare `pg_dump --schema-only` of the new database's tables with the monolith's: the diff should be empty. `pg_dump -t` leaves out functions, so a trigger's function, such as `update_updated_column`, has to be added by hand and compared on its own (`pg_get_functiondef`).
 - [ ] Set the `series_configuration` sequence past the copied ids. `scrape_action_queue` needs nothing as long as the baseline copies no queue rows.
-- [ ] Turn on the platform run for the service. The property goes in its `application.properties`, as it never runs without it.
 - [ ] Set `spring.flyway.baseline-on-migrate=true` and `spring.flyway.baseline-version=0` for the service run. After the platform run the schema is no longer empty but `flyway_schema_history` doesn't exist yet, and Flyway then refuses to migrate ("Found non-empty schema(s) ... but no schema history table"). Version 0 is needed because Flyway skips migrations at or below the baseline, and the default baseline version of 1 would skip the service's `V1`. Both were tried on Flyway 12.4.0 and Postgres 16.
 
 ### Data
@@ -99,7 +96,7 @@ Re-scraping is the default. Dump and restore only saves time on a local database
 | regional-statistics | About 9 to 12 minutes | 2.4 M rows, 377 MB on disk. Measured 2026-11-01: 8 min 49 s (6 min 35 s fetching, 2 min writing), the container peaked at 846 MiB on a JVM with default heap settings on a 31 GiB machine. A second run with unchanged tables took 13 s. |
 | macro-series | About 1 to 2 minutes (**estimate**, not a full run) | Needs the Riksbanken and Fed keys. Scaled from 7 series fetched and stored on 2026-11-01: Riksbanken 1 to 1.5 s each (39 series), Fed 0.5 to 1.3 s (11), Eurostat about 0.25 s (58), one at a time. No full run was made, and rate limits on a full run are unknown. |
 | parliament | About 9 minutes | Local data was restored rather than re-scraped, and past V38 a new database can only be re-scraped: see "Restoring parliament". Measured 2026-11-02 on an empty database: 9 min 3 s, of which 16 s for 3,376 members and 8 min 47 s for 584 members' activity. Activity is only fetched for the latest two terms, so older activity in a local database isn't re-created. |
-| election | About 1.5 minutes | About 310 zips. |
+| election | About 1.5 minutes | About 310 zips. Local data can be restored: see "Restoring election". @@ELECTION_MEASURED@@ |
 
 - [ ] Trigger the scrape through the service's manual path (`enqueue-all`, then `scrape-from-queue`), or wait for its cron during the 22:00 hour.
 - [ ] Skip the queue rows on a fresh start. If you keep a local database and it has pending rows, copy them by `dataset_name` (`status = 0`; all local rows are currently done).
@@ -122,6 +119,8 @@ docker exec -i macrohub-postgres pg_restore -U regional_statistics --no-owner -d
 Tried on a throwaway database with 2.4 M rows: a 16 MB dump and 73 s to restore. It runs as the service's role, so the foreign keys stay enforced, and `pg_restore` loads `scb_indicator` first. Counts and checksums matched, and the SCB tables have no sequences. Other services have to check their own sequences (`pg_dump -t` only includes those a named table owns, and `--data-only` then sets them).
 
 #### Restoring parliament
+
+*Past step 5, this block can't run as written: it builds `macro-analyzer`, which is gone. It only holds on a commit before step 5, and past V38 it has nothing to restore from anyway. It stays as the record of what was done, and as the template for "Restoring election".*
 
 **Parliament's data was restored, not re-scraped**, while the monolith's tables existed. A scrape only fetches activity for the latest two terms, members would get new `id`, `global_id` and `created` values, and `riksdag_*` is curated. An empty clone with nothing to restore fills by scraping as usual.
 
@@ -203,12 +202,152 @@ dc up -d --build --no-deps macro-frontend
 
 A failed `diff` prints the rows that differ and exits there. The `TRUNCATE` covers the four seeded tables because the baseline's rows would otherwise fail the `COPY` on the primary keys, and the two others so that a second run works. No queue rows are copied: a pending row in the old queue (`status = 0`, none locally when this was written) is simply dropped, and the next cron or manual run enqueues again.
 
+#### Restoring election
+
+**The election tables can be re-scraped in about 1.5 minutes**, so restoring isn't needed for the results to come back. It is still what a local stack should do, because it keeps the `source_md5` values, which let the first scrape skip every unchanged file, and it copies anything in `local_governance`, which has no source but migrations (it is empty today). Nothing is lost by skipping this on a stack that has no election data worth keeping, but the `macroanalyzer` database should then be dropped by hand, as below.
+
+Run this on a stack that still runs the old monolith, from the repo root of a clone on the commit that has `election-service`. The block:
+
+- runs in a subshell, and stops at the first failure with `RESTORE FAILED` and how to go back, or with `RESTORE OK`;
+- refuses to run during the 22:00 hour (UTC in the containers), or five minutes before it, when election's cron would start scraping into the new tables. It checks again after the builds, which take several minutes;
+- builds everything first, while nothing has stopped: all four service images, because `macro-platform` changed, and the frontend. A failed build leaves the old stack as it was;
+- only reads `macroanalyzer`, as `macrouser`. Everything it writes goes to `election`, as the role `election`, which can't connect to `macroanalyzer`;
+- gates on a checksum of the three tables and the three config rows (the latter without `created` and `updated`, which aren't copied): the old data and the new must match, or the gateway isn't switched;
+- keeps the dump in a temporary directory outside the repo and deletes it at the end, whatever happens;
+- keeps the old `macrohub-macro-analyzer` container stopped, not removed, until everything has worked, and removes it as its last step. It keeps the old frontend's image as `macro-frontend:before-step5`, for going back;
+- can be run again after a failure: it empties the three tables in `election` first. It refuses once `macrohub-macro-analyzer` is gone, because by then `election` is the live data, which a second restore would overwrite;
+- does **not** drop `macroanalyzer`. That is a separate command, below.
+
+`--no-deps` is still needed on every `up`, as in the block: without it Compose re-creates `macrohub-postgres`, because its environment changed. That is safe for the data, since the volume stays and an existing volume ignores `POSTGRES_*`, but it restarts every service's connections. Postgres no longer needs the monolith's database: on a new volume it isn't created, and on an existing volume the healthcheck keeps working after it is dropped, because `pg_isready` doesn't log in.
+
+No queue rows are copied: a pending row in the old queue (`status = 0`, none locally when this was written) is dropped, and the next cron or manual run enqueues again. If `.env` sets `ELECTION_DB_PASSWORD`, add `-e ELECTION_DB_PASSWORD=...` after `-i` on the line that runs the init script, because the running `macrohub-postgres` doesn't have that variable yet. Otherwise the service can't log in and the block fails after 2 minutes, with the service's log.
+
+With `core.autocrlf=true`, a checkout of this guide has CRLF line endings, and bash fails on the `\r`s. Copy the block from a rendered page, or take it from the file with the `\r`s stripped, then run the result with `bash`:
+
+```bash
+tr -d '\r' < docs/microservice-migration-guide.md | awk '/^#### Restoring election/{s=1} /^#### Dropping the old database/{s=0} s&&/^```bash$/{n++; if(n==2){f=1;next}} /^```$/{f=0} f' > "$HOME/restore-election.sh"
+```
+
+```bash
+(
+set -euo pipefail
+env_file=macro-backend/macro-series-service/.env
+dc() { docker compose --env-file "$env_file" -f macro-backend/macro-infra/docker/docker-compose-all.yml "$@"; }
+tables="local_election_area local_election_party_result local_governance"
+checksums() {   # user, database
+  for t in $tables; do
+    docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U "$1" -d "$2" -At -c "SELECT '$t', count(*), md5(string_agg(md5(x::text), '' ORDER BY md5(x::text))) FROM $t x"
+  done
+  docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U "$1" -d "$2" -At -c "SELECT 'series_configuration', count(*), md5(string_agg(md5((id, global_id, name, display_name, scrape_url, category, unit, subcategory, country, maturity_months, scrape_flow)::text), '' ORDER BY id)) FROM series_configuration"
+}
+wait_for() {   # what, url, the status codes that count, a container whose log helps
+  attempts=0
+  until case " $3 " in *" $(curl -s -o /dev/null -w '%{http_code}' "$2" || true) "*) true ;; *) false ;; esac; do
+    attempts=$((attempts + 1))
+    if [ "$attempts" -ge 60 ]; then
+      docker logs --tail 30 "$4" >&2 || true
+      echo "$1 didn't answer $3 on $2 within 2 minutes" >&2
+      return 1
+    fi
+    sleep 2
+  done
+}
+check_hour() {
+  now=$(date -u +%H%M)
+  if [ "$now" -ge 2155 ] && [ "$now" -le 2259 ]; then
+    echo "Not between 21:55 and 23:00 (UTC): election's cron would start scraping" >&2
+    return 1
+  fi
+}
+dump_dir=$(mktemp -d)
+stage=preparing
+finish() {
+  rc=$?
+  rm -rf "$dump_dir"
+  if [ "$rc" -eq 0 ]; then echo "RESTORE OK"; exit 0; fi
+  echo "RESTORE FAILED (exit $rc). See the output above." >&2
+  case "$stage" in
+    preparing)
+      echo "Nothing was stopped: the old stack still runs. Fix the cause and run this block again." >&2 ;;
+    restoring)
+      echo "macroanalyzer is unchanged. To go back to the old stack: docker stop macrohub-election; docker start macrohub-macro-analyzer" >&2
+      echo "Or fix the cause and run this block again." >&2 ;;
+    switching)
+      echo "The checksums matched, so election holds the data, and macroanalyzer is unchanged. Starting the new containers failed." >&2
+      echo "Fix the cause and run this block again, or go back to the old stack, from the clone's previous commit:" >&2
+      echo "  docker tag macro-frontend:before-step5 macro-frontend:latest; docker rm -f macrohub-macro-frontend macrohub-election; docker start macrohub-macro-analyzer" >&2
+      echo "  git switch --detach HEAD~1; docker compose --env-file $env_file -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --no-build --no-deps macro-frontend" >&2 ;;
+  esac
+  exit "$rc"
+}
+trap finish EXIT
+
+check_hour
+[ -d macro-backend/election-service ] || { echo "Run this from the repo root of a clone that has election-service" >&2; exit 1; }
+[ -f "$env_file" ] || { echo "$env_file is missing" >&2; exit 1; }
+docker inspect macrohub-macro-analyzer > /dev/null || { echo "macrohub-macro-analyzer is gone, so this has already run: election is the live data now" >&2; exit 1; }
+
+# Build first, while nothing has stopped. Keep the old frontend's image: the build replaces its tag
+docker image inspect macro-frontend:before-step5 > /dev/null 2>&1 || docker tag macro-frontend:latest macro-frontend:before-step5
+(cd macro-backend && sh ./mvnw clean package && docker build -t regional-statistics-service regional-statistics-service && docker build -t macro-series-service macro-series-service && docker build -t parliament-service parliament-service && docker build -t election-service election-service)
+dc build macro-frontend
+check_hour
+
+# The old tables stop changing: the monolith's cron is what writes them. Election's routes answer 502 from here until the end
+stage=restoring
+docker stop macrohub-macro-analyzer
+
+# An existing volume has no election database (add -e ELECTION_DB_PASSWORD=... after -i if .env sets it)
+docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh
+
+# Flyway creates the tables and the config rows. Stop the service again before touching them
+dc up -d --no-deps election
+wait_for election-service http://localhost:8085/macro-analyzer/municipalities/elections "200 204" macrohub-election
+docker stop macrohub-election
+
+docker exec macrohub-postgres pg_dump -U macrouser -Fc --data-only --strict-names -t local_election_area -t local_election_party_result -t local_governance macroanalyzer > "$dump_dir/election.dump"
+docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U election -d election -c "TRUNCATE ${tables// /, }"
+docker exec -i macrohub-postgres pg_restore -U election --no-owner --exit-on-error --single-transaction -d election < "$dump_dir/election.dump"
+
+# All three tables and the config rows must match, or nothing is switched
+checksums macrouser macroanalyzer > "$dump_dir/old.txt"
+checksums election election > "$dump_dir/new.txt"
+diff "$dump_dir/old.txt" "$dump_dir/new.txt"
+cat "$dump_dir/new.txt"
+
+stage=switching
+docker start macrohub-election
+wait_for election-service http://localhost:8085/macro-analyzer/municipalities/elections 200 macrohub-election
+dc up -d --no-deps macro-frontend
+wait_for "the gateway" http://localhost:8081/macro-analyzer/municipalities/elections 200 macrohub-macro-frontend
+wait_for "the gateway's 404" http://localhost:8081/macro-analyzer/unknown 404 macrohub-macro-frontend
+dc up -d --no-deps regional-statistics macro-series parliament
+wait_for regional-statistics-service http://localhost:8082/macro-analyzer/regional-statistics/indicators 200 macrohub-regional-statistics
+wait_for macro-series-service http://localhost:8083/macro-analyzer/series-config 200 macrohub-macro-series
+wait_for parliament-service http://localhost:8084/macro-analyzer/parliament/parties 200 macrohub-parliament
+
+docker rm macrohub-macro-analyzer
+)
+```
+
+A failed `diff` prints the rows that differ and exits there. After `RESTORE OK`, open the pages and check them. Compose warns about no orphan after this, and `macro-analyzer:latest` and `macro-frontend:before-step5` stay as images until you `docker rmi` them.
+
+#### Dropping the old database
+
+**A separate step, for the owner, after checking that the pages work.** Nothing reads `macroanalyzer` after "Restoring election", and it holds only the three copied tables and the history of the old migrations. This can't be undone, other than by re-scraping election. It is one command, and it needs no restart:
+
+```bash
+docker exec macrohub-postgres psql -v ON_ERROR_STOP=1 -U macrouser -d postgres -c 'DROP DATABASE macroanalyzer'
+```
+
+Don't delete the volume instead: it holds `parliament`, the only copy of its data.
+
 ### Code
 
 - [ ] Create the service's Maven module, with its own `*Application` in the package `com.kg.macroanalyzer`. `@SpringBootApplication` scans from its own package, so that is what finds the `macro-platform` beans. Set `spring-boot.run.skip` to false, and add it to `<modules>` in the parent pom.
 - [ ] Don't let its base `application.properties` default to the cluster or port 31274. Default to the Compose Postgres (`localhost:5432/<db>`) with the service's role, and copy `BaseConfigurationTest`, which pins that. It needs no `dev` or `prod` profile, and no `.env` import unless it has keys.
 - [ ] Move the module's code. Remove it from the monolith.
-- [ ] Generate a jOOQ model per service from its own database, in the package `com.kg.macroanalyzer.<module>.jooq.generated`. Give it a profile named after the service (`jooq-codegen-<service>`) that sets `jooq.codegen.url`, `.user` and `.password` to the Compose Postgres. With the shared name `jooq-codegen`, the `-am` the build needs would also run `macro-platform`'s codegen, and regenerate its model from whatever database the command names.
+- [ ] Generate a jOOQ model per service from its own database, in the package `com.kg.macroanalyzer.<module>.jooq.generated`. Give it a profile named after the service (`jooq-codegen-<service>`) that sets `jooq.codegen.url`, `.user` and `.password` to the Compose Postgres: the parent pom has no default. `macro-platform`'s profile has its own name too, so the `-am` a service's build needs doesn't run it.
 - [ ] Move the module's tests and fixtures. Give the service its own `ArchitectureTest` for its layers, a copy of `NoStaticResourceHandlersHttpTest` and `ManualScrapePathsHttpTest`, and an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
 - [ ] Update the monolith's `ArchitectureTest` (`MODULES`, `DOMAIN_MODULES`).
 - [ ] Update `MonolithSeriesConfigIntegrationTest`: `shouldRouteEveryConfig_toItsDomainsScrapeFlow` lists the configs still in the monolith by name (three after step 4), so each service takes its own entries.
@@ -221,9 +360,9 @@ Every service exposes the same three endpoints, where `<service>` is `macro-seri
 - `POST /macro-analyzer/scrape/<service>/enqueue-all`
 - `POST /macro-analyzer/scrape/<service>/scrape-from-queue`
 
-Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so nginx needs no map of series names to services. The endpoints stay public, per [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md). The monolith keeps the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue` for what it still holds, and they go away when the last service has moved (step 5). The script that replaces the global `enqueue-all`, `macro-backend/macro-infra/scripts/scrape-all.sh`, loops over a list of prefixes. It treats 409 as fine, because the service's cron may already have started on the queue it just filled.
+Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so nginx needs no map of series names to services. The endpoints stay public, per [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md). The old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue` went away in step 5. `macro-backend/macro-infra/scripts/scrape-all.sh`, which replaces the global `enqueue-all`, loops over the four names. It treats 409 as fine, because the service's cron may already have started on the queue it just filled.
 
-- [ ] Set the service's path prefix to `macro-analyzer/scrape/<service>` (`macro.scrape.path-prefix`).
+- [ ] Set the service's path prefix to `macro-analyzer/scrape/<service>` (`macro.scrape.path-prefix`). It has no default, so a service without it fails at start-up with `Could not resolve placeholder`.
 - [ ] Add the route in nginx, with the same 30-minute `proxy_read_timeout` as the other routes, and in the Vite proxy.
 
 ### Cut over
@@ -236,7 +375,7 @@ Each service gets one gateway route, `/macro-analyzer/scrape/<service>/`, so ngi
 - [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. CI needs no change: the `backend` job runs every module of the reactor. Add the image to the after-merge commands in `.claude/skills/ship/SKILL.md`.
 - [ ] Update `CLAUDE.md`, `macro-backend/macro-analyzer/ARCHITECTURE.md`, `macro-backend/macro-analyzer/README.md` and this guide.
 
-Note that `EnqueueService.enqueue` ignores unknown names. After a cut-over, `POST /macro-analyzer/enqueue?name=<moved series>` on the monolith still answers 202 and does nothing.
+Note that `EnqueueService.enqueue` ignores unknown names: `POST .../enqueue?name=<another service's series>` answers 202 and does nothing.
 
 ### Verify
 
@@ -433,19 +572,21 @@ The follow-up that dropped the old tables:
 
 **Tasks:**
 
-- [ ] Run the extraction checklist for election, with the new database `election`. Skip the cut-over items that delete config rows, delete queue rows and drop old tables with a monolith migration: the monolith itself becomes election, so they have no target. The old tables go away with the `macroanalyzer` database.
-- [ ] Rename the `macro-analyzer` module, application class, image, jar and Compose service to election.
-- [ ] Delete the monolith's migrations (V1 to V38) and the old jOOQ model from the tree. They stay in git history.
-- [ ] Route `/macro-analyzer/scrape/election/` to election. Its new prefix removes the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue`, so remove the monolith's call from the script, which now only loops over the four names. Every service now sets its own prefix, so remove the `macro-analyzer` default.
-- [ ] Change the catch-all `location /macro-analyzer/` in nginx to answer 404. Without it, unknown API paths would fall through to `location /` and get `index.html` with a 200.
-- [ ] Remove `BACKEND_URL`, the `macroanalyzer` database from `POSTGRES_DB`, and the `macrouser` settings no service uses.
-- [ ] Rewrite the architecture and build sections of `CLAUDE.md`, and retire or rewrite `macro-backend/macro-analyzer/ARCHITECTURE.md`.
+- [x] Run the extraction checklist for election, with the new database `election`. Skip the cut-over items that delete config rows, delete queue rows and drop old tables with a monolith migration: the monolith itself becomes election, so they have no target. The old tables go away with the `macroanalyzer` database.
+- [x] Rename the `macro-analyzer` module, application class, image, jar and Compose service to election.
+- [x] Delete the monolith's migrations (V1 to V38) and the old jOOQ model from the tree. They stay in git history.
+- [x] Route `/macro-analyzer/scrape/election/` to election. Its new prefix removes the old `/macro-analyzer/enqueue`, `/enqueue-all` and `/scrape-from-queue`, so remove the monolith's call from the script, which now only loops over the four names. Every service now sets its own prefix, so remove the `macro-analyzer` default.
+- [x] Change the catch-all `location /macro-analyzer/` in nginx to answer 404. Without it, unknown API paths would fall through to `location /` and get `index.html` with a 200.
+- [x] Remove `BACKEND_URL`, the `macroanalyzer` database from `POSTGRES_DB`, and the `macrouser` settings no service uses.
+- [x] Rewrite the architecture and build sections of `CLAUDE.md`, and retire or rewrite `macro-backend/macro-analyzer/ARCHITECTURE.md`.
 
 **Verify:** the checklist's verify list, plus: on a clean checkout with empty volumes (a throwaway project, as under "Verify", not the volume that holds `parliament`), `docker-compose-all.yml` starts all four services, the script fills them and every page works.
 
 **Rollback:** revert the PR and re-create `macroanalyzer` and `election`, and re-scrape election. Keep the volume and the other services' databases: `parliament` is the only copy of its data.
 
-**What differed:** not started.
+**What differed:**
+
+@@WHAT_DIFFERED@@
 
 ## Step 6: First real Kubernetes deployment
 
@@ -455,7 +596,7 @@ It comes last here, but it doesn't depend on the split being finished, so it can
 
 **Tasks:**
 
-- [ ] Fix or replace the existing manifests in `macro-backend/macro-infra/k8s/`. `java/service.yaml` selects a label the pods don't have, `ingress/test-ingress.yaml` names a Service that doesn't exist, and `postgres/postgres-deployment.yaml` uses `postgres:13` while Compose uses `postgres:16`.
+- [ ] Fix or replace the existing manifests in `macro-backend/macro-infra/k8s/`. `java/deployment.yaml` and `java/service.yaml` still describe the retired monolith, with its image `macro-analyzer:latest` and database `macroanalyzer`, and only a comment and `k8s/README.md` say so: step 5 left them alone, so that this step designs them once. `postgres/postgres-configmap.yaml` also still has `POSTGRES_DB: macroanalyzer`. `java/service.yaml` selects a label the pods don't have, `ingress/test-ingress.yaml` names a Service that doesn't exist, and `postgres/postgres-deployment.yaml` uses `postgres:13` while Compose uses `postgres:16`.
 - [ ] Add manifests for all four services, with database settings and API keys, and `ELECTION_PARLIAMENT_URL` on election (until then its default, `localhost:8084`, answers nothing in a pod, so it uses Valmyndigheten's colours). **Open:** how secrets are stored. `postgres-configmap.yaml` holds the password in plain text today.
 - [ ] Add routing. **Open:** a frontend manifest with nginx (using fully qualified service names as `CLAUDE.md` describes), or Ingress routes.
 - [ ] Create the Postgres databases and roles. **Open:** how, given that init scripts only run on an empty volume.
