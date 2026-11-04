@@ -31,7 +31,7 @@ public class InsertionAdaptor {
 
     @PostMapping("/enqueue")
     public ResponseEntity<Void> enqueue(@RequestParam("name") String name) {
-        log.info("Received enqueue request with name=%s".formatted(name));
+        log.info("Received enqueue request with name={}", name);
         try {
             inPort.enqueue(name);
 
@@ -91,9 +91,7 @@ public class InsertionAdaptor {
         final var failed = scrapeResultList.stream()
                 .filter(r -> r.equals(ScrapeResult.FAILED))
                 .count();
-        final var msgRaw = "Scrape result: SUCCESS: %s, EMPTY: %S, FAILED: %s";
-        final var msg = msgRaw.formatted(success, empty, failed);
-        log.info(msg);
+        log.info("Scrape result: SUCCESS: {}, EMPTY: {}, FAILED: {}", success, empty, failed);
     }
 
 }

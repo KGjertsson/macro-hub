@@ -29,9 +29,8 @@ public record FedResponseParser() implements ResponseParser<String, Stream<Macro
             return scrapedResponse.observations.stream()
                     .flatMap(Observation::toMacroPoint);
         } catch (JacksonException jsonProcessingException) {
-            final var msgRaw = "Caught exception while parsing response from FED's API: %s";
-            final var msgFormatted = String.format(msgRaw, jsonProcessingException.getMessage());
-            log.error(msgFormatted);
+            log.error("Caught exception while parsing response from FED's API: {}",
+                    jsonProcessingException.getMessage());
 
             throw new ScrapeException(jsonProcessingException.getMessage());
         }

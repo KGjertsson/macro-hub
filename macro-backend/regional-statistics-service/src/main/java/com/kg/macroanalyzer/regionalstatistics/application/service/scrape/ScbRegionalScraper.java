@@ -48,7 +48,7 @@ public record ScbRegionalScraper(
             try {
                 final var metadata = run.metadata(indicator.tables());
                 if (isUnchanged(indicator, metadata, config)) {
-                    log.info("Skipping SCB indicator %s, its tables are unchanged".formatted(indicator.id()));
+                    log.info("Skipping SCB indicator {}, its tables are unchanged", indicator.id());
                     continue;
                 }
                 results.add(ScbIndicatorResult.builder()
@@ -57,9 +57,9 @@ public record ScbRegionalScraper(
                                 .collect(Collectors.toMap(ScbTableMetadata::table, ScbTableMetadata::updated)))
                         .values(ScbValues.toAreaValues(run.values(indicator, metadata)))
                         .build());
-                log.info("Fetched SCB indicator %s".formatted(indicator.id()));
+                log.info("Fetched SCB indicator {}", indicator.id());
             } catch (TableException e) {
-                log.error("Caught ScrapeException for SCB indicator %s: %s".formatted(indicator.id(), e.getMessage()));
+                log.error("Caught ScrapeException for SCB indicator {}: {}", indicator.id(), e.getMessage());
                 failedTables.add(e.table());
             }
         }

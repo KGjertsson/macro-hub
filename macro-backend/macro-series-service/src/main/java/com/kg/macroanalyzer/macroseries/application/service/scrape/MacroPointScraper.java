@@ -33,9 +33,7 @@ public record MacroPointScraper(
                             .build()
             );
         } catch (ScrapeException scrapeException) {
-            final var msg = "Caught ScrapeException for config=%s";
-            final var formattedMsg = String.format(msg, configWithMacroPoints.seriesConfig());
-            log.error(formattedMsg);
+            log.error("Caught ScrapeException for config={}", configWithMacroPoints.seriesConfig());
 
             return Optional.empty();
         }

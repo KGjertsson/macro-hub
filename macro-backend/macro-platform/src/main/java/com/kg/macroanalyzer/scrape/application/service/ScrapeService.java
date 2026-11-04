@@ -75,7 +75,7 @@ public class ScrapeService {
         registry.keySet().stream()
                 .filter(flowId -> !usedFlowIds.contains(flowId))
                 .sorted()
-                .forEach(flowId -> log.warn("Scrape flow %s is registered but no series config uses it".formatted(flowId)));
+                .forEach(flowId -> log.warn("Scrape flow {} is registered but no series config uses it", flowId));
 
         return Map.copyOf(registry);
     }
@@ -98,8 +98,7 @@ public class ScrapeService {
 
     private Stream<ScrapeQueueItem> fetchItemsToScrape(LocalDateTime timeStamp) {
         final var items = scrapeQueuePort.getItemsToScrape(timeStamp);
-        final var msg = "Scraping items from queue: %s".formatted(items);
-        log.info(msg);
+        log.info("Scraping items from queue: {}", items);
 
         return items.stream();
     }
@@ -110,7 +109,7 @@ public class ScrapeService {
         try {
             return route(scrapeQueueItem);
         } catch (RuntimeException e) {
-            log.error("Scrape of %s failed".formatted(scrapeQueueItem.name()), e);
+            log.error("Scrape of {} failed", scrapeQueueItem.name(), e);
 
             return ScrapeResult.FAILED;
         }
@@ -121,11 +120,11 @@ public class ScrapeService {
         return seriesConfigPreparer.prepare(scrapeQueueItem)
                 .map(SeriesConfig::scrapeFlow)
                 .map(flowId -> {
-                    log.info("Routing %s to scrape flow %s".formatted(scrapeQueueItem.name(), flowId));
+                    log.info("Routing {} to scrape flow {}", scrapeQueueItem.name(), flowId);
                     return scrapeFlows.get(flowId).run(scrapeQueueItem);
                 })
                 .orElseGet(() -> {
-                    log.warn("No series config named %s, cannot scrape it".formatted(scrapeQueueItem.name()));
+                    log.warn("No series config named {}, cannot scrape it", scrapeQueueItem.name());
                     return ScrapeResult.FAILED;
                 });
     }

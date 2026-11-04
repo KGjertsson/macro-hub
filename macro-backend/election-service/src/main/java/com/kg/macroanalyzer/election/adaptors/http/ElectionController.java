@@ -33,7 +33,7 @@ public class ElectionController {
     public ResponseEntity<List<LocalElectionSummaryDto>> getMunicipalityElections(
             @RequestParam(name = "year", required = false) Integer year
     ) {
-        log.info("Received GET macro-analyzer/municipalities/elections?year=%s".formatted(year));
+        log.info("Received GET macro-analyzer/municipalities/elections?year={}", year);
 
         return listResponse(electionQueries.getLocalElectionResults(LocalElectionType.KF, year));
     }
@@ -43,7 +43,7 @@ public class ElectionController {
             @PathVariable("code") String code,
             @RequestParam(name = "year", required = false) Integer year
     ) {
-        log.info("Received GET macro-analyzer/municipalities/%s?year=%s".formatted(code, year));
+        log.info("Received GET macro-analyzer/municipalities/{}?year={}", code, year);
 
         return detailResponse(electionQueries.getLocalElectionResult(LocalElectionType.KF, year, code));
     }
@@ -52,7 +52,7 @@ public class ElectionController {
     public ResponseEntity<List<LocalElectionSummaryDto>> getRegionElections(
             @RequestParam(name = "year", required = false) Integer year
     ) {
-        log.info("Received GET macro-analyzer/regions/elections?year=%s".formatted(year));
+        log.info("Received GET macro-analyzer/regions/elections?year={}", year);
 
         return listResponse(electionQueries.getLocalElectionResults(LocalElectionType.RF, year));
     }
@@ -62,7 +62,7 @@ public class ElectionController {
             @PathVariable("code") String code,
             @RequestParam(name = "year", required = false) Integer year
     ) {
-        log.info("Received GET macro-analyzer/regions/%s?year=%s".formatted(code, year));
+        log.info("Received GET macro-analyzer/regions/{}?year={}", code, year);
 
         return detailResponse(electionQueries.getLocalElectionResult(LocalElectionType.RF, year, code));
     }
@@ -71,7 +71,7 @@ public class ElectionController {
     public ResponseEntity<List<LocalElectionSummaryDto>> getConstituencyElections(
             @RequestParam(name = "year", required = false) Integer year
     ) {
-        log.info("Received GET macro-analyzer/constituencies/elections?year=%s".formatted(year));
+        log.info("Received GET macro-analyzer/constituencies/elections?year={}", year);
 
         return listResponse(electionQueries.getLocalElectionResults(LocalElectionType.RD, year));
     }
@@ -81,7 +81,7 @@ public class ElectionController {
             @PathVariable("code") String code,
             @RequestParam(name = "year", required = false) Integer year
     ) {
-        log.info("Received GET macro-analyzer/constituencies/%s?year=%s".formatted(code, year));
+        log.info("Received GET macro-analyzer/constituencies/{}?year={}", code, year);
 
         return detailResponse(electionQueries.getLocalElectionResult(LocalElectionType.RD, year, code));
     }

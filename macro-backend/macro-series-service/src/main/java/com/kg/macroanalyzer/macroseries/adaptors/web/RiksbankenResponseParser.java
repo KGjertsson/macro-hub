@@ -30,9 +30,8 @@ public record RiksbankenResponseParser() implements ResponseParser<String, Strea
             return resultList.stream()
                     .map(ScrapedResponse::toMacroPoint);
         } catch (JacksonException jsonProcessingException) {
-            final var msgRaw = "Caught exception while parsing response from Riskbanken's API: %s";
-            final var msgFormatted = String.format(msgRaw, jsonProcessingException.getMessage());
-            log.error(msgFormatted);
+            log.error("Caught exception while parsing response from Riskbanken's API: {}",
+                    jsonProcessingException.getMessage());
 
             throw new ScrapeException(jsonProcessingException.getMessage());
         }

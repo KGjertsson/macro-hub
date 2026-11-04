@@ -26,7 +26,7 @@ public record ScbRegionalPersister(RegionalStatisticsRepositoryPort repositoryPo
         final var config = configWithScbIndicators.seriesConfig();
         final var results = configWithScbIndicators.results();
         if (results.isEmpty()) {
-            log.info("Found no updated SCB tables for %s".formatted(config.name()));
+            log.info("Found no updated SCB tables for {}", config.name());
             scrapeQueuePort.markAsDone(config);
 
             return ScrapeResult.EMPTY;
@@ -37,9 +37,9 @@ public record ScbRegionalPersister(RegionalStatisticsRepositoryPort repositoryPo
             try {
                 final var persistedCount = repositoryPort.writeScbIndicatorResult(result);
                 written.add(result);
-                log.info("Replaced indicator %s with %s area values".formatted(result.indicator().id(), persistedCount));
+                log.info("Replaced indicator {} with {} area values", result.indicator().id(), persistedCount);
             } catch (RuntimeException e) {
-                log.error("Failed to write SCB indicator %s".formatted(result.indicator().id()), e);
+                log.error("Failed to write SCB indicator {}", result.indicator().id(), e);
                 droppedTables.addAll(result.indicator().tables());
             }
         }

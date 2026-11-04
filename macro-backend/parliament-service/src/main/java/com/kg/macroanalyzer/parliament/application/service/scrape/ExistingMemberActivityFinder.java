@@ -21,7 +21,7 @@ public record ExistingMemberActivityFinder(
     public Optional<ConfigWithMemberActivity> findExisting(SeriesConfig seriesConfig) {
         final var members = repositoryPort.readMembersOfParliament();
         if (members.isEmpty()) {
-            log.info("No members of parliament stored yet, postponing %s".formatted(seriesConfig.name()));
+            log.info("No members of parliament stored yet, postponing {}", seriesConfig.name());
 
             return Optional.empty();
         }

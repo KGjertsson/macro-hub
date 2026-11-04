@@ -39,8 +39,8 @@ public class RegionalStatisticsController {
             @RequestParam(name = "level") String level,
             @RequestParam(name = "year", required = false) Integer year
     ) {
-        log.info("Received GET macro-analyzer/regional-statistics/values?indicator=%s&level=%s&year=%s"
-                .formatted(indicator, level, year));
+        log.info("Received GET macro-analyzer/regional-statistics/values?indicator={}&level={}&year={}",
+                indicator, level, year);
         final var scbLevel = ScbLevel.fromLabel(level);
         if (scbLevel.isEmpty()) {
             return ResponseEntity.badRequest().build();

@@ -61,7 +61,7 @@ public class RiksdagenActivityWebAdaptor implements WebPort<MemberActivityReques
                 return flow.fetch(url);
             } catch (ScrapeException e) {
                 lastException = e;
-                log.warn("Attempt %d failed for %s: %s".formatted(attempt, url, e.getMessage()));
+                log.warn("Attempt {} failed for {}: {}", attempt, url, e.getMessage());
                 if (attempt < ATTEMPTS) {
                     sleep(RETRY_DELAY_MS);
                 }

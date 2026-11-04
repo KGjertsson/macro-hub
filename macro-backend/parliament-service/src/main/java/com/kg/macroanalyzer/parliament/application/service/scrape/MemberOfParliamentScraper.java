@@ -30,9 +30,7 @@ public record MemberOfParliamentScraper(
                             .build()
             );
         } catch (ScrapeException scrapeException) {
-            final var msg = "Caught ScrapeException for config=%s";
-            final var formattedMsg = String.format(msg, configWithMemberOfParliament.seriesConfig());
-            log.error(formattedMsg);
+            log.error("Caught ScrapeException for config={}", configWithMemberOfParliament.seriesConfig());
 
             return Optional.empty();
         }

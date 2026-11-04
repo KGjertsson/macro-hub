@@ -37,7 +37,7 @@ final class ScbRetry {
                 return flow.fetch(url);
             } catch (ScrapeException e) {
                 lastException = e;
-                log.warn("Attempt %d failed for %s: %s".formatted(attempt, url, abbreviate(e.getMessage())));
+                log.warn("Attempt {} failed for {}: {}", attempt, url, abbreviate(e.getMessage()));
                 if (attempt < ATTEMPTS) {
                     Sleeper.sleepOrStop(sleeper, backoffMs(e, attempt));
                 }

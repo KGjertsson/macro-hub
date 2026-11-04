@@ -31,17 +31,17 @@ public record LocalElectionScraper(
         try {
             files = indexWebPort.fetch(request);
         } catch (ScrapeException e) {
-            log.error("Caught ScrapeException for index of %s: %s".formatted(request.baseUrl(), e.getMessage()));
+            log.error("Caught ScrapeException for index of {}: {}", request.baseUrl(), e.getMessage());
 
             return Optional.empty();
         }
         if (files.isEmpty()) {
-            log.warn("Index of %s lists no %s result files".formatted(request.baseUrl(), input.type()));
+            log.warn("Index of {} lists no {} result files", request.baseUrl(), input.type());
         }
         final var changedFiles = files.stream()
                 .filter(f -> !input.existingMd5s().contains(f.md5()))
                 .toList();
-        log.info("Fetching %d of %d %s result files".formatted(changedFiles.size(), files.size(), input.type()));
+        log.info("Fetching {} of {} {} result files", changedFiles.size(), files.size(), input.type());
 
         return fetchResults(changedFiles)
                 .filter(fetched -> changedFiles.isEmpty() || !fetched.results().isEmpty())
@@ -59,7 +59,7 @@ public record LocalElectionScraper(
             // pause and ValmyndighetenRetry restore the flag, so their sleeps would now throw at once and the loop
             // would call a rate limiting server without any delay
             if (Thread.currentThread().isInterrupted()) {
-                log.warn("Interrupted before fetching area=%s, abandoning the run".formatted(file.areaCode()));
+                log.warn("Interrupted before fetching area={}, abandoning the run", file.areaCode());
 
                 return Optional.empty();
             }
@@ -67,11 +67,11 @@ public record LocalElectionScraper(
                 results.addAll(resultWebPort.fetch(file));
                 consecutiveFailures = 0;
             } catch (ScrapeException e) {
-                log.error("Caught ScrapeException for area=%s: %s".formatted(file.areaCode(), e.getMessage()));
+                log.error("Caught ScrapeException for area={}: {}", file.areaCode(), e.getMessage());
                 anyFailed = true;
                 consecutiveFailures++;
                 if (consecutiveFailures == MAX_CONSECUTIVE_FAILURES) {
-                    log.error("Stopping after %d consecutive failed files".formatted(consecutiveFailures));
+                    log.error("Stopping after {} consecutive failed files", consecutiveFailures);
                     break;
                 }
             }

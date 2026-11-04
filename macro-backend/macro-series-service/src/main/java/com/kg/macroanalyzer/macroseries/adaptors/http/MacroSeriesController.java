@@ -59,10 +59,7 @@ public class MacroSeriesController {
     }
 
     private void logBuildChartDataRequest(BuildChartDataParams params) {
-        var msg = "Received POST macro-analyzer/chart-data request with ";
-        msg = msg + "chartSeriesParams=%s";
-        msg = msg.formatted(params);
-        log.info(msg);
+        log.info("Received POST macro-analyzer/chart-data request with chartSeriesParams={}", params);
     }
 
     private boolean invalidRequest(BuildChartDataParams params) {
