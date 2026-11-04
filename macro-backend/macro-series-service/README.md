@@ -2,7 +2,7 @@
 
 The chart series, from Riksbanken, the Fed and Eurostat. It serves `/macro-analyzer/series-config`, `/macro-analyzer/chart-data` and the manual scrape paths under `/macro-analyzer/scrape/macro-series/` on port 8083, with its own database and role, `macro_series`. It builds on the `macro-platform` library, for the scrape core and the shared code. The gateway (nginx in Compose, the proxy in `vite.config.ts`) routes these paths here.
 
-The module's layout and behaviour are described in the repository's `CLAUDE.md`, and the extraction in [the migration guide](../../docs/microservice-migration-guide.md).
+The module's layout and behaviour are described in the repository's `CLAUDE.md`, and the extraction in [the migration guide's last version](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md).
 
 ## Keys
 
@@ -48,4 +48,4 @@ curl -X POST http://localhost:8081/macro-analyzer/scrape/macro-series/enqueue-al
 curl -X POST http://localhost:8081/macro-analyzer/scrape/macro-series/scrape-from-queue
 ```
 
-`scrape-from-queue` returns when the run is done, or answers 409 if one is already running. The service's cron drains the queue every minute, and enqueues everything during the 22:00 hour (UTC in the container). To copy a local database instead, see "Data" in the guide.
+`scrape-from-queue` returns when the run is done, or answers 409 if one is already running. The service's cron drains the queue every minute, and enqueues everything during the 22:00 hour (UTC in the container).

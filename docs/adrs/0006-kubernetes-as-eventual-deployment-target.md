@@ -23,11 +23,11 @@ Local development uses Docker Compose. `docker/docker-compose-all.yml` runs the 
 
 Kubernetes is the target for deployment. Docker Compose stays the default route for local development, during and after the split, so `docker-compose-all.yml` runs all services at each stage.
 
-The k8s files only need to keep working as far as they do today until the first deployment, which is its own step in the [migration guide](../microservice-migration-guide.md).
+The k8s files only need to keep working as far as they do today until the first deployment, which is its own step in the [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md).
 
 This ADR doesn't decide how routing works in the cluster. The choice between nginx in the frontend image and Ingress routes is an open question in the guide.
 
-*Note, 2026-11-02:* the monolith this ADR's context describes is retired, but the manifests below still name it. Step 6 of the [migration guide](../microservice-migration-guide.md) replaces them. The service name `macro-analyzer-service` below is the example from the old manifests.
+*Note, 2026-11-02:* the monolith this ADR's context describes is retired, but the manifests below still name it. Step 6 of the [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md) replaces them. The service name `macro-analyzer-service` below is the example from the old manifests.
 
 *Note, 2026-11-02:* step 6 made the first deployment, in its own namespace `macro-hub`. **The gateway in the cluster is nginx in the frontend image,** which the project owner decided, on a pinned NodePort (30081) with fully qualified service names. There are no Ingress routes and the `ingress` addon stays off: nginx already holds the routes, the 404s and the 30-minute timeout, and Compose and the cluster then behave the same. Images stay on `imagePullPolicy: Never`, tagged with the commit and imported by `k8s/build-images.sh`, with no registry. The other consequences below are done, and `k8s/README.md` is the procedure. The Context's list describes files that are gone.
 

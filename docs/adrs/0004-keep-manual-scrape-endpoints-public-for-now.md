@@ -16,7 +16,7 @@ The split is a natural moment to change this. The draft design recommended keepi
 
 ## Decision
 
-The manual scrape endpoints, or their per-service replacements, stay reachable through the gateway without authentication. The split doesn't change this. The exact per-service paths are an open question in the [migration guide](../microservice-migration-guide.md).
+The manual scrape endpoints, or their per-service replacements, stay reachable through the gateway without authentication. The split doesn't change this. The exact per-service paths are an open question in the [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md).
 
 *Note, 2026-11-01:* the paths are now decided, under `/macro-analyzer/scrape/<service>/`. See "Manual scrape endpoints" in the guide.
 
@@ -35,4 +35,4 @@ The manual scrape endpoints, or their per-service replacements, stay reachable t
 
 - Anyone who can reach the gateway can trigger scrapes, and so cause calls to the external APIs, database writes and, for SCB, a large heap spike.
 - Each service's `scrapeLock` limits this to one run per service: a second `/scrape-from-queue` answers 409. Since each service has its own lock, four runs can go at once after the split.
-- Nothing is deployed today, so the exposure is limited to whoever can reach a development machine. It grows with the first real deployment, which makes that deployment ([step 6 of the guide](../microservice-migration-guide.md#step-6-first-real-kubernetes-deployment)) the natural point to revisit this.
+- Nothing is deployed today, so the exposure is limited to whoever can reach a development machine. It grows with the first real deployment, which makes that deployment ([step 6 of the guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md#step-6-first-real-kubernetes-deployment)) the natural point to revisit this.

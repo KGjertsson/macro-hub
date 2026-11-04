@@ -2,7 +2,7 @@
 
 SCB DeSO and RegSO statistics, for the Områdesstatistik page. It serves `/macro-analyzer/regional-statistics/*` and the manual scrape paths under `/macro-analyzer/scrape/regional-statistics/` on port 8082, with its own database and role, `regional_statistics`. It builds on the `macro-platform` library, for the scrape core and the shared code. The gateway (nginx in Compose, the proxy in `vite.config.ts`) routes both prefixes here.
 
-It is the template for the other services in [the migration guide](../../docs/microservice-migration-guide.md). The module's layout and behaviour are described in the repository's `CLAUDE.md`.
+It was the first service extracted, and the template for the others ([the migration guide's last version](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md)). The module's layout and behaviour are described in the repository's `CLAUDE.md`.
 
 ## Run it
 

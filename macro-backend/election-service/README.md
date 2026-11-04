@@ -2,7 +2,7 @@
 
 Valmyndigheten's final results: kommun (KF), region (RF) and Riksdag valkrets (RD) elections. It serves `/macro-analyzer/municipalities/*`, `/macro-analyzer/regions/*`, `/macro-analyzer/constituencies/*` and the manual scrape paths under `/macro-analyzer/scrape/election/` on port 8085, with its own database and role, `election`. It builds on the `macro-platform` library, for the scrape core and the shared code. The gateway (nginx in Compose, the proxy in `vite.config.ts`) routes these paths here.
 
-The module's layout and behaviour are described in the repository's `CLAUDE.md`, and how it got its own database in [the migration guide](../../docs/microservice-migration-guide.md).
+The module's layout and behaviour are described in the repository's `CLAUDE.md`, and how it got its own database in [the migration guide's last version](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md).
 
 ## Run it
 

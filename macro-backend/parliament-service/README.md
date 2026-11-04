@@ -4,7 +4,7 @@ Riksdagen: members, their activity, parties and elections. It serves `/macro-ana
 
 `GET /macro-analyzer/parliament/parties` is also an API between services: election reads the party colours from it. `macro-backend/contracts/parliament-parties.json` pins the fields it reads, and `PartiesContractHttpTest` holds this service to that file.
 
-The module's layout and behaviour are described in the repository's `CLAUDE.md`, and the extraction in [the migration guide](../../docs/microservice-migration-guide.md).
+The module's layout and behaviour are described in the repository's `CLAUDE.md`, and the extraction in [the migration guide's last version](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md).
 
 ## Run it
 
@@ -39,7 +39,7 @@ The default is `localhost:5432/parliament`. For another database, add `-Djooq.co
 
 ## Fill it
 
-**Keep a local database that has data rather than re-creating it**: a scrape only fetches activity for the latest two terms, and nothing else holds a copy. See "Restoring parliament" in the guide. An empty one fills like this:
+**Keep a local database that has data rather than re-creating it**: a scrape only fetches activity for the latest two terms, and nothing else holds a copy. An empty one fills like this:
 
 ```bash
 curl -X POST http://localhost:8081/macro-analyzer/scrape/parliament/enqueue-all
