@@ -14,8 +14,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
 
 public final class AcceptanceStack implements AutoCloseable {
 
@@ -38,7 +40,7 @@ public final class AcceptanceStack implements AutoCloseable {
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
 
     private final Network network = Network.newNetwork();
-    private final List<GenericContainer<?>> containers = new ArrayList<>();
+    private final List<GenericContainer<?>> containers = new CopyOnWriteArrayList<>();
     private final Gateway gateway;
     private final Sources sources;
 
@@ -56,18 +58,20 @@ public final class AcceptanceStack implements AutoCloseable {
     }
 
     private AcceptanceStack(List<BackendService> services) {
-        final var postgres = postgres();
-        final var wireMock = wireMock();
-        Startables.deepStart(postgres, wireMock).join();
-        containers.addAll(List.of(postgres, wireMock));
-        containers.addAll(services.parallelStream()
-                .map(service -> startWithSourcesRedirected(service, postgres))
-                .toList());
-        final var frontend = startGateway(services);
-        containers.add(frontend);
+        try {
+            final var postgres = postgres();
+            final var wireMock = wireMock();
+            containers.addAll(List.of(postgres, wireMock));
+            Startables.deepStart(postgres, wireMock).join();
+            startAll(services, postgres);
+            final var frontend = startGateway(services);
 
-        this.gateway = new Gateway(baseUrl(frontend, GATEWAY_PORT));
-        this.sources = new Sources(new Gateway(baseUrl(wireMock, SOURCES_PORT)));
+            this.gateway = new Gateway(baseUrl(frontend, GATEWAY_PORT));
+            this.sources = new Sources(new Gateway(baseUrl(wireMock, SOURCES_PORT)));
+        } catch (RuntimeException e) {
+            close();
+            throw e;
+        }
     }
 
     public Gateway gateway() {
@@ -117,17 +121,26 @@ public final class AcceptanceStack implements AutoCloseable {
                 .waitingFor(Wait.forHttp("/__admin/health").withStartupTimeout(STARTUP_TIMEOUT));
     }
 
+    // allOf waits for every start, also after one has failed, so close() can't miss a container that is still starting
+    private void startAll(List<BackendService> services, GenericContainer<?> postgres) {
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            CompletableFuture.allOf(services.stream()
+                    .map(service -> CompletableFuture.runAsync(
+                            () -> startWithSourcesRedirected(service, postgres), executor))
+                    .toArray(CompletableFuture[]::new)).join();
+        }
+    }
+
     // Flyway seeds series_configuration with the real sources' URLs, and a service only reads it at start-up. So it starts
     // once to seed, and again to read the rows pointing at the stub. The first start has no reason to call anything: the
     // scheduler is off and nothing has been enqueued
-    private GenericContainer<?> startWithSourcesRedirected(BackendService service, GenericContainer<?> postgres) {
+    private void startWithSourcesRedirected(BackendService service, GenericContainer<?> postgres) {
         final var container = serviceContainer(service);
+        containers.add(container);
         container.start();
         redirectSources(service, postgres);
         container.stop();
         container.start();
-
-        return container;
     }
 
     private GenericContainer<?> serviceContainer(BackendService service) {
@@ -180,6 +193,7 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withExposedPorts(GATEWAY_PORT)
                 .waitingFor(Wait.forHttp("/").withStartupTimeout(STARTUP_TIMEOUT));
         services.forEach(service -> frontend.withEnv(service.gatewayUrlVariable(), service.internalUrl()));
+        containers.add(frontend);
         frontend.start();
 
         return frontend;

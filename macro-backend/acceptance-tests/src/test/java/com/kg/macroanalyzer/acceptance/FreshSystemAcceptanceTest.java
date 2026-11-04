@@ -9,6 +9,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -91,11 +92,15 @@ class FreshSystemAcceptanceTest {
                 elections.valueStream().map(election -> election.get("year").asInt()).toList());
         final var latest = elections.get(0);
         assertEquals("2026-09-28", latest.get("termStart").asString());
+        final var parties = latest.get("parties");
         assertEquals(
-                List.of("S=99", "M=70", "SD=62", "V=30", "C=25", "KD=22", "MP=22", "L=19"),
-                latest.get("parties").valueStream()
-                        .map(party -> party.get("code").asString() + "=" + party.get("seats").asInt())
-                        .toList());
+                Map.of("S", 99, "M", 70, "SD", 62, "V", 30, "C", 25, "KD", 22, "MP", 22, "L", 19),
+                parties.valueStream().collect(Collectors.toMap(
+                        party -> party.get("code").asString(),
+                        party -> party.get("seats").asInt())));
+        assertEquals(
+                List.of(99, 70, 62, 30, 25, 22, 22, 19),
+                parties.valueStream().map(party -> party.get("seats").asInt()).toList());
     }
 
     @Test
