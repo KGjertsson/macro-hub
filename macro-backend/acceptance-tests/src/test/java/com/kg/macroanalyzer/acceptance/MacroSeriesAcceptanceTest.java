@@ -51,7 +51,7 @@ class MacroSeriesAcceptanceTest {
     }
 
     @Test
-    void aFedSeriesIsChartedWithoutTheDaysFedHasNoValueFor() {
+    void aFedSeriesGapTakesThePreviousDayAndATrailingGapGetsNoLabel() {
         // given
         final var series = "FEDEffectiveFederalFundsRate";
         final var request = Map.of(
