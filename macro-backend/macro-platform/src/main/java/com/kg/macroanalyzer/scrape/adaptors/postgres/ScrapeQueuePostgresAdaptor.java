@@ -21,7 +21,7 @@ public class ScrapeQueuePostgresAdaptor implements ScrapeQueuePort {
 
     @Override
     public void persistScrapeQueueItem(ScrapeQueueItem scrapeQueueItem) {
-        log.info("Persisting scrapeQueueItem=%s".formatted(scrapeQueueItem));
+        log.info("Persisting scrapeQueueItem={}", scrapeQueueItem);
 
         scrapeRepository.addScrapeQueueItem(scrapeQueueItem);
     }

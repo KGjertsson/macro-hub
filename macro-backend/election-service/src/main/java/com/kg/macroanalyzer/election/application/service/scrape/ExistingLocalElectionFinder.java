@@ -19,7 +19,7 @@ public record ExistingLocalElectionFinder(
     public Optional<ConfigWithLocalElections> findExisting(SeriesConfig seriesConfig) {
         final var type = LocalElectionType.fromConfigName(seriesConfig.name());
         if (type.isEmpty()) {
-            log.error("No local election type for config %s".formatted(seriesConfig.name()));
+            log.error("No local election type for config {}", seriesConfig.name());
 
             return Optional.empty();
         }

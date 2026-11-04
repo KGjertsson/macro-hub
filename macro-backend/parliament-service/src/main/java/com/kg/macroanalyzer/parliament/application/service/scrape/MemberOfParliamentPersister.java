@@ -15,14 +15,14 @@ public record MemberOfParliamentPersister(ParliamentRepositoryPort repositoryPor
         final var config = configWithMemberOfParliament.seriesConfig();
         final var members = configWithMemberOfParliament.membersOfParliament();
         if (members.isEmpty()) {
-            log.info("Found no members of parliament for %s".formatted(config.name()));
+            log.info("Found no members of parliament for {}", config.name());
             scrapeQueuePort.markAsDone(config);
 
             return ScrapeResult.EMPTY;
         }
         final var persistedCount = repositoryPort.writeMembersOfParliament(members);
         scrapeQueuePort.markAsDone(config);
-        log.info("Upserted %s members of parliament for %s".formatted(persistedCount, config.name()));
+        log.info("Upserted {} members of parliament for {}", persistedCount, config.name());
 
         return ScrapeResult.SUCCESS;
     }

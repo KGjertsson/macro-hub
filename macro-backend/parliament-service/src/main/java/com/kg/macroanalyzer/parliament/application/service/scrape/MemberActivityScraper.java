@@ -22,13 +22,13 @@ public record MemberActivityScraper(
         final var baseUrl = configWithMemberActivity.seriesConfig().scrapeUrl();
         final var ids = configWithMemberActivity.intressentIds();
         final var activityList = new ArrayList<MemberActivity>();
-        log.info("Fetching activity for %d members of parliament".formatted(ids.size()));
+        log.info("Fetching activity for {} members of parliament", ids.size());
 
         for (final var id : ids) {
             try {
                 activityList.add(webPort.fetch(new MemberActivityRequest(baseUrl, id)));
             } catch (ScrapeException e) {
-                log.error("Caught ScrapeException for member=%s: %s".formatted(id, e.getMessage()));
+                log.error("Caught ScrapeException for member={}: {}", id, e.getMessage());
             }
             pause();
         }

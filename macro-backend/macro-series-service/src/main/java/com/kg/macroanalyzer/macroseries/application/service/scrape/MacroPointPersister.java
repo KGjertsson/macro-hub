@@ -15,16 +15,14 @@ public record MacroPointPersister(MacroSeriesRepositoryPort repositoryPort, Scra
         final var name = configWithMacroPoints.seriesConfig().name();
         final var config = configWithMacroPoints.seriesConfig();
         if (configWithMacroPoints.macroPoints().isEmpty()) {
-            final var msg = "Found no new or revised macro points for %s".formatted(name);
-            log.info(msg);
+            log.info("Found no new or revised macro points for {}", name);
             scrapeQueuePort.markAsDone(config);
 
             return ScrapeResult.EMPTY;
         }
         final var persistedCount = repositoryPort.writeMacroPoints(configWithMacroPoints);
         scrapeQueuePort.markAsDone(config);
-        final var msg = "Wrote %s new or revised macro points for %s".formatted(persistedCount, name);
-        log.info(msg);
+        log.info("Wrote {} new or revised macro points for {}", persistedCount, name);
 
         return ScrapeResult.SUCCESS;
     }

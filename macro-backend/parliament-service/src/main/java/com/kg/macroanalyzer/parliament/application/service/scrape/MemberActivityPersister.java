@@ -15,14 +15,14 @@ public record MemberActivityPersister(ParliamentRepositoryPort repositoryPort, S
         final var config = configWithMemberActivity.seriesConfig();
         final var activity = configWithMemberActivity.memberActivity();
         if (activity.isEmpty()) {
-            log.info("Found no member activity for %s".formatted(config.name()));
+            log.info("Found no member activity for {}", config.name());
             scrapeQueuePort.markAsDone(config);
 
             return ScrapeResult.EMPTY;
         }
         final var persistedCount = repositoryPort.writeMemberActivity(activity);
         scrapeQueuePort.markAsDone(config);
-        log.info("Upserted activity for %s members of parliament".formatted(persistedCount));
+        log.info("Upserted activity for {} members of parliament", persistedCount);
 
         return ScrapeResult.SUCCESS;
     }

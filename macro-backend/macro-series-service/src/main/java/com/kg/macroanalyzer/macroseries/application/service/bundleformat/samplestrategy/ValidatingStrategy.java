@@ -23,9 +23,8 @@ public abstract class ValidatingStrategy implements SampleStrategy {
                 .count();
         final var hasDifferentDimensions = withUnexpectedDimensions > 0;
         if (hasDifferentDimensions) {
-            final var msgRaw = "Expected bundle with dimension %s but found deviation";
-            final var msgFormatted = msgRaw.formatted(referenceSize);
-            log.error(new InvalidBundleDimensionException(msgFormatted).toString());
+            final var msg = "Expected bundle with dimension %s but found deviation".formatted(referenceSize);
+            log.error("{}", new InvalidBundleDimensionException(msg).toString());
         }
 
         return hasDifferentDimensions

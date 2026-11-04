@@ -21,7 +21,7 @@ final class ValmyndighetenRetry {
                 return flow.fetch(url);
             } catch (ScrapeException e) {
                 lastException = e;
-                log.warn("Attempt %d failed for %s: %s".formatted(attempt, url, e.getMessage()));
+                log.warn("Attempt {} failed for {}: {}", attempt, url, e.getMessage());
                 if (attempt < ATTEMPTS) {
                     sleep(BASE_DELAY_MS * attempt);
                 }

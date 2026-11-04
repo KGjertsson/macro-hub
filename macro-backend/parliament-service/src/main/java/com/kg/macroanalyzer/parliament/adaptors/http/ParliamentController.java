@@ -59,14 +59,14 @@ public class ParliamentController {
     public ResponseEntity<List<MemberSummaryDto>> getMembersOfParliament(
             @RequestParam(name = "year", required = false) Integer year
     ) {
-        log.info("Received GET macro-analyzer/parliament/members?year=%s".formatted(year));
+        log.info("Received GET macro-analyzer/parliament/members?year={}", year);
 
         return listResponse(parliamentQueries.getMembersOfParliament(year));
     }
 
     @GetMapping("/parliament/members/{id}")
     public ResponseEntity<MemberDetailDto> getMemberOfParliament(@PathVariable("id") String id) {
-        log.info("Received GET macro-analyzer/parliament/members/%s".formatted(id));
+        log.info("Received GET macro-analyzer/parliament/members/{}", id);
 
         return parliamentQueries.getMemberOfParliament(id)
                 .map(ResponseEntity::ok)
