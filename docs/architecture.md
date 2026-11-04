@@ -32,12 +32,12 @@ The components that run, and how they connect. It is what Docker Compose starts
     | |                    | |                             | |                    | |
     | v                    | v                             | v                    | v
     | Riksbanken           | SCB                           | Riksdagen            | Valmyndigheten
-    | Fed                  |                               |                      |
+    | Fed (FRED)           |                               |                      |
     | Eurostat             |                               |                      |
     |                      |                               |                      |
     v                      v                               v                      v
   +-----------------------------------------------------------------------------------------------+
-  | postgres container, one instance: host :5432, volume pgdata                                   |
+  | postgres container, one instance: host :5432, volume docker_pgdata                            |
   | macro_series           regional_statistics             parliament             election        |
   | Each database has its own role, series_configuration and scrape_action_queue.                 |
   +-----------------------------------------------------------------------------------------------+
