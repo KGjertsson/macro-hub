@@ -6,18 +6,41 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public record Sources(Gateway wireMockAdmin) {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
     public void serveJson(String path, String fixture) {
+        serveJson(path, Map.of(), fixture);
+    }
+
+    public void serveJson(String path, Map<String, String> query, String fixture) {
+        stub(path, query, readFixture(fixture));
+    }
+
+    public void serveJsonBody(String path, String body) {
+        stub(path, Map.of(), body);
+    }
+
+    public int requestCount(String path) {
+        return requestCount(path, Map.of());
+    }
+
+    public int requestCount(String path, Map<String, String> query) {
+        final var response = wireMockAdmin.postJson("/__admin/requests/count", JSON.writeValueAsString(request(path, query)));
+
+        return JSON.readTree(response.body()).get("count").asInt();
+    }
+
+    private void stub(String path, Map<String, String> query, String body) {
         final var mapping = JSON.writeValueAsString(Map.of(
-                "request", Map.of("method", "GET", "urlPath", path),
+                "request", request(path, query),
                 "response", Map.of(
                         "status", 200,
                         "headers", Map.of("Content-Type", "application/json"),
-                        "body", readFixture(fixture))));
+                        "body", body)));
 
         final var response = wireMockAdmin.postJson("/__admin/mappings", mapping);
         if (response.statusCode() != 201) {
@@ -25,11 +48,11 @@ public record Sources(Gateway wireMockAdmin) {
         }
     }
 
-    public int requestCount(String path) {
-        final var filter = JSON.writeValueAsString(Map.of("method", "GET", "urlPath", path));
-        final var response = wireMockAdmin.postJson("/__admin/requests/count", filter);
+    private Map<String, Object> request(String path, Map<String, String> query) {
+        final var queryParameters = query.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, parameter -> Map.of("equalTo", parameter.getValue())));
 
-        return JSON.readTree(response.body()).get("count").asInt();
+        return Map.of("method", "GET", "urlPath", path, "queryParameters", queryParameters);
     }
 
     private String readFixture(String fixture) {
