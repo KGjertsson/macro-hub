@@ -122,7 +122,6 @@ const PoliticianDetail = () => {
           Tillbaka till riksdagen
         </Link>
 
-        {/* Profile Header */}
         <section className='mb-8'>
           <Card className='glass-card overflow-hidden'>
             <div className='h-2' style={{ backgroundColor: color }} />
@@ -178,7 +177,6 @@ const PoliticianDetail = () => {
         </section>
 
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-          {/* Voting record */}
           <Card className='glass-card'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
@@ -218,7 +216,6 @@ const PoliticianDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Speeches & motions */}
           <Card className='glass-card'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
@@ -254,7 +251,6 @@ const PoliticianDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Assignments */}
           <Card className='glass-card'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
@@ -291,7 +287,6 @@ const PoliticianDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Biography & contact */}
           <Card className='glass-card'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
@@ -328,7 +323,6 @@ const PoliticianDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Party Info */}
           {party && (
             <Card className='glass-card lg:col-span-2'>
               <CardHeader>

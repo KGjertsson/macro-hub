@@ -13,7 +13,6 @@ import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** The gateway routes /macro-analyzer/scrape/macro-series/ here; the old global paths are gone. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class ManualScrapePathsHttpTest {

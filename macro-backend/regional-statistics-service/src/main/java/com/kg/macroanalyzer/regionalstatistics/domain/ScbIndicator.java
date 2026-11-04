@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-// A curated statistic. Without a denominator the value is the summed numerator times the multiplier
 @Builder(toBuilder = true)
 public record ScbIndicator(
         String id,

@@ -17,7 +17,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-// Shared by the getters so text and binary downloads open connections the same way
 @Slf4j
 final class HttpResponses {
 
@@ -35,11 +34,9 @@ final class HttpResponses {
     static InputStream getInputStream(int status, HttpURLConnection connection) throws IOException {
         InputStream is = status >= 400 ? connection.getErrorStream() : connection.getInputStream();
         if (is == null) {
-            // Fallback to inputStream if errorStream is null
             is = connection.getInputStream();
         }
 
-        // Handle gzip compression if present
         final var contentEncoding = connection.getContentEncoding();
         if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
             is = new GZIPInputStream(is);

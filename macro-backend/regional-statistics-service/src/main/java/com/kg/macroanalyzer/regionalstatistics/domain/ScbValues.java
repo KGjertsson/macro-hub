@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Turns summed SCB values into stored area values. SCB fills the years a version has no data for with 0 or null,
+// SCB fills the years a version has no data for with 0 or null,
 // so a version's year is only kept when some value in it is neither null nor 0. Within a kept year a null
 // (suppressed) value is dropped and a real 0 is kept
 public final class ScbValues {
@@ -53,7 +53,6 @@ public final class ScbValues {
         return scaled;
     }
 
-    // Numerator and denominator are matched on year, version and area; areas without a denominator, or with 0, are left out
     public static Map<ScbSlice, Map<String, Double>> ratio(
             Map<ScbSlice, Map<String, Double>> numerator,
             Map<ScbSlice, Map<String, Double>> denominator,
@@ -88,7 +87,6 @@ public final class ScbValues {
         return areaValues;
     }
 
-    // Splits the years so that one request stays within SCB's cell limit; a single year is always requested on its own
     public static List<List<String>> yearChunks(List<String> years, long cellsPerYear, long maxCells) {
         final var yearsPerChunk = (int) Math.max(1, maxCells / Math.max(1, cellsPerYear));
         final var chunks = new ArrayList<List<String>>();

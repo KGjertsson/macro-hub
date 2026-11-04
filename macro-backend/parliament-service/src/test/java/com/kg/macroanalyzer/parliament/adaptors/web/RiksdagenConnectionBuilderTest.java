@@ -25,25 +25,8 @@ class RiksdagenConnectionBuilderTest {
         assertEquals("GET", connection.getRequestMethod());
         assertEquals("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8", connection.getRequestProperty("Accept"));
         assertEquals("en-US,en;q=0.7", connection.getRequestProperty("Accept-Language"));
-        // Header "Connection" is often restricted and might not be retrievable from HttpURLConnection in some environments
-        // assertEquals("keep-alive", connection.getRequestProperty("Connection"));
         assertEquals("https://data.riksdagen.se/personlista/", connection.getRequestProperty("Referer"));
-        /* 
-        Some headers might be restricted or not retrievable depending on the environment/implementation
-        assertEquals("document", connection.getRequestProperty("Sec-Fetch-Dest"));
-        assertEquals("navigate", connection.getRequestProperty("Sec-Fetch-Mode"));
-        assertEquals("same-origin", connection.getRequestProperty("Sec-Fetch-Site"));
-        assertEquals("?1", connection.getRequestProperty("Sec-Fetch-User"));
-        assertEquals("1", connection.getRequestProperty("Sec-GPC"));
-        assertEquals("1", connection.getRequestProperty("Upgrade-Insecure-Requests"));
-        */
         assertTrue(connection.getRequestProperty("User-Agent").contains("Mozilla/5.0"));
-        /* 
-        The following headers might be restricted or not retrievable depending on the environment/implementation
-        assertEquals("\"Chromium\";v=\"142\", \"Brave\";v=\"142\", \"Not_A Brand\";v=\"99\"", connection.getRequestProperty("sec-ch-ua"));
-        assertEquals("?0", connection.getRequestProperty("sec-ch-ua-mobile"));
-        assertEquals("\"macOS\"", connection.getRequestProperty("sec-ch-ua-platform"));
-        */
     }
 
     @Test

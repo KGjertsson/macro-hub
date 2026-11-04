@@ -1,8 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { SeriesStyle, styleForSlot } from '@/components/dynamicchart/seriesMetadata';
 
-// Gives each selected series a palette slot that it keeps while others are added or removed;
-// a newly added series takes the lowest free slot
 export const useSeriesStyles = (names: string[]): Record<string, SeriesStyle> => {
   const slots = useRef(new Map<string, number>());
   // Series names never contain commas, so the joined key is a stable dependency that round-trips

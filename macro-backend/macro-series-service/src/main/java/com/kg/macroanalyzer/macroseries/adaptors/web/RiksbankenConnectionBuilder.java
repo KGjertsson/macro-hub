@@ -22,7 +22,6 @@ public record RiksbankenConnectionBuilder(
             connection.setRequestMethod("GET");
 
             if (subscriptionKey != null) {
-                // Add custom header "Ocp-Apim-Subscription-Key" with its value
                 connection.setRequestProperty("Ocp-Apim-Subscription-Key", subscriptionKey);
             }
 

@@ -6,11 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Creates series_configuration and scrape_action_queue in a service's own database: a second Flyway on the same data
- * source, with its own migrations and history table, that runs before the service's own migrations so those can seed
- * the config rows. Every service runs it. Its service run needs spring.flyway.baseline-on-migrate=true and
- * spring.flyway.baseline-version=0, because the schema isn't empty when it starts: without them Flyway stops the start-up
- * ("Found non-empty schema(s) ... but no schema history table").
+ * Runs before the service's own migrations so those can seed the config rows. Its service run needs
+ * spring.flyway.baseline-on-migrate=true and spring.flyway.baseline-version=0, because the schema isn't empty when it
+ * starts: without them Flyway stops the start-up ("Found non-empty schema(s) ... but no schema history table").
  */
 @Configuration
 public class PlatformFlywayConfiguration {

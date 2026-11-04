@@ -12,7 +12,6 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
   const sortedParties = parties.filter(p => p.seats > 0).sort((a, b) => b.seats - a.seats);
   const totalSeats = sortedParties.reduce((sum, p) => sum + p.seats, 0);
 
-  // Arrange seats in semicircle rows (hemicycle)
   const arrangeInHemicycle = () => {
     const rows = 8;
     const centerX = 200;
@@ -21,7 +20,6 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
     const maxRadius = 170;
     const radiusStep = (maxRadius - minRadius) / (rows - 1);
 
-    // Calculate seats per row (more seats in outer rows)
     const seatsPerRow: number[] = [];
     let totalCapacity = 0;
 
@@ -34,11 +32,9 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
       totalCapacity += seatsInRow;
     }
 
-    // Scale to fit exactly totalSeats
     const scale = totalSeats / totalCapacity;
     const adjustedSeatsPerRow = seatsPerRow.map(s => Math.round(s * scale));
 
-    // Adjust to match exactly totalSeats
     let diff = totalSeats - adjustedSeatsPerRow.reduce((a, b) => a + b, 0);
     for (let i = rows - 1; diff !== 0 && i >= 0; i--) {
       if (diff > 0) {
@@ -50,7 +46,6 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
       }
     }
 
-    // First, generate all seat positions with their angles
     const allPositions: { x: number; y: number; angle: number; row: number }[] = [];
 
     for (let r = 0; r < rows; r++) {
@@ -69,10 +64,8 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
       }
     }
 
-    // Sort all positions by angle (left to right)
     allPositions.sort((a, b) => a.angle - b.angle);
 
-    // Now assign parties to seats from left to right
     const positioned: { x: number; y: number; color: string; partyName: string; partyShort: string }[] = [];
     let seatIndex = 0;
 
@@ -109,7 +102,6 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
               className='w-full max-w-lg'
               style={{ overflow: 'visible' }}
             >
-              {/* Individual seats */}
               {positionedSeats.map((seat, index) => (
                 <Tooltip key={index}>
                   <TooltipTrigger asChild>
@@ -138,7 +130,6 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
                 </Tooltip>
               ))}
 
-              {/* Center podium decoration */}
               <rect
                 x={185}
                 y={195}
@@ -153,7 +144,6 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
           </TooltipProvider>
         </div>
 
-        {/* Legend */}
         <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-border/50'>
           {sortedParties.map(party => (
             <div key={party.code} className='flex items-center gap-2 group cursor-pointer'>

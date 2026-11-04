@@ -7,12 +7,10 @@ const DEFAULT_TIME_FRAME = TIME_FRAME.TenYear;
 const DEFAULT_SAMPLE_STRATEGY = SAMPLE_STRATEGY.Month;
 
 export type ChartState = {
-  // Series names in the order they were added; unknown names are filtered out by the caller
   series: string[];
   timeFrame: TIME_FRAME;
   sampleStrategy: SAMPLE_STRATEGY;
   indexed: boolean;
-  // Drag-to-zoom window over the fetched data; cleared when the time frame or resolution changes
   zoom?: ChartZoom;
 };
 

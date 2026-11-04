@@ -82,8 +82,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/election
       SPRING_DATASOURCE_USERNAME: election
       SPRING_DATASOURCE_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
-      # Where election reads the party colours. No depends_on: it starts without parliament, uses Valmyndigheten's
-      # colours and keeps trying until the list has loaded (ADR 0005)
+      # No depends_on: it starts without parliament, uses Valmyndigheten's colours and keeps trying until the list has
+      # loaded (ADR 0005)
       ELECTION_PARLIAMENT_URL: http://parliament:8084
     ports:
       - "8085:8085"
@@ -98,7 +98,6 @@ services:
       - parliament
       - election
     environment:
-      # nginx proxies each /macro-analyzer route here, so the browser only talks to :8081
       # scheme://host:port only: a trailing slash or path makes every proxied request 404
       # Write literal values: an empty one, as ${X:-} can give, makes nginx exit at startup
       MACRO_SERIES_URL: http://macro-series:8083

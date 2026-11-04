@@ -20,10 +20,8 @@ export type SeriesStyle = {
 export type ChartSeries = {
   config: SeriesConfig;
   style: SeriesStyle;
-  // Plotted values: the raw values, or in index mode rebased to 100 / the change in percentage points
   values: (number | null)[];
   rawValues: (number | null)[];
-  // Set in index mode: how values were derived from rawValues
   indexKind?: IndexKind;
 };
 
@@ -40,7 +38,6 @@ const isAggregate = (country: string) =>
 
 const countryRank = (country: string) => (country === 'Sverige' ? 0 : isAggregate(country) ? 1 : 2);
 
-// Sverige first, then the EU/euro-area aggregates, then the rest alphabetically
 export const compareCountries = (a: string, b: string) =>
   countryRank(a) - countryRank(b) || a.localeCompare(b, 'sv-SE');
 
@@ -49,7 +46,6 @@ const CATEGORY_ORDER = ['Räntor', 'Statsobligationer', 'Statsskuld', 'Valuta', 
 const categoryRank = (category: string) =>
   CATEGORY_ORDER.includes(category) ? CATEGORY_ORDER.indexOf(category) : CATEGORY_ORDER.length;
 
-// The known categories in a fixed order, any others after them alphabetically
 export const orderedCategories = (configs: SeriesConfig[]) =>
   Array.from(new Set(configs.map((c) => c.category))).sort(
     (a, b) => categoryRank(a) - categoryRank(b) || a.localeCompare(b, 'sv-SE')
@@ -58,7 +54,6 @@ export const orderedCategories = (configs: SeriesConfig[]) =>
 export const formatMaturity = (months: number) =>
   months < 12 ? `${months} mån` : `${months / 12} år`;
 
-// Every word of the query must occur somewhere in the name, so "tysk 10" finds "Statsobligation Tyskland 10-års löptid"
 export const matchesAllWords = (text: string, query: string) => {
   const haystack = text.toLocaleLowerCase('sv-SE');
   return query
@@ -81,9 +76,6 @@ export type MaturityGridGroup = {
   rows: { country: string; cells: (SeriesConfig | undefined)[] }[];
 };
 
-// Subcategories holding the same countries in different units (e.g. Statsskuld nominellt / andel av BNP).
-// A variant's label is its unit when every config shares it, otherwise the subcategory; a row whose unit
-// differs from the variant's usual one is labelled with it (e.g. "USA (mn USD)")
 export type VariantListGroup = {
   kind: 'variants';
   variants: { subcategory: string; label: string }[];
@@ -128,7 +120,6 @@ const toGridGroup = (subcategory: string, configs: SeriesConfig[]): MaturityGrid
   return { kind: 'grid', subcategory, maturities, rows };
 };
 
-// The unit most configs have (the first one on a tie)
 const mostCommonUnit = (configs: SeriesConfig[]) => {
   const counts = new Map<string | undefined, number>();
   configs.forEach((c) => counts.set(c.unit, (counts.get(c.unit) ?? 0) + 1));
@@ -167,8 +158,6 @@ const isVariantCategory = (bySubcategory: Map<string, SeriesConfig[]>) => {
   return groups.every((g) => countrySet(g) === countrySet(groups[0]));
 };
 
-// Builds a category's picker layout from the metadata: maturities become a country × maturity grid,
-// parallel per-country subcategories become one list with a unit toggle, everything else a checkbox list
 export const buildPickerGroups = (configs: SeriesConfig[]): PickerGroup[] => {
   const bySubcategory = groupBy(configs, (c) => c.subcategory ?? '');
   if (isVariantCategory(bySubcategory)) {
@@ -183,15 +172,13 @@ export const buildPickerGroups = (configs: SeriesConfig[]): PickerGroup[] => {
 
 const firstValue = (values: (number | null)[]) => values.find((v) => v !== null) ?? null;
 
-// Rebases a series to 100 at its first non-null value in the window (series are null before their
-// own start). A start at or below zero has no meaningful index (e.g. a negative policy rate), so such series give null
+// A start at or below zero has no meaningful index (e.g. a negative policy rate), so such series give null
 export const rebaseToIndex = (values: (number | null)[]): (number | null)[] | null => {
   const start = firstValue(values);
   if (start === null || start <= 0) return null;
   return values.map((v) => (v === null ? null : (v / start) * 100));
 };
 
-// Change since the first non-null value in the window, so the series starts at 0
 export const changeSinceStart = (values: (number | null)[]): (number | null)[] | null => {
   const start = firstValue(values);
   if (start === null) return null;
@@ -202,8 +189,6 @@ export const changeSinceStart = (values: (number | null)[]): (number | null)[] |
 // a rate going 0,3 % → 5 % is not "index 1 700", and a negative start can't be indexed at all
 export const isPercentUnit = (unit: string | undefined) => (unit ?? '').startsWith('%');
 
-// Index mode: percentage series become the change in percentage points, the rest are rebased to 100.
-// Series that can't be indexed (start at or below zero) are returned separately instead of plotted
 export const toIndexMode = (series: ChartSeries[]): { plotted: ChartSeries[]; notIndexable: ChartSeries[] } => {
   const plotted: ChartSeries[] = [];
   const notIndexable: ChartSeries[] = [];
@@ -219,7 +204,6 @@ export const toIndexMode = (series: ChartSeries[]): { plotted: ChartSeries[]; no
   return { plotted, notIndexable };
 };
 
-// The smallest "nice" tick step (1, 2, 2,5 or 5 × 10^n) of at least `min`
 const niceStepAtLeast = (min: number) => {
   if (!(min > 0)) return 1;
   const magnitude = 10 ** Math.floor(Math.log10(min));
@@ -228,7 +212,6 @@ const niceStepAtLeast = (min: number) => {
 
 export type AxisRange = { min: number; max: number; stepSize: number };
 
-// Decimals needed to write a tick step exactly (0,25 → 2, 2,5 → 1, 50 → 0)
 export const stepDecimals = (stepSize: number) => {
   let decimals = 0;
   while (decimals < 10 && Math.abs(Math.round(stepSize * 10 ** decimals) - stepSize * 10 ** decimals) > 1e-6) {

@@ -112,7 +112,6 @@ const DynamicChartRenderComponent = ({
 
   const { plotted, notIndexable } = indexed ? toIndexMode(withData) : { plotted: withData, notIndexable: [] };
 
-  // Axes only for units that have something to draw, in the order the series were added
   const units = Array.from(new Set(
     selectedItems.filter((item) => withData.some((s) => s.config === item)).map((item) => item.unit ?? '')
   ));

@@ -42,7 +42,6 @@ const ParliamentBlog = () => {
             </div>
 
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-                {/* Featured Post */}
                 {featuredPost && (
                     <Card className='lg:col-span-2 glass-card overflow-hidden'>
                         <div className='h-2 bg-gradient-to-r from-primary to-primary/50'/>
@@ -84,7 +83,6 @@ const ParliamentBlog = () => {
                     </Card>
                 )}
 
-                {/* Side Posts */}
                 <div className='flex flex-col gap-4'>
                     {regularPosts.slice(0, 2).map((post, index) => (
                         <Card
@@ -121,7 +119,6 @@ const ParliamentBlog = () => {
                 </div>
             </div>
 
-            {/* Bottom Row */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-4'>
                 {regularPosts.slice(2, 4).map((post, index) => (
                     <Card

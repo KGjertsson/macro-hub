@@ -5,7 +5,6 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipInputStream;
 
-// Returns the first text entry whose name contains entryMarker; other entries are streamed past without being kept
 public record ZipEntryGetter(String entryMarker) implements Getter<HttpURLConnection, String> {
 
     @Override

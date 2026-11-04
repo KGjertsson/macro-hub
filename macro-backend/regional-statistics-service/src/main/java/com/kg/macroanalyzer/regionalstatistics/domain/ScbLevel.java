@@ -3,7 +3,6 @@ package com.kg.macroanalyzer.regionalstatistics.domain;
 import java.util.List;
 import java.util.Optional;
 
-// SCB's two small-area divisions: DeSO (~6 000 areas) and RegSO (~3 400 areas), each published in two versions
 public enum ScbLevel {
     DESO("DeSO"),
     REGSO("RegSO");

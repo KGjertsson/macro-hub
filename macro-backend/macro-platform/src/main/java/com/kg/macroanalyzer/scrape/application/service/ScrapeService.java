@@ -42,7 +42,6 @@ public class ScrapeService {
         this.scrapeFlows = registerScrapeFlows(scrapeFlows, seriesConfigList);
     }
 
-    // Fails at startup if two flows share an id or a series config names a flow that is not registered
     private static Map<String, RegisteredScrapeFlow> registerScrapeFlows(
             List<RegisteredScrapeFlow> scrapeFlows,
             List<SeriesConfig> seriesConfigList

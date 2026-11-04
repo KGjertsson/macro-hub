@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// Parses a mandatfördelning file: votes per party, seats per party and the elected members.
 // KF and RF files hold one area; the Riksdag file holds every valkrets under valkretsLista
 public record ValmyndighetenResultResponseParser() implements ResponseParser<String, List<LocalElectionResult>> {
 

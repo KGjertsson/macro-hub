@@ -54,7 +54,6 @@ export interface ParliamentDocument {
   url: string;
 }
 
-// Votes cast during one riksmöte, e.g. "2025/26"
 export interface SessionVotes {
   riksmote: string;
   yes: number;

@@ -33,7 +33,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-// Runs the chart-data path (time filter, alignment, sampling, response) without mocking the bundle formatting
 public class ChartDataPipelineTest {
 
     private static final LocalDate TODAY = LocalDate.now();

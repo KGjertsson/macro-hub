@@ -6,7 +6,6 @@ interface SwatchProps {
   style: SeriesStyle;
 }
 
-// A short line sample, dashed like the chart line when the palette has wrapped around
 export const SeriesSwatch = ({ style }: SwatchProps) => (
   <span
     aria-hidden='true'
@@ -21,7 +20,6 @@ interface Props {
   onRemove: (name: string) => void;
 }
 
-// The chips double as the chart legend
 const SeriesChips = ({ selected, styles, onRemove }: Props) => selected.length === 0 ? null : (
   <ul aria-label='Valda serier' className='flex min-w-0 basis-full flex-wrap items-center gap-2 sm:flex-1 sm:basis-0 sm:pt-0.5'>
     {selected.map((config) => (

@@ -55,7 +55,6 @@ class MacroPointWriteIntegrationTest {
         Public.PUBLIC.getTables().forEach(table -> dslContext.deleteFrom(table).execute());
     }
 
-    // All 41 tables, through the same names the scrape flow uses
     @Test
     void shouldReplaceTheRevisedValueAndKeepTheOthers_forEverySeries() {
         macroSeriesQueries.getChartSeriesConfigList().forEach(config -> {
@@ -231,7 +230,6 @@ class MacroPointWriteIntegrationTest {
         return repositoryPort.writeMacroPoints(new ConfigWithMacroPoints(config, List.of(points)));
     }
 
-    // The scrape flow's own steps, with the web stubbed
     private ScrapeResult scrape(SeriesConfig config, MacroPoint... scraped) throws Exception {
         final var scraper = new MacroPointScraper(ignored -> Stream.of(scraped));
         final var persister = new MacroPointPersister(repositoryPort, Mockito.mock(ScrapeQueuePort.class));

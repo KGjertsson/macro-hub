@@ -324,6 +324,12 @@ Larger decisions are recorded as ADRs in `docs/adrs/`. The finished [migration g
 
 PRs also get an automatic Claude review comment from `.github/workflows/claude-review.yml` (comment-only, not a required check; a PR that changes that file is skipped, since the action requires it to match `main`). It needs the Claude GitHub App installed on the repo and a `CLAUDE_CODE_OAUTH_TOKEN` repo secret generated with `claude setup-token` (Pro/Max subscription).
 
+## Code comments
+
+- No comments that describe what the code does: no restating, and no summaries of classes or methods, including Javadoc/TSDoc and section labels. Express it through names and structure.
+- A comment is allowed, rarely, on complicated code to explain why it looks the way it does: a non-obvious constraint, an external system's quirk, a workaround.
+- `// given`, `// when` and `// then` in tests stay.
+
 ## Commit Convention
 
 Follows conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `config:`, `chore:`, `docs:`

@@ -8,7 +8,6 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** Running the jar without settings uses the Compose Postgres, as this service's own role. */
 class BaseConfigurationTest {
 
     @Test

@@ -35,7 +35,6 @@ const DynamicChartSettings = () => {
 
   const allSeriesConfigs = data ?? [];
 
-  // In the order they were added; names the backend doesn't know are ignored
   const selectedItems = state.series.flatMap((name) => allSeriesConfigs.filter((config) => config.name === name));
   const selectedNames = selectedItems.map((config) => config.name);
   const styles = useSeriesStyles(selectedNames);

@@ -17,9 +17,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
- * The one way macro points are written: one row per series and date (the constraints from V2). A revised value replaces
- * the old one and sets updated, and the row keeps its id, global_id and created. A point stored with the same value
- * isn't touched, so writes that race or repeat change nothing. The writers return how many rows they changed.
+ * A point stored with the same value isn't touched, so writes that race or repeat change nothing.
  */
 final class MacroPointUpsert {
 

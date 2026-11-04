@@ -4,9 +4,7 @@ import { AREA_LEVELS, AreaLevel } from '@/models/RegionalStatistics';
 
 export type RegionalMapState = {
   level: AreaLevel;
-  // Null until the user picks one; the view then falls back to the first indicator
   indicator: string | null;
-  // Null means the latest year with data
   year: number | null;
   area: string | null;
 };

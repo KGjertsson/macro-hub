@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-// Reads the dimensions of a JSON-stat 2.0 dataset, which SCB's PxWeb API returns for both metadata and data.
 // category.index is either an array of codes or an object from code to position
 final class JsonStat2 {
 
@@ -36,7 +35,6 @@ final class JsonStat2 {
         }
     }
 
-    // Codes per dimension, in the dataset's dimension order and each dimension's code order
     static Map<String, List<String>> codes(JsonNode root) {
         final var codes = new LinkedHashMap<String, List<String>>();
         root.path("id").valueStream()

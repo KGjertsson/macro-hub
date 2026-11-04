@@ -11,8 +11,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-// Keeps the last party list in memory and refreshes it on its own thread (ADR 0005). Not on @Scheduled, which
-// scheduler.enabled turns off along with the scrapes: without a refresh, election would stay on Valmyndigheten's colours
+// Not on @Scheduled, which scheduler.enabled turns off along with the scrapes: without a refresh, election would stay
+// on Valmyndigheten's colours
 @Slf4j
 public class RefreshingPartyColorAdaptor implements PartyColorPort, AutoCloseable {
 

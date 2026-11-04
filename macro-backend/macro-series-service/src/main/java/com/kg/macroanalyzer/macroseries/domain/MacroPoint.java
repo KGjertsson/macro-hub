@@ -7,7 +7,6 @@ import lombok.NonNull;
 import java.time.LocalDate;
 import java.time.temporal.Temporal;
 
-// value is null where alignment pads a series outside its own date range (no observation)
 @Builder(toBuilder = true)
 public record MacroPoint(
         Double value,

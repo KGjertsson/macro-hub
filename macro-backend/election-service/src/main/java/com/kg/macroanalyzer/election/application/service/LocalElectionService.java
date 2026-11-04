@@ -102,7 +102,6 @@ public class LocalElectionService implements ElectionQueries {
                 .build();
     }
 
-    // Parties are ordered by seats so the largest groups come first
     private static List<ElectedPartyDto> electedByParty(LocalElectionResult result, Map<String, String> colors) {
         final var partiesByCode = result.parties().stream()
                 .collect(Collectors.toMap(LocalPartyResult::code, Function.identity(), (a, b) -> a));

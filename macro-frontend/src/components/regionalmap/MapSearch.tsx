@@ -25,7 +25,6 @@ interface MapSearchProps {
   onArea: (code: string) => void;
 }
 
-// One combobox for both addresses (Photon) and the loaded areas' names and codes
 const MapSearch = ({ geometry, areaLabel, onAddress, onArea }: MapSearchProps) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
