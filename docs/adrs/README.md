@@ -15,6 +15,7 @@ The split into services was tracked step by step in the [migration guide](https:
 | [0005](0005-cached-rest-between-services-and-no-message-broker.md) | Cached REST between services and no message broker | Accepted | 2026-11-01 |
 | [0006](0006-kubernetes-as-eventual-deployment-target.md) | Kubernetes as the eventual deployment target | Accepted | 2026-11-01 |
 | [0007](0007-remove-the-kubernetes-deployment-until-its-needed.md) | Remove the Kubernetes deployment until it's needed | Accepted | 2026-11-04 |
+| [0008](0008-black-box-acceptance-tests-through-the-gateway.md) | Black-box acceptance tests through the gateway | Accepted | 2026-11-04 |
 
 ## Statuses
 
