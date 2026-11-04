@@ -14,7 +14,7 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
   - **election-service/** — Valmyndigheten's elections: the `election` module, `ElectionApplication`, its own migrations and properties
   - **acceptance-tests/** — black-box tests of the built images, only over HTTP through the gateway (no main code, and it depends on no other module)
 - **macro-frontend/** — Vite + React 18 + TypeScript + shadcn-ui dashboard (formerly the separate `macro-view-hub` repo, merged in via `git subtree`)
-- **macro-backend/macro-infra/** — Docker Compose files (`docker/`) and `scrape-all.sh` (`scripts/`)
+- **macro-backend/macro-infra/** — Docker Compose files (`docker/`) and `scrape-all.sh` and `acceptance-test.sh` (`scripts/`)
 
 ## Services
 

@@ -10,6 +10,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -21,7 +22,8 @@ public final class AcceptanceStack {
     private static final String POSTGRES_IMAGE = "postgres:16";
     private static final String POSTGRES_ALIAS = "postgres";
     private static final String POSTGRES_SUPERUSER = "macrouser";
-    private static final Path POSTGRES_INIT_SCRIPTS = Path.of("../macro-infra/docker/postgres-init");
+    private static final String POSTGRES_INIT_PROPERTY = "acceptance.postgres-init";
+    private static final String POSTGRES_INIT_DEFAULT = "../macro-infra/docker/postgres-init";
 
     private static final String WIREMOCK_IMAGE = "wiremock/wiremock:3.13.2";
     private static final String SOURCES_ALIAS = "sources";
@@ -73,7 +75,7 @@ public final class AcceptanceStack {
                 .withEnv("POSTGRES_USER", POSTGRES_SUPERUSER)
                 .withEnv("POSTGRES_PASSWORD", "macropassword")
                 .withCopyFileToContainer(
-                        MountableFile.forHostPath(POSTGRES_INIT_SCRIPTS),
+                        MountableFile.forHostPath(postgresInitScripts()),
                         "/docker-entrypoint-initdb.d/")
                 // Twice, because the image's init scripts run on a temporary server that also logs this
                 .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2)
@@ -81,6 +83,16 @@ public final class AcceptanceStack {
         postgres.start();
 
         return postgres;
+    }
+
+    private Path postgresInitScripts() {
+        final var scripts = Path.of(System.getProperty(POSTGRES_INIT_PROPERTY, POSTGRES_INIT_DEFAULT));
+        if (!Files.isDirectory(scripts)) {
+            throw new IllegalStateException("No postgres-init directory at %s. Run from macro-backend/acceptance-tests, or set -D%s"
+                    .formatted(scripts.toAbsolutePath(), POSTGRES_INIT_PROPERTY));
+        }
+
+        return scripts;
     }
 
     private GenericContainer<?> startWireMock() {

@@ -11,6 +11,10 @@
     <artifactId>acceptance-tests</artifactId>
     <name>acceptance-tests</name>
     <description>Black-box tests of the packaged system, over HTTP through the gateway</description>
+    <properties>
+        <!-- With no jar to install, because of skipIfEmpty below, mvn install would fail on this module -->
+        <maven.install.skip>true</maven.install.skip>
+    </properties>
     <!-- No service and no macro-platform here: that a test can't use their classes is what keeps it black-box (ADR 0008) -->
     <dependencies>
         <dependency>
@@ -37,6 +41,13 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <skipIfEmpty>true</skipIfEmpty>
+                </configuration>
+            </plugin>
             <!-- Its default includes also match *AcceptanceTest, which would start the stack in mvn test -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -53,6 +64,9 @@
                         <include>**/*AcceptanceTest.java</include>
                     </includes>
                     <failIfNoTests>true</failIfNoTests>
+                    <systemPropertyVariables>
+                        <acceptance.postgres-init>${project.basedir}/../macro-infra/docker/postgres-init</acceptance.postgres-init>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
