@@ -30,6 +30,6 @@ Nothing in the frontend calls the enqueue or scrape endpoints.
 - The global `enqueue-all` goes away. A small script that calls each service replaces it.
 - All four services would enqueue during the 22:00 hour (`CronEnqueueAdaptor`) and write concurrently. Stagger the hours if that strains Postgres.
 - A change to `macro-platform` rebuilds every service.
-- `macro-platform` ships the DDL for the two tables, so its migrations must not collide with those of the services. The [migration guide](../microservice-migration-guide.md) lists how as an open question.
+- `macro-platform` ships the DDL for the two tables, so its migrations must not collide with those of the services. The [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md) lists how as an open question.
   - *Note, 2026-11-01:* decided in the guide. The platform's migrations run in a separate Flyway run with their own history table, before the service's own.
 - A central view of all scrapes would need new work. Wanting one is the main reason to reconsider this decision.

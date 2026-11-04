@@ -2,7 +2,7 @@
 
 This folder records the larger decisions in macro-hub: choices that shape how the system is built and are expensive to reverse. Small choices belong in the PR that makes them. Each ADR says what was decided, why, what else was considered and what follows from it.
 
-The split into services is tracked step by step in the [migration guide](../microservice-migration-guide.md). [`microservice-split-design.html`](microservice-split-design.html) is the design note with diagrams; open it in a browser. The ADRs are authoritative if that page ever differs from them.
+The split into services was tracked step by step in the [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md), linked at its last version. [`microservice-split-design.html`](microservice-split-design.html) is the design note with diagrams; open it in a browser. The ADRs are authoritative if that page ever differs from them.
 
 ## Index
 
@@ -14,6 +14,7 @@ The split into services is tracked step by step in the [migration guide](../micr
 | [0004](0004-keep-manual-scrape-endpoints-public-for-now.md) | Keep manual scrape endpoints public for now | Accepted | 2026-11-01 |
 | [0005](0005-cached-rest-between-services-and-no-message-broker.md) | Cached REST between services and no message broker | Accepted | 2026-11-01 |
 | [0006](0006-kubernetes-as-eventual-deployment-target.md) | Kubernetes as the eventual deployment target | Accepted | 2026-11-01 |
+| [0007](0007-remove-the-kubernetes-deployment-until-its-needed.md) | Remove the Kubernetes deployment until it's needed | Accepted | 2026-11-04 |
 
 ## Statuses
 

@@ -6,6 +6,8 @@ import com.kg.macroanalyzer.election.domain.LocalElectionType;
 import com.kg.macroanalyzer.scrape.application.port.out.SeriesConfigPort;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import com.kg.macroanalyzer.shared.web.ScrapeException;
+import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.Set;
 
+import static com.kg.macroanalyzer.election.jooq.generated.Tables.LOCAL_ELECTION_AREA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,6 +30,14 @@ public class LocalElectionRepositoryTest {
     LocalElectionRepository repository;
     @Autowired
     SeriesConfigPort seriesConfigPort;
+    @Autowired
+    DSLContext dslContext;
+
+    // Every test class in this JVM shares the database, and ElectionApplicationTests expects these tables empty
+    @AfterEach
+    void deleteTheWrittenResults() {
+        dslContext.deleteFrom(LOCAL_ELECTION_AREA).execute();
+    }
 
     @Test
     void shouldStoreEveryValkrets_fromTheRiksdagFile() throws ScrapeException {

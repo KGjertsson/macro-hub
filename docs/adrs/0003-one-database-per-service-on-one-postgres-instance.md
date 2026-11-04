@@ -24,6 +24,8 @@ The draft design recommended a schema and role per service. The project owner ch
 
 *Note, 2026-11-02:* the first deployment has backups: a nightly `pg_dump` per database in the `macro-hub` namespace, with the restore in `k8s/README.md`. Its Postgres is a new one, on a new volume, re-scraped rather than restored, with the same init script. Compose's databases have no backups and stay as they were.
 
+*Note, 2026-11-04:* [0007](0007-remove-the-kubernetes-deployment-until-its-needed.md) removed that deployment and its backups, so no database here has a backup now.
+
 ## Alternatives considered
 
 - **Shared tables.** Rejected, because services would break each other through schema changes.

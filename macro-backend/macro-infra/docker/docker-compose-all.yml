@@ -12,7 +12,7 @@ services:
       # name because an existing volume has this role, and the init script connects as POSTGRES_USER
       POSTGRES_USER: macrouser
       POSTGRES_PASSWORD: macropassword
-      # Read by postgres-init/ on an empty volume. An existing volume needs that script run by hand, see the guide
+      # Read by postgres-init/ on an empty volume. An existing volume needs that script run by hand, see CLAUDE.md
       REGIONAL_STATISTICS_DB_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
       MACRO_SERIES_DB_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
       PARLIAMENT_DB_PASSWORD: ${PARLIAMENT_DB_PASSWORD:-parliamentpassword}
