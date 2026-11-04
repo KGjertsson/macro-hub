@@ -10,7 +10,7 @@ Accepted. It amends [0006](0006-kubernetes-as-eventual-deployment-target.md) wit
 
 ## Context
 
-Step 6 of the [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md#step-6-first-real-kubernetes-deployment) deployed the app to microk8s under WSL2 on 2026-11-02, from `macro-backend/macro-infra/k8s/`. It was a test cluster: the scrapes and the requests through its gateway were tested, and no page was ever opened in a browser.
+Step 6 of the [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md#step-6-first-real-kubernetes-deployment) deployed the app to microk8s under WSL2 on 2026-11-02, from `macro-backend/macro-infra/k8s/`. It was a test cluster: the scrapes and the requests through its gateway were tested, and no page was ever seen rendered from it.
 
 The project owner won't run Kubernetes on this machine, so nothing runs those files. CI doesn't use them, and neither does Compose, so a change to a service, its port or its migrations wouldn't show up as a broken manifest. They would fall behind unnoticed, as [0006](0006-kubernetes-as-eventual-deployment-target.md) already expected between deployments.
 
@@ -39,9 +39,9 @@ Commit `584119f` (PR #91) has the last working version, for reference. The migra
 
 **Reaching and running the cluster:**
 
-- **`http://localhost:30081` didn't work from a Windows browser under WSL NAT networking.** WSL only forwards `localhost` to a listening socket, and a NodePort has none, as kube-proxy's rules handle it. The WSL machine's own address did connect (`192.168.154.7:30081`).
+- **`http://localhost:30081` didn't work from a Windows browser under WSL NAT networking.** The project owner opened it and saw nothing. `Test-NetConnection` from Windows then failed on `localhost:30081` and succeeded on `192.168.154.7:30081`, the WSL machine's own address. WSL only forwards `localhost` to a listening socket, and a NodePort has none, as kube-proxy's rules handle it. No page was seen rendered from the cluster at either address.
 - **Run `microk8s enable rbac`.** The API server was `--authorization-mode=AlwaysAllow`, so any token could do anything in any namespace, and a namespace wasn't a security boundary. That is why no pod mounted a service account token.
-- **An expired Calico credential blocked pod deletion** on this cluster. If pods won't go away, look at the network plugin's credentials.
+- **Calico blocked pod deletion during teardown.** All pods stayed `Terminating`, with `FailedKillPod`: `failed to destroy network for sandbox ... plugin type="calico" failed (delete): error getting ClusterInformation: connection is unauthorized: Unauthorized`. That message is the evidence, and it points to an expired Calico credential. The intended fix, restarting the `calico-node` pod, was never run, because the project owner uninstalled microk8s instead, so it is untried.
 
 **Memory and the GC.** Measured on 2026-11-02. The first full scrape ran with `-XX:MaxRAMPercentage=70` everywhere and no GC set. Below 1792 MiB the JVM picks Serial by itself, so all of it ran under Serial, while Compose runs G1. The services then got G1 explicitly, and the G1 columns come from reads. Neither a nightly run's result nor any other scrape of size under G1 and a cap was recorded.
 

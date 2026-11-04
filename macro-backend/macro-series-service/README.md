@@ -49,3 +49,5 @@ curl -X POST http://localhost:8081/macro-analyzer/scrape/macro-series/scrape-fro
 ```
 
 `scrape-from-queue` returns when the run is done, or answers 409 if one is already running. The service's cron drains the queue every minute, and enqueues everything during the 22:00 hour (UTC in the container).
+
+**Keep a local database that has data rather than re-creating it:** FRED serves the Dow Jones and S&P 500 for a rolling 10 years, so a re-scrape loses older days the database still has.

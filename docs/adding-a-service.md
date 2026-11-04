@@ -6,7 +6,7 @@ The backend is one service per domain, so a new domain is a new service. This ch
 
 ## Database and role
 
-- [ ] Add a `create_service_database <db> "${<DB>_DB_PASSWORD:-<default>}"` line to `macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`, and the password variable to `postgres` in both Compose files and to the service in `docker-compose-all.yml`. The script creates the role and the database, revokes `CONNECT` from `PUBLIC` on every database, can be re-run, and picks up a changed password.
+- [ ] Add a `create_service_database <db> "${<DB>_DB_PASSWORD:-<default>}"` line to `macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`, and the password variable to `postgres` in both Compose files, to the service in `docker-compose-all.yml`, and as a comment to `macro-backend/macro-series-service/.env.example`, which lists every service's optional password. The script creates the role and the database, revokes `CONNECT` from `PUBLIC` on every database, can be re-run, and picks up a changed password.
 - [ ] Init scripts only run on an empty volume. An existing volume needs the script run by hand before the service starts, or the service fails with `database "<db>" does not exist`: `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`. **Don't delete the volume instead:** it holds `parliament`, the only copy of its data.
 - [ ] Pick the next free port (the table at the top of `CLAUDE.md` lists the ones in use).
 
@@ -23,26 +23,28 @@ A column change in a platform table needs a new `db/platform` version and a rege
 ## Code
 
 - [ ] Create the Maven module, with its `*Application` in the package `com.kg.macroanalyzer`, which is what finds `macro-platform`'s beans. Set `spring-boot.run.skip` to false, and add the module to `<modules>` in the parent pom.
+- [ ] Give the module a `Dockerfile`, with its jar name and `EXPOSE`, as `election-service/Dockerfile` has. Set `server.port` to the port you picked: without it the service silently starts on 8080.
 - [ ] Default its `application.properties` to the Compose Postgres (`localhost:5432/<db>`) with the service's role. It needs no profile besides `test`, and no `.env` import unless it has keys.
 - [ ] Set `spring.jooq.sql-dialect=POSTGRES` and the three `spring.datasource.hikari.*` lines. Without them it starts on Hikari's default of 10 connections, all kept open, which breaks the sum under "Database" in `CLAUDE.md`.
-- [ ] Generate a jOOQ model from its own database, in the package `com.kg.macroanalyzer.<module>.jooq.generated`. Give it a profile named `jooq-codegen-<service>` that sets `jooq.codegen.url`, `.user` and `.password` to the Compose Postgres: the parent pom has no default.
+- [ ] Generate a jOOQ model from its own database, in the package `com.kg.macroanalyzer.<module>.jooq.generated`. Give it a profile named `jooq-codegen-<service>` that sets `jooq.codegen.url`, `.user` and `.password` to the Compose Postgres: the parent pom has no default. Its `<excludes>` must list `series_configuration|scrape_action_queue|flyway_schema_history|flyway_platform_schema_history`, or those tables get generated into the service's model as well, as `macro-platform`'s model holds them. The database must already be at the latest migration, so start the service once before generating. Code using the model can't compile until then.
 
 ## Manual scrape endpoints and the gateway
 
 - [ ] Set `macro.scrape.path-prefix` to `macro-analyzer/scrape/<service>`. It has no default, so a service without it fails at start-up with `Could not resolve placeholder`. The service then has `enqueue?name=`, `enqueue-all` and `scrape-from-queue` under that path, public like the others ([ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md)).
 - [ ] Add its routes to `macro-frontend/nginx/default.conf.template`, including `/macro-analyzer/scrape/<service>/`, with their own URL variable. The variable needs a default in `macro-frontend/Dockerfile`. The proxy settings, with the 30-minute timeout, are inherited from the `server`.
-- [ ] Add the same routes to the proxy in `macro-frontend/vite.config.ts`.
+- [ ] Add the same routes to the proxy in `macro-frontend/vite.config.ts`, above the catch-all `^/macro-analyzer(/|\?|$)` entry. The first match wins, so a route added after it answers 404.
 - [ ] Add the service's name to `services` in `macro-backend/macro-infra/scripts/scrape-all.sh`.
 
 ## Compose and docs
 
-- [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. CI needs no change: the `backend` job runs every module of the reactor.
+- [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. Add the new URL variable to `macro-frontend`'s `environment`, as a literal value, and the service to that container's `depends_on`. CI needs no change: the `backend` job runs every module of the reactor.
 - [ ] Add the image to the build commands in `CLAUDE.md` and `README.md`, and to the after-merge commands in `.claude/skills/ship/SKILL.md`.
 - [ ] Update `CLAUDE.md` and `macro-backend/ARCHITECTURE.md`, and give the service its own README.
 
 ## Tests
 
 - [ ] Give the service its own `ArchitectureTest` for its layers, and copies of `BaseConfigurationTest`, `NoStaticResourceHandlersHttpTest`, `ManualScrapePathsHttpTest` and `ConnectionPoolIntegrationTest`.
+- [ ] Add `src/test/resources/application-test.properties` with a TestContainers datasource, like the other services'. Without it, `@ActiveProfiles("test")` falls back to the base properties, so the copied tests run Flyway and write against the Compose Postgres.
 - [ ] Add an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
 
 ## Data
