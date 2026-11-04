@@ -11,7 +11,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** V2 on tables that are at V1 and hold both kinds of duplicate: identical copies and revised values. */
 class UniqueMacroPointsMigrationTest {
 
     private static final String UUID = "gen_random_uuid()";

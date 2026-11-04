@@ -7,7 +7,7 @@ import com.kg.macroanalyzer.shared.web.ScrapeException;
 
 import java.util.Comparator;
 
-// Parses voteringlista grouped by rm, which holds one row per riksmöte for the member; career totals are their sum
+// voteringlista grouped by rm holds one row per riksmöte for the member; career totals are their sum
 public record RiksdagenVoteResponseParser() implements ResponseParser<String, VoteTotals> {
 
     @Override

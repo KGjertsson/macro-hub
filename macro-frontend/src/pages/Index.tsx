@@ -7,7 +7,6 @@ import {Skeleton} from '@/components/ui/skeleton';
 import {Frequency, START_PAGE_INDICATORS, useStartPageIndicators} from '@/api/indicators';
 import {useSeriesConfigs} from '@/api/chartData';
 
-// Latest observation's date: the day for daily series, the month for monthly ones ("29 okt 2026", "sep 2026")
 const formatPeriod = (date: Date, frequency: Frequency) =>
     new Intl.DateTimeFormat('sv-SE', {
         day: frequency === 'day' ? 'numeric' : undefined,
@@ -68,9 +67,7 @@ const Index = () => {
         <div className='min-h-screen bg-background'>
             <Header/>
 
-            {/* Hero Section */}
             <section className='pt-32 pb-20 relative overflow-hidden'>
-                {/* Background glow effect */}
                 <div
                     className='absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-glow opacity-50 blur-3xl pointer-events-none'/>
 
@@ -91,7 +88,6 @@ const Index = () => {
                         </p>
                     </div>
 
-                    {/* Indicator Cards */}
                     <div id='indicators' className='grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
                         <IndicatorCards/>
                     </div>

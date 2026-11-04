@@ -3,11 +3,8 @@ import {cn} from "@/lib/utils";
 
 interface IndicatorCardProps {
     title: string;
-    // null when the series has no data; the card then shows a dash and the message instead of a period
     value: number | null;
-    // The value the change is shown against
     previous: number | null;
-    // Tooltip on the change badge, e.g. when the value last changed
     changeNote?: string;
     unit?: string;
     period?: string;
@@ -15,10 +12,8 @@ interface IndicatorCardProps {
     delay?: string;
 }
 
-// As many decimals as the source gives, at most two (4,2 % stays 4,2 %, 1,75 % stays 1,75 %)
 const decimalsOf = (value: number) => Math.min((String(value).split(".")[1] ?? "").length, 2);
 
-// A change in a percentage is shown in procentenheter
 const changeUnit = (unit: string) => (unit.startsWith("%") ? " pe" : ` ${unit}`);
 
 const IndicatorCard = ({title, value, previous, changeNote, unit = "", period, message, delay = "0"}: IndicatorCardProps) => {

@@ -33,8 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The service's real DSLContext and connection pool. On its own container, because dropping every connection on the test
- * profile's shared one would hit the other cached contexts too. Stopped by Testcontainers' Ryuk, when the JVM exits.
+ * On its own container, because dropping every connection on the test profile's shared one would hit the other cached
+ * contexts too. Stopped by Testcontainers' Ryuk, when the JVM exits.
  */
 @SpringBootTest(properties = "scheduler.enabled=false")
 @ActiveProfiles("test")

@@ -17,8 +17,6 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// The layers of this service's one domain module, and its place on top of macro-platform (scrape, shared and the
-// platform's jOOQ model), which is imported from the classpath together with this module
 @AnalyzeClasses(packages = ArchitectureTest.ROOT, importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 

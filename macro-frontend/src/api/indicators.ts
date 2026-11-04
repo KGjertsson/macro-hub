@@ -13,7 +13,6 @@ export type IndicatorDefinition = {
   frequency: Frequency;
 };
 
-// The start page's cards, by series name
 export const START_PAGE_INDICATORS: IndicatorDefinition[] = [
   { name: 'PolicyRateSweden', title: 'Styrränta Sverige', frequency: 'day' },
   { name: 'FEDEffectiveFederalFundsRate', title: 'Styrränta USA', frequency: 'day' },
@@ -24,13 +23,10 @@ export const START_PAGE_INDICATORS: IndicatorDefinition[] = [
 export type LatestObservation = {
   value: number;
   date: Date;
-  // The value the change is measured against; null when the time frame does not reach back to it
   previous: number | null;
-  // Daily series: the first day with the current value; null when it did not change within the time frame
   changedAt: Date | null;
 };
 
-// The same day one month earlier, clamped to the end of a shorter month (31 mar -> 28 feb)
 const oneMonthBefore = (date: Date) => {
   const year = date.getUTCFullYear();
   const month = date.getUTCMonth() - 1;

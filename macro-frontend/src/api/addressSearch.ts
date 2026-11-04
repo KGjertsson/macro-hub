@@ -1,6 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-// Photon (komoot) geocodes OpenStreetMap data; the bbox keeps answers around Sweden.
 // Photon rejects lang=sv, and its default language returns the local (Swedish) names anyway
 const PHOTON_URL = 'https://photon.komoot.io/api/';
 const SWEDEN_BBOX = '10.5,55.0,24.3,69.1';

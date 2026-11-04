@@ -20,7 +20,6 @@ const numberFormat = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 2 }
 // Rates are published with up to three decimals
 const valueFormat = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 3 });
 
-// Percentage-point changes always carry a sign: +4,70 / −0,25
 const changeFormat = new Intl.NumberFormat('sv-SE', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
@@ -37,10 +36,8 @@ const themeColor = (token: string, alpha = 1) =>
 // Shorter drags are clicks: on daily data a single pixel can span several labels
 const MIN_DRAG_PX = 5;
 
-// A drag in progress, in canvas pixels; the band is drawn between its start and the pointer
 type Drag = { pointerId: number; startX: number; currentX: number };
 
-// Draws the selection band of a drag over the plot area
 const dragBandPlugin = (
   dragRef: React.RefObject<Drag | null>,
   colorsRef: React.RefObject<{ fill: string; edge: string }>
@@ -91,13 +88,9 @@ const swatchFor = ({ color, dashed }: SeriesStyle) => {
 interface Props {
   labels: string[];
   series: ChartSeries[];
-  // Series are rebased to 100 on the left axis, percentage series show their change in percentage points
   indexed: boolean;
-  // Units in the order their axes are assigned: the first goes left, the rest share the right axis
   units: string[];
-  // Called with the first and last label index of a drag across the plot
   onZoom: (start: number, end: number) => void;
-  // Double-click on the plot
   onResetZoom: () => void;
 }
 
@@ -120,7 +113,6 @@ const DynamicChartComponent = ({ labels, series, indexed, units, onZoom, onReset
     chartRef.current?.draw();
   }, []);
 
-  // Esc cancels a drag in progress
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && dragRef.current) {
@@ -188,7 +180,6 @@ const DynamicChartComponent = ({ labels, series, indexed, units, onZoom, onReset
   const hasIndex = indexed && series.some((s) => s.indexKind === 'index');
   const hasChange = indexed && series.some((s) => s.indexKind === 'change');
 
-  // In index mode the index axis is on the left; the percentage-point axis goes right, or left when it is alone
   const axisFor = (s: ChartSeries) =>
     indexed
       ? (s.indexKind === 'change' && hasIndex ? 'y1' : 'y')
@@ -196,12 +187,9 @@ const DynamicChartComponent = ({ labels, series, indexed, units, onZoom, onReset
 
   type ScaleOptions = {
     drawGrid?: boolean;
-    // Index mode marks the start level (100, or 0 p.e.) with a stronger grid line
     reference?: number;
-    // Percentage-point changes are labelled with a sign
     signed?: boolean;
     range?: AxisRange;
-    // Labels below this value are left blank (the grid line stays)
     labelsFrom?: number;
   };
 

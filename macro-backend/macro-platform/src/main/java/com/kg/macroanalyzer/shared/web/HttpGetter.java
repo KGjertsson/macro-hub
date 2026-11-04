@@ -11,7 +11,6 @@ public class HttpGetter implements Getter<HttpURLConnection, String> {
             final int status = HttpResponses.connect(connection);
             final String response = HttpResponses.readText(HttpResponses.getInputStream(status, connection));
 
-            // Close the connection
             connection.disconnect();
 
             if (status >= 400) {

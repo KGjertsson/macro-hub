@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-// Reads GET /macro-analyzer/parliament/parties. See contracts/parliament-parties.json for the fields election relies on
+// See contracts/parliament-parties.json for the fields election relies on
 public class ParliamentPartiesClient implements AutoCloseable {
 
     private static final String PARTIES_PATH = "/macro-analyzer/parliament/parties";
@@ -32,11 +32,6 @@ public class ParliamentPartiesClient implements AutoCloseable {
         this.timeout = timeout;
     }
 
-    /**
-     * @return colour by party code, empty on the endpoint's 204 for an empty list
-     * @throws TimeoutException the whole exchange took longer than the timeout
-     * @throws IOException      the call failed, or the answer isn't a list of parties with a code and a colour
-     */
     public Map<String, String> fetchPartyColors() throws IOException, InterruptedException, TimeoutException {
         // The deadline is on the future, as HttpRequest.timeout doesn't cover a body that stalls after the headers
         final var exchange = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());

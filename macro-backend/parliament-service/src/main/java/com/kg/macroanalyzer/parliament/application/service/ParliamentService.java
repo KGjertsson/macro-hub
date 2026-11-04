@@ -174,7 +174,6 @@ public class ParliamentService implements ParliamentQueries {
                 .toList();
     }
 
-    // Most prominent current assignment: minister, speaker, committee chair, party role, committee seat, otherwise the status
     private String currentRole(MemberOfParliament member, Context context) {
         final var active = member.assignments().stream()
                 .filter(u -> u.activeOn(today()))

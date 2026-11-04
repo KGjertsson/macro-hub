@@ -5,7 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Picks dark or white text for a solid background, so light party colours such as SD's yellow stay readable
 export function textColorOn(hex: string): string {
   const value = hex.replace('#', '');
   if (!/^[0-9a-f]{6}$/i.test(value)) {

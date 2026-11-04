@@ -24,7 +24,6 @@ const containingArea = (geometry: AreaGeometry, [x, y]: [number, number]) =>
     return x >= minX && x <= maxX && y >= minY && y <= maxY && geoContains(f, [x, y]);
   });
 
-// Categories in the order their first indicator appears (the backend sorts by sort_order)
 const groupByCategory = (indicators: RegionalIndicator[]) => {
   const groups = new Map<string, RegionalIndicator[]>();
   indicators.forEach(indicator => groups.set(indicator.category, [...(groups.get(indicator.category) ?? []), indicator]));
@@ -45,7 +44,6 @@ const RegionalStatisticsView = () => {
   const indicator = withData.find(i => i.id === state.indicator)
     ?? withData.find(i => i.id === DEFAULT_INDICATOR)
     ?? withData[0];
-  // An indicator without data at the requested level (e.g. a RegSO-only one) is shown at the other level
   const level: AreaLevel = !indicator || hasData(indicator, state.level)
     ? state.level
     : AREA_LEVELS.find(l => hasData(indicator, l)) ?? state.level;
@@ -73,7 +71,6 @@ const RegionalStatisticsView = () => {
 
   const selectedArea = state.area ? geometry?.byCode.get(state.area) : undefined;
 
-  // A shared link with an area zooms to it once the first boundaries are in
   useEffect(() => {
     if (!focusedFromUrl.current && geometry) {
       focusedFromUrl.current = true;

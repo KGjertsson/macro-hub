@@ -96,7 +96,6 @@ public class ScbRetryTest {
         assertEquals(0, calls.get());
     }
 
-    // Fails with the given message the given number of times, then answers "ok"
     private WebAdaptorFlow<String, String> flow(String failure, int failures) {
         return new WebAdaptorFlow<>(
                 url -> null,

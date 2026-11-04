@@ -12,7 +12,6 @@ type Trend = TrendDefinition & {
     kind: "area" | "line";
     color: string;
     fractionDigits: number;
-    // Fit the Y axis to the data instead of starting at 0, for a series whose values lie far from 0
     fitYAxis?: boolean;
 };
 
@@ -52,8 +51,6 @@ const FREQUENCY_TEXT: Record<TrendFrequency, string> = {
     month: "Månadsvis",
 };
 
-// Axis ticks show the year for a yearly series and the month otherwise ("2025", "sep 2026"); the tooltip spells
-// the month out ("september 2026")
 const formatDate = (date: Date, frequency: TrendFrequency, month: "short" | "long") =>
     new Intl.DateTimeFormat("sv-SE", {
         month: frequency === "month" ? month : undefined,
@@ -79,8 +76,6 @@ const toRows = (points: TrendPoint[], frequency: TrendFrequency): ChartRow[] =>
         value: point.value,
     }));
 
-// The data range padded by 5 % on each side and widened to whole steps of 1, 2, 2.5 or 5 times a power of ten:
-// the smallest such step that needs at most six intervals, with a tick on every step
 const MAX_INTERVALS = 6;
 
 const fittedAxis = (values: number[]) => {

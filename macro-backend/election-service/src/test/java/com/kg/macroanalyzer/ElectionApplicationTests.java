@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Starts the whole application on an empty database, which runs the platform's migrations and then the service's. */
 @SpringBootTest
 @ActiveProfiles("test")
 class ElectionApplicationTests {

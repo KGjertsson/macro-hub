@@ -28,8 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// Fetches every indicator whose SCB tables changed since the last scrape, or that has no data yet. Each source
-// is fetched once per area division version, chunked by year to stay within SCB's cell limit. A failed indicator
+// A failed indicator
 // is skipped and the table that failed is reported, so the persister can drop its stamp and the indicator is
 // fetched again next time
 @Slf4j
@@ -170,7 +169,6 @@ public record ScbRegionalScraper(
             return ScbValues.ratio(numerator, denominator, indicator.multiplier());
         }
 
-        // A later source replaces an earlier one for every year and version it has data for
         private Map<ScbSlice, Map<String, Double>> merge(
                 List<ScbSource> sources,
                 List<GeoVersion> versions,

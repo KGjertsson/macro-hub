@@ -4,13 +4,11 @@ server {
     listen 80;
     root /usr/share/nginx/html;
 
-    # The bundle is built with VITE_API_URL empty, so the browser calls the backend on this origin.
     # Each upstream is a variable so it is resolved per request: nginx starts even when a backend
     # is not up yet, and picks up a new address when its container is recreated.
     resolver ${NGINX_LOCAL_RESOLVERS} valid=10s ipv6=off;
 
-    # Settings of every proxied /macro-analyzer route below. A location inherits these as long as it sets none
-    # of the same directive itself.
+    # A location inherits these as long as it sets none of the same directive itself.
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -18,7 +16,6 @@ server {
     # A full SCB or election scrape triggered through the proxy can run for minutes
     proxy_read_timeout 30m;
 
-    # macro-series
     location = /macro-analyzer/series-config {
         set $backend ${MACRO_SERIES_URL};
         proxy_pass $backend;
@@ -32,7 +29,6 @@ server {
         proxy_pass $backend;
     }
 
-    # regional-statistics
     location /macro-analyzer/regional-statistics/ {
         set $backend ${REGIONAL_STATISTICS_URL};
         proxy_pass $backend;
@@ -42,7 +38,6 @@ server {
         proxy_pass $backend;
     }
 
-    # parliament
     location /macro-analyzer/parliament/ {
         set $backend ${PARLIAMENT_URL};
         proxy_pass $backend;
@@ -52,7 +47,6 @@ server {
         proxy_pass $backend;
     }
 
-    # election
     location /macro-analyzer/municipalities/ {
         set $backend ${ELECTION_URL};
         proxy_pass $backend;

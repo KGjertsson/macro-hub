@@ -19,11 +19,9 @@ public record EuroStatConnectionBuilder() implements ConnectionBuilder<SeriesCon
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 
-            // Timeouts
             connection.setConnectTimeout(15_000);
             connection.setReadTimeout(60_000);
 
-            // Request headers: be explicit about format and compression
             connection.setRequestProperty("User-Agent", "macro-hub/1.0 (contact: macro-hub)");
             // Align Accept with explicit format parameter to avoid 400/406 from gateway
             final String lower = endpointUrl.toLowerCase();
@@ -37,7 +35,6 @@ public record EuroStatConnectionBuilder() implements ConnectionBuilder<SeriesCon
             } else if (lower.contains("format=json")) {
                 connection.setRequestProperty("Accept", "application/json");
             } else {
-                // Default: be permissive
                 connection.setRequestProperty("Accept", "*/*");
             }
             connection.setRequestProperty("Accept-Encoding", "gzip");

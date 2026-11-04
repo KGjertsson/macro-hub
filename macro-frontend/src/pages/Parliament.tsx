@@ -26,7 +26,6 @@ const Parliament = () => {
   const { data: composition } = useComposition();
   const { data: parties } = useParties();
 
-  // The newest election is the default term
   const selectedYear = yearOverride ?? elections?.[0]?.year;
   const election = elections?.find(e => e.year === selectedYear);
   const isLatestTerm = selectedYear === elections?.[0]?.year;
@@ -63,14 +62,12 @@ const Parliament = () => {
       <Header />
 
       <main className='container mx-auto px-4 pt-24 pb-12'>
-        {/* Back link */}
         <Link to='/'
               className='inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6'>
           <ArrowLeft className='w-4 h-4' />
           Tillbaka till startsidan
         </Link>
 
-        {/* Hero Section */}
         <section className='mb-8'>
           <div className='flex items-center gap-3 mb-4'>
             <div className='p-3 rounded-xl bg-primary/10'>
@@ -83,7 +80,6 @@ const Parliament = () => {
           </div>
         </section>
 
-        {/* Year Selection */}
         <section className='mb-6'>
           <div className='flex flex-wrap items-center gap-4'>
             <div className='flex items-center gap-2'>
@@ -145,7 +141,6 @@ const Parliament = () => {
           </div>
         </section>
 
-        {/* Seat Distribution */}
         <section className='mb-12 animate-fade-in'>
           {electionsLoading && <Skeleton className='h-96 w-full rounded-xl' />}
           {!electionsLoading && election && (
@@ -181,7 +176,6 @@ const Parliament = () => {
           )}
         </section>
 
-        {/* Politicians Section */}
         <section>
           <div className='flex items-center gap-3 mb-6'>
             <div className='p-2 rounded-lg bg-secondary/50'>
@@ -195,7 +189,6 @@ const Parliament = () => {
             )}
           </div>
 
-          {/* Filters */}
           <div className='flex flex-col md:flex-row gap-4 mb-6'>
             <div className='relative flex-1 max-w-md'>
               <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground' />
@@ -227,7 +220,6 @@ const Parliament = () => {
             </Select>
           </div>
 
-          {/* Politicians Grid */}
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
             {filteredPoliticians.map((member, index) => (
               <div
@@ -254,7 +246,6 @@ const Parliament = () => {
           )}
         </section>
 
-        {/* Blog Section */}
         <ParliamentBlog />
       </main>
 

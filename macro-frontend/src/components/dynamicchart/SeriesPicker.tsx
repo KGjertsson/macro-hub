@@ -110,7 +110,6 @@ const trigger = (
   </Button>
 );
 
-// A popover on desktop, a bottom drawer on phones; both stay open while several series are toggled
 const SeriesPicker = (props: Props) => {
   const isMobile = useIsMobile();
 

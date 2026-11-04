@@ -2,7 +2,6 @@ import {Info} from 'lucide-react';
 import {Badge} from '@/components/ui/badge';
 import {cn} from '@/lib/utils';
 
-/** Marks placeholder content (invented texts) so it is not mistaken for real news. */
 export const ExampleBadge = ({className}: { className?: string }) => (
     <Badge
         variant='outline'

@@ -40,7 +40,6 @@ public class LabelGenerationService {
                 .toList();
     }
 
-    // A series without points in the time frame gets a null for every label
     private MacroSeries emptyOnLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
         final var newPoints = paddedLabels.stream()
                 .map(label -> MacroPoint.builder().date(label).build())
@@ -117,7 +116,6 @@ public class LabelGenerationService {
         final var beforeFirstPoint = index < startDateIndexInFull;
         final var afterLastPoint = (index - startDateIndexInFull) >= macroPoints.size();
 
-        // Outside the series' own range there is no observation, so the value is null
         if (beforeFirstPoint || afterLastPoint) {
             return MacroPoint.builder()
                     .date(currentDate)

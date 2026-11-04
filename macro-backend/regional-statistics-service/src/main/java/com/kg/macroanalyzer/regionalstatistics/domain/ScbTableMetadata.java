@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-// codes holds every code per dimension in the table's order
 public record ScbTableMetadata(
         String table,
         Instant updated,

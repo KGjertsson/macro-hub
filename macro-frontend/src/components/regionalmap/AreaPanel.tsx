@@ -15,7 +15,6 @@ interface AreaPanelProps {
   onClose: () => void;
 }
 
-// 1 is the highest value; ties share the better rank
 const rankOf = (value: number, others: number[]) => 1 + others.filter(other => other > value).length;
 
 const Rank = ({ label, rank, total }: { label: string; rank: number; total: number }) => (

@@ -7,7 +7,6 @@ import com.kg.macroanalyzer.shared.web.ScrapeException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
-// The metadata of a PxWeb table: its "updated" stamp and every code of every dimension
 public record ScbMetadataResponseParser(String table) implements ResponseParser<String, ScbTableMetadata> {
 
     @Override

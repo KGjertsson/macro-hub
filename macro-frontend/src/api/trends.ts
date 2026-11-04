@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { SAMPLE_STRATEGY, TIME_FRAME } from '@/models/Constants';
 import { fetchChartData, labelToDate } from '@/api/chartData';
 
-// How often the source publishes, which decides how the observations are read out of /chart-data
 export type TrendFrequency = 'fiscalYear' | 'month';
 
 export type TrendDefinition = {

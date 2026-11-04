@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 
 // Some of SCB's API servers intermittently answer "Non-existent table" (as 404 or 400) for tables that exist, so every
 // failure is retried, a little longer each attempt. A 429 waits out the 10 second rate limit window.
-// An interrupted thread stops retrying
 @Slf4j
 final class ScbRetry {
 

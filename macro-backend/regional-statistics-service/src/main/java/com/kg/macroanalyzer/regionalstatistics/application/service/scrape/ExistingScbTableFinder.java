@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-// Stored table stamps let the scraper skip indicators whose SCB tables have not been updated since the last scrape
 public record ExistingScbTableFinder(
         RegionalStatisticsRepositoryPort repositoryPort
 ) implements ExistingFinder<SeriesConfig, ConfigWithScbIndicators> {

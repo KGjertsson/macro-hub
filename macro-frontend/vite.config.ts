@@ -27,12 +27,11 @@ const proxy = {
   "^/macro-analyzer(/|\\?|$)": { target: ELECTION_URL, bypass: () => false as const },
 };
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 5173,
-    proxy, // vite preview uses it as well
+    proxy,
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

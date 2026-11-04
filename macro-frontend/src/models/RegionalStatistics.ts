@@ -30,7 +30,6 @@ export interface RegionalValues {
   values: Record<string, number>;
 }
 
-// Properties of the features in public/geo/{deso,regso}_*.topo.json
 export interface AreaProperties {
   code: string;
   name: string;
@@ -45,5 +44,4 @@ export const GEO_FILES: Record<GeoVersion, string> = {
   RegSO2025: 'regso_2025',
 };
 
-// "DeSO2025" -> "DeSO 2025"
 export const geoVersionLabel = (version: GeoVersion) => version.replace(/(\d{4})$/, ' $1');

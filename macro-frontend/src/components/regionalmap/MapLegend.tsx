@@ -21,7 +21,6 @@ const MapLegend = ({ classification, indicator, year }: MapLegendProps) => {
         {indicator.unit !== 'antal' && <span className="font-normal text-muted-foreground"> ({indicator.unit})</span>}
       </div>
       <ul className="space-y-1 tabular-nums">
-        {/* Highest class on top */}
         {[...classification.classes].reverse().map(c => (
           <li key={`${c.min}-${c.max}`} className="flex items-center gap-2">
             <Swatch color={c.color} />

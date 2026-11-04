@@ -15,7 +15,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-// Keeps the first point per date in encounter order; keyed by date so each point is handled in constant time
 public class UniqueMacroPointCollector implements Collector<MacroPoint, Map<Temporal, MacroPoint>, List<MacroPoint>> {
 
     @Override

@@ -49,7 +49,6 @@ public class LocalElectionRepositoryTest {
 
         // when
         repository.writeResults(results);
-        // A second write of the same file must replace, not duplicate, the areas
         repository.writeResults(results);
 
         // then

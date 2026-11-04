@@ -1,4 +1,4 @@
-// Backend base URL, set at build time with VITE_API_URL. Unset or empty means same origin: the nginx
+// Unset or empty means same origin: the nginx
 // image and the Vite dev server both proxy /macro-analyzer/.
 const apiUrl: string | undefined = import.meta.env.VITE_API_URL;
 export const rootUrl: string = (apiUrl ?? '').replace(/\/+$/, '');

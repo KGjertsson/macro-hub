@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Optional;
 
-// Stored md5s let the scraper skip result files that have not changed since they were last downloaded
 @Slf4j
 public record ExistingLocalElectionFinder(
         ElectionRepositoryPort repositoryPort

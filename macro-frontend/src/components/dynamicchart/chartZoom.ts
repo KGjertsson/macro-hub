@@ -1,12 +1,9 @@
 import { ChartSeries } from '@/components/dynamicchart/seriesMetadata';
 
-// A zoomed view: the first and last visible label, as formatted on the x-axis ("2020-01")
 export type ChartZoom = [start: string, end: string];
 
-// Inclusive indices into the fetched labels
 export type ZoomWindow = { start: number; end: number };
 
-// "2020-01,2022-06" from the z query parameter; anything else is no zoom
 export const parseZoom = (raw: string | null): ChartZoom | undefined => {
   const parts = raw?.split(',');
   return parts?.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : undefined;
@@ -14,7 +11,6 @@ export const parseZoom = (raw: string | null): ChartZoom | undefined => {
 
 export const formatZoom = ([start, end]: ChartZoom) => `${start},${end}`;
 
-// The labels of a zoom must both be in the data, in order; otherwise the full window is shown
 export const resolveZoom = (labels: string[], zoom: ChartZoom | undefined): ZoomWindow | undefined => {
   if (!zoom) {
     return undefined;

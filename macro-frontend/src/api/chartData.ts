@@ -11,7 +11,7 @@ export type ChartDataResponse = {
   chartData: Dataset[];
 };
 
-// The series aligned to one set of labels; null on 204, when none of them has data points in the time frame
+// null on 204, when none of them has data points in the time frame
 export const fetchChartData = async (
   names: string[],
   strategy: SAMPLE_STRATEGY,
@@ -35,7 +35,6 @@ export const fetchChartData = async (
   return response.json();
 };
 
-// Labels as UTC dates; a missing month or day is the first one
 export const labelToDate = (label: number[]) => new Date(Date.UTC(label[0], (label[1] ?? 1) - 1, label[2] ?? 1));
 
 // Shares its key with the chart picker's series-config query, so the page fetches the configs once

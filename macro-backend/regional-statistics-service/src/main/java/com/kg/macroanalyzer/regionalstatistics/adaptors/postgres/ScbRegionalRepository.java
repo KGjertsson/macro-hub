@@ -219,7 +219,6 @@ public class ScbRegionalRepository {
                 .toList();
     }
 
-    // "contents" is shorthand for selecting one ContentsCode
     private record SourceJson(String table, String contents, Map<String, List<String>> select) {
 
         private ScbSource toSource() {
