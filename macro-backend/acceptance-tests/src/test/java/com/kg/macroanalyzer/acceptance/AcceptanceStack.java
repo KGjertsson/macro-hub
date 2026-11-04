@@ -7,6 +7,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
@@ -14,10 +15,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
 
-public final class AcceptanceStack {
-
-    private static final List<BackendService> SERVICES = List.of(BackendService.MACRO_SERIES);
+public final class AcceptanceStack implements AutoCloseable {
 
     private static final String POSTGRES_IMAGE = "postgres:16";
     private static final String POSTGRES_ALIAS = "postgres";
@@ -34,29 +36,42 @@ public final class AcceptanceStack {
     private static final String GATEWAY_DEFAULT_IMAGE = "macro-frontend:acceptance";
     private static final int GATEWAY_PORT = 80;
 
+    private static final String HEALTH_PATH = "/actuator/health";
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
 
     private final Network network = Network.newNetwork();
+    private final List<GenericContainer<?>> containers = new CopyOnWriteArrayList<>();
     private final Gateway gateway;
     private final Sources sources;
 
-    // Testcontainers' Ryuk removes the containers and the network when the test JVM exits, so one stack serves every test
+    // Testcontainers' Ryuk removes the containers and the network when the test JVM exits, so it is never closed here
     private static final class Holder {
-        private static final AcceptanceStack RUNNING = new AcceptanceStack();
+        private static final AcceptanceStack RUNNING = new AcceptanceStack(BackendService.ALL);
     }
 
     public static AcceptanceStack running() {
         return Holder.RUNNING;
     }
 
-    private AcceptanceStack() {
-        final var postgres = startPostgres();
-        final var wireMock = startWireMock();
-        SERVICES.forEach(service -> startWithSourcesRedirected(service, postgres));
-        final var frontend = startGateway();
+    public static AcceptanceStack startWith(List<BackendService> services) {
+        return new AcceptanceStack(services);
+    }
 
-        this.gateway = new Gateway(baseUrl(frontend, GATEWAY_PORT));
-        this.sources = new Sources(new Gateway(baseUrl(wireMock, SOURCES_PORT)));
+    private AcceptanceStack(List<BackendService> services) {
+        try {
+            final var postgres = postgres();
+            final var wireMock = wireMock();
+            containers.addAll(List.of(postgres, wireMock));
+            Startables.deepStart(postgres, wireMock).join();
+            startAll(services, postgres);
+            final var frontend = startGateway(services);
+
+            this.gateway = new Gateway(baseUrl(frontend, GATEWAY_PORT));
+            this.sources = new Sources(new Gateway(baseUrl(wireMock, SOURCES_PORT)));
+        } catch (RuntimeException e) {
+            close();
+            throw e;
+        }
     }
 
     public Gateway gateway() {
@@ -67,8 +82,14 @@ public final class AcceptanceStack {
         return sources;
     }
 
-    private GenericContainer<?> startPostgres() {
-        final GenericContainer<?> postgres = new GenericContainer<>(POSTGRES_IMAGE)
+    @Override
+    public void close() {
+        containers.reversed().forEach(GenericContainer::stop);
+        network.close();
+    }
+
+    private GenericContainer<?> postgres() {
+        return new GenericContainer<>(POSTGRES_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases(POSTGRES_ALIAS)
                 .withEnv("POSTGRES_DB", "postgres")
@@ -80,9 +101,6 @@ public final class AcceptanceStack {
                 // Twice, because the image's init scripts run on a temporary server that also logs this
                 .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2)
                         .withStartupTimeout(STARTUP_TIMEOUT));
-        postgres.start();
-
-        return postgres;
     }
 
     private Path postgresInitScripts() {
@@ -95,15 +113,22 @@ public final class AcceptanceStack {
         return scripts;
     }
 
-    private GenericContainer<?> startWireMock() {
-        final GenericContainer<?> wireMock = new GenericContainer<>(WIREMOCK_IMAGE)
+    private GenericContainer<?> wireMock() {
+        return new GenericContainer<>(WIREMOCK_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases(SOURCES_ALIAS)
                 .withExposedPorts(SOURCES_PORT)
                 .waitingFor(Wait.forHttp("/__admin/health").withStartupTimeout(STARTUP_TIMEOUT));
-        wireMock.start();
+    }
 
-        return wireMock;
+    // allOf waits for every start, also after one has failed, so close() can't miss a container that is still starting
+    private void startAll(List<BackendService> services, GenericContainer<?> postgres) {
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            CompletableFuture.allOf(services.stream()
+                    .map(service -> CompletableFuture.runAsync(
+                            () -> startWithSourcesRedirected(service, postgres), executor))
+                    .toArray(CompletableFuture[]::new)).join();
+        }
     }
 
     // Flyway seeds series_configuration with the real sources' URLs, and a service only reads it at start-up. So it starts
@@ -111,6 +136,7 @@ public final class AcceptanceStack {
     // scheduler is off and nothing has been enqueued
     private void startWithSourcesRedirected(BackendService service, GenericContainer<?> postgres) {
         final var container = serviceContainer(service);
+        containers.add(container);
         container.start();
         redirectSources(service, postgres);
         container.stop();
@@ -125,9 +151,10 @@ public final class AcceptanceStack {
                 .withEnv("SPRING_DATASOURCE_USERNAME", service.database())
                 .withEnv("SPRING_DATASOURCE_PASSWORD", service.databasePassword())
                 .withEnv("SCHEDULER_ENABLED", "false")
+                .withEnv(service.environment())
                 .withExposedPorts(service.port())
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(service.networkAlias())))
-                .waitingFor(Wait.forHttp(service.healthPath()).withStartupTimeout(STARTUP_TIMEOUT));
+                .waitingFor(Wait.forHttp(HEALTH_PATH).withStartupTimeout(STARTUP_TIMEOUT));
     }
 
     private void redirectSources(BackendService service, GenericContainer<?> postgres) {
@@ -135,7 +162,7 @@ public final class AcceptanceStack {
                 UPDATE series_configuration
                 SET scrape_url = regexp_replace(scrape_url, '^https?://[^/]+', '%s')""".formatted(SOURCES_URL));
         final var stillReal = psql(postgres, service.database(), """
-                SELECT count(*) FROM series_configuration WHERE scrape_url NOT LIKE '%s/%%'""".formatted(SOURCES_URL));
+                SELECT count(*) FROM series_configuration WHERE scrape_url !~ '^%s(/|$)'""".formatted(SOURCES_URL));
         if (!"0".equals(stillReal.strip())) {
             throw new IllegalStateException(
                     "%s configs of %s still point at a real source".formatted(stillReal.strip(), service.database()));
@@ -159,13 +186,14 @@ public final class AcceptanceStack {
     }
 
     // nginx resolves an upstream per request, so the routes of services left out here answer 502 and don't stop it starting
-    private GenericContainer<?> startGateway() {
+    private GenericContainer<?> startGateway(List<BackendService> services) {
         final var image = System.getProperty(GATEWAY_IMAGE_PROPERTY, GATEWAY_DEFAULT_IMAGE);
         final GenericContainer<?> frontend = new GenericContainer<>(requireBuilt(image))
                 .withNetwork(network)
                 .withExposedPorts(GATEWAY_PORT)
                 .waitingFor(Wait.forHttp("/").withStartupTimeout(STARTUP_TIMEOUT));
-        SERVICES.forEach(service -> frontend.withEnv(service.gatewayUrlVariable(), service.internalUrl()));
+        services.forEach(service -> frontend.withEnv(service.gatewayUrlVariable(), service.internalUrl()));
+        containers.add(frontend);
         frontend.start();
 
         return frontend;

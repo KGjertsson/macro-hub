@@ -8,6 +8,9 @@ backend="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$backend"
 
 sh ./mvnw -B -DskipTests clean package
+docker build -t regional-statistics-service:acceptance regional-statistics-service
 docker build -t macro-series-service:acceptance macro-series-service
+docker build -t parliament-service:acceptance parliament-service
+docker build -t election-service:acceptance election-service
 docker build -t macro-frontend:acceptance ../macro-frontend
 sh ./mvnw -B -pl acceptance-tests verify "$@"
