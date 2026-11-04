@@ -13,6 +13,7 @@ public record ConfigWithLocalElections(
         SeriesConfig seriesConfig,
         LocalElectionType type,
         Set<String> existingMd5s,
-        List<LocalElectionResult> results
+        List<LocalElectionResult> results,
+        boolean partialFailure
 ) {
 }

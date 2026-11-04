@@ -20,12 +20,13 @@ public record LocalElectionScraper(
         long delayBetweenFilesMs
 ) implements Scraper<ConfigWithLocalElections> {
 
+    // A failed file takes all its attempts and back-off, so an outage after the index fetch would otherwise hold
+    // ScrapeService's scrapeLock for hours
+    private static final int MAX_CONSECUTIVE_FAILURES = 5;
+
     @Override
-    public Optional<ConfigWithLocalElections> scrape(ConfigWithLocalElections configWithLocalElections) {
-        final var request = new LocalElectionIndexRequest(
-                configWithLocalElections.seriesConfig().scrapeUrl(),
-                configWithLocalElections.type()
-        );
+    public Optional<ConfigWithLocalElections> scrape(ConfigWithLocalElections input) {
+        final var request = new LocalElectionIndexRequest(input.seriesConfig().scrapeUrl(), input.type());
         final List<LocalElectionFile> files;
         try {
             files = indexWebPort.fetch(request);
@@ -34,28 +35,50 @@ public record LocalElectionScraper(
 
             return Optional.empty();
         }
+        if (files.isEmpty()) {
+            log.warn("Index of %s lists no %s result files".formatted(request.baseUrl(), input.type()));
+        }
         final var changedFiles = files.stream()
-                .filter(f -> !configWithLocalElections.existingMd5s().contains(f.md5()))
+                .filter(f -> !input.existingMd5s().contains(f.md5()))
                 .toList();
-        log.info("Fetching %d of %d %s result files".formatted(
-                changedFiles.size(), files.size(), configWithLocalElections.type()));
+        log.info("Fetching %d of %d %s result files".formatted(changedFiles.size(), files.size(), input.type()));
 
+        return fetchResults(changedFiles)
+                .filter(fetched -> changedFiles.isEmpty() || !fetched.results().isEmpty())
+                .map(fetched -> input.toBuilder()
+                        .results(fetched.results())
+                        .partialFailure(fetched.partialFailure())
+                        .build());
+    }
+
+    private Optional<FetchedResults> fetchResults(List<LocalElectionFile> files) {
         final var results = new ArrayList<LocalElectionResult>();
-        for (final var file : changedFiles) {
+        var anyFailed = false;
+        var consecutiveFailures = 0;
+        for (final var file : files) {
+            // pause and ValmyndighetenRetry restore the flag, so their sleeps would now throw at once and the loop
+            // would call a rate limiting server without any delay
+            if (Thread.currentThread().isInterrupted()) {
+                log.warn("Interrupted before fetching area=%s, abandoning the run".formatted(file.areaCode()));
+
+                return Optional.empty();
+            }
             try {
                 results.addAll(resultWebPort.fetch(file));
+                consecutiveFailures = 0;
             } catch (ScrapeException e) {
                 log.error("Caught ScrapeException for area=%s: %s".formatted(file.areaCode(), e.getMessage()));
+                anyFailed = true;
+                consecutiveFailures++;
+                if (consecutiveFailures == MAX_CONSECUTIVE_FAILURES) {
+                    log.error("Stopping after %d consecutive failed files".formatted(consecutiveFailures));
+                    break;
+                }
             }
             pause();
         }
-        if (results.isEmpty() && !changedFiles.isEmpty()) {
-            return Optional.empty();
-        }
 
-        return Optional.of(configWithLocalElections.toBuilder()
-                .results(results)
-                .build());
+        return Optional.of(new FetchedResults(results, anyFailed));
     }
 
     // Keeps the scrape polite towards resultat.val.se, which rate limits with 429
@@ -65,6 +88,9 @@ public record LocalElectionScraper(
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private record FetchedResults(List<LocalElectionResult> results, boolean partialFailure) {
     }
 
 }

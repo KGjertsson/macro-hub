@@ -78,8 +78,40 @@ public class LocalElectionPersisterTest {
         verify(repositoryPort, never()).writeLocalElectionResults(anyList());
     }
 
+    @Test
+    void shouldWriteResults_butNotMarkAsDone_whenPartialFailure() {
+        // given
+        final var config = SeriesConfig.builder().name("MunicipalElections").build();
+        final var results = List.of(LocalElectionResult.builder().areaCode("1281").build());
+        final var input = input(config, results).toBuilder().partialFailure(true).build();
+
+        // when
+        when(repositoryPort.writeLocalElectionResults(results)).thenReturn(1);
+        final var scrapeResult = new LocalElectionPersister(repositoryPort, scrapeQueuePort).persist(input);
+
+        // then
+        assertEquals(ScrapeResult.FAILED, scrapeResult);
+        verify(repositoryPort).writeLocalElectionResults(results);
+        verify(scrapeQueuePort, never()).markAsDone(any());
+    }
+
+    @Test
+    void shouldNotMarkAsDone_whenPartialFailureWithoutResults() {
+        // given
+        final var config = SeriesConfig.builder().name("MunicipalElections").build();
+        final var input = input(config, List.of()).toBuilder().partialFailure(true).build();
+
+        // when
+        final var scrapeResult = new LocalElectionPersister(repositoryPort, scrapeQueuePort).persist(input);
+
+        // then
+        assertEquals(ScrapeResult.FAILED, scrapeResult);
+        verify(repositoryPort, never()).writeLocalElectionResults(anyList());
+        verify(scrapeQueuePort, never()).markAsDone(any());
+    }
+
     private static ConfigWithLocalElections input(SeriesConfig config, List<LocalElectionResult> results) {
-        return new ConfigWithLocalElections(config, LocalElectionType.KF, Set.of(), results);
+        return new ConfigWithLocalElections(config, LocalElectionType.KF, Set.of(), results, false);
     }
 
 }

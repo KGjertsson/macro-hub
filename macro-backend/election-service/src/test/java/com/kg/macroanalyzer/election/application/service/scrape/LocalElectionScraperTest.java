@@ -16,11 +16,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +64,7 @@ public class LocalElectionScraperTest {
         // then
         assertTrue(result.isPresent());
         assertEquals(List.of(lund), result.get().results());
+        assertTrue(result.get().partialFailure());
         verify(resultWebPort, never()).fetch(unchanged);
     }
 
@@ -78,6 +83,7 @@ public class LocalElectionScraperTest {
         // then
         assertTrue(result.isPresent());
         assertEquals(List.of(stockholm, gotland), result.get().results());
+        assertFalse(result.get().partialFailure());
     }
 
     @Test
@@ -92,6 +98,7 @@ public class LocalElectionScraperTest {
         // then
         assertTrue(result.isPresent());
         assertEquals(List.of(), result.get().results());
+        assertFalse(result.get().partialFailure());
     }
 
     @Test
@@ -113,6 +120,119 @@ public class LocalElectionScraperTest {
 
         // then
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyResults_whenIndexListsNoFiles() throws ScrapeException {
+        // when
+        when(indexWebPort.fetch(any())).thenReturn(List.of());
+        final var result = scraper.scrape(input(Set.of()));
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(List.of(), result.get().results());
+        assertFalse(result.get().partialFailure());
+    }
+
+    @Test
+    void shouldStopFetching_afterFiveConsecutiveFailures_andKeepWhatSucceeded() throws ScrapeException {
+        // given
+        final var files = files(8);
+        final var lund = LocalElectionResult.builder().areaCode("1281").build();
+
+        // when
+        when(indexWebPort.fetch(any())).thenReturn(files);
+        when(resultWebPort.fetch(any())).thenThrow(new ScrapeException("503"));
+        doReturn(List.of(lund)).when(resultWebPort).fetch(files.getFirst());
+        final var result = scraper.scrape(input(Set.of()));
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(List.of(lund), result.get().results());
+        assertTrue(result.get().partialFailure());
+        verify(resultWebPort, times(6)).fetch(any());
+        verify(resultWebPort, never()).fetch(files.get(6));
+        verify(resultWebPort, never()).fetch(files.get(7));
+    }
+
+    @Test
+    void shouldFail_afterFiveConsecutiveFailures_whenNothingSucceeded() throws ScrapeException {
+        // when
+        when(indexWebPort.fetch(any())).thenReturn(files(8));
+        when(resultWebPort.fetch(any())).thenThrow(new ScrapeException("503"));
+        final var result = scraper.scrape(input(Set.of()));
+
+        // then
+        assertTrue(result.isEmpty());
+        verify(resultWebPort, times(5)).fetch(any());
+    }
+
+    @Test
+    void shouldKeepFetching_whenASuccessResetsTheFailureCount() throws ScrapeException {
+        // given
+        final var files = files(10);
+        final var lund = LocalElectionResult.builder().areaCode("1281").build();
+        final var malmo = LocalElectionResult.builder().areaCode("1280").build();
+
+        // when
+        when(indexWebPort.fetch(any())).thenReturn(files);
+        when(resultWebPort.fetch(any())).thenThrow(new ScrapeException("503"));
+        doReturn(List.of(lund)).when(resultWebPort).fetch(files.get(4));
+        doReturn(List.of(malmo)).when(resultWebPort).fetch(files.get(9));
+        final var result = scraper.scrape(input(Set.of()));
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(List.of(lund, malmo), result.get().results());
+        assertTrue(result.get().partialFailure());
+        verify(resultWebPort, times(10)).fetch(any());
+    }
+
+    @Test
+    void shouldFailWithoutFetching_whenInterruptedBeforeTheFirstFile() throws ScrapeException {
+        try {
+            // when
+            when(indexWebPort.fetch(any())).thenReturn(files(2));
+            Thread.currentThread().interrupt();
+            final var result = scraper.scrape(input(Set.of()));
+
+            // then
+            assertTrue(result.isEmpty());
+            assertTrue(Thread.currentThread().isInterrupted());
+            verify(resultWebPort, never()).fetch(any());
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    void shouldStopFetching_andDropResults_whenInterruptedDuringTheRun() throws ScrapeException {
+        // given
+        final var files = files(3);
+        final var lund = LocalElectionResult.builder().areaCode("1281").build();
+
+        try {
+            // when
+            when(indexWebPort.fetch(any())).thenReturn(files);
+            when(resultWebPort.fetch(files.getFirst())).thenAnswer(invocation -> {
+                Thread.currentThread().interrupt();
+
+                return List.of(lund);
+            });
+            final var result = scraper.scrape(input(Set.of()));
+
+            // then
+            assertTrue(result.isEmpty());
+            verify(resultWebPort, times(1)).fetch(any());
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    private static List<LocalElectionFile> files(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> new LocalElectionFile("%04d".formatted(i), BASE_URL + "/%d.zip".formatted(i), "md5-%d".formatted(i)))
+                .toList();
     }
 
     private static ConfigWithLocalElections input(Set<String> existingMd5s) {
