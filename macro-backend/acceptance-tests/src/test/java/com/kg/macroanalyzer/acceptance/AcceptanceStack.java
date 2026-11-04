@@ -1,0 +1,176 @@
+package com.kg.macroanalyzer.acceptance;
+
+import com.github.dockerjava.api.exception.NotFoundException;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.List;
+
+public final class AcceptanceStack {
+
+    private static final List<BackendService> SERVICES = List.of(BackendService.MACRO_SERIES);
+
+    private static final String POSTGRES_IMAGE = "postgres:16";
+    private static final String POSTGRES_ALIAS = "postgres";
+    private static final String POSTGRES_SUPERUSER = "macrouser";
+    private static final Path POSTGRES_INIT_SCRIPTS = Path.of("../macro-infra/docker/postgres-init");
+
+    private static final String WIREMOCK_IMAGE = "wiremock/wiremock:3.13.2";
+    private static final String SOURCES_ALIAS = "sources";
+    private static final int SOURCES_PORT = 8080;
+    private static final String SOURCES_URL = "http://%s:%d".formatted(SOURCES_ALIAS, SOURCES_PORT);
+
+    private static final String GATEWAY_IMAGE_PROPERTY = "acceptance.image.gateway";
+    private static final String GATEWAY_DEFAULT_IMAGE = "macro-frontend:acceptance";
+    private static final int GATEWAY_PORT = 80;
+
+    private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
+
+    private final Network network = Network.newNetwork();
+    private final Gateway gateway;
+    private final Sources sources;
+
+    // Testcontainers' Ryuk removes the containers and the network when the test JVM exits, so one stack serves every test
+    private static final class Holder {
+        private static final AcceptanceStack RUNNING = new AcceptanceStack();
+    }
+
+    public static AcceptanceStack running() {
+        return Holder.RUNNING;
+    }
+
+    private AcceptanceStack() {
+        final var postgres = startPostgres();
+        final var wireMock = startWireMock();
+        SERVICES.forEach(service -> startWithSourcesRedirected(service, postgres));
+        final var frontend = startGateway();
+
+        this.gateway = new Gateway(baseUrl(frontend, GATEWAY_PORT));
+        this.sources = new Sources(new Gateway(baseUrl(wireMock, SOURCES_PORT)));
+    }
+
+    public Gateway gateway() {
+        return gateway;
+    }
+
+    public Sources sources() {
+        return sources;
+    }
+
+    private GenericContainer<?> startPostgres() {
+        final GenericContainer<?> postgres = new GenericContainer<>(POSTGRES_IMAGE)
+                .withNetwork(network)
+                .withNetworkAliases(POSTGRES_ALIAS)
+                .withEnv("POSTGRES_DB", "postgres")
+                .withEnv("POSTGRES_USER", POSTGRES_SUPERUSER)
+                .withEnv("POSTGRES_PASSWORD", "macropassword")
+                .withCopyFileToContainer(
+                        MountableFile.forHostPath(POSTGRES_INIT_SCRIPTS),
+                        "/docker-entrypoint-initdb.d/")
+                // Twice, because the image's init scripts run on a temporary server that also logs this
+                .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2)
+                        .withStartupTimeout(STARTUP_TIMEOUT));
+        postgres.start();
+
+        return postgres;
+    }
+
+    private GenericContainer<?> startWireMock() {
+        final GenericContainer<?> wireMock = new GenericContainer<>(WIREMOCK_IMAGE)
+                .withNetwork(network)
+                .withNetworkAliases(SOURCES_ALIAS)
+                .withExposedPorts(SOURCES_PORT)
+                .waitingFor(Wait.forHttp("/__admin/health").withStartupTimeout(STARTUP_TIMEOUT));
+        wireMock.start();
+
+        return wireMock;
+    }
+
+    // Flyway seeds series_configuration with the real sources' URLs, and a service only reads it at start-up. So it starts
+    // once to seed, and again to read the rows pointing at the stub. The first start has no reason to call anything: the
+    // scheduler is off and nothing has been enqueued
+    private void startWithSourcesRedirected(BackendService service, GenericContainer<?> postgres) {
+        final var container = serviceContainer(service);
+        container.start();
+        redirectSources(service, postgres);
+        container.stop();
+        container.start();
+    }
+
+    private GenericContainer<?> serviceContainer(BackendService service) {
+        return new GenericContainer<>(requireBuilt(service.image()))
+                .withNetwork(network)
+                .withNetworkAliases(service.networkAlias())
+                .withEnv("SPRING_DATASOURCE_URL", service.jdbcUrl(POSTGRES_ALIAS))
+                .withEnv("SPRING_DATASOURCE_USERNAME", service.database())
+                .withEnv("SPRING_DATASOURCE_PASSWORD", service.databasePassword())
+                .withEnv("SCHEDULER_ENABLED", "false")
+                .withExposedPorts(service.port())
+                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(service.networkAlias())))
+                .waitingFor(Wait.forHttp(service.healthPath()).withStartupTimeout(STARTUP_TIMEOUT));
+    }
+
+    private void redirectSources(BackendService service, GenericContainer<?> postgres) {
+        psql(postgres, service.database(), """
+                UPDATE series_configuration
+                SET scrape_url = regexp_replace(scrape_url, '^https?://[^/]+', '%s')""".formatted(SOURCES_URL));
+        final var stillReal = psql(postgres, service.database(), """
+                SELECT count(*) FROM series_configuration WHERE scrape_url NOT LIKE '%s/%%'""".formatted(SOURCES_URL));
+        if (!"0".equals(stillReal.strip())) {
+            throw new IllegalStateException(
+                    "%s configs of %s still point at a real source".formatted(stillReal.strip(), service.database()));
+        }
+    }
+
+    private String psql(GenericContainer<?> postgres, String database, String sql) {
+        try {
+            final var result = postgres.execInContainer(
+                    "psql", "-U", POSTGRES_SUPERUSER, "-d", database, "-v", "ON_ERROR_STOP=1", "-tAc", sql);
+            if (result.getExitCode() != 0) {
+                throw new IllegalStateException("psql failed on %s: %s".formatted(sql, result.getStderr()));
+            }
+            return result.getStdout();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
+    }
+
+    // nginx resolves an upstream per request, so the routes of services left out here answer 502 and don't stop it starting
+    private GenericContainer<?> startGateway() {
+        final var image = System.getProperty(GATEWAY_IMAGE_PROPERTY, GATEWAY_DEFAULT_IMAGE);
+        final GenericContainer<?> frontend = new GenericContainer<>(requireBuilt(image))
+                .withNetwork(network)
+                .withExposedPorts(GATEWAY_PORT)
+                .waitingFor(Wait.forHttp("/").withStartupTimeout(STARTUP_TIMEOUT));
+        SERVICES.forEach(service -> frontend.withEnv(service.gatewayUrlVariable(), service.internalUrl()));
+        frontend.start();
+
+        return frontend;
+    }
+
+    private String requireBuilt(String image) {
+        try {
+            DockerClientFactory.lazyClient().inspectImageCmd(image).exec();
+            return image;
+        } catch (NotFoundException e) {
+            throw new IllegalStateException(
+                    "No image %s. Build it with macro-backend/macro-infra/scripts/acceptance-test.sh".formatted(image), e);
+        }
+    }
+
+    private String baseUrl(GenericContainer<?> container, int port) {
+        return "http://%s:%d".formatted(container.getHost(), container.getMappedPort(port));
+    }
+
+}

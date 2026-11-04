@@ -2,7 +2,7 @@
 
 The backend is four services and one library, each domain module laid out as a small hexagon (ports and adaptors).
 The full package map, the dependency rules and the checklist for a new domain are in the "Architecture" section of the
-repository's `CLAUDE.md`. Each Maven module's `ArchitectureTest` (ArchUnit) enforces the rules.
+repository's `CLAUDE.md`. The `ArchitectureTest` (ArchUnit) of each module with production code enforces the rules.
 
 [`docs/architecture.md`](../docs/architecture.md) is a diagram of the components that run, across the services.
 
@@ -19,9 +19,11 @@ repository's `CLAUDE.md`. Each Maven module's `ArchitectureTest` (ArchUnit) enfo
   parliament-service           parliament           Riksdagen members, activity, parties, seats (/parliament/*)         :8084
   election-service             election             Valmyndigheten's kommun, region and valkrets results
                                                                     (/municipalities/*, /regions/*, /constituencies/*)  :8085
+
+  acceptance-tests             no main code: black-box tests of the images through the gateway (ADR 0008)
 ```
 
-Each service is its own application on its own database, with its jOOQ model inside the module
+`acceptance-tests` depends on none of the others. Each service is its own application on its own database, with its jOOQ model inside the module
 (`<module>.jooq.generated`) and its application class in the root package, `com.kg.macroanalyzer`, so its component
 scanning finds `macro-platform`'s beans. The layout below holds in all of them.
 

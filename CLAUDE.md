@@ -12,6 +12,7 @@ macro-hub visualizes macro-economic trends from multiple data sources (Riksbanke
   - **macro-series-service/** — the chart series: the `macroseries` module, `MacroSeriesApplication`, its own migrations and properties, and the Riksbanken and Fed keys
   - **parliament-service/** — Riksdagen: the `parliament` module, `ParliamentApplication`, its own migrations and properties
   - **election-service/** — Valmyndigheten's elections: the `election` module, `ElectionApplication`, its own migrations and properties
+  - **acceptance-tests/** — black-box tests of the built images, only over HTTP through the gateway (no main code, and it depends on no other module)
 - **macro-frontend/** — Vite + React 18 + TypeScript + shadcn-ui dashboard (formerly the separate `macro-view-hub` repo, merged in via `git subtree`)
 - **macro-backend/macro-infra/** — Docker Compose files (`docker/`) and `scrape-all.sh` (`scripts/`)
 
@@ -69,7 +70,7 @@ Every service runs `db/platform` (from `macro-platform`, history table `flyway_p
 # Build (each application's jar is <module>/target/<module>-1.0.0.jar, with macro-platform inside)
 mvn clean package
 
-# Run all tests of all modules
+# Run all tests of all modules (not the acceptance tests, see below)
 mvn test
 
 # Run a single test class
@@ -90,6 +91,14 @@ mvn -P jooq-codegen-election compile -pl election-service -am
 # Generate macro-platform's JOOQ model (series_configuration, scrape_action_queue, flyway_schema_history). Every service's
 # database has these tables; the default is localhost:5432/election with its role
 mvn -P jooq-codegen-platform compile -pl macro-platform
+```
+
+```bash
+# Acceptance tests: package the jars, build the :acceptance images, then run them (from the repo root or anywhere; about 3 min, of which the tests about 40 s)
+macro-backend/macro-infra/scripts/acceptance-test.sh
+
+# With those images built and nothing changed, only the tests (from macro-backend/)
+mvn -pl acceptance-tests verify
 ```
 
 A fresh database has series configs but no data points (`chart-data` returns 204). Populate everything with `macro-backend/macro-infra/scripts/scrape-all.sh [gateway]` (default gateway `http://localhost:8081`), which enqueues everything and drains each queue, per service and in parallel. For one service, `POST .../enqueue-all` followed by `POST .../scrape-from-queue` on its paths (see the table at the top).
@@ -153,7 +162,7 @@ Docker Compose is the only way to run the app. There is no Kubernetes deployment
 
 ## Architecture
 
-The backend is four services and one library, split by domain. Inside each module it follows **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**. Every class lives in a module under `com.kg.macroanalyzer`, except the application classes in the root package and the generated jOOQ models. The Maven modules map onto the packages: `scrape`, `shared` and their jOOQ model are built in `macro-platform`, `regionalstatistics` in `regional-statistics-service`, `macroseries` in `macro-series-service`, `parliament` in `parliament-service` and `election` in `election-service`. Each application class is in `com.kg.macroanalyzer`, so its component scanning finds `macro-platform`'s beans. [`macro-backend/ARCHITECTURE.md`](macro-backend/ARCHITECTURE.md) has more diagrams.
+The backend is four services and one library, split by domain, plus the `acceptance-tests` module, which holds no production code. Inside each module it follows **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**. Every class lives in a module under `com.kg.macroanalyzer`, except the application classes in the root package and the generated jOOQ models. The Maven modules map onto the packages: `scrape`, `shared` and their jOOQ model are built in `macro-platform`, `regionalstatistics` in `regional-statistics-service`, `macroseries` in `macro-series-service`, `parliament` in `parliament-service` and `election` in `election-service`. Each application class is in `com.kg.macroanalyzer`, so its component scanning finds `macro-platform`'s beans. [`macro-backend/ARCHITECTURE.md`](macro-backend/ARCHITECTURE.md) has more diagrams.
 
 [`docs/architecture.md`](docs/architecture.md) is a diagram of the components that run.
 
@@ -219,7 +228,7 @@ Each domain's `*ScrapeFlowConfiguration` builds a `ScrapeFlow` from the shared `
 
 ### Dependency rules (`ArchitectureTest`)
 
-Every Maven module has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTest.java` (ArchUnit, part of `mvn test`).
+Every Maven module except `acceptance-tests`, which has no production code, has its own `src/test/java/com/kg/macroanalyzer/ArchitectureTest.java` (ArchUnit, part of `mvn test`).
 
 `macro-platform`'s enforces:
 
@@ -312,13 +321,24 @@ Every service uses Spring Boot's auto-configured HikariCP pool and jOOQ `DSLCont
 - TestContainers (PostgreSQL) for integration tests — Docker must be running for `mvn test`. `application-test.properties` uses `jdbc:tc:...?TC_DAEMON=true`: every context in a JVM shares that one container, and without `TC_DAEMON` it stops when the pools happen to hold no connection
 - `ConnectionPoolIntegrationTest` (one in each service, on its own container) pins the dialect and pool sizes, that the service works again after `pg_terminate_backend` on all its connections, that a concurrent read neither waits for nor sees an open transaction, and that a start-up with an unreachable database fails
 - Each Maven module has its own tests. `macro-platform` has the unit tests of `scrape` and `shared`, and its own `ArchitectureTest`. `SeriesConfigRepositoryTest` is in `scrape`'s package but lives in `election-service`, because it needs a running application with migrations; `NoStaticResourceHandlersHttpTest` and `ManualScrapePathsHttpTest` are in each service for the same reason. `TestSeriesConfigFactory` and `TestJsonReader` exist in several modules: a shared test-jar would be on the classpath as a jar, and `ArchitectureTest`'s `DoNotIncludeTests` would then import its classes as production code
-- `ArchitectureTest` (ArchUnit, one in each Maven module). `macro-platform`'s holds the rules of `scrape` and `shared`. Each service's imports all of `com.kg.macroanalyzer` from the classpath, so it sees `macro-platform` too. In all of them `importIncludesMacroPlatform` fails if the import stops finding its classes, because the rules would then pass silently. See "Dependency rules" below
+- `ArchitectureTest` (ArchUnit, one in each Maven module with production code). `macro-platform`'s holds the rules of `scrape` and `shared`. Each service's imports all of `com.kg.macroanalyzer` from the classpath, so it sees `macro-platform` too. In all of them `importIncludesMacroPlatform` fails if the import stops finding its classes, because the rules would then pass silently. See "Dependency rules" below
 - Test fixtures in `src/test/resources/json/`
 - `@ActiveProfiles("test")` activates `application-test.properties`
 
+### Acceptance tests
+
+`macro-backend/acceptance-tests` ([ADR 0008](docs/adrs/0008-black-box-acceptance-tests-through-the-gateway.md)) starts the packaged system and only talks HTTP through the gateway. Tests are named `*AcceptanceTest` and failsafe runs them in `verify`. Surefire is off in this module, because its default includes match that name too, so `mvn test` doesn't start the stack. Docker must be running.
+
+- `AcceptanceStack` starts everything once per JVM, with Testcontainers `GenericContainer`s on their own network: `postgres:16` with the real `postgres-init/`, the services in its `SERVICES` (today `macro-series-service`), WireMock as `sources`, and the frontend's nginx as the gateway. Ports are random and nothing has a volume or a `container_name`, so it can run next to the Compose stack and never touches `docker_pgdata`
+- It reuses no Compose file. A setting changed in `docker-compose-all.yml` isn't seen here
+- Each service starts twice: once for Flyway to seed `series_configuration`, then again after `psql` in the Postgres container has pointed every `scrape_url` at `http://sources:8080`, since the configs are read once at start-up. Setup fails if a row points elsewhere, so a scrape can't reach a real source. That is the only time the harness touches the database, and the module has no JDBC driver, so a test can't. `SCHEDULER_ENABLED=false` keeps the crons out
+- The images are `macro-series-service:acceptance` and `macro-frontend:acceptance` (`-Dacceptance.image.macro-series=...` and `-Dacceptance.image.gateway=...` to use others), so a run doesn't change what a local Compose stack starts. `macro-infra/scripts/acceptance-test.sh` builds them each time, and `mvn -pl acceptance-tests verify` runs against whatever is there, so after a code change use the script. A missing image fails with a message naming the script
+- Under snap's `docker`, whose private `/tmp` hides a checkout there from `docker build`, the script fails with `path "macro-series-service" not found`. Run it from a clone under `$HOME`
+- A journey is a test class that uses `AcceptanceStack.running().gateway()` and `.sources()`: `sources.serveJson(path, fixture)` with a fixture from `src/test/resources/sources/`, requests through the gateway, then exact values in the answer. `sources.requestCount(path)` shows the stub was hit. Another service joins as a `BackendService` constant in `SERVICES` and a `docker build` line in the script
+
 ## Workflow
 
-Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent (Fable, or Opus when Fable credits run out) reviews it, then it is merged once the reviewer says LGTM. `main` is protected: every change needs a PR, and the `frontend` and `backend` jobs in `.github/workflows/ci.yml` (frontend: tracked-`.env` check, `npm run typecheck`, build, lint; backend: `mvn test`) must pass. No approval is required.
+Agreed changes are implemented with the `/ship` skill (`.claude/skills/ship/SKILL.md`): an implementer sub-agent opens a PR, a separate reviewer sub-agent (Fable, or Opus when Fable credits run out) reviews it, then it is merged once the reviewer says LGTM. `main` is protected: every change needs a PR, and the `frontend` and `backend` jobs in `.github/workflows/ci.yml` (frontend: tracked-`.env` check, `npm run typecheck`, build, lint; backend: `mvn test`) must pass. No approval is required. The `acceptance` job (`macro-infra/scripts/acceptance-test.sh`) also runs on every PR and isn't a required check ([ADR 0008](docs/adrs/0008-black-box-acceptance-tests-through-the-gateway.md)), so read its result before merging.
 
 Larger decisions are recorded as ADRs in `docs/adrs/`. The finished [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md), at its last version, records how the backend was split into services. To add one, follow [`docs/adding-a-service.md`](docs/adding-a-service.md).
 
