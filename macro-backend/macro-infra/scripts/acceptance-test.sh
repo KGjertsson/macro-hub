@@ -1,7 +1,7 @@
 #!/bin/sh
 # Builds the jars and the images the acceptance tests run, then runs the tests. CI runs this too.
 # The images get their own :acceptance tag, so this can't change what a local Compose stack starts.
-# Usage: acceptance-test.sh [maven arguments], for example -Dit.test=MacroSeriesScrapeAcceptanceTest
+# Usage: acceptance-test.sh [maven arguments], for example -Dit.test=MacroSeriesAcceptanceTest
 set -eu
 
 backend="$(cd "$(dirname "$0")/../.." && pwd)"

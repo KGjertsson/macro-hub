@@ -14,6 +14,8 @@ public record BackendService(
         Map<String, String> environment
 ) {
 
+    public static final String FED_SUBSCRIPTION_KEY = "acceptance-fed-key";
+
     public static final BackendService REGIONAL_STATISTICS = new BackendService(
             "regional-statistics",
             "acceptance.image.regional-statistics",
@@ -33,7 +35,7 @@ public record BackendService(
             "macro_series",
             "macroseriespassword",
             "MACRO_SERIES_URL",
-            Map.of()
+            Map.of("FED_PROD_SUBSCRIPTION_KEY", FED_SUBSCRIPTION_KEY)
     );
 
     public static final BackendService PARLIAMENT = new BackendService(

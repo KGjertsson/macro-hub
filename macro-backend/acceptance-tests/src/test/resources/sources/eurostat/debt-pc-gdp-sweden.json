@@ -1,0 +1,18 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "Government deficit/surplus, debt and associated data",
+  "source": "ESTAT",
+  "updated": "2026-10-21T23:00:00+0200",
+  "value": {"0": 36.5, "1": 33.2, "2": 31.5},
+  "id": ["freq", "unit", "sector", "na_item", "geo", "time"],
+  "size": [1, 1, 1, 1, 1, 3],
+  "dimension": {
+    "freq": {"label": "Time frequency", "category": {"index": {"A": 0}, "label": {"A": "Annual"}}},
+    "unit": {"label": "Unit of measure", "category": {"index": {"PC_GDP": 0}, "label": {"PC_GDP": "Percentage of GDP"}}},
+    "sector": {"label": "Sector", "category": {"index": {"S13": 0}, "label": {"S13": "General government"}}},
+    "na_item": {"label": "National accounts indicator", "category": {"index": {"GD": 0}, "label": {"GD": "Government consolidated gross debt"}}},
+    "geo": {"label": "Geopolitical entity", "category": {"index": {"SE": 0}, "label": {"SE": "Sweden"}}},
+    "time": {"label": "Time", "category": {"index": {"2021": 0, "2022": 1, "2023": 2}, "label": {"2021": "2021", "2022": "2022", "2023": "2023"}}}
+  }
+}
