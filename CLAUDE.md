@@ -155,6 +155,8 @@ Docker Compose is the only way to run the app. There is no Kubernetes deployment
 
 The backend is four services and one library, split by domain. Inside each module it follows **Hexagonal Architecture (Ports & Adapters)** with **Domain-Driven Design**. Every class lives in a module under `com.kg.macroanalyzer`, except the application classes in the root package and the generated jOOQ models. The Maven modules map onto the packages: `scrape`, `shared` and their jOOQ model are built in `macro-platform`, `regionalstatistics` in `regional-statistics-service`, `macroseries` in `macro-series-service`, `parliament` in `parliament-service` and `election` in `election-service`. Each application class is in `com.kg.macroanalyzer`, so its component scanning finds `macro-platform`'s beans. [`macro-backend/ARCHITECTURE.md`](macro-backend/ARCHITECTURE.md) has more diagrams.
 
+[`docs/architecture.md`](docs/architecture.md) is a diagram of the components that run.
+
 ```
   REST ──→ adaptors.http ──→ port.in ──→ service ──→ port.out ←── adaptors.postgres ──→ PostgreSQL
                                            │
