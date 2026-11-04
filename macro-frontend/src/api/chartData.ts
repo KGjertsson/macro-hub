@@ -11,7 +11,6 @@ export type ChartDataResponse = {
   chartData: Dataset[];
 };
 
-// null on 204, when none of them has data points in the time frame
 export const fetchChartData = async (
   names: string[],
   strategy: SAMPLE_STRATEGY,

@@ -1,5 +1,4 @@
-// Unset or empty means same origin: the nginx
-// image and the Vite dev server both proxy /macro-analyzer/.
+// Unset or empty means same origin: the nginx image and the Vite dev server both proxy /macro-analyzer/.
 const apiUrl: string | undefined = import.meta.env.VITE_API_URL;
 export const rootUrl: string = (apiUrl ?? '').replace(/\/+$/, '');
 

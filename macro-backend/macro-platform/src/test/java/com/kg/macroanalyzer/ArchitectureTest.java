@@ -17,8 +17,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// Maven already keeps the services' code off this module's classpath, so what these guard
-// is the direction between scrape and shared, and the layers of scrape
+// Maven already keeps the services' code off this module's classpath, so what these guard is the direction between
+// scrape and shared, and the layers of scrape
 @AnalyzeClasses(packages = ArchitectureTest.ROOT, importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 

@@ -28,9 +28,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// A failed indicator
-// is skipped and the table that failed is reported, so the persister can drop its stamp and the indicator is
-// fetched again next time
+// A failed indicator is skipped and the table that failed is reported, so the persister can drop its stamp and the
+// indicator is fetched again next time
 @Slf4j
 public record ScbRegionalScraper(
         WebPort<ScbMetadataRequest, ScbTableMetadata> metadataWebPort,

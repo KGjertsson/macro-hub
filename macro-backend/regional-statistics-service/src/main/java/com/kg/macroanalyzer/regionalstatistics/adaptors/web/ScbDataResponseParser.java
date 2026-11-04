@@ -12,9 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// The values are stored
-// row-major over the dimensions in "id" order, so the last dimension changes fastest. A missing cell makes the
-// whole sum null, because a partial sum would understate the area
+// The values are stored row-major over the dimensions in "id" order, so the last dimension changes fastest. A missing
+// cell makes the whole sum null, because a partial sum would understate the area
 public record ScbDataResponseParser(String table) implements ResponseParser<String, ScbTableValues> {
 
     @Override

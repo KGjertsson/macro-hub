@@ -14,10 +14,8 @@ export interface RegionalIndicator {
   label: string;
   description: string | null;
   category: string;
-  // Free display string from the seed, e.g. "antal", "%", "tkr", "per 1000 inv"
   unit: string;
   decimals: number;
-  // Both levels are always present; years are newest first, one entry per year
   availability: Record<AreaLevel, IndicatorAvailability[]>;
 }
 
@@ -26,7 +24,7 @@ export interface RegionalValues {
   level: AreaLevel;
   year: number;
   geoVersion: GeoVersion;
-  // Area code (no _DeSO2025/_RegSO2025 suffix) to value
+  // Keys have no _DeSO2025/_RegSO2025 suffix
   values: Record<string, number>;
 }
 

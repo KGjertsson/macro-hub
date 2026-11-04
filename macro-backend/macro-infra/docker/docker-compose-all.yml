@@ -82,8 +82,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/election
       SPRING_DATASOURCE_USERNAME: election
       SPRING_DATASOURCE_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
-      # No depends_on: it starts without parliament, uses Valmyndigheten's
-      # colours and keeps trying until the list has loaded (ADR 0005)
+      # No depends_on: it starts without parliament, uses Valmyndigheten's colours and keeps trying until the list has
+      # loaded (ADR 0005)
       ELECTION_PARLIAMENT_URL: http://parliament:8084
     ports:
       - "8085:8085"

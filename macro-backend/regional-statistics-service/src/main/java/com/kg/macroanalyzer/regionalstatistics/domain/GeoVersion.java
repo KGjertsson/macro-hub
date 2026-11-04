@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 // One SCB table holds every version of an area division; the version is only visible in the region code.
 // The 2025 versions carry a suffix that the boundary files do not, so it is stripped before storing.
-// wildcard is the PxWeb valueCodes pattern that selects the version's codes in a data request
 public enum GeoVersion {
     DESO_2018("DeSO2018", ScbLevel.DESO, "\\d{4}[ABC]\\d{4}", "", "?????????"),
     DESO_2025("DeSO2025", ScbLevel.DESO, "\\d{4}[ABC]\\d{4}_DeSO2025", "_DeSO2025", "*_DeSO2025"),
