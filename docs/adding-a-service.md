@@ -39,7 +39,7 @@ A column change in a platform table needs a new `db/platform` version and a rege
 
 - [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. Add the new URL variable to `macro-frontend`'s `environment`, as a literal value, and the service to that container's `depends_on`. CI needs no change: the `backend` job runs every module of the reactor.
 - [ ] Add the image to the build commands in `CLAUDE.md` and `README.md`, and to the after-merge commands in `.claude/skills/ship/SKILL.md`.
-- [ ] Update `CLAUDE.md` and `macro-backend/ARCHITECTURE.md`, and give the service its own README.
+- [ ] Update `CLAUDE.md`, `macro-backend/ARCHITECTURE.md` and `docs/architecture.md`, and give the service its own README.
 
 ## Tests
 

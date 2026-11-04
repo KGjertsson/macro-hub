@@ -2,7 +2,7 @@
 
 This folder records the larger decisions in macro-hub: choices that shape how the system is built and are expensive to reverse. Small choices belong in the PR that makes them. Each ADR says what was decided, why, what else was considered and what follows from it.
 
-The split into services was tracked step by step in the [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md), linked at its last version. [`microservice-split-design.html`](microservice-split-design.html) is the design note with diagrams; open it in a browser. The ADRs are authoritative if that page ever differs from them.
+The split into services was tracked step by step in the [migration guide](https://github.com/KGjertsson/macro-hub/blob/584119f/docs/microservice-migration-guide.md), linked at its last version. [`docs/architecture.md`](../architecture.md) shows the result.
 
 ## Index
 

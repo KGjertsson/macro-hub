@@ -4,6 +4,8 @@ The backend is four services and one library, each domain module laid out as a s
 The full package map, the dependency rules and the checklist for a new domain are in the "Architecture" section of the
 repository's `CLAUDE.md`. Each Maven module's `ArchitectureTest` (ArchUnit) enforces the rules.
 
+[`docs/architecture.md`](../docs/architecture.md) is a diagram of the components that run, across the services.
+
 ## Maven modules
 
 ```
