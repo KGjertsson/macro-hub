@@ -6,7 +6,6 @@ import com.kg.macroanalyzer.election.domain.LocalElectionType;
 import com.kg.macroanalyzer.election.domain.LocalPartyResult;
 import com.kg.macroanalyzer.shared.web.ResponseParser;
 import com.kg.macroanalyzer.shared.web.ScrapeException;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -35,7 +34,17 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
 
     @Override
     public List<LocalElectionResult> parse(String response) throws ScrapeException {
-        final var root = readTree(response);
+        if (response == null || response.isBlank()) {
+            throw new ScrapeException("Empty result file from Valmyndigheten");
+        }
+        try {
+            return results(JSON_MAPPER.readTree(response));
+        } catch (RuntimeException e) {
+            throw new ScrapeException("Failed to parse Valmyndigheten result file: " + e);
+        }
+    }
+
+    private static List<LocalElectionResult> results(JsonNode root) {
         final var area = root.path("valomrade");
         final var type = LocalElectionType.valueOf(root.path("valtyp").asString());
         final var year = LocalDate.parse(root.path("valdatum").asString()).getYear();
@@ -76,17 +85,6 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
                 .totalVotes(integer(area.path("totaltAntalRoster")))
                 .parties(parties(area, seatsByParty(area)))
                 .elected(elected(area));
-    }
-
-    private static JsonNode readTree(String response) throws ScrapeException {
-        if (response == null || response.isBlank()) {
-            throw new ScrapeException("Empty result file from Valmyndigheten");
-        }
-        try {
-            return JSON_MAPPER.readTree(response);
-        } catch (JacksonException e) {
-            throw new ScrapeException("Failed to parse Valmyndigheten result file: " + e.getMessage());
-        }
     }
 
     private static Map<String, Integer> seatsByParty(JsonNode area) {

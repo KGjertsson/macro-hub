@@ -130,4 +130,30 @@ public class ValmyndighetenResultResponseParserTest {
         assertThrows(ScrapeException.class, () -> parser.parse(" "));
     }
 
+    @Test
+    void shouldThrow_whenResponseIsNotJson() {
+        assertThrows(ScrapeException.class, () -> parser.parse("<html>"));
+    }
+
+    @Test
+    void shouldThrow_whenValtypIsMissing() {
+        assertThrows(ScrapeException.class, () -> parser.parse("""
+                {"valdatum": "2026-09-13", "valomrade": {"kod": "1281"}}
+                """));
+    }
+
+    @Test
+    void shouldThrow_whenValdatumIsNotADate() {
+        assertThrows(ScrapeException.class, () -> parser.parse("""
+                {"valtyp": "KF", "valdatum": "soon", "valomrade": {"kod": "1281"}}
+                """));
+    }
+
+    @Test
+    void shouldThrow_whenMunicipalityCodeIsMissing() {
+        assertThrows(ScrapeException.class, () -> parser.parse("""
+                {"valtyp": "KF", "valdatum": "2026-09-13", "valomrade": {}}
+                """));
+    }
+
 }
