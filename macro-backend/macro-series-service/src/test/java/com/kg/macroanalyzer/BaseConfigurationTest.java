@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** On a machine with microk8s, port 31274 is the cluster's database. Running the jar without settings must not reach it. */
+/** Running the jar without settings uses the Compose Postgres, as this service's own role. */
 class BaseConfigurationTest {
 
     @Test

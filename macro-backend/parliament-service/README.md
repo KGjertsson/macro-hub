@@ -8,7 +8,7 @@ The module's layout and behaviour are described in the repository's `CLAUDE.md`,
 
 ## Run it
 
-All Maven commands run from `macro-backend/`. It needs no keys and no `.env`. Without settings it uses the Compose Postgres, `localhost:5432/parliament`. Any other database needs `SPRING_DATASOURCE_URL`, and on a machine with microk8s, port 31274 is the cluster's real database.
+All Maven commands run from `macro-backend/`. It needs no keys and no `.env`. Without settings it uses the Compose Postgres, `localhost:5432/parliament`. Any other database needs `SPRING_DATASOURCE_URL`.
 
 ```bash
 JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl parliament-service -am spring-boot:run

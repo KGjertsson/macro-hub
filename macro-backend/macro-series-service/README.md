@@ -10,7 +10,7 @@ Riksbanken and Fed scrapes need `RIKSBANKEN_PROD_SUBSCRIPTION_KEY` and `FED_PROD
 
 ## Run it
 
-All Maven commands run from `macro-backend/`. Without settings it uses the Compose Postgres, `localhost:5432/macro_series`. Any other database needs `SPRING_DATASOURCE_URL`, and on a machine with microk8s, port 31274 is the cluster's real database.
+All Maven commands run from `macro-backend/`. Without settings it uses the Compose Postgres, `localhost:5432/macro_series`. Any other database needs `SPRING_DATASOURCE_URL`.
 
 ```bash
 JAVA_HOME=~/.sdkman/candidates/java/current ./mvnw -pl macro-series-service -am spring-boot:run

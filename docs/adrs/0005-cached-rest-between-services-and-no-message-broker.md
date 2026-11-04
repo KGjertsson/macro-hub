@@ -27,6 +27,8 @@ A contract test pins the fields election reads (`code` and `color`). There is no
 
 *Note, 2026-11-02:* the Flyway versions in the context were the monolith's, now gone from the tree. `riksdag_party` is written by `parliament-service`'s baseline and its later migrations. Election runs as `election-service`, and the behaviour here is unchanged.
 
+*Note, 2026-11-04:* `kubernetes_setup.sh`, named in the context, is gone with the rest of `k8s/` ([0007](0007-remove-the-kubernetes-deployment-until-its-needed.md)). No message broker is installed anywhere.
+
 ## Alternatives considered
 
 - **Call parliament on every request.** This is the simplest, but a parliament outage would fail or slow election requests.

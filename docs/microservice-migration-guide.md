@@ -1,6 +1,6 @@
 # Microservice migration guide
 
-This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. The monolith is gone and the app runs in a cluster, and `CLAUDE.md` describes what is there now. All that remains is step 6's browser check, by the project owner. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
+This is the living plan for splitting the backend monolith into four services: macro-series, regional-statistics, parliament and election. The migration is finished: the monolith is gone, the app runs under Docker Compose, and `CLAUDE.md` describes what is there now. Step 6's Kubernetes deployment was later removed ([ADR 0007](adrs/0007-remove-the-kubernetes-deployment-until-its-needed.md)), and its section stays as a record. The decisions behind it are in [`docs/adrs/`](adrs/README.md), and the [design page](adrs/microservice-split-design.html) has the diagrams. If this guide and an ADR disagree, the ADR wins.
 
 Statements about the current code were checked against commit `07c7482`, and the steps that are done say what changed since then. The manual trigger paths and the Flyway ordering were decided on 2026-11-01, after that check. Anything marked **Suggested** or **Open** is not decided.
 
@@ -32,11 +32,11 @@ When this guide started, nothing was deployed anywhere, and the steps up to 5 we
 | 3 | Extract macro-series | Done |
 | 4 | Extract parliament, switch election to REST | Done |
 | 5 | Retire the monolith | Done |
-| 6 | First real Kubernetes deployment | Done, except the browser check |
+| 6 | First real Kubernetes deployment | Deployed and tested on a WSL test cluster, never checked in a browser, then removed by [ADR 0007](adrs/0007-remove-the-kubernetes-deployment-until-its-needed.md) |
 
 ## Open questions
 
-None for the migration. The project owner's question about how far the gateway's network exposure reaches is recorded in [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md).
+None. The project owner's question about the NodePort's network exposure went with the deployment, and [ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md) says what to revisit when the app is exposed again.
 
 ## Extraction checklist
 
@@ -356,7 +356,7 @@ docker compose --env-file macro-backend/macro-series-service/.env -f macro-backe
 ### Code
 
 - [ ] Create the service's Maven module, with its own `*Application` in the package `com.kg.macroanalyzer`. `@SpringBootApplication` scans from its own package, so that is what finds the `macro-platform` beans. Set `spring-boot.run.skip` to false, and add it to `<modules>` in the parent pom.
-- [ ] Don't let its base `application.properties` default to the cluster or port 31274. Default to the Compose Postgres (`localhost:5432/<db>`) with the service's role, and copy `BaseConfigurationTest`, which pins that. It needs no `dev` or `prod` profile, and no `.env` import unless it has keys.
+- [ ] Default its base `application.properties` to the Compose Postgres (`localhost:5432/<db>`) with the service's role, and copy `BaseConfigurationTest`, which pins that. It needs no `dev` or `prod` profile, and no `.env` import unless it has keys.
 - [ ] Set `spring.jooq.sql-dialect=POSTGRES` and the three `spring.datasource.hikari.*` lines (`maximum-pool-size`, `minimum-idle`, `connection-timeout`) in its `application.properties`, as the other services do. Without them it still starts, on Hikari's default of 10 connections, all kept open, which breaks the sum under "Database" in `CLAUDE.md`. `ConnectionPoolIntegrationTest` pins them.
 - [ ] Move the module's code. Remove it from the monolith.
 - [ ] Generate a jOOQ model per service from its own database, in the package `com.kg.macroanalyzer.<module>.jooq.generated`. Give it a profile named after the service (`jooq-codegen-<service>`) that sets `jooq.codegen.url`, `.user` and `.password` to the Compose Postgres: the parent pom has no default. `macro-platform`'s profile has its own name too, so the `-am` a service's build needs doesn't run it.
@@ -397,7 +397,7 @@ Note that `EnqueueService.enqueue` ignores unknown names: `POST .../enqueue?name
 - [ ] The role can't connect to another service's database.
 - [ ] A manual scrape on `/macro-analyzer/scrape/<service>/` works through the gateway, and a second one during the run answers 409.
 
-The Compose files set fixed container names and ports, so verify on a throwaway project, and don't give it port 31274, which can be the cluster's real database. Give it an override file that sets another `container_name`, `image` and port for each service (`ports: !override` replaces the list rather than adding to it), and run `docker compose -p <name> -f docker-compose-all.yml -f <override> up -d`. `-p` also gives it its own volume. Check the override with `docker compose ... config` first, without `--env-file`, because `config` prints the values it reads, keys included. Set `SCHEDULER_ENABLED: "false"` on each application in the override unless you are testing the cron: during the 22:00 hour (UTC in the container) it would otherwise enqueue every series, against the real APIs. Docker installed as a snap can't read `/tmp`, so the Compose files and build contexts have to be under `$HOME`.
+The Compose files set fixed container names and ports, so verify on a throwaway project. Give it an override file that sets another `container_name`, `image` and port for each service (`ports: !override` replaces the list rather than adding to it), and run `docker compose -p <name> -f docker-compose-all.yml -f <override> up -d`. `-p` also gives it its own volume. Check the override with `docker compose ... config` first, without `--env-file`, because `config` prints the values it reads, keys included. Set `SCHEDULER_ENABLED: "false"` on each application in the override unless you are testing the cron: during the 22:00 hour (UTC in the container) it would otherwise enqueue every series, against the real APIs. Docker installed as a snap can't read `/tmp`, so the Compose files and build contexts have to be under `$HOME`.
 
 ### Rollback
 
@@ -641,7 +641,14 @@ What was tried, on throwaway Compose projects:
 
 ## Step 6: First real Kubernetes deployment
 
-**Goal:** the app runs in a cluster for the first time. `macro-backend/macro-infra/k8s/README.md` is the procedure.
+**Status, 2026-11-04:** deployed and tested on a WSL test cluster, never checked in a browser, and then removed by [ADR 0007](adrs/0007-remove-the-kubernetes-deployment-until-its-needed.md). The files are no longer in the tree: commit `584119f` (PR #91) has the last working version, so the procedure is `git show 584119f:macro-backend/macro-infra/k8s/README.md`. The rest of this section is the record from 2026-11-02, in the present tense of that day, and no result of a nightly run was added to it. The memory and GC findings are the part most useful to a new deployment.
+
+Found after that record, for anyone deploying again:
+
+- **`http://localhost:30081` doesn't work from a Windows browser under WSL NAT networking.** WSL only forwards `localhost` to a listening socket, and a NodePort has none, as kube-proxy's rules handle it. The WSL machine's own address does connect (`192.168.154.7:30081` did here).
+- **Run `microk8s enable rbac` on a fresh deployment.** This cluster was `AlwaysAllow`, so a namespace wasn't a security boundary, as "What differed" says.
+
+**Goal:** the app runs in a cluster for the first time. `macro-backend/macro-infra/k8s/README.md` was the procedure.
 
 **Tasks:**
 
@@ -655,7 +662,7 @@ What was tried, on throwaway Compose projects:
 - [x] Memory requests and limits, from the first scrape on the cluster and later read tests: see below.
 - [x] Kafka and Zookeeper are gone from `kubernetes_setup.sh`, with helm, which only they used. No application code uses Kafka.
 
-**Verify:** every page works through the cluster's gateway, and each service's first scrape completes. The scrapes completed. **The pages have not been opened in a browser, as none is available here: the project owner still has to open `http://localhost:30081`.**
+**Verify:** every page works through the cluster's gateway, and each service's first scrape completes. The scrapes completed. **The pages were never opened in a browser, as none was available here, and the deployment was removed before anyone did.**
 
 **Rollback:** `k8s/teardown.sh` removes the deployment and keeps the volumes. Nothing depends on it, and Compose's databases stay the source of truth.
 

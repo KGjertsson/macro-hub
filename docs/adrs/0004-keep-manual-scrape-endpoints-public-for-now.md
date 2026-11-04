@@ -24,6 +24,8 @@ The manual scrape endpoints, or their per-service replacements, stay reachable t
 
 *Note, 2026-11-02, revisited at the first deployment (step 6):* the decision stands for now. The gateway's NodePort, 30081, answers on every address of the WSL2 machine, so whatever can reach that network can read the app and trigger the four manual scrape paths, with no authentication. **Still open, as the project owner's question:** how far that network reaches, and whether the exposure is acceptable or should be narrowed. The answer also bears on `POST /macro-analyzer/chart-data`, which isn't a scrape path: it needs no authentication either, and a chart of all 108 series takes 681 MiB of heap after a collection. Two at once would probably exceed macro-series' 1075 MiB cap and restart the service (inferred from that measurement, not tried).
 
+*Note, 2026-11-04:* the NodePort exposure question above no longer applies, because [0007](0007-remove-the-kubernetes-deployment-until-its-needed.md) removed the deployment. The decision itself stands while the app only runs under Compose. **Whenever the app is exposed again, the manual scrape endpoints must be revisited,** and with them the cost of an unauthenticated `POST /macro-analyzer/chart-data`.
+
 ## Alternatives considered
 
 - **Keep them off the gateway**, and reach each service directly when needed. This closes the exposure, but makes a manual scrape more awkward.

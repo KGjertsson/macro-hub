@@ -14,6 +14,7 @@ The split into services is tracked step by step in the [migration guide](../micr
 | [0004](0004-keep-manual-scrape-endpoints-public-for-now.md) | Keep manual scrape endpoints public for now | Accepted | 2026-11-01 |
 | [0005](0005-cached-rest-between-services-and-no-message-broker.md) | Cached REST between services and no message broker | Accepted | 2026-11-01 |
 | [0006](0006-kubernetes-as-eventual-deployment-target.md) | Kubernetes as the eventual deployment target | Accepted | 2026-11-01 |
+| [0007](0007-remove-the-kubernetes-deployment-until-its-needed.md) | Remove the Kubernetes deployment until it's needed | Accepted | 2026-11-04 |
 
 ## Statuses
 

@@ -60,7 +60,7 @@
                 </plugin>
                 <!-- What every module's jOOQ codegen profile shares. Each profile adds its package and table selection, and sets
                      jooq.codegen.url, .user and .password to its own database on the Compose Postgres. There is no default
-                     here, and none may be on port 31274: on a machine with microk8s, that is the cluster's database -->
+                     here -->
                 <plugin>
                     <groupId>org.jooq</groupId>
                     <artifactId>jooq-codegen-maven</artifactId>

@@ -31,6 +31,8 @@ This ADR doesn't decide how routing works in the cluster. The choice between ngi
 
 *Note, 2026-11-02:* step 6 made the first deployment, in its own namespace `macro-hub`. **The gateway in the cluster is nginx in the frontend image,** which the project owner decided, on a pinned NodePort (30081) with fully qualified service names. There are no Ingress routes and the `ingress` addon stays off: nginx already holds the routes, the 404s and the 30-minute timeout, and Compose and the cluster then behave the same. Images stay on `imagePullPolicy: Never`, tagged with the commit and imported by `k8s/build-images.sh`, with no registry. The other consequences below are done, and `k8s/README.md` is the procedure. The Context's list describes files that are gone.
 
+*Note, 2026-11-04:* [0007](0007-remove-the-kubernetes-deployment-until-its-needed.md) removed `k8s/` and the deployment the note above describes, so Docker Compose is the only way to run the app for now. Kubernetes may still be the eventual target, and this ADR's status stays as it is. If a new deployment is made, the choices in that note are a starting point rather than a commitment.
+
 ## Alternatives considered
 
 - **Compose as the deployment target as well.** It already runs the whole stack, but the project owner wants to deploy on Kubernetes.

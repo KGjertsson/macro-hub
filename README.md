@@ -62,7 +62,7 @@ The backend is four services and a shared library, in `macro-backend/`, and the 
 3. Start everything: `docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`, and open `http://localhost:8081`
 4. Run `macro-backend/macro-infra/scripts/scrape-all.sh` to populate the databases, which takes about 8 minutes
 
-`docs/microservice-migration-guide.md` records how the backend was split into services. To deploy it on microk8s, see `macro-backend/macro-infra/k8s/README.md`.
+`docs/microservice-migration-guide.md` records how the backend was split into services.
 
 ## Sources
 
