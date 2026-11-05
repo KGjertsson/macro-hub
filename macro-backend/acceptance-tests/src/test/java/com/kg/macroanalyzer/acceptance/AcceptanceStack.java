@@ -46,6 +46,10 @@ public final class AcceptanceStack implements AutoCloseable {
     private static final String HEALTH_PATH = "/actuator/health";
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
 
+    // A boot is CPU-bound, so services starting at once take as long as starting in turn. A journey is too short to gain
+    // from C2 or a concurrent collector, and both spend CPU during the boot
+    private static final String CHEAP_BOOT_JVM_OPTIONS = "-XX:TieredStopAtLevel=1 -XX:+UseSerialGC";
+
     private final Network network = Network.newNetwork();
     private final List<GenericContainer<?>> containers = new CopyOnWriteArrayList<>();
     private final GenericContainer<?> postgres;
@@ -167,6 +171,7 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withEnv("SPRING_DATASOURCE_USERNAME", service.database())
                 .withEnv("SPRING_DATASOURCE_PASSWORD", service.databasePassword())
                 .withEnv("SCHEDULER_ENABLED", "false")
+                .withEnv("JAVA_TOOL_OPTIONS", CHEAP_BOOT_JVM_OPTIONS)
                 .withEnv(service.environment())
                 // Flyway seeds series_configuration with the real sources' URLs, and a service reads it once, right after
                 // migrating. A callback in the same run points the rows at the stub before that read
