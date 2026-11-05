@@ -1,14 +1,14 @@
 package com.kg.macroanalyzer.acceptance;
 
+import lombok.experimental.UtilityClass;
+
 import java.time.Duration;
 import java.time.Instant;
 
-public final class Eventually {
+@UtilityClass
+public class Eventually {
 
     private static final Duration BETWEEN_TRIES = Duration.ofMillis(250);
-
-    private Eventually() {
-    }
 
     public static void assertWithin(Duration timeout, String expectation, Runnable assertion) {
         final var deadline = Instant.now().plus(timeout);

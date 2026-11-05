@@ -3,6 +3,7 @@ package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
 import lombok.Builder;
+import lombok.experimental.UtilityClass;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -14,15 +15,13 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-public final class LabelPadding {
+@UtilityClass
+public class LabelPadding {
 
     private static final LabelEdges IDENTITY_LABELS = LabelEdges.builder()
             .startDate(LocalDate.MAX)
             .endDate(LocalDate.MIN)
             .build();
-
-    private LabelPadding() {
-    }
 
     public static Optional<List<MacroSeries>> padToFullLabels(List<MacroSeries> macroSeriesList) {
         return findEdges(macroSeriesList)

@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.parliament.adaptors.web;
 
 import com.kg.macroanalyzer.shared.web.ScrapeException;
+import lombok.experimental.UtilityClass;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -8,12 +9,10 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.List;
 
 // Riksdagen lists collapse to a single object for one hit and disappear entirely for none
-final class RiksdagenJson {
+@UtilityClass
+class RiksdagenJson {
 
     private static final JsonMapper JSON_MAPPER = JsonMapper.builder().build();
-
-    private RiksdagenJson() {
-    }
 
     static JsonNode readTree(String response, String source) throws ScrapeException {
         if (response == null || response.isBlank()) {

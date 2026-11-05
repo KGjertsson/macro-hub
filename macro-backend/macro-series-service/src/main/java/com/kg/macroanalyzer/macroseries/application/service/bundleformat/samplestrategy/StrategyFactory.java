@@ -2,13 +2,12 @@ package com.kg.macroanalyzer.macroseries.application.service.bundleformat.sample
 
 import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 import java.util.Optional;
 
-public final class StrategyFactory {
-
-    private StrategyFactory() {
-    }
+@UtilityClass
+public class StrategyFactory {
 
     public static SampleStrategy build(Strategy strategy) {
         final var nullMsg = "Found unexpected instance of null in StrategyFactory";

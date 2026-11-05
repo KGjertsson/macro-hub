@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.macroseries.adaptors.postgres;
 
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
+import lombok.experimental.UtilityClass;
 import org.jooq.DSLContext;
 import org.jooq.InsertOnDuplicateStep;
 import org.jooq.Query;
@@ -19,10 +20,8 @@ import java.util.function.Function;
 /**
  * A point stored with the same value isn't touched, so writes that race or repeat change nothing.
  */
-final class MacroPointUpsert {
-
-    private MacroPointUpsert() {
-    }
+@UtilityClass
+class MacroPointUpsert {
 
     static <R extends Record> Function<List<MacroPoint>, Integer> writer(
             DSLContext dslContext,

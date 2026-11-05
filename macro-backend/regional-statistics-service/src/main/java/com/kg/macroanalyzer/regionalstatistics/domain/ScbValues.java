@@ -1,5 +1,7 @@
 package com.kg.macroanalyzer.regionalstatistics.domain;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,12 +10,10 @@ import java.util.Map;
 // SCB fills the years a version has no data for with 0 or null,
 // so a version's year is only kept when some value in it is neither null nor 0. Within a kept year a null
 // (suppressed) value is dropped and a real 0 is kept
-public final class ScbValues {
+@UtilityClass
+public class ScbValues {
 
     private static final double ROUNDING = 10_000d;
-
-    private ScbValues() {
-    }
 
     public static Map<ScbSlice, Map<String, Double>> slices(ScbTableValues tableValues) {
         final var raw = new HashMap<ScbSlice, Map<String, Double>>();
