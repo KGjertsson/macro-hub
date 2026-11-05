@@ -86,7 +86,7 @@ wait_until_answers /macro-analyzer/municipalities/elections 204
 
 expect_json /macro-analyzer/series-config 'length' 108
 expect_json /macro-analyzer/series-config '.[0].name' '"PolicyRateSweden"'
-expect_json /macro-analyzer/parliament/parties 'length' 11
+expect_json /macro-analyzer/parliament/parties 'length' 12
 expect_json /macro-analyzer/parliament/parties '.[0].code' '"S"'
 expect_json /macro-analyzer/regional-statistics/indicators 'length' 26
 expect_json /macro-analyzer/regional-statistics/indicators 'map(.id) | index("households") != null' true
