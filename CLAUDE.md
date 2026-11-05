@@ -94,7 +94,7 @@ mvn -P jooq-codegen-platform compile -pl macro-platform
 ```
 
 ```bash
-# Acceptance tests: package the jars, build the :acceptance images, then run them (from anywhere; about 7 min in CI, of which the tests about 5.5 min)
+# Acceptance tests: package the jars, build the :acceptance images, then run them (from anywhere; about 6 to 7 min in CI, of which the tests about 5 min)
 macro-backend/macro-infra/scripts/acceptance-test.sh
 
 # With those images built and nothing changed, only the tests (from macro-backend/)

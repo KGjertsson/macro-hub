@@ -44,7 +44,7 @@ The suite has journeys for each domain's scrape and read through the gateway, th
 ## Consequences
 
 - Stubs can drift from the real sources: a changed response format still passes here. A nightly job against the real sources would close that. There isn't one.
-- Feedback is slower than `mvn test`: a run of the tests takes about 5.5 minutes in CI with the images built, and the whole `acceptance` job about 7, nearly all of it starting thirteen stacks, because each service starts twice. Each journey adds to it, and a journey with its own stack adds most, so the suite stays small: journeys a user would recognise, not every case, which stay in each service's tests.
+- Feedback is slower than `mvn test`: a run of the tests takes about 5 minutes in CI with the images built, and the whole `acceptance` job 6 to 7, nearly all of it starting thirteen stacks, because each service starts twice. Each journey adds to it, and a journey with its own stack adds most, so the suite stays small: journeys a user would recognise, not every case, which stay in each service's tests.
 - `AcceptanceStack` still doesn't run `docker-compose-all.yml`, so a variable changed there and not in `AcceptanceStack` isn't seen by the journeys. `compose-smoke` shows that the file starts and that every service answers its route, but it scrapes nothing, so what only a scrape uses there, such as the subscription keys, goes untested. It can't be run locally, so it is tried through a PR.
 - The crons are off in `compose-smoke`, so it doesn't show that they start or run under Compose.
 - Because `acceptance` and `compose-smoke` aren't required, they can fail on a merged PR. Whoever reviews a PR has to read them. Neither has been made required.
