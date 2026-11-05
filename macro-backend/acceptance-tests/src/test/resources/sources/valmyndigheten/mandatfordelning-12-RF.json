@@ -1,0 +1,85 @@
+{
+  "valtillfalle": "Val_2026",
+  "rakningstillfalle": "slutlig",
+  "valtyp": "RF",
+  "valdatum": "2026-09-13",
+  "valomrade": {
+    "namn": "Skåne län",
+    "kod": "12",
+    "totaltAntalMandat": 149,
+    "totaltAntalRoster": 660000,
+    "antalRostberattigade": 813000,
+    "valdeltagande": 81.2,
+    "rostfordelning": {
+      "rosterPaverkaMandat": {
+        "partiRoster": [
+          {
+            "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+            "partiforkortning": "S",
+            "partikod": "0002",
+            "fargkod": "#FF0000",
+            "antalRoster": 300000,
+            "andelRoster": 45.45
+          },
+          {
+            "partibeteckning": "Moderaterna",
+            "partiforkortning": "M",
+            "partikod": "0001",
+            "fargkod": "#66BEE6",
+            "antalRoster": 360000,
+            "andelRoster": 54.55
+          }
+        ]
+      }
+    },
+    "mandatfordelning": {
+      "partiLista": [
+        {
+          "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+          "partikod": "0002",
+          "partiforkortning": "S",
+          "antalMandat": 68
+        },
+        {
+          "partibeteckning": "Moderaterna",
+          "partikod": "0001",
+          "partiforkortning": "M",
+          "antalMandat": 81
+        }
+      ]
+    },
+    "valda": {
+      "partiLedamoterLista": [
+        {
+          "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+          "partikod": "0002",
+          "partiforkortning": "S",
+          "ledamoter": [
+            {
+              "invalsordning": 1,
+              "namn": "Sofia Svensson",
+              "valgrundText": "Ledamoten är vald på personröster"
+            }
+          ]
+        },
+        {
+          "partibeteckning": "Moderaterna",
+          "partikod": "0001",
+          "partiforkortning": "M",
+          "ledamoter": [
+            {
+              "invalsordning": 1,
+              "namn": "Magnus Månsson",
+              "valgrundText": "Ledamoten är vald på personröster"
+            },
+            {
+              "invalsordning": 2,
+              "namn": "Märta Malmberg",
+              "valgrundText": "Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

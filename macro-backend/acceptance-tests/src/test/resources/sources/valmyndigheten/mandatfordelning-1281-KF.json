@@ -1,0 +1,85 @@
+{
+  "valtillfalle": "Val_2026",
+  "rakningstillfalle": "slutlig",
+  "valtyp": "KF",
+  "valdatum": "2026-09-13",
+  "valomrade": {
+    "namn": "Lund",
+    "kod": "1281",
+    "totaltAntalMandat": 65,
+    "totaltAntalRoster": 39098,
+    "antalRostberattigade": 46000,
+    "valdeltagande": 84.86,
+    "rostfordelning": {
+      "rosterPaverkaMandat": {
+        "partiRoster": [
+          {
+            "partibeteckning": "Moderaterna",
+            "partiforkortning": "M",
+            "partikod": "0001",
+            "fargkod": "#66BEE6",
+            "antalRoster": 16996,
+            "andelRoster": 43.47
+          },
+          {
+            "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+            "partiforkortning": "S",
+            "partikod": "0002",
+            "fargkod": "#FF0000",
+            "antalRoster": 22102,
+            "andelRoster": 56.53
+          }
+        ]
+      }
+    },
+    "mandatfordelning": {
+      "partiLista": [
+        {
+          "partibeteckning": "Moderaterna",
+          "partikod": "0001",
+          "partiforkortning": "M",
+          "antalMandat": 28
+        },
+        {
+          "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+          "partikod": "0002",
+          "partiforkortning": "S",
+          "antalMandat": 37
+        }
+      ]
+    },
+    "valda": {
+      "partiLedamoterLista": [
+        {
+          "partibeteckning": "Moderaterna",
+          "partikod": "0001",
+          "partiforkortning": "M",
+          "ledamoter": [
+            {
+              "invalsordning": 1,
+              "namn": "Maja Malm",
+              "valgrundText": "Ledamoten är vald på personröster"
+            }
+          ]
+        },
+        {
+          "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+          "partikod": "0002",
+          "partiforkortning": "S",
+          "ledamoter": [
+            {
+              "invalsordning": 2,
+              "namn": "Stina Sandell",
+              "valgrundText": "Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"
+            },
+            {
+              "invalsordning": 1,
+              "namn": "Sven Sandberg",
+              "valgrundText": "Ledamoten är vald på personröster"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

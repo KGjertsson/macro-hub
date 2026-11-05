@@ -1,0 +1,199 @@
+{
+  "valtillfalle": "Val_2026",
+  "rakningstillfalle": "slutlig",
+  "valtyp": "RD",
+  "valdatum": "2026-09-13",
+  "valomrade": {
+    "namn": "Riket",
+    "kod": "00",
+    "totaltAntalMandat": 349,
+    "totaltAntalRoster": 6834413,
+    "antalRostberattigade": 8051355,
+    "valdeltagande": 84.89,
+    "valkretsLista": [
+      {
+        "namnValkrets": "Stockholms kommun",
+        "kod": "01",
+        "totaltAntalFastaMandat": 29,
+        "totaltAntalRoster": 320000,
+        "antalRostberattigade": 372800,
+        "valdeltagande": 85.84,
+        "rostfordelning": {
+          "rosterPaverkaMandat": {
+            "partiRoster": [
+              {
+                "partibeteckning": "Moderaterna",
+                "partiforkortning": "M",
+                "partikod": "0001",
+                "fargkod": "#66BEE6",
+                "antalRoster": 140000,
+                "andelRoster": 43.75
+              },
+              {
+                "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+                "partiforkortning": "S",
+                "partikod": "0002",
+                "fargkod": "#FF0000",
+                "antalRoster": 180000,
+                "andelRoster": 56.25
+              }
+            ]
+          }
+        },
+        "mandatfordelning": {
+          "partiLista": [
+            {
+              "partibeteckning": "Moderaterna",
+              "partikod": "0001",
+              "partiforkortning": "M",
+              "antalMandat": 14,
+              "antalFastaMandat": 14,
+              "antalUtjamningsmandat": 0
+            },
+            {
+              "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+              "partikod": "0002",
+              "partiforkortning": "S",
+              "antalMandat": 16,
+              "antalFastaMandat": 15,
+              "antalUtjamningsmandat": 1
+            }
+          ]
+        },
+        "valda": {
+          "partiLedamoterLista": [
+            {
+              "partibeteckning": "Moderaterna",
+              "partikod": "0001",
+              "partiforkortning": "M",
+              "ledamoter": [
+                {
+                  "invalsordning": 1,
+                  "namn": "Mats Lindgren",
+                  "valgrundText": "Ledamoten är vald på personröster"
+                }
+              ]
+            },
+            {
+              "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+              "partikod": "0002",
+              "partiforkortning": "S",
+              "ledamoter": [
+                {
+                  "invalsordning": 1,
+                  "namn": "Saga Nyström",
+                  "valgrundText": "Ledamoten är vald på personröster"
+                },
+                {
+                  "invalsordning": 2,
+                  "namn": "Simon Ek",
+                  "valgrundText": "Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "namnValkrets": "Gotlands län",
+        "kod": "09",
+        "totaltAntalFastaMandat": 2,
+        "totaltAntalRoster": 40000,
+        "antalRostberattigade": 48200,
+        "valdeltagande": 83.0,
+        "rostfordelning": {
+          "rosterPaverkaMandat": {
+            "partiRoster": [
+              {
+                "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+                "partiforkortning": "S",
+                "partikod": "0002",
+                "fargkod": "#FF0000",
+                "antalRoster": 22000,
+                "andelRoster": 55.0
+              },
+              {
+                "partibeteckning": "Moderaterna",
+                "partiforkortning": "M",
+                "partikod": "0001",
+                "fargkod": "#66BEE6",
+                "antalRoster": 18000,
+                "andelRoster": 45.0
+              }
+            ]
+          }
+        },
+        "mandatfordelning": {
+          "partiLista": [
+            {
+              "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+              "partikod": "0002",
+              "partiforkortning": "S",
+              "antalMandat": 1,
+              "antalFastaMandat": 1,
+              "antalUtjamningsmandat": 0
+            },
+            {
+              "partibeteckning": "Moderaterna",
+              "partikod": "0001",
+              "partiforkortning": "M",
+              "antalMandat": 1,
+              "antalFastaMandat": 1,
+              "antalUtjamningsmandat": 0
+            }
+          ]
+        }
+      },
+      {
+        "namnValkrets": "Malmö kommun",
+        "kod": "11",
+        "totaltAntalFastaMandat": 10,
+        "totaltAntalRoster": 90000,
+        "antalRostberattigade": 111100,
+        "valdeltagande": 81.0,
+        "rostfordelning": {
+          "rosterPaverkaMandat": {
+            "partiRoster": [
+              {
+                "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+                "partiforkortning": "S",
+                "partikod": "0002",
+                "fargkod": "#FF0000",
+                "antalRoster": 40000,
+                "andelRoster": 44.44
+              },
+              {
+                "partibeteckning": "Moderaterna",
+                "partiforkortning": "M",
+                "partikod": "0001",
+                "fargkod": "#66BEE6",
+                "antalRoster": 50000,
+                "andelRoster": 55.56
+              }
+            ]
+          }
+        },
+        "mandatfordelning": {
+          "partiLista": [
+            {
+              "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+              "partikod": "0002",
+              "partiforkortning": "S",
+              "antalMandat": 4,
+              "antalFastaMandat": 4,
+              "antalUtjamningsmandat": 0
+            },
+            {
+              "partibeteckning": "Moderaterna",
+              "partikod": "0001",
+              "partiforkortning": "M",
+              "antalMandat": 6,
+              "antalFastaMandat": 6,
+              "antalUtjamningsmandat": 0
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

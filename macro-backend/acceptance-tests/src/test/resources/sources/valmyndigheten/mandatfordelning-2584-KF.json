@@ -1,0 +1,60 @@
+{
+  "valtillfalle": "Val_2026",
+  "rakningstillfalle": "slutlig",
+  "valtyp": "KF",
+  "valdatum": "2026-09-13",
+  "valomrade": {
+    "namn": "Kiruna",
+    "kod": "2584",
+    "totaltAntalMandat": 41,
+    "totaltAntalRoster": 14000,
+    "antalRostberattigade": 17800,
+    "valdeltagande": 78.5,
+    "rostfordelning": {
+      "rosterPaverkaMandat": {
+        "partiRoster": [
+          {
+            "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+            "partiforkortning": "S",
+            "partikod": "0002",
+            "fargkod": "#FF0000",
+            "antalRoster": 6000,
+            "andelRoster": 42.86
+          },
+          {
+            "partibeteckning": "Kirunapartiet",
+            "partiforkortning": "KP",
+            "partikod": "3101",
+            "fargkod": "#7B2D8E",
+            "antalRoster": 8000,
+            "andelRoster": 57.14
+          },
+          {
+            "partibeteckning": "Liberalerna",
+            "partiforkortning": "L",
+            "partikod": "0005",
+            "fargkod": "#6BB7EC",
+            "antalRoster": 0,
+            "andelRoster": 0.0
+          }
+        ]
+      }
+    },
+    "mandatfordelning": {
+      "partiLista": [
+        {
+          "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+          "partikod": "0002",
+          "partiforkortning": "S",
+          "antalMandat": 17
+        },
+        {
+          "partibeteckning": "Kirunapartiet",
+          "partikod": "3101",
+          "partiforkortning": "KP",
+          "antalMandat": 24
+        }
+      ]
+    }
+  }
+}
