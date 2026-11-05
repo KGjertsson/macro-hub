@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.macroseries.application.service;
+package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 
 
 import com.kg.macroanalyzer.TestJsonReader;
@@ -6,11 +6,8 @@ import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -20,11 +17,7 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(MockitoExtension.class)
-public class LabelGenerationServiceTest {
-
-    @InjectMocks
-    LabelGenerationService labelGenerationService;
+public class LabelPaddingTest {
 
     TestJsonReader testJsonReader;
 
@@ -43,7 +36,7 @@ public class LabelGenerationServiceTest {
         final var macroSeriesList = testJsonReader.readMacroSeriesList(resource);
 
         // when
-        final var paddedSeriesOptional = labelGenerationService.padToFullLabels(macroSeriesList);
+        final var paddedSeriesOptional = LabelPadding.padToFullLabels(macroSeriesList);
 
         // then
         assertTrue(paddedSeriesOptional.isPresent());
@@ -71,7 +64,7 @@ public class LabelGenerationServiceTest {
         final var narrow = series("narrow", LocalDate.of(2024, 1, 2), LocalDate.of(2024, 1, 4));
 
         // when
-        final var padded = labelGenerationService.padToFullLabels(List.of(wide, narrow)).orElseThrow();
+        final var padded = LabelPadding.padToFullLabels(List.of(wide, narrow)).orElseThrow();
 
         // then
         assertEquals(Arrays.asList(1.0, 1.0, 1.0, 1.0, 1.0, 2.0), padded.get(0).getValues());
@@ -85,7 +78,7 @@ public class LabelGenerationServiceTest {
         final var withoutData = MacroSeries.builder().name("withoutData").macroPoints(List.of()).build();
 
         // when
-        final var padded = labelGenerationService.padToFullLabels(List.of(withData, withoutData)).orElseThrow();
+        final var padded = LabelPadding.padToFullLabels(List.of(withData, withoutData)).orElseThrow();
 
         // then
         assertEquals(Arrays.asList(null, null), padded.get(1).getValues());
@@ -108,7 +101,7 @@ public class LabelGenerationServiceTest {
         // given
         final var emptyList = List.<MacroSeries>of();
         // when
-        final var fullLabelsOptional = labelGenerationService.padToFullLabels(emptyList);
+        final var fullLabelsOptional = LabelPadding.padToFullLabels(emptyList);
 
         // then
         assertTrue(fullLabelsOptional.isEmpty());

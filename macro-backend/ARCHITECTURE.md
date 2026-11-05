@@ -135,9 +135,9 @@ pending, without throwing, after writing what it got when some result files fail
 
   POST /chart-data --> MacroSeriesController --> MacroSeriesQueries --> MacroSeriesService
        --> MacroSeriesRepositoryPort.readMacroSeries() --> MacroSeriesPostgresAdaptor --> PostgreSQL
-       --> TimeFilterService.shrinkToTimeFrame()  (TimeFrame: ALL | ONEYEAR | FIVEYEAR | TENYEAR | ONEMONTH)
-       --> AlignmentService.align()
-           --> LabelGenerationService.padToFullLabels()
+       --> TimeFilter.shrinkToTimeFrame()  (TimeFrame: ALL | ONEYEAR | FIVEYEAR | TENYEAR | ONEMONTH)
+       --> Alignment.align()
+           --> LabelPadding.padToFullLabels()
            --> SampleStrategy.sample()  (Strategy: DAY | MONTH | YEAR)
        --> AlignedBundle --> ChartDataWithLabels (200 OK, 204 without data)
 

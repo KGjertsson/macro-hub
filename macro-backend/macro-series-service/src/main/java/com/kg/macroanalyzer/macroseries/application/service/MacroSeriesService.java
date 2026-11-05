@@ -4,8 +4,8 @@ import com.kg.macroanalyzer.macroseries.application.port.in.BuildChartDataParams
 import com.kg.macroanalyzer.macroseries.application.port.in.ChartSeriesParam;
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
 import com.kg.macroanalyzer.macroseries.application.port.out.MacroSeriesRepositoryPort;
-import com.kg.macroanalyzer.macroseries.application.service.bundleformat.AlignmentService;
-import com.kg.macroanalyzer.macroseries.application.service.bundleformat.TimeFilterService;
+import com.kg.macroanalyzer.macroseries.application.service.bundleformat.Alignment;
+import com.kg.macroanalyzer.macroseries.application.service.bundleformat.TimeFilter;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeriesScrapeFlows;
@@ -21,20 +21,14 @@ import java.util.Optional;
 public class MacroSeriesService implements MacroSeriesQueries {
 
     private final MacroSeriesRepositoryPort repositoryPort;
-    private final AlignmentService alignmentService;
-    private final TimeFilterService timeFilterService;
     private final List<SeriesConfig> seriesConfigList;
 
     @Autowired
     public MacroSeriesService(
             MacroSeriesRepositoryPort repositoryPort,
-            List<SeriesConfig> seriesConfigList,
-            AlignmentService alignmentService,
-            TimeFilterService timeFilterService
+            List<SeriesConfig> seriesConfigList
     ) {
         this.repositoryPort = repositoryPort;
-        this.alignmentService = alignmentService;
-        this.timeFilterService = timeFilterService;
         this.seriesConfigList = seriesConfigList;
     }
 
@@ -44,8 +38,8 @@ public class MacroSeriesService implements MacroSeriesQueries {
         final var timeFrame = params.timeFrame();
 
         return readMacroSeries(params.chartSeriesParams())
-                .flatMap(macroSeries -> timeFilterService.shrinkToTimeFrame(macroSeries, timeFrame))
-                .flatMap(macroSeriesList -> alignmentService.align(macroSeriesList, strategy));
+                .flatMap(macroSeries -> TimeFilter.shrinkToTimeFrame(macroSeries, timeFrame))
+                .flatMap(macroSeriesList -> Alignment.align(macroSeriesList, strategy));
     }
 
     // Only configs scraped by the macro point flow are time series. Today this service holds no others

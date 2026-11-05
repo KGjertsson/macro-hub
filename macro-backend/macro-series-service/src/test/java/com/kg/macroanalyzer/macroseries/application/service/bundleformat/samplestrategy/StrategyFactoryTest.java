@@ -1,7 +1,6 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy;
 
 import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -11,20 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class StrategyFactoryTest {
 
-    StrategyFactory strategyFactory;
-
-    @BeforeEach
-    public void setUp() {
-        strategyFactory = new StrategyFactory();
-    }
-
     @ParameterizedTest
     @NullSource
     public void buildShouldThrowIllegalArgumentException_whenNullStrategy(Strategy strategy) {
         // when/then
         assertThrows(
                 IllegalArgumentException.class,
-                () -> strategyFactory.build(strategy)
+                () -> StrategyFactory.build(strategy)
         );
     }
 
@@ -34,7 +26,7 @@ public class StrategyFactoryTest {
         final var strategy = Strategy.MONTH;
 
         // when
-        final var result = strategyFactory.build(strategy);
+        final var result = StrategyFactory.build(strategy);
 
         // then
         assertEquals(SampleStrategyMonth.class, result.getClass());
@@ -46,7 +38,7 @@ public class StrategyFactoryTest {
         final var strategy = Strategy.YEAR;
 
         // when
-        final var result = strategyFactory.build(strategy);
+        final var result = StrategyFactory.build(strategy);
 
         // then
         assertEquals(SampleStrategyYear.class, result.getClass());
