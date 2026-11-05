@@ -21,7 +21,11 @@ public record Sources(Gateway wireMockAdmin) {
     }
 
     public void serveJsonBody(String path, String body) {
-        stub(path, Map.of(), body);
+        serveJsonBody(path, Map.of(), body);
+    }
+
+    public void serveJsonBody(String path, Map<String, String> query, String body) {
+        stub(path, query, body);
     }
 
     public int requestCount(String path) {

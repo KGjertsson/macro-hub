@@ -1,0 +1,9 @@
+{
+  "voteringlista": {
+    "@antal": "2",
+    "votering": [
+      {"rm": "2026/27", "Ja": "30", "Nej": "15", "Frånvarande": "4", "Avstår": "1"},
+      {"rm": "2025/26", "Ja": "100", "Nej": "40", "Frånvarande": "8", "Avstår": "2"}
+    ]
+  }
+}

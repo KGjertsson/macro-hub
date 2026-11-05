@@ -1,0 +1,167 @@
+{
+  "personlista": {
+    "@systemdatum": "2026-10-25 13:33:18",
+    "@hits": "9",
+    "person": [
+      {
+        "hangar_guid": "11111111-5acc-462a-b7ae-1cd833c8d193",
+        "sourceid": "aaaaaaaa-369c-4f8a-95bb-ce9b7231dc38",
+        "intressent_id": "0100000000001",
+        "hangar_id": "5297101",
+        "fodd_ar": "1975",
+        "kon": "kvinna",
+        "efternamn": "Andersson",
+        "tilltalsnamn": "Anna",
+        "sorteringsnamn": "Andersson,Anna",
+        "iort": "Sundbyberg",
+        "parti": "S",
+        "valkrets": "Stockholms län",
+        "status": "Tjänstgörande riksdagsledamot",
+        "person_url_xml": "https://data.riksdagen.se/person/aaaaaaaa-369c-4f8a-95bb-ce9b7231dc38",
+        "bild_url_80": "https://data.riksdagen.se/filarkiv/bilder/ledamot/anna_80.jpg",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/anna_192.jpg",
+        "bild_url_max": "https://data.riksdagen.se/filarkiv/bilder/ledamot/anna_max.jpg",
+        "personuppdrag": {
+          "uppdrag": [
+            {"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "ordningsnummer": "323", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2030-09-23 10:59:00", "uppgift": [{}], "intressent_id": "0100000000001", "hangar_id": "5297101", "sortering": "10", "organ_sortering": "10", "uppdrag_rollsortering": "60", "uppdrag_statussortering": "10"},
+            {"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "ordningsnummer": "12", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2022-09-26", "tom": "2026-09-27", "uppgift": [{}], "intressent_id": "0100000000001", "hangar_id": "5297101", "sortering": "10", "organ_sortering": "10", "uppdrag_rollsortering": "60", "uppdrag_statussortering": "10"},
+            {"organ_kod": "FiU", "roll_kod": "Ordförande", "ordningsnummer": "1", "status": "", "typ": "uppdrag", "from": "2026-10-06 11:00:00", "tom": "2999-12-31 10:59:00", "uppgift": ["Finansutskottet"], "intressent_id": "0100000000001", "hangar_id": "5297101", "sortering": "30", "organ_sortering": "150", "uppdrag_rollsortering": "20", "uppdrag_statussortering": "90"},
+            {"organ_kod": "AU", "roll_kod": "Suppleant", "ordningsnummer": "7", "status": "", "typ": "uppdrag", "from": "2022-10-04", "tom": "2026-09-27", "uppgift": ["Arbetsmarknadsutskottet"], "intressent_id": "0100000000001", "hangar_id": "5297101", "sortering": "50", "organ_sortering": "150", "uppdrag_rollsortering": "90", "uppdrag_statussortering": "90"},
+            {"organ_kod": "S", "roll_kod": "Ledamot", "ordningsnummer": "4", "status": "", "typ": "partiuppdrag", "from": "2023-04-01", "tom": "2999-12-31", "uppgift": [{}], "intressent_id": "0100000000001", "hangar_id": "5297101", "sortering": "60", "organ_sortering": "200", "uppdrag_rollsortering": "90", "uppdrag_statussortering": "90"}
+          ]
+        },
+        "personuppgift": {
+          "uppgift": [
+            {"kod": "HarBild", "uppgift": ["true"], "typ": "bilder", "intressent_id": "0100000000001", "hangar_id": "5297101"},
+            {"kod": "KandiderarINastaVal", "uppgift": ["true"], "typ": "val", "intressent_id": "0100000000001", "hangar_id": "5297101"},
+            {"kod": "Officiell e-postadress", "uppgift": ["anna.andersson[på]riksdagen.se"], "typ": "eadress", "intressent_id": "0100000000001", "hangar_id": "5297101"},
+            {"kod": "Tjänstetelefon", "uppgift": ["08-786 40 00"], "typ": "telefonnummer", "intressent_id": "0100000000001", "hangar_id": "5297101"},
+            {"kod": "Webbsida", "uppgift": ["https://www.example.se/anna"], "typ": "url", "intressent_id": "0100000000001", "hangar_id": "5297101"},
+            {"kod": "Yrken", "uppgift": ["Nationalekonom", "Utredare"], "typ": "biografi", "intressent_id": "0100000000001", "hangar_id": "5297101"},
+            {"kod": "Utbildning", "uppgift": ["Civilekonom, Uppsala universitet"], "typ": "biografi", "intressent_id": "0100000000001", "hangar_id": "5297101"}
+          ]
+        }
+      },
+      {
+        "intressent_id": "0100000000002",
+        "fodd_ar": "1968",
+        "kon": "man",
+        "efternamn": "Berg",
+        "tilltalsnamn": "Bertil",
+        "sorteringsnamn": "Berg,Bertil",
+        "iort": "",
+        "parti": "S",
+        "valkrets": "Södermanlands län",
+        "status": "Tjänstgörande riksdagsledamot",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/bertil_192.jpg",
+        "personuppdrag": {"uppdrag": {"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2030-09-23 10:59:00"}},
+        "personuppgift": ""
+      },
+      {
+        "intressent_id": "0100000000003",
+        "fodd_ar": "1990",
+        "kon": "kvinna",
+        "efternamn": "Carlsson",
+        "tilltalsnamn": "Cecilia",
+        "sorteringsnamn": "Carlsson,Cecilia",
+        "iort": "",
+        "parti": "S",
+        "valkrets": "Örebro län",
+        "status": "Tjänstgörande ersättare",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/cecilia_192.jpg",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Ersättare", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-10-01", "tom": "2030-09-23"}]},
+        "personuppgift": ""
+      },
+      {
+        "intressent_id": "0100000000004",
+        "fodd_ar": "1962",
+        "kon": "man",
+        "efternamn": "Dahl",
+        "tilltalsnamn": "David",
+        "sorteringsnamn": "Dahl,David",
+        "iort": "",
+        "parti": "M",
+        "valkrets": "Västra Götalands läns västra",
+        "status": "Förste vice talman (tjänstgörande riksdagsledamot)",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/david_192.jpg",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2030-09-23 10:59:00"}]},
+        "personuppgift": ""
+      },
+      {
+        "intressent_id": "0100000000005",
+        "fodd_ar": "1981",
+        "kon": "kvinna",
+        "efternamn": "Ek",
+        "tilltalsnamn": "Eva",
+        "sorteringsnamn": "Ek,Eva",
+        "iort": "",
+        "parti": "M",
+        "valkrets": "Skåne läns södra",
+        "status": "Tjänstgörande riksdagsledamot",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/eva_192.jpg",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2030-09-23 10:59:00"}]},
+        "personuppgift": ""
+      },
+      {
+        "intressent_id": "0100000000006",
+        "fodd_ar": "1985",
+        "kon": "man",
+        "efternamn": "Falk",
+        "tilltalsnamn": "Fredrik",
+        "sorteringsnamn": "Falk,Fredrik",
+        "iort": "",
+        "parti": "SD",
+        "valkrets": "Jönköpings län",
+        "status": "Tjänstgörande riksdagsledamot",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/fredrik_192.jpg",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2030-09-23 10:59:00"}]},
+        "personuppgift": ""
+      },
+      {
+        "intressent_id": "0100000000007",
+        "fodd_ar": "1977",
+        "kon": "kvinna",
+        "efternamn": "Gran",
+        "tilltalsnamn": "Greta",
+        "sorteringsnamn": "Gran,Greta",
+        "iort": "",
+        "parti": "V",
+        "valkrets": "Gotlands län",
+        "status": "Tjänstledig",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/greta_192.jpg",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Ledig", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2030-09-23 10:59:00"}]},
+        "personuppgift": ""
+      },
+      {
+        "intressent_id": "0100000000008",
+        "fodd_ar": "1955",
+        "kon": "man",
+        "efternamn": "Holm",
+        "tilltalsnamn": "Hans",
+        "sorteringsnamn": "Holm,Hans",
+        "iort": "",
+        "parti": "KD",
+        "valkrets": "Kalmar län",
+        "status": "Tidigare riksdagsledamot",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/hans_192.jpg",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2022-09-26", "tom": "2026-09-27"}]},
+        "personuppgift": ""
+      },
+      {
+        "intressent_id": "0100000000009",
+        "fodd_ar": "1950",
+        "kon": "kvinna",
+        "efternamn": "Isaksson",
+        "tilltalsnamn": "Ingrid",
+        "sorteringsnamn": "Isaksson,Ingrid",
+        "iort": "",
+        "parti": "L",
+        "valkrets": "Uppsala län",
+        "status": "Tidigare riksdagsledamot",
+        "bild_url_192": "https://data.riksdagen.se/filarkiv/bilder/ledamot/ingrid_192.jpg",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2014-09-29", "tom": "2018-09-23"}]},
+        "personuppgift": ""
+      }
+    ]
+  }
+}

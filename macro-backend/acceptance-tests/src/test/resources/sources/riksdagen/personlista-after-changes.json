@@ -1,0 +1,47 @@
+{
+  "personlista": {
+    "@hits": "4",
+    "person": [
+      {
+        "intressent_id": "0200000000001",
+        "efternamn": "Kvist",
+        "tilltalsnamn": "Karin",
+        "sorteringsnamn": "Kvist,Karin",
+        "parti": "V",
+        "valkrets": "Hallands län",
+        "status": "Tjänstgörande riksdagsledamot",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2030-09-23 10:59:00"}]}
+      },
+      {
+        "intressent_id": "0200000000002",
+        "efternamn": "Lund",
+        "tilltalsnamn": "Lars",
+        "sorteringsnamn": "Lund,Lars",
+        "parti": "S",
+        "valkrets": "Västerbottens län",
+        "status": "Tidigare riksdagsledamot",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2026-10-31"}]}
+      },
+      {
+        "intressent_id": "0200000000003",
+        "efternamn": "Moberg",
+        "tilltalsnamn": "Maria",
+        "sorteringsnamn": "Moberg,Maria",
+        "parti": "C",
+        "valkrets": "Dalarnas län",
+        "status": "Tjänstgörande riksdagsledamot",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Riksdagsledamot", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-09-28 11:00:00", "tom": "2030-09-23 10:59:00"}]}
+      },
+      {
+        "intressent_id": "0200000000004",
+        "efternamn": "Norén",
+        "tilltalsnamn": "Nils",
+        "sorteringsnamn": "Norén,Nils",
+        "parti": "S",
+        "valkrets": "Västerbottens län",
+        "status": "Tjänstgörande ersättare",
+        "personuppdrag": {"uppdrag": [{"organ_kod": "kam", "roll_kod": "Ersättare", "status": "Tjänstgörande", "typ": "kammaruppdrag", "from": "2026-11-01", "tom": "2030-09-23"}]}
+      }
+    ]
+  }
+}

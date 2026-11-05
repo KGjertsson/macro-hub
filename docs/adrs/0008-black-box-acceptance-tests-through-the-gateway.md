@@ -43,7 +43,7 @@ The first slice was one journey: a macro series is scraped through the gateway a
 ## Consequences
 
 - Stubs can drift from the real sources: a changed response format still passes here. A nightly job against the real sources could close that later, and isn't part of this.
-- Feedback is slower than `mvn test`: a run of the tests takes about 2 minutes in CI with the images built, nearly all of it starting three stacks, because each service starts twice. Each journey adds to it, and a journey with its own stack adds most, so the suite stays small: journeys a user would recognise, not every case, which stay in each service's tests.
+- Feedback is slower than `mvn test`: a run of the tests takes about 3 minutes in CI with the images built, nearly all of it starting five stacks, because each service starts twice. Each journey adds to it, and a journey with its own stack adds most, so the suite stays small: journeys a user would recognise, not every case, which stay in each service's tests.
 - `docker-compose-all.yml` itself stays untested: its ports, its environment and its `depends_on` aren't what runs here, and a variable changed there and not in `AcceptanceStack` goes unnoticed.
 - Because `acceptance` isn't required, it can fail on a merged PR. Whoever reviews a PR has to read it.
 - A service's first start in a test uses the real URLs in its seeded rows. Nothing calls a source at start-up today, with the scheduler off. A service that did would reach the real source during setup.
