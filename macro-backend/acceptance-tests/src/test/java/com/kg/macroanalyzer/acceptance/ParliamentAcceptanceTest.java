@@ -26,6 +26,10 @@ class ParliamentAcceptanceTest {
 
     private static final Map<String, String> ALL_MEMBERS_REQUEST = Map.of("rdlstatus", "samtliga", "utformat", "json");
 
+    private static final String NO_VOTES = "{\"voteringlista\":{\"@antal\":\"0\"}}";
+    private static final String NO_SPEECHES = "{\"anforandelista\":{\"@antal\":\"0\"}}";
+    private static final String NO_MOTIONS = "{\"dokumentlista\":{\"@traffar\":\"0\"}}";
+
     private static final String SERVING = "Tjänstgörande riksdagsledamot";
     private static final String SERVING_SUBSTITUTE = "Tjänstgörande ersättare";
     private static final String FORMER = "Tidigare riksdagsledamot";
@@ -61,7 +65,7 @@ class ParliamentAcceptanceTest {
         sources.serveJson(SPEECHES, speechesRequest(ANNA), "riksdagen/anforandelista-anna.json");
         sources.serveJson(MOTIONS, motionsRequest(ANNA), "riksdagen/dokumentlista-anna.json");
         serveVotesWithoutOtherActivity(sources, BERTIL, votesOfOneSession(45, 3, 2, 0));
-        serveVotesWithoutOtherActivity(sources, CECILIA, "{}");
+        serveVotesWithoutOtherActivity(sources, CECILIA, NO_VOTES);
         serveVotesWithoutOtherActivity(sources, DAVID, votesOfOneSession(150, 50, 100, 0));
         serveVotesWithoutOtherActivity(sources, EVA, votesOfOneSession(40, 10, 0, 0));
         serveVotesWithoutOtherActivity(sources, FREDRIK, votesOfOneSession(10, 5, 5, 5));
@@ -265,8 +269,8 @@ class ParliamentAcceptanceTest {
 
     private static void serveVotesWithoutOtherActivity(Sources sources, String member, String votes) {
         sources.serveJsonBody(VOTES, votesRequest(member), votes);
-        sources.serveJsonBody(SPEECHES, speechesRequest(member), "{}");
-        sources.serveJsonBody(MOTIONS, motionsRequest(member), "{}");
+        sources.serveJsonBody(SPEECHES, speechesRequest(member), NO_SPEECHES);
+        sources.serveJsonBody(MOTIONS, motionsRequest(member), NO_MOTIONS);
     }
 
     // Riksdagen answers a single row as an object rather than a list of one
