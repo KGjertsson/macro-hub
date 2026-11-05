@@ -1,0 +1,21 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "label": "Antal hushåll per region efter hushållstyp. År 2021-2024",
+  "source": "SCB",
+  "updated": "2026-03-24T07:00:00Z",
+  "id": ["Region", "Hushallstyp", "ContentsCode", "Tid"],
+  "size": [3, 1, 1, 4],
+  "dimension": {
+    "Region": {"label": "region", "category": {"index": {"0114A0010": 0, "0114A0020": 1, "0114C1010": 2}}},
+    "Hushallstyp": {"label": "hushållstyp", "category": {"index": {"TOTALT": 0}}},
+    "ContentsCode": {"label": "tabellinnehåll", "category": {"index": {"000007Y1": 0}}},
+    "Tid": {"label": "år", "category": {"index": {"2021": 0, "2022": 1, "2023": 2, "2024": 3}}}
+  },
+  "role": {"time": ["Tid"], "metric": ["ContentsCode"]},
+  "value": [
+    0, 410, 415, null,
+    0, 520, 0, null,
+    0, null, 530, null
+  ]
+}

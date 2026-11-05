@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 public record Sources(Gateway wireMockAdmin) {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
+    private static final int LOWER_THAN_THE_DEFAULT_PRIORITY = 9;
 
     public void serveJson(String path, String fixture) {
         serveJson(path, Map.of(), fixture);
@@ -27,6 +28,13 @@ public record Sources(Gateway wireMockAdmin) {
 
     public void serveJsonBody(String path, Map<String, String> query, String body) {
         stub(path, query, jsonResponse(body));
+    }
+
+    public void serveJsonForOtherPathsMatching(String pathRegex, String fixture) {
+        postMapping(Map.of(
+                "priority", LOWER_THAN_THE_DEFAULT_PRIORITY,
+                "request", Map.of("method", "GET", "urlPathPattern", pathRegex),
+                "response", jsonResponse(readFixture(fixture))));
     }
 
     public void serveText(String path, String body) {
@@ -61,11 +69,13 @@ public record Sources(Gateway wireMockAdmin) {
     }
 
     private void stub(String path, Map<String, String> query, Map<String, Object> response) {
-        final var mapping = JSON.writeValueAsString(Map.of(
+        postMapping(Map.of(
                 "request", request(path, query),
                 "response", response));
+    }
 
-        final var answer = wireMockAdmin.postJson("/__admin/mappings", mapping);
+    private void postMapping(Map<String, Object> mapping) {
+        final var answer = wireMockAdmin.postJson("/__admin/mappings", JSON.writeValueAsString(mapping));
         if (answer.statusCode() != 201) {
             throw new IllegalStateException("WireMock refused the stub: " + answer.body());
         }
