@@ -139,10 +139,13 @@ class FailureAndRecoveryAcceptanceTest {
         stack.stopPostgres();
 
         // then
-        assertEquals(500, chartRequest(gateway, SHORT_RATE).statusCode());
-
-        // when
-        stack.startStoppedPostgres();
+        // The finally keeps a failure here from leaving Postgres stopped for the class's other tests
+        try {
+            assertEquals(500, chartRequest(gateway, SHORT_RATE).statusCode());
+        } finally {
+            // when
+            stack.startStoppedPostgres();
+        }
 
         // then
         Eventually.assertWithin(BACK_AFTER_POSTGRES, "The chart answers again, with the data from before", () ->

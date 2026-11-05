@@ -7,11 +7,22 @@ set -eu
 backend="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$backend"
 
-# Pulled while the images build, so the test classes don't all wait on the same pull when they start. The tags are
-# AcceptanceStack's POSTGRES_IMAGE and WIREMOCK_IMAGE; Testcontainers pulls only an image that isn't there
-docker pull -q postgres:16 >/dev/null &
+# Pulled while the images build, so the test classes don't all wait on the same pull when they start. Testcontainers
+# pulls only an image that isn't there. The tags are read from AcceptanceStack, so a bump there can't skip this
+stack_source=acceptance-tests/src/test/java/com/kg/macroanalyzer/acceptance/AcceptanceStack.java
+image_of() {
+    image="$(sed -n "s/.* $1 = \"\(.*\)\";.*/\1/p" "$stack_source")"
+    if [ -z "$image" ]; then
+        echo "No $1 in $stack_source" >&2
+        exit 1
+    fi
+    echo "$image"
+}
+postgres_image="$(image_of POSTGRES_IMAGE)"
+wiremock_image="$(image_of WIREMOCK_IMAGE)"
+docker pull -q "$postgres_image" >/dev/null &
 postgres_pull=$!
-docker pull -q wiremock/wiremock:3.13.2 >/dev/null &
+docker pull -q "$wiremock_image" >/dev/null &
 wiremock_pull=$!
 
 sh ./mvnw -B -DskipTests clean package
