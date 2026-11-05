@@ -7,8 +7,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
@@ -170,6 +170,8 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withEnv(service.environment())
                 // Flyway seeds series_configuration with the real sources' URLs, and a service reads it once, right after
                 // migrating. A callback in the same run points the rows at the stub before that read
+                // The variable replaces spring.flyway.locations, so it repeats Boot's default, and a service that set its own
+                // locations would need them here too
                 .withEnv("SPRING_FLYWAY_LOCATIONS", "classpath:db/migration,filesystem:" + REDIRECT_LOCATION)
                 .withCopyToContainer(Transferable.of(REDIRECT_SOURCES_SQL), REDIRECT_LOCATION + "/afterMigrate.sql")
                 .withExposedPorts(service.port())
