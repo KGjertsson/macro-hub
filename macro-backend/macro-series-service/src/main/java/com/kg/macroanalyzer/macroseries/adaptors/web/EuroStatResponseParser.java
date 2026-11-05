@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.macroseries.adaptors.web;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import com.kg.macroanalyzer.shared.web.ResponseParser;
 import com.kg.macroanalyzer.shared.web.ScrapeException;
 import tools.jackson.core.JacksonException;
@@ -59,6 +60,13 @@ public record EuroStatResponseParser() implements ResponseParser<String, Stream<
             Map<String, Object> extension
     ) {
 
+        public EurostatDataset {
+            value = ImmutableCopies.map(value);
+            id = ImmutableCopies.list(id);
+            size = ImmutableCopies.list(size);
+            extension = ImmutableCopies.map(extension);
+        }
+
         public List<LocalDate> orderedTimeLabels() {
             if (dimension == null || dimension.time == null || dimension.time.category == null)
                 return List.of();
@@ -107,6 +115,12 @@ public record EuroStatResponseParser() implements ResponseParser<String, Stream<
             Map<String, Integer> index,
             Map<String, String> label
     ) {
+
+        public Category {
+            index = ImmutableCopies.map(index);
+            label = ImmutableCopies.map(label);
+        }
+
     }
 
 }

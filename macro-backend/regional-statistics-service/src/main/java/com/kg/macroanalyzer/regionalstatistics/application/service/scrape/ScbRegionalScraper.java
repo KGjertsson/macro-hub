@@ -17,6 +17,7 @@ import com.kg.macroanalyzer.shared.web.WebPort;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -91,7 +92,7 @@ public record ScbRegionalScraper(
                 .entrySet().stream()
                 .filter(e -> e.getValue() > 1)
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     private record SourceVersion(ScbSource source, GeoVersion version) {
@@ -132,7 +133,7 @@ public record ScbRegionalScraper(
                 metadata.put(table, metadata(table));
             }
 
-            return metadata;
+            return Collections.unmodifiableMap(metadata);
         }
 
         // A table whose metadata could not be fetched is not asked for again in the same run
@@ -182,7 +183,7 @@ public record ScbRegionalScraper(
                 }
             }
 
-            return merged;
+            return Collections.unmodifiableMap(merged);
         }
 
         private Map<ScbSlice, Map<String, Double>> sourceValues(
@@ -208,10 +209,10 @@ public record ScbRegionalScraper(
                 GeoVersion version,
                 ScbTableMetadata metadata
         ) throws TableException {
-            final var values = new HashMap<ScbSlice, Map<String, Double>>();
             if (metadata.regionCodes().stream().noneMatch(version::matches)) {
-                return values;
+                return Map.of();
             }
+            final var values = new HashMap<ScbSlice, Map<String, Double>>();
             final var regionCount = metadata.regionCodes().stream()
                     .filter(version::matchesWildcard)
                     .count();
@@ -225,7 +226,7 @@ public record ScbRegionalScraper(
                 });
             }
 
-            return values;
+            return Collections.unmodifiableMap(values);
         }
 
         private ScbTableValues fetchData(ScbDataRequest request) throws TableException {

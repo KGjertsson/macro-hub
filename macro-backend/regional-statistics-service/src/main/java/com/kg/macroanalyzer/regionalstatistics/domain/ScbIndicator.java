@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.regionalstatistics.domain;
 
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import lombok.Builder;
 
 import java.util.LinkedHashSet;
@@ -21,6 +22,12 @@ public record ScbIndicator(
         double multiplier,
         int sortOrder
 ) {
+
+    public ScbIndicator {
+        levels = ImmutableCopies.list(levels);
+        numerator = ImmutableCopies.list(numerator);
+        denominator = ImmutableCopies.list(denominator);
+    }
 
     public Set<String> tables() {
         final var tables = new LinkedHashSet<String>();

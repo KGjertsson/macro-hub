@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.macroseries.adaptors.web;
 
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import com.kg.macroanalyzer.shared.web.ResponseParser;
 import com.kg.macroanalyzer.shared.web.ScrapeException;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,6 @@ public record FedResponseParser() implements ResponseParser<String, Stream<Macro
         }
     }
 
-
     private ObjectMapper createObjectMapper() {
         return JsonMapper.builder()
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -59,6 +59,11 @@ public record FedResponseParser() implements ResponseParser<String, Stream<Macro
             Integer limit,
             List<Observation> observations
     ) {
+
+        public ScrapedResponse {
+            observations = ImmutableCopies.list(observations);
+        }
+
     }
 
     private record Observation(

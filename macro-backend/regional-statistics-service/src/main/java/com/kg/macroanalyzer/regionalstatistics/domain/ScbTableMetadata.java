@@ -1,5 +1,7 @@
 package com.kg.macroanalyzer.regionalstatistics.domain;
 
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,10 @@ public record ScbTableMetadata(
 
     public static final String REGION = "Region";
     public static final String TIME = "Tid";
+
+    public ScbTableMetadata {
+        codes = ImmutableCopies.mapOfLists(codes);
+    }
 
     public List<String> regionCodes() {
         return codes.getOrDefault(REGION, List.of());

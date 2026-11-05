@@ -12,6 +12,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -72,7 +73,7 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
             results.add(constituency(year, valkrets));
         }
 
-        return results;
+        return Collections.unmodifiableList(results);
     }
 
     // A valkrets only states its fixed seats, so the total is summed from the parties' seats, which include

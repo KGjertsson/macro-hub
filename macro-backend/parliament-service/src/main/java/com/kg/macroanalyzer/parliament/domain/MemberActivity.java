@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.parliament.domain;
 
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import lombok.Builder;
 
 import java.util.List;
@@ -17,6 +18,12 @@ public record MemberActivity(
         List<ParliamentDocument> recentSpeeches,
         List<ParliamentDocument> recentMotions
 ) {
+
+    public MemberActivity {
+        votesBySession = ImmutableCopies.list(votesBySession);
+        recentSpeeches = ImmutableCopies.list(recentSpeeches);
+        recentMotions = ImmutableCopies.list(recentMotions);
+    }
 
     public Double attendancePct() {
         final var total = votesYes + votesNo + votesAbsent + votesAbstain;

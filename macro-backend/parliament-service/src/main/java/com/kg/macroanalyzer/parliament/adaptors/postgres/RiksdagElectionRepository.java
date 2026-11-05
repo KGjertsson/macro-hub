@@ -6,6 +6,7 @@ import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +63,8 @@ public class RiksdagElectionRepository {
     }
 
     public Map<String, String> readOrganNames() {
-        return dslContext.selectFrom(RIKSDAG_ORGAN)
-                .fetchMap(RIKSDAG_ORGAN.CODE, RIKSDAG_ORGAN.NAME);
+        return Collections.unmodifiableMap(dslContext.selectFrom(RIKSDAG_ORGAN)
+                .fetchMap(RIKSDAG_ORGAN.CODE, RIKSDAG_ORGAN.NAME));
     }
 
 }

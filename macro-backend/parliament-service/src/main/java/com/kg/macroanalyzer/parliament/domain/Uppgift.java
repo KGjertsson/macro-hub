@@ -1,5 +1,7 @@
 package com.kg.macroanalyzer.parliament.domain;
 
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
+
 import java.util.List;
 
 public record Uppgift(
@@ -9,4 +11,9 @@ public record Uppgift(
         String intressent_id,
         String hangar_id
 ) {
+
+    public Uppgift {
+        uppgift = ImmutableCopies.list(uppgift);
+    }
+
 }

@@ -21,6 +21,7 @@ Implement the change yourself, under the rules below, unless the user asked for 
 - Work in your own git worktree under your scratchpad directory, on a feature branch from an up-to-date `origin/main`: `git -C <repo> fetch && git -C <repo> worktree add <dir> -b <branch> origin/main`. A ruleset blocks direct pushes to `main`.
 - Before every push, run the checks for what you changed:
   - Backend: `JAVA_HOME=~/.sdkman/candidates/java/current mvn test` from `macro-backend/`, with Docker running.
+  - Backend Java: follow the `immutable-java` skill (`.claude/skills/immutable-java/SKILL.md`) while writing it, and run its check, `python3 -I .claude/skills/immutable-java/check.py $(git diff --name-only origin/main...HEAD)` from the repo root. It must report no errors.
   - Frontend: `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run build` and `npm run lint` from `macro-frontend/`. Lint must exit 0, as CI enforces.
 - For frontend changes that add assets, workers or routes, also check the production build as nginx serves it: build the image under a throwaway tag, run it on a spare port, and `curl -I` the new assets. Vite's dev server hides serving bugs, e.g. nginx served `.mjs` as `application/octet-stream`, which blanked the MapLibre map.
 - Use conventional commits that end with the Co-Authored-By line. Open the PR with `gh pr create` and end its body with the Claude Code line. Start the reviewer (step 3) right away (a separate implementer instead sends the lead the PR number, see below), then wait for CI with `gh pr checks <n> --watch` and fix any failing job. The review and CI run in parallel, and neither waits for the other.
@@ -42,6 +43,7 @@ Only for a separate implementer:
 - Spawn it with `model: "fable"`. If that spawn (or a later re-review message) fails because Fable credits or usage limits are exhausted, or the model is unavailable, spawn a fresh reviewer with `model: "opus"` and the same brief, and tell the user the review ran on Opus.
 - Brief it with the PR number, the stated intent and the agreed requirements. Leave out the implementer's reasoning, also when that is your own, the `claude[bot]` comments and your own opinions. It may see the bot's comments on the PR, but it forms its own view.
 - It reviews `gh pr diff <n>` and reads surrounding code for context.
+- It checks the diff against CLAUDE.md's conventions, and for backend Java against the `immutable-java` skill's rules and its "When reviewing" section. Name that skill's path in the brief.
 - If it builds, it uses its own worktree. It never checks out branches in the main clone.
 - It follows the separate implementer's rule for long-running commands: run them in the foreground with a long `timeout`, or poll with Monitor. It never waits for a background completion notice.
 - It labels each finding blocking or nit and posts them with `gh pr review <n> --comment`. It cannot approve, because it runs on the PR author's account. The review starts with exactly one verdict:

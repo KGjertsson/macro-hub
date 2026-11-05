@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Slf4j
 @RestController
@@ -97,11 +98,17 @@ public class MacroSeriesController {
     }
 
     private List<ChartData> buildChartDataList(List<MacroSeries> macroSeriesList) {
-        final var chartDataFactory = new ChartDataFactory();
-
-        return macroSeriesList.stream()
-                .map(chartDataFactory::build)
+        return IntStream.range(0, macroSeriesList.size())
+                .mapToObj(index -> toChartData(macroSeriesList.get(index), index))
                 .toList();
+    }
+
+    private ChartData toChartData(MacroSeries macroSeries, int index) {
+        return ChartData.builder()
+                .values(macroSeries.getValues())
+                .name(macroSeries.name())
+                .color(colorSelectionStrategy.pickColor(index))
+                .build();
     }
 
     private ResponseEntity<ChartDataWithLabels> toResponseEntity(
@@ -112,27 +119,6 @@ public class MacroSeriesController {
 
     private ResponseEntity<ChartDataWithLabels> noContentResponse() {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    private class ChartDataFactory {
-
-        private Integer index;
-
-        public ChartDataFactory() {
-            this.index = 0;
-        }
-
-        public ChartData build(MacroSeries macroSeries) {
-            final var color = colorSelectionStrategy.pickColor(index);
-            this.index = this.index + 1;
-
-            return ChartData.builder()
-                    .values(macroSeries.getValues())
-                    .name(macroSeries.name())
-                    .color(color)
-                    .build();
-        }
-
     }
 
 }

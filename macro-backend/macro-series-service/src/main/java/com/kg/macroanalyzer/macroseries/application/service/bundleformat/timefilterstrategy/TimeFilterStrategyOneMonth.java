@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TimeFilterStrategyOneMonth implements TimeFilterStrategy {
 
-    LocalDate now;
+    private final LocalDate now;
 
     public TimeFilterStrategyOneMonth() {
         this.now = LocalDate.now();

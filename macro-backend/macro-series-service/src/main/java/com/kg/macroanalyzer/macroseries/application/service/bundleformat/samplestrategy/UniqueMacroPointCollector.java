@@ -3,7 +3,6 @@ package com.kg.macroanalyzer.macroseries.application.service.bundleformat.sample
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,7 +36,7 @@ public class UniqueMacroPointCollector implements Collector<MacroPoint, Map<Temp
 
     @Override
     public Function<Map<Temporal, MacroPoint>, List<MacroPoint>> finisher() {
-        return acc -> new ArrayList<>(acc.values());
+        return acc -> List.copyOf(acc.values());
     }
 
     @Override

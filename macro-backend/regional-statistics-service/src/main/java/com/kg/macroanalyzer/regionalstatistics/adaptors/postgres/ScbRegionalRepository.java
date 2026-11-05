@@ -8,6 +8,7 @@ import com.kg.macroanalyzer.regionalstatistics.domain.ScbIndicator;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbIndicatorResult;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbLevel;
 import com.kg.macroanalyzer.regionalstatistics.domain.ScbSource;
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
@@ -23,7 +24,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,11 +62,11 @@ public class ScbRegionalRepository {
         return dslContext.selectFrom(SCB_TABLE_STATE)
                 .fetch()
                 .stream()
-                .collect(Collectors.toMap(r -> r.getTableId(), r -> r.getUpdated().toInstant()));
+                .collect(Collectors.toUnmodifiableMap(r -> r.getTableId(), r -> r.getUpdated().toInstant()));
     }
 
     public Set<String> readIndicatorsWithData() {
-        return new HashSet<>(dslContext.selectDistinct(SCB_AVAILABILITY.INDICATOR_ID)
+        return Set.copyOf(dslContext.selectDistinct(SCB_AVAILABILITY.INDICATOR_ID)
                 .from(SCB_AVAILABILITY)
                 .fetch(SCB_AVAILABILITY.INDICATOR_ID));
     }
@@ -179,7 +179,7 @@ public class ScbRegionalRepository {
                 .fetch()
                 .forEach(r -> values.put(r.value1(), r.value2().doubleValue()));
 
-        return values;
+        return Collections.unmodifiableMap(values);
     }
 
     private static ScbAvailability toAvailability(Record3<String, String, Short> r) {
@@ -220,6 +220,10 @@ public class ScbRegionalRepository {
     }
 
     private record SourceJson(String table, String contents, Map<String, List<String>> select) {
+
+        public SourceJson {
+            select = ImmutableCopies.mapOfLists(select);
+        }
 
         private ScbSource toSource() {
             final var selection = new LinkedHashMap<String, List<String>>();

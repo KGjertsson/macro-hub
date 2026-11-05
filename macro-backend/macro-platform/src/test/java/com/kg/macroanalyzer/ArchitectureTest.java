@@ -3,17 +3,22 @@ package com.kg.macroanalyzer;
 import com.kg.macroanalyzer.platform.jooq.generated.DefaultCatalog;
 import com.kg.macroanalyzer.scrape.application.service.ScrapeService;
 import com.kg.macroanalyzer.shared.web.WebPort;
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideOutsideOfPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -63,5 +68,21 @@ class ArchitectureTest {
     static final ArchRule portsDoNotDependOnServices = noClasses().that().resideInAPackage(ROOT + "..application.port..")
             .should().dependOnClassesThat().resideInAPackage(ROOT + "..application.service..")
             .as("no port depends on a service");
+
+    private static final Set<String> MUTABLE_FIELDS = Set.of();
+
+    // Lombok's builders are the one place where a field is meant to be assigned more than once
+    private static final DescribedPredicate<JavaClass> LOMBOK_BUILDERS = DescribedPredicate.describe("Lombok builders",
+            javaClass -> javaClass.getEnclosingClass()
+                    .map(enclosing -> javaClass.getSimpleName().equals(enclosing.getSimpleName() + "Builder"))
+                    .orElse(false));
+
+    @ArchTest
+    static final ArchRule fieldsAreFinal = fields().that().areDeclaredInClassesThat().resideInAnyPackage(SCRAPE + "..", SHARED + "..")
+            .and().areDeclaredInClassesThat(DescribedPredicate.not(LOMBOK_BUILDERS))
+            .and(DescribedPredicate.describe("not allowed to change",
+                    (JavaField field) -> !MUTABLE_FIELDS.contains(field.getOwner().getName() + "." + field.getName())))
+            .should().beFinal()
+            .as("fields in scrape and shared are final, except the listed ones");
 
 }

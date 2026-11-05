@@ -3,13 +3,14 @@ package com.kg.macroanalyzer.scrape.application.service.enqueue;
 import com.kg.macroanalyzer.scrape.application.port.in.EnqueueException;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.enqueue.queuestrategy.QueueStrategyFactory;
-import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem.ScrapeQueueItemBuilder;
 import com.kg.macroanalyzer.scrape.domain.ScrapeQueueItem;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static com.kg.macroanalyzer.scrape.application.service.enqueue.queuestrategy.QueueStrategyFactory.buildQueueStrategy;
 import static java.util.Objects.isNull;
@@ -43,16 +44,16 @@ public class EnqueueService {
 
     public void enqueueAll() {
         final var queueTimeStrategy = buildQueueStrategy(QueueStrategyFactory.Strategy.INSTANT);
-        final var builder = ScrapeQueueItem.builder();
+        final var now = Instant.now();
         final var currentQueue = scrapeQueuePort.getScrapeQueue().stream()
                 .map(ScrapeQueueItem::name).toList();
-
-        availableSeries.stream()
+        final var toEnqueue = availableSeries.stream()
                 .map(SeriesConfig::name)
                 .filter(name -> !currentQueue.contains(name))
-                .map(builder::name)
-                .map(queueTimeStrategy::withTimeSlot)
-                .map(ScrapeQueueItemBuilder::build)
+                .toList();
+
+        IntStream.range(0, toEnqueue.size())
+                .mapToObj(position -> ScrapeQueueItem.of(toEnqueue.get(position), queueTimeStrategy.scrapeDate(now, position)))
                 .forEach(scrapeQueuePort::persistScrapeQueueItem);
     }
 

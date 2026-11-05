@@ -5,6 +5,7 @@ import com.kg.macroanalyzer.election.application.port.out.LocalElectionFile;
 import com.kg.macroanalyzer.election.application.port.out.LocalElectionIndexRequest;
 import com.kg.macroanalyzer.election.domain.LocalElectionResult;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.Scraper;
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import com.kg.macroanalyzer.shared.web.ScrapeException;
 import com.kg.macroanalyzer.shared.web.WebPort;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +92,11 @@ public record LocalElectionScraper(
     }
 
     private record FetchedResults(List<LocalElectionResult> results, boolean partialFailure) {
+
+        public FetchedResults {
+            results = ImmutableCopies.list(results);
+        }
+
     }
 
 }

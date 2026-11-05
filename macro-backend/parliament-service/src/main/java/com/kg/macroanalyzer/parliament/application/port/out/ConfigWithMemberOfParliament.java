@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.parliament.application.port.out;
 
 import com.kg.macroanalyzer.parliament.domain.MemberOfParliament;
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import lombok.Builder;
 
 import java.util.List;
@@ -11,4 +12,9 @@ public record ConfigWithMemberOfParliament(
         SeriesConfig seriesConfig,
         List<MemberOfParliament> membersOfParliament
 ) {
+
+    public ConfigWithMemberOfParliament {
+        membersOfParliament = ImmutableCopies.list(membersOfParliament);
+    }
+
 }
