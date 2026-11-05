@@ -24,7 +24,7 @@ Implement the change yourself, under the rules below, unless the user asked for 
   - Frontend: `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run build` and `npm run lint` from `macro-frontend/`. Lint must exit 0, as CI enforces.
 - For frontend changes that add assets, workers or routes, also check the production build as nginx serves it: build the image under a throwaway tag, run it on a spare port, and `curl -I` the new assets. Vite's dev server hides serving bugs, e.g. nginx served `.mjs` as `application/octet-stream`, which blanked the MapLibre map.
 - Use conventional commits that end with the Co-Authored-By line. Open the PR with `gh pr create` and end its body with the Claude Code line. Wait for CI with `gh pr checks <n> --watch` and fix any failing job.
-- After `gh pr checks <n> --watch` and before you report the PR ready, handle the automatic `claude[bot]` review from `.github/workflows/claude-review.yml`. Its `claude-review` job is one of the checks, so its comments exist once the watch ends. Read the summary (`gh pr view <n> --comments`) and inline comments (`gh api repos/{owner}/{repo}/pulls/<n>/comments`) for the current head. Do the same after every later push; the bot re-reviews each one. A PR that changes `claude-review.yml` itself gets no bot review.
+- After `gh pr checks <n> --watch` and before step 3, handle the automatic `claude[bot]` review from `.github/workflows/claude-review.yml`. Its `claude-review` job is one of the checks, so its comments exist once the watch ends. Read the summary (`gh pr view <n> --comments`) and inline comments (`gh api repos/{owner}/{repo}/pulls/<n>/comments`) for the current head. Do the same after every later push; the bot re-reviews each one. A PR that changes `claude-review.yml` itself gets no bot review.
 - To address a review on the PR, read the findings yourself from the PR: review bodies and summary comments with `gh pr view <n> --comments`, inline comments with `gh api repos/{owner}/{repo}/pulls/<n>/comments`.
 - Fix every reviewer and `claude[bot]` finding by default. Only one that conflicts with the agreed requirements or that you judge wrong stays unfixed for now, and step 4 says who decides it.
 
@@ -44,7 +44,7 @@ Only for a separate implementer:
 - It follows the separate implementer's rule for long-running commands: run them in the foreground with a long `timeout`, or poll with Monitor. It never waits for a background completion notice.
 - It labels each finding blocking or nit and posts them with `gh pr review <n> --comment`. It cannot approve, because it runs on the PR author's account. The review starts with exactly one verdict:
   - `LGTM`: merge as is.
-  - `LGTM after nits`: no blocking findings; merge once the listed nits are fixed, without another review.
+  - `LGTM after nits`: no blocking findings; merge once the listed nits are fixed, without another full review.
   - `Changes requested`: at least one blocking finding; re-review after the fixes.
 - Its final answer is the verdict plus a one-line summary per finding. It doesn't also send it with SendMessage.
 
@@ -56,7 +56,7 @@ Only for a separate implementer:
 - Ask the user about requirement or product questions, including conflicts with the agreed requirements. Don't decide them yourself.
 - After the fixes are pushed:
   - `LGTM after nits`, separate implementer: read the new commits' diff yourself. If they do what the nits asked and nothing else, go to step 6. Otherwise ask the reviewer to re-review.
-  - `LGTM after nits`, you are the implementer: ask the reviewer to check that the new commits do what the nits asked and nothing else.
+  - `LGTM after nits`, you are the implementer: ask the reviewer to check that the new commits do what the nits asked and nothing else. If they do, go to step 6. Otherwise treat it as `Changes requested`.
   - `Changes requested`: ask the reviewer to re-review the new commits.
 - Watch for stalls. When a sub-agent's turn ends without the expected result (no review on the PR in `gh pr view <n> --json reviews`, or no PR or push), message it at once to check its command's result itself and finish. If it stalls again, take over the check yourself.
 
@@ -66,7 +66,7 @@ If blocking findings remain after 3 fix rounds, stop and bring the disagreement 
 
 ## 6. Merge
 
-On `LGTM` (or `LGTM after nits` with the nits checked), first remove the sub-agents' worktrees (`git worktree remove <dir>`), or `--delete-branch` fails on the branch still checked out there. Check that the `frontend` and `backend` CI checks pass on the head commit (`gh pr checks <n>`); `main` requires them. Then merge without asking: `gh pr merge <n> --squash --delete-branch --match-head-commit <sha>`. Don't use `--admin`; if a check fails, fix it yourself or send it back to a separate implementer. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
+On `LGTM` (or `LGTM after nits` with the nits checked), first remove the implementer's worktree, yours or a sub-agent's, and the reviewer's if it built (`git worktree remove <dir>`), or `--delete-branch` fails on the branch still checked out there. Check that the `frontend` and `backend` CI checks pass on the head commit (`gh pr checks <n>`); `main` requires them. Then merge without asking: `gh pr merge <n> --squash --delete-branch --match-head-commit <sha>`. Don't use `--admin`; if a check fails, fix it yourself or send it back to a separate implementer. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
 
 ## 7. After merge
 
