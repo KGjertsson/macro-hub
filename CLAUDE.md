@@ -37,7 +37,7 @@ Every service runs `db/platform` (from `macro-platform`, history table `flyway_p
 ### Toolchain requirements
 
 - **JDK 25** for the backend (installed via SDKMAN). If `java -version` isn't 25 (e.g. an IDE exported an older `JAVA_HOME`), set `JAVA_HOME=~/.sdkman/candidates/java/current` for Maven commands.
-- Lombok is registered under `annotationProcessorPaths` in the compiler plugin because JDK 23+ no longer runs annotation processors found on the classpath; without it the build fails with `cannot find symbol` errors (`log`, getters/builders).
+- Lombok is registered under `annotationProcessorPaths` in the compiler plugin because JDK 23+ no longer runs annotation processors found on the classpath; without it the build fails with `cannot find symbol` errors (`log`, getters/builders). Any other compile error produces the same errors too, because Lombok's generated code goes missing, so filter them out to find the real one.
 - **Node 20.19+ or 22.12+** for the frontend (Vite 7). Node 18 fails with `crypto.hash is not a function`.
 - `mvnw` and the `*.sh` scripts are committed as executable. The root `.gitattributes` keeps them (and `.githooks/*`) LF even under `core.autocrlf=true`, so `./mvnw ...` works; if an old checkout still has CRLF copies, delete them and `git checkout -- .` to refresh.
 - Docker must be running for Postgres and for `mvn test` (TestContainers).
@@ -219,7 +219,7 @@ The backend is organised by domain. Every module (`scrape`, `macroseries`, `regi
 - `domain/` — records and enums of the domain (Lombok only, no Spring).
 - `application/port/in/` — what the module offers: query interfaces (`*Queries`, `InPort`) and their DTOs/parameters.
 - `application/port/out/` — what the module needs: repository ports (`*RepositoryPort`) and the request/config-with-data records its scrapers pass around.
-- `application/service/` — implementations of the in-ports; `application/service/scrape/` holds the module's `ExistingFinder`/`Scraper`/`Persister`.
+- `application/service/` — implementations of the in-ports; `application/service/scrape/` holds the module's `ExistingFinder`/`Scraper`/`Persister`. `@Service` is for in-port implementations and code with dependencies. Code with no state, configuration, I/O or AOP is a `final` class with static methods, like `Alignment` or `LabelPadding`.
 - `adaptors/http/` (controllers), `adaptors/postgres/` (`*PostgresAdaptor` implementing the repository port, plus jOOQ repositories), `adaptors/web/` (`WebPort` implementations, connection builders, response parsers), `adaptors/config/` (`*WebAdaptorConfiguration` for the `WebPort` beans, `*ScrapeFlowConfiguration` for the scrape flow), `adaptors/cron/` (scrape only).
 
 ### How a scrape flow plugs in

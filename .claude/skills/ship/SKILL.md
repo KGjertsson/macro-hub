@@ -66,6 +66,8 @@ If blocking findings remain after 3 fix rounds, stop and bring the disagreement 
 
 ## 6. Merge
 
+If the user asked to review the PR themselves, stop before merging: remove the worktrees as below so `--delete-branch` works, report the verdict and what to look at, and merge only when they say so. Step 7 still applies afterwards.
+
 On `LGTM` (or `LGTM after nits` with the nits checked), first remove the implementer's worktree, yours or a sub-agent's, and the reviewer's if it built (`git worktree remove <dir>`), or `--delete-branch` fails on the branch still checked out there. Check that the `frontend` and `backend` CI checks pass on the head commit (`gh pr checks <n>`); `main` requires them. Then merge without asking: `gh pr merge <n> --squash --delete-branch --match-head-commit <sha>`. Don't use `--admin`; if a check fails, fix it yourself or send it back to a separate implementer. Then tell the user what landed, what wasn't verified (e.g. nothing was tried in a browser) and any open follow-ups.
 
 ## 7. After merge
