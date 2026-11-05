@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class AcceptanceStack implements AutoCloseable {
 
@@ -50,6 +51,10 @@ public final class AcceptanceStack implements AutoCloseable {
     // from C2 or a concurrent collector, and both spend CPU during the boot
     private static final String CHEAP_BOOT_JVM_OPTIONS = "-XX:TieredStopAtLevel=1 -XX:+UseSerialGC";
 
+    private static final AtomicInteger STACKS_STARTED = new AtomicInteger();
+    private static final StackWalker CALLER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+
+    private final String logTag;
     private final Network network = Network.newNetwork();
     private final List<GenericContainer<?>> containers = new CopyOnWriteArrayList<>();
     private final GenericContainer<?> postgres;
@@ -58,7 +63,7 @@ public final class AcceptanceStack implements AutoCloseable {
 
     // Testcontainers' Ryuk removes the containers and the network when the test JVM exits, so it is never closed here
     private static final class Holder {
-        private static final AcceptanceStack RUNNING = new AcceptanceStack(BackendService.ALL);
+        private static final AcceptanceStack RUNNING = new AcceptanceStack("Shared", BackendService.ALL);
     }
 
     public static AcceptanceStack running() {
@@ -66,10 +71,11 @@ public final class AcceptanceStack implements AutoCloseable {
     }
 
     public static AcceptanceStack startWith(List<BackendService> services) {
-        return new AcceptanceStack(services);
+        return new AcceptanceStack(CALLER.getCallerClass().getSimpleName().replace("AcceptanceTest", ""), services);
     }
 
-    private AcceptanceStack(List<BackendService> services) {
+    private AcceptanceStack(String owner, List<BackendService> services) {
+        this.logTag = "%s-%d".formatted(owner, STACKS_STARTED.incrementAndGet());
         try {
             this.postgres = postgres();
             final var wireMock = wireMock();
@@ -180,7 +186,7 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withEnv("SPRING_FLYWAY_LOCATIONS", "classpath:db/migration,filesystem:" + REDIRECT_LOCATION)
                 .withCopyToContainer(Transferable.of(REDIRECT_SOURCES_SQL), REDIRECT_LOCATION + "/afterMigrate.sql")
                 .withExposedPorts(service.port())
-                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(service.networkAlias())))
+                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("%s/%s".formatted(logTag, service.networkAlias()))))
                 .waitingFor(Wait.forHttp(HEALTH_PATH).withStartupTimeout(STARTUP_TIMEOUT));
     }
 
