@@ -82,12 +82,35 @@ class GatewayRoutingAcceptanceTest {
             "scrape/parliament",
             "scrape/election"
     })
-    void aRoutedPrefixWithoutItsSlashIsRedirected(String prefix) {
+    void aRoutedPrefixWithoutItsSlashIsRedirectedToItsServiceOnTheSameHostAndPort(String prefix) {
+        // given
+        final var path = "/macro-analyzer/" + prefix;
+
         // when
-        final var response = gateway.get("/macro-analyzer/" + prefix);
+        final var redirect = gateway.get(path);
+        final var location = redirect.headers().firstValue("Location").orElseThrow();
+
+        // then
+        assertEquals(301, redirect.statusCode());
+        assertEquals(path + "/", location);
+
+        // when
+        final var followed = gateway.get(location);
+
+        // then
+        assertEquals(404, followed.statusCode());
+        assertEquals(location, JSON.readTree(followed.body()).get("path").asString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/assets", "/geo"})
+    void aDirectoryOfTheFrontendWithoutItsSlashIsRedirectedOnTheSameHostAndPort(String path) {
+        // when
+        final var response = gateway.get(path);
 
         // then
         assertEquals(301, response.statusCode());
+        assertEquals(path + "/", response.headers().firstValue("Location").orElseThrow());
     }
 
     @Test
