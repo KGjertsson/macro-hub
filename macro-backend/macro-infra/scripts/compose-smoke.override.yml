@@ -1,0 +1,14 @@
+# Only for compose-smoke.sh. The crons would otherwise scrape the real sources during the 22:00 UTC hour, and CI doesn't call them
+services:
+  regional-statistics:
+    environment:
+      SCHEDULER_ENABLED: "false"
+  macro-series:
+    environment:
+      SCHEDULER_ENABLED: "false"
+  parliament:
+    environment:
+      SCHEDULER_ENABLED: "false"
+  election:
+    environment:
+      SCHEDULER_ENABLED: "false"

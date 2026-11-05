@@ -47,7 +47,7 @@ A column change in a platform table needs a new `db/platform` version and a rege
 - [ ] Add `src/test/resources/application-test.properties` with a TestContainers datasource, like the other services'. Without it, `@ActiveProfiles("test")` falls back to the base properties, so the copied tests run Flyway and write against the Compose Postgres.
 - [ ] Add an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
 - [ ] In `macro-backend/acceptance-tests`, add a `BackendService` constant with its gateway URL variable and put it in `BackendService.ALL`, add a `docker build` line to `macro-backend/macro-infra/scripts/acceptance-test.sh`, and add its routes to `GatewayRoutingAcceptanceTest` ([ADR 0008](adrs/0008-black-box-acceptance-tests-through-the-gateway.md)).
-- [ ] In `macro-backend/macro-infra/scripts/compose-smoke.sh`, add a `docker build` line tagging the image `:latest` and a `wait_until_answers` for one of its routes, with an `expect_json` if that route answers with seeded data. A check must hold during the 22:00 UTC hour too, when the crons may have scraped. The script only runs in CI, so the PR's `compose-smoke` job is how to try it.
+- [ ] In `macro-backend/macro-infra/scripts/compose-smoke.sh`, add a `docker build` line tagging the image `:latest` and a `wait_until_answers` for one of its routes, with an `expect_json` if that route answers with seeded data. Add the service to `compose-smoke.override.yml` with `SCHEDULER_ENABLED: "false"`: the script fails without it, because its crons could call real sources. The script only runs in CI, so the PR's `compose-smoke` job is how to try it.
 
 ## Data
 

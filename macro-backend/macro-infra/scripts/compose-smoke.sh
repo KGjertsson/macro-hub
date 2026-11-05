@@ -1,7 +1,7 @@
 #!/bin/sh
 # Starts the real docker-compose-all.yml on an empty volume and checks each service's route through the gateway. CI only.
-# A run that starts in the 22:00 UTC hour lets the crons call the real sources, as any Compose stack would, so every check
-# here holds with or without a scrape. Nothing here stops the stack, as the runner is thrown away.
+# compose-smoke.override.yml only turns the crons off, so nothing can call a real source, and the script fails before
+# starting anything if a service lacks that. Nothing here stops the stack, as the runner is thrown away.
 set -eu
 
 if [ "${CI:-}" != "true" ]; then
@@ -18,7 +18,9 @@ backend="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$backend"
 
 compose() {
-    docker compose --env-file macro-series-service/.env -f macro-infra/docker/docker-compose-all.yml "$@"
+    docker compose --env-file macro-series-service/.env \
+        -f macro-infra/docker/docker-compose-all.yml \
+        -f macro-infra/scripts/compose-smoke.override.yml "$@"
 }
 
 fail() {
@@ -66,13 +68,21 @@ docker build -t parliament-service:latest parliament-service
 docker build -t election-service:latest election-service
 
 cp macro-series-service/.env.example macro-series-service/.env
+
+services_with_crons="$(compose config --format json | jq -c '[.services | to_entries[]
+    | select(.key != "postgres" and .key != "macro-frontend" and .value.environment.SCHEDULER_ENABLED != "false")
+    | .key]')"
+if [ "$services_with_crons" != "[]" ]; then
+    fail "add SCHEDULER_ENABLED to compose-smoke.override.yml for $services_with_crons, or its crons could call real sources"
+fi
+
 compose up -d --build
 
 wait_until_answers /macro-analyzer/series-config 200
 wait_until_answers /macro-analyzer/parliament/parties 200
 wait_until_answers /macro-analyzer/regional-statistics/indicators 200
-# A year without an election, because the crons could have filled the latest one. nginx has no 204, so this reached election
-wait_until_answers '/macro-analyzer/municipalities/elections?year=1900' 204
+# nginx has no 204, so this reached election
+wait_until_answers /macro-analyzer/municipalities/elections 204
 
 expect_json /macro-analyzer/series-config 'length' 108
 expect_json /macro-analyzer/series-config '.[0].name' '"PolicyRateSweden"'
