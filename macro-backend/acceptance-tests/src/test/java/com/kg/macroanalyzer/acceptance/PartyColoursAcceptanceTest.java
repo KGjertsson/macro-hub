@@ -24,6 +24,8 @@ class PartyColoursAcceptanceTest {
     private static final BackendService ELECTION_RETRYING_EVERY_SECOND =
             BackendService.ELECTION.withEnvironment(Map.of("ELECTION_PARLIAMENT_RETRYINTERVAL", "1s"));
     private static final Duration PARLIAMENT_REACHED_WITHIN = Duration.ofSeconds(30);
+    // Longer than the gateway's bound because election's JVM caches DNS answers, for up to 30 s if parliament's address changed
+    private static final Duration COLOURS_LOADED_WITHIN = Duration.ofSeconds(60);
 
     private static final String MUNICIPAL = "MunicipalElections";
     private static final ResultFile LUND = ResultFile.of("KF", "1281", "valmyndigheten/mandatfordelning-1281-KF.json");
@@ -49,7 +51,7 @@ class PartyColoursAcceptanceTest {
             // then
             final var colours = parliamentsColoursAndTheLocalPartys(gateway);
             Eventually.assertWithin(
-                    PARLIAMENT_REACHED_WITHIN,
+                    COLOURS_LOADED_WITHIN,
                     "Election should show parliament's colours",
                     () -> assertElectionShows(colours, gateway));
         }
@@ -63,8 +65,6 @@ class PartyColoursAcceptanceTest {
             final var sources = stack.sources();
             Valmyndigheten.publish(sources, LUND, KIRUNA);
             scrapeMunicipalElections(gateway);
-
-            // then
             assertEquals(502, gateway.get("/macro-analyzer/parliament/parties").statusCode());
             assertElectionShows(VALMYNDIGHETENS_COLOURS, gateway);
 
@@ -79,7 +79,7 @@ class PartyColoursAcceptanceTest {
                     () -> assertEquals(200, gateway.get("/macro-analyzer/parliament/parties").statusCode()));
             final var colours = parliamentsColoursAndTheLocalPartys(gateway);
             Eventually.assertWithin(
-                    PARLIAMENT_REACHED_WITHIN,
+                    COLOURS_LOADED_WITHIN,
                     "Election should switch to parliament's colours without a restart or a new scrape",
                     () -> assertElectionShows(colours, gateway));
             assertEquals(indexFetches, sources.requestCount(Valmyndigheten.INDEX));
