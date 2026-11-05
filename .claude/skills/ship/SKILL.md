@@ -23,7 +23,7 @@ Implement the change yourself, under the rules below, unless the user asked for 
   - Backend: `JAVA_HOME=~/.sdkman/candidates/java/current mvn test` from `macro-backend/`, with Docker running.
   - Frontend: `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run build` and `npm run lint` from `macro-frontend/`. Lint must exit 0, as CI enforces.
 - For frontend changes that add assets, workers or routes, also check the production build as nginx serves it: build the image under a throwaway tag, run it on a spare port, and `curl -I` the new assets. Vite's dev server hides serving bugs, e.g. nginx served `.mjs` as `application/octet-stream`, which blanked the MapLibre map.
-- Use conventional commits that end with the Co-Authored-By line. Open the PR with `gh pr create` and end its body with the Claude Code line. Start the reviewer (step 3) right away, then wait for CI with `gh pr checks <n> --watch` and fix any failing job. The review and CI run in parallel, and neither waits for the other.
+- Use conventional commits that end with the Co-Authored-By line. Open the PR with `gh pr create` and end its body with the Claude Code line. Start the reviewer (step 3) right away (a separate implementer instead sends the lead the PR number, see below), then wait for CI with `gh pr checks <n> --watch` and fix any failing job. The review and CI run in parallel, and neither waits for the other.
 - After `gh pr checks <n> --watch`, handle the automatic `claude[bot]` review from `.github/workflows/claude-review.yml`. Its `claude-review` job is one of the checks, so its comments exist once the watch ends. Read the summary (`gh pr view <n> --comments`) and inline comments (`gh api repos/{owner}/{repo}/pulls/<n>/comments`) for the current head. Do the same after every later push; the bot re-reviews each one. A PR that changes `claude-review.yml` itself gets no bot review.
 - To address a review on the PR, read the findings yourself from the PR: review bodies and summary comments with `gh pr view <n> --comments`, inline comments with `gh api repos/{owner}/{repo}/pulls/<n>/comments`.
 - Fix every reviewer and `claude[bot]` finding by default. Only one that conflicts with the agreed requirements or that you judge wrong stays unfixed for now, and step 4 says who decides it.
@@ -31,7 +31,7 @@ Implement the change yourself, under the rules below, unless the user asked for 
 Only for a separate implementer:
 
 - Run builds, tests and other checks in the foreground with a long `timeout` (up to 600000 ms); they all fit in it. Don't start them with `run_in_background` and wait for a completion notice: an idle sub-agent is not reliably woken by it and stalls. For anything longer, use Monitor with a loop that ends when the process exits.
-- Right after `gh pr create`, send the lead the PR number with SendMessage, so it can start the reviewer, and carry on with CI.
+- Right after `gh pr create`, send the lead the PR number with SendMessage, so it can start the reviewer, then carry on with CI yourself.
 - The lead may tell you to drop a nit. Report the findings you left unfixed, each with a one-line reason.
 - Your final answer is your report: PR number, head SHA, check results, findings you didn't fix (each with its one-line reason), and open questions or conflicts, if any. Don't also send it with SendMessage.
 - Don't merge. Stay available for review rounds.
@@ -48,7 +48,7 @@ Only for a separate implementer:
   - `LGTM`: merge as is.
   - `LGTM after nits`: no blocking findings; merge once the listed nits are fixed, without another full review.
   - `Changes requested`: at least one blocking finding; re-review after the fixes.
-- The review names the head SHA it covers, read from `gh pr view <n> --json headRefOid` when it starts.
+- Every review, re-review and nit check names the head SHA it covers, read from `gh pr view <n> --json headRefOid` when it starts.
 - Its final answer is the verdict, that SHA and a one-line summary per finding. It doesn't also send it with SendMessage.
 
 ## 4. Iterate
@@ -62,7 +62,7 @@ Only for a separate implementer:
   - `LGTM after nits`, you are the implementer: ask the reviewer to check that the new commits do what the nits asked and nothing else. If they do, go to step 6. Otherwise treat it as `Changes requested`.
   - `Changes requested`: ask the reviewer to re-review the new commits.
 - Ask for these checks and re-reviews as soon as the fixes are pushed, without waiting for CI, which runs in parallel again.
-- CI and `claude[bot]` fixes can be pushed while the reviewer is working. If its review covers an older SHA than the head, ask it to review the newer commits too, even on `LGTM`.
+- CI and `claude[bot]` fixes can be pushed while the reviewer is working. If its review covers an older SHA than the head and no nit check covers the commits in between, ask it to review them too, even on `LGTM`.
 - Watch for stalls. When a sub-agent's turn ends without the expected result (no review on the PR in `gh pr view <n> --json reviews`, or no PR or push), message it at once to check its command's result itself and finish. If it stalls again, take over the check yourself.
 
 ## 5. Cap
