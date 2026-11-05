@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.acceptance;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +62,14 @@ public record BackendService(
     );
 
     public static final List<BackendService> ALL = List.of(REGIONAL_STATISTICS, MACRO_SERIES, PARLIAMENT, ELECTION);
+
+    public BackendService withEnvironment(Map<String, String> added) {
+        final var merged = new HashMap<>(environment);
+        merged.putAll(added);
+
+        return new BackendService(
+                networkAlias, imageProperty, defaultImage, port, database, databasePassword, gatewayUrlVariable, Map.copyOf(merged));
+    }
 
     public String image() {
         return System.getProperty(imageProperty, defaultImage);
