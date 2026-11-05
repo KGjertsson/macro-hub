@@ -37,7 +37,7 @@ A column change in a platform table needs a new `db/platform` version and a rege
 
 ## Compose and docs
 
-- [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. Add the new URL variable to `macro-frontend`'s `environment`, as a literal value, and the service to that container's `depends_on`. The `backend` CI job needs no change, because it runs every module of the reactor. The `acceptance` job only runs what `acceptance-test.sh` builds, see "Tests" below.
+- [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. Add the new URL variable to `macro-frontend`'s `environment`, as a literal value, and the service to that container's `depends_on`. The `backend` CI job needs no change, because it runs every module of the reactor. The `acceptance` and `compose-smoke` jobs only run what their scripts build, see "Tests" below.
 - [ ] Add the image to the build commands in `CLAUDE.md` and `README.md`, and to the after-merge commands in `.claude/skills/ship/SKILL.md`.
 - [ ] Update `CLAUDE.md`, `macro-backend/ARCHITECTURE.md` and `docs/architecture.md`, and give the service its own README.
 
@@ -47,6 +47,7 @@ A column change in a platform table needs a new `db/platform` version and a rege
 - [ ] Add `src/test/resources/application-test.properties` with a TestContainers datasource, like the other services'. Without it, `@ActiveProfiles("test")` falls back to the base properties, so the copied tests run Flyway and write against the Compose Postgres.
 - [ ] Add an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
 - [ ] In `macro-backend/acceptance-tests`, add a `BackendService` constant with its gateway URL variable and put it in `BackendService.ALL`, add a `docker build` line to `macro-backend/macro-infra/scripts/acceptance-test.sh`, and add its routes to `GatewayRoutingAcceptanceTest` ([ADR 0008](adrs/0008-black-box-acceptance-tests-through-the-gateway.md)).
+- [ ] In `macro-backend/macro-infra/scripts/compose-smoke.sh`, add a `docker build` line tagging the image `:latest` and a `wait_until_answers` for one of its routes, with an `expect_json` if that route answers with seeded data. Add the service to `compose-smoke.override.yml` with `SCHEDULER_ENABLED: "false"`: the script fails without it, because its crons could call real sources. The script only runs in CI, so the PR's `compose-smoke` job is how to try it.
 
 ## Data
 
