@@ -1,0 +1,10 @@
+{
+  "dokumentlista": {
+    "@traffar": "12",
+    "@sidor": "3",
+    "dokument": [
+      {"titel": "En tryggare välfärd", "datum": "2026-10-05", "dokument_url_html": "//data.riksdagen.se/dokument/HD023"},
+      {"titel": "Lägre skatt på arbete", "datum": "2026-09-30", "dokument_url_html": "https://data.riksdagen.se/dokument/HD012"}
+    ]
+  }
+}

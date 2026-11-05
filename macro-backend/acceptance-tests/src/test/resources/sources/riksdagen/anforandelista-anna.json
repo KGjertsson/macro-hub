@@ -1,0 +1,13 @@
+{
+  "anforandelista": {
+    "@antal": "6",
+    "anforande": [
+      {"avsnittsrubrik": "Statens budget", "underrubrik": "Utgiftsområde 2", "dok_datum": "2026-10-28", "protokoll_url_www": "https://www.example.se/protokoll/6"},
+      {"avsnittsrubrik": "Frågestund", "underrubrik": "", "dok_datum": "2026-10-22", "protokoll_url_www": "https://www.example.se/protokoll/5"},
+      {"avsnittsrubrik": "Ekonomisk politik", "underrubrik": "", "dok_datum": "2026-10-15", "protokoll_url_www": "https://www.example.se/protokoll/4"},
+      {"avsnittsrubrik": "Skatter", "underrubrik": "Moms", "dok_datum": "2026-05-20", "protokoll_url_www": "https://www.example.se/protokoll/3"},
+      {"avsnittsrubrik": "Vårpropositionen", "underrubrik": "", "dok_datum": "2026-04-21", "protokoll_url_www": "https://www.example.se/protokoll/2"},
+      {"avsnittsrubrik": "Äldst och inte bland de senaste", "underrubrik": "", "dok_datum": "2025-11-12", "protokoll_url_www": "https://www.example.se/protokoll/1"}
+    ]
+  }
+}
