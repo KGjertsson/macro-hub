@@ -5,7 +5,9 @@ import tools.jackson.databind.json.JsonMapper;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,16 @@ public record Sources(Gateway wireMockAdmin) {
 
     public void serveJson(String path, Map<String, String> query, String fixture) {
         stub(path, query, jsonResponse(readFixture(fixture)));
+    }
+
+    public void serveJsonDelayed(String path, String fixture, Duration delay) {
+        final var response = new HashMap<>(jsonResponse(readFixture(fixture)));
+        response.put("fixedDelayMilliseconds", delay.toMillis());
+        stub(path, Map.of(), response);
+    }
+
+    public void failWith(String path, int status) {
+        stub(path, Map.of(), Map.of("status", status));
     }
 
     public void serveJsonBody(String path, String body) {

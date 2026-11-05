@@ -79,6 +79,15 @@ public final class AcceptanceStack implements AutoCloseable {
         startWithSourcesRedirected(service);
     }
 
+    // GenericContainer.stop() would remove the container, and with it the anonymous volume that holds the data
+    public void stopPostgres() {
+        postgres.getDockerClient().stopContainerCmd(postgres.getContainerId()).exec();
+    }
+
+    public void startStoppedPostgres() {
+        postgres.getDockerClient().startContainerCmd(postgres.getContainerId()).exec();
+    }
+
     public Gateway gateway() {
         return gateway;
     }
