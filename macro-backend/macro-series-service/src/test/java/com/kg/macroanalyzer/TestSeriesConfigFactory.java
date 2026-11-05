@@ -1,9 +1,11 @@
 package com.kg.macroanalyzer;
 
 import com.kg.macroanalyzer.scrape.domain.SeriesConfig;
+import lombok.experimental.UtilityClass;
 
 import java.util.List;
 
+@UtilityClass
 public class TestSeriesConfigFactory {
 
     public static List<SeriesConfig> buildTestConfig() {

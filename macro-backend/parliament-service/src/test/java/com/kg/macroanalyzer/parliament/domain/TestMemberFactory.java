@@ -1,7 +1,10 @@
 package com.kg.macroanalyzer.parliament.domain;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.List;
 
+@UtilityClass
 public class TestMemberFactory {
 
     public static MemberOfParliament member(String id, String party, String status, List<Uppdrag> assignments) {
