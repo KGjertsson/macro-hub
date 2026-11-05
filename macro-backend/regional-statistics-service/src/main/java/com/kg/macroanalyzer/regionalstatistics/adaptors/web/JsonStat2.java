@@ -6,8 +6,8 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ class JsonStat2 {
                 .map(JsonNode::asString)
                 .forEach(dimension -> codes.put(dimension, dimensionCodes(root.path("dimension").path(dimension))));
 
-        return codes;
+        return Collections.unmodifiableMap(codes);
     }
 
     private static List<String> dimensionCodes(JsonNode dimension) {
@@ -51,7 +51,7 @@ class JsonStat2 {
         final var ordered = new String[index.size()];
         index.properties().forEach(e -> ordered[e.getValue().asInt()] = e.getKey());
 
-        return new ArrayList<>(Arrays.asList(ordered));
+        return Collections.unmodifiableList(Arrays.asList(ordered));
     }
 
 }

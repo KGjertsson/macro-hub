@@ -1,5 +1,7 @@
 package com.kg.macroanalyzer.parliament.domain;
 
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,6 +23,10 @@ public record Uppdrag(
 ) {
 
     public static final String CHAMBER = "kammaruppdrag";
+
+    public Uppdrag {
+        uppgift = ImmutableCopies.list(uppgift);
+    }
 
     public boolean chamberAssignment() {
         return CHAMBER.equals(typ);

@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.parliament.adaptors.web;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kg.macroanalyzer.parliament.domain.MemberOfParliament;
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import com.kg.macroanalyzer.shared.web.ResponseParser;
 import com.kg.macroanalyzer.shared.web.ScrapeException;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +56,11 @@ public record RiksdagenResponseParser() implements ResponseParser<String, Stream
             @JsonProperty("@hits") String hits,
             List<MemberOfParliament> person
     ) {
+
+        public PersonLista {
+            person = ImmutableCopies.list(person);
+        }
+
     }
 
 }

@@ -18,6 +18,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -43,10 +44,10 @@ public class LocalElectionRepository {
     }
 
     public Set<String> readSourceMd5s(LocalElectionType type) {
-        return new HashSet<>(dslContext.select(LOCAL_ELECTION_AREA.SOURCE_MD5)
+        return Collections.unmodifiableSet(new HashSet<>(dslContext.select(LOCAL_ELECTION_AREA.SOURCE_MD5)
                 .from(LOCAL_ELECTION_AREA)
                 .where(LOCAL_ELECTION_AREA.ELECTION_TYPE.eq(type.name()))
-                .fetch(LOCAL_ELECTION_AREA.SOURCE_MD5));
+                .fetch(LOCAL_ELECTION_AREA.SOURCE_MD5)));
     }
 
     // Each area is replaced as a whole so parties that lost all votes in a corrected file disappear.

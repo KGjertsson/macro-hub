@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.election.domain;
 
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -20,4 +21,10 @@ public record LocalElectionResult(
         List<ElectedMember> elected,
         String sourceMd5
 ) {
+
+    public LocalElectionResult {
+        parties = ImmutableCopies.list(parties);
+        elected = ImmutableCopies.list(elected);
+    }
+
 }

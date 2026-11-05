@@ -14,14 +14,11 @@ import java.util.stream.Stream;
 @Configuration
 public class MacroSeriesWebAdaptorConfiguration {
 
-    @Value("${fed.prod.subscription.key}")
-    String fedSubscriptionKey;
-
-    @Value("${riksbanken.prod.subscription.key}")
-    String riksbankenSubscriptionKey;
-
     @Bean("macroPointWebAdaptor")
-    public WebPort<SeriesConfig, Stream<MacroPoint>> macroPointWebAdaptor() {
+    public WebPort<SeriesConfig, Stream<MacroPoint>> macroPointWebAdaptor(
+            @Value("${fed.prod.subscription.key}") String fedSubscriptionKey,
+            @Value("${riksbanken.prod.subscription.key}") String riksbankenSubscriptionKey
+    ) {
         final var macroPointAdaptorFlowFactory = new MacroPointAdaptorFlowFactory(
                 fedSubscriptionKey,
                 riksbankenSubscriptionKey

@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.election.application.port.in;
 
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -17,4 +18,9 @@ public record LocalElectionSummaryDto(
         String largestPartyColor,
         List<LocalPartyResultDto> parties
 ) {
+
+    public LocalElectionSummaryDto {
+        parties = ImmutableCopies.list(parties);
+    }
+
 }

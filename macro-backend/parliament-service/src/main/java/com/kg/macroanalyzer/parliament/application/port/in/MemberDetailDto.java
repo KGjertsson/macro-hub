@@ -2,6 +2,7 @@ package com.kg.macroanalyzer.parliament.application.port.in;
 
 import com.kg.macroanalyzer.parliament.domain.ParliamentDocument;
 import com.kg.macroanalyzer.parliament.domain.SessionVotes;
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import lombok.Builder;
 
 import java.util.List;
@@ -24,4 +25,13 @@ public record MemberDetailDto(
         List<ParliamentDocument> recentSpeeches,
         List<ParliamentDocument> recentMotions
 ) {
+
+    public MemberDetailDto {
+        assignments = ImmutableCopies.list(assignments);
+        biography = ImmutableCopies.list(biography);
+        votesBySession = ImmutableCopies.list(votesBySession);
+        recentSpeeches = ImmutableCopies.list(recentSpeeches);
+        recentMotions = ImmutableCopies.list(recentMotions);
+    }
+
 }

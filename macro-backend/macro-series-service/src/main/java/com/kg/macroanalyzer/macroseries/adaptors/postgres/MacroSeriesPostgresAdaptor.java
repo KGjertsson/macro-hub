@@ -17,13 +17,13 @@ import java.util.function.Supplier;
 @Component
 public class MacroSeriesPostgresAdaptor implements MacroSeriesRepositoryPort {
 
-    EuroMarketRateRepository euroMarketRateRepo;
-    ExchangeRateRepository exchangeRateRepo;
-    GovernmentBillRepository governmentBillRepo;
-    GovernmentBondsRepository govBondsRepo;
-    PolicyRateRepository policyRateRepo;
-    FedRepository fedRepository;
-    EurostatRepository eurostatRepository;
+    private final EuroMarketRateRepository euroMarketRateRepo;
+    private final ExchangeRateRepository exchangeRateRepo;
+    private final GovernmentBillRepository governmentBillRepo;
+    private final GovernmentBondsRepository govBondsRepo;
+    private final PolicyRateRepository policyRateRepo;
+    private final FedRepository fedRepository;
+    private final EurostatRepository eurostatRepository;
 
     @Autowired
     public MacroSeriesPostgresAdaptor(

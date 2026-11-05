@@ -3,13 +3,15 @@ package com.kg.macroanalyzer.regionalstatistics.domain;
 import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 // SCB fills the years a version has no data for with 0 or null,
 // so a version's year is only kept when some value in it is neither null nor 0. Within a kept year a null
-// (suppressed) value is dropped and a real 0 is kept
+// (suppressed) value is dropped and a real 0 is kept. The maps are wrapped rather than copied, because a full scrape
+// passes about 2.4 M values through here
 @UtilityClass
 public class ScbValues {
 
@@ -35,11 +37,11 @@ public class ScbValues {
                         nonNull.put(area, value);
                     }
                 });
-                kept.put(slice, nonNull);
+                kept.put(slice, Collections.unmodifiableMap(nonNull));
             }
         });
 
-        return kept;
+        return Collections.unmodifiableMap(kept);
     }
 
     public static Map<ScbSlice, Map<String, Double>> scale(Map<ScbSlice, Map<String, Double>> values, double multiplier) {
@@ -47,10 +49,10 @@ public class ScbValues {
         values.forEach((slice, byArea) -> {
             final var scaledByArea = new HashMap<String, Double>();
             byArea.forEach((area, value) -> scaledByArea.put(area, round(value * multiplier)));
-            scaled.put(slice, scaledByArea);
+            scaled.put(slice, Collections.unmodifiableMap(scaledByArea));
         });
 
-        return scaled;
+        return Collections.unmodifiableMap(scaled);
     }
 
     public static Map<ScbSlice, Map<String, Double>> ratio(
@@ -72,11 +74,11 @@ public class ScbValues {
                 }
             });
             if (!ratioByArea.isEmpty()) {
-                ratios.put(slice, ratioByArea);
+                ratios.put(slice, Collections.unmodifiableMap(ratioByArea));
             }
         });
 
-        return ratios;
+        return Collections.unmodifiableMap(ratios);
     }
 
     public static List<ScbAreaValue> toAreaValues(Map<ScbSlice, Map<String, Double>> values) {
@@ -84,7 +86,7 @@ public class ScbValues {
         values.forEach((slice, byArea) -> byArea.forEach((area, value) ->
                 areaValues.add(new ScbAreaValue(slice.year(), slice.geoVersion(), area, value))));
 
-        return areaValues;
+        return Collections.unmodifiableList(areaValues);
     }
 
     public static List<List<String>> yearChunks(List<String> years, long cellsPerYear, long maxCells) {
@@ -94,7 +96,7 @@ public class ScbValues {
             chunks.add(List.copyOf(years.subList(i, Math.min(years.size(), i + yearsPerChunk))));
         }
 
-        return chunks;
+        return Collections.unmodifiableList(chunks);
     }
 
     private static double round(double value) {

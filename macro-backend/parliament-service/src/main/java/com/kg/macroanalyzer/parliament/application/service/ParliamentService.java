@@ -3,6 +3,7 @@ package com.kg.macroanalyzer.parliament.application.service;
 import com.kg.macroanalyzer.parliament.application.port.in.*;
 import com.kg.macroanalyzer.parliament.application.port.out.ParliamentRepositoryPort;
 import com.kg.macroanalyzer.parliament.domain.*;
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -312,6 +313,13 @@ public class ParliamentService implements ParliamentQueries {
             Map<String, String> organNames,
             Map<String, MemberActivity> activity
     ) {
+
+        public Context {
+            parties = ImmutableCopies.map(parties);
+            organNames = ImmutableCopies.map(organNames);
+            activity = ImmutableCopies.map(activity);
+        }
+
     }
 
 }

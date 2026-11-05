@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.election.application.port.in;
 
+import com.kg.macroanalyzer.shared.collection.ImmutableCopies;
 import lombok.Builder;
 
 import java.util.List;
@@ -12,4 +13,9 @@ public record ElectedPartyDto(
         String color,
         List<ElectedMemberDto> members
 ) {
+
+    public ElectedPartyDto {
+        members = ImmutableCopies.list(members);
+    }
+
 }
