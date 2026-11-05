@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.kg.macroanalyzer.scrape.application.service.enqueue.queuestrategy.QueueStrategyFactory.buildQueueStrategy;
 import static java.util.Objects.isNull;
 
 @Service
@@ -41,7 +42,7 @@ public class EnqueueService {
     }
 
     public void enqueueAll() {
-        final var queueTimeStrategy = QueueStrategyFactory.buildQueueStrategy(QueueStrategyFactory.Strategy.INSTANT);
+        final var queueTimeStrategy = buildQueueStrategy(QueueStrategyFactory.Strategy.INSTANT);
         final var builder = ScrapeQueueItem.builder();
         final var currentQueue = scrapeQueuePort.getScrapeQueue().stream()
                 .map(ScrapeQueueItem::name).toList();
