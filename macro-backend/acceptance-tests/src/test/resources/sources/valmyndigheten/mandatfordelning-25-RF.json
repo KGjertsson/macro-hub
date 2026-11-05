@@ -1,0 +1,52 @@
+{
+  "valtillfalle": "Val_2026",
+  "rakningstillfalle": "slutlig",
+  "valtyp": "RF",
+  "valdatum": "2026-09-13",
+  "valomrade": {
+    "namn": "Norrbottens län",
+    "kod": "25",
+    "totaltAntalMandat": 71,
+    "totaltAntalRoster": 100000,
+    "antalRostberattigade": 126100,
+    "valdeltagande": 79.3,
+    "rostfordelning": {
+      "rosterPaverkaMandat": {
+        "partiRoster": [
+          {
+            "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+            "partiforkortning": "S",
+            "partikod": "0002",
+            "fargkod": "#FF0000",
+            "antalRoster": 60000,
+            "andelRoster": 60.0
+          },
+          {
+            "partibeteckning": "Vänsterpartiet",
+            "partiforkortning": "V",
+            "partikod": "0004",
+            "fargkod": "#AF0000",
+            "antalRoster": 40000,
+            "andelRoster": 40.0
+          }
+        ]
+      }
+    },
+    "mandatfordelning": {
+      "partiLista": [
+        {
+          "partibeteckning": "Arbetarepartiet-Socialdemokraterna",
+          "partikod": "0002",
+          "partiforkortning": "S",
+          "antalMandat": 43
+        },
+        {
+          "partibeteckning": "Vänsterpartiet",
+          "partikod": "0004",
+          "partiforkortning": "V",
+          "antalMandat": 28
+        }
+      ]
+    }
+  }
+}

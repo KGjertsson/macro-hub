@@ -5,6 +5,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,7 @@ public record Sources(Gateway wireMockAdmin) {
     }
 
     public void serveJson(String path, Map<String, String> query, String fixture) {
-        stub(path, query, readFixture(fixture));
+        stub(path, query, jsonResponse(readFixture(fixture)));
     }
 
     public void serveJsonBody(String path, String body) {
@@ -25,7 +26,21 @@ public record Sources(Gateway wireMockAdmin) {
     }
 
     public void serveJsonBody(String path, Map<String, String> query, String body) {
-        stub(path, query, body);
+        stub(path, query, jsonResponse(body));
+    }
+
+    public void serveText(String path, String body) {
+        stub(path, Map.of(), Map.of(
+                "status", 200,
+                "headers", Map.of("Content-Type", "text/plain; charset=utf-8"),
+                "body", body));
+    }
+
+    public void serveBytes(String path, byte[] body) {
+        stub(path, Map.of(), Map.of(
+                "status", 200,
+                "headers", Map.of("Content-Type", "application/octet-stream"),
+                "base64Body", Base64.getEncoder().encodeToString(body)));
     }
 
     public int requestCount(String path) {
@@ -38,17 +53,21 @@ public record Sources(Gateway wireMockAdmin) {
         return JSON.readTree(response.body()).get("count").asInt();
     }
 
-    private void stub(String path, Map<String, String> query, String body) {
+    private Map<String, Object> jsonResponse(String body) {
+        return Map.of(
+                "status", 200,
+                "headers", Map.of("Content-Type", "application/json"),
+                "body", body);
+    }
+
+    private void stub(String path, Map<String, String> query, Map<String, Object> response) {
         final var mapping = JSON.writeValueAsString(Map.of(
                 "request", request(path, query),
-                "response", Map.of(
-                        "status", 200,
-                        "headers", Map.of("Content-Type", "application/json"),
-                        "body", body)));
+                "response", response));
 
-        final var response = wireMockAdmin.postJson("/__admin/mappings", mapping);
-        if (response.statusCode() != 201) {
-            throw new IllegalStateException("WireMock refused the stub: " + response.body());
+        final var answer = wireMockAdmin.postJson("/__admin/mappings", mapping);
+        if (answer.statusCode() != 201) {
+            throw new IllegalStateException("WireMock refused the stub: " + answer.body());
         }
     }
 
@@ -59,9 +78,9 @@ public record Sources(Gateway wireMockAdmin) {
         return Map.of("method", "GET", "urlPath", path, "queryParameters", queryParameters);
     }
 
-    private String readFixture(String fixture) {
+    public static String readFixture(String fixture) {
         final var resource = "sources/" + fixture;
-        try (var stream = getClass().getClassLoader().getResourceAsStream(resource)) {
+        try (var stream = Sources.class.getClassLoader().getResourceAsStream(resource)) {
             if (stream == null) {
                 throw new IllegalArgumentException("No fixture on the classpath: " + resource);
             }
