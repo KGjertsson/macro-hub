@@ -25,7 +25,7 @@ Values don't change once built, and objects keep no state that changes. Local mu
    - Lombok's `@NonNull` on a component still runs before the copy.
    - Static constants go before the compact constructor, the constructor before the methods.
 4. **A method that fills a collection returns it unmodifiable.**
-   - In a stream: `.toList()`, `Collectors.toUnmodifiableSet()`, `Collectors.toUnmodifiableMap(...)`. Use the last only when no value is null and the order doesn't matter.
+   - In a stream: `.toList()`, `Collectors.toUnmodifiableSet()`, `Collectors.toUnmodifiableMap(...)`. Use the last two only when no element, key or value is null and the order doesn't matter.
    - After a loop: `return Collections.unmodifiableList(results);` (or `Map`/`Set`), which keeps nulls and order and doesn't copy.
    - `List.copyOf`/`Set.copyOf` only where nulls can't occur, e.g. a NOT NULL column.
    - A mutable collector inside another one (`groupingBy(..., Collectors.toList())`) is fine when the result goes into a record, which copies it.
@@ -55,7 +55,9 @@ python3 -I .claude/skills/immutable-java/check.py $(git diff --name-only origin/
 - **Warnings**: `Collectors.toList()`/`toSet()`, and `return new ArrayList<>(...)` and similar. Fix those that are returned or stored. Leave a collector that rule 4 allows.
 - Then `mvn test`, whose `ArchitectureTest`s check rule 1.
 
-The script reads the source text, so it can't tell a mutable collection that leaves a method in a variable from one that doesn't. When reviewing, also look for:
+## When reviewing
+
+The script reads the source text, so it can't tell a mutable collection that leaves a method in a variable from one that doesn't. Also look for:
 
 - a collection from a record or another method that is changed with `add`/`put`/`remove`/`sort`, which now throws `UnsupportedOperationException`. Copy it locally first (`new HashSet<>(config.failedTables())`);
 - a helper object that counts or remembers between calls (rule 5);

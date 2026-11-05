@@ -43,7 +43,7 @@ Only for a separate implementer:
 - Spawn it with `model: "fable"`. If that spawn (or a later re-review message) fails because Fable credits or usage limits are exhausted, or the model is unavailable, spawn a fresh reviewer with `model: "opus"` and the same brief, and tell the user the review ran on Opus.
 - Brief it with the PR number, the stated intent and the agreed requirements. Leave out the implementer's reasoning, also when that is your own, the `claude[bot]` comments and your own opinions. It may see the bot's comments on the PR, but it forms its own view.
 - It reviews `gh pr diff <n>` and reads surrounding code for context.
-- It checks the diff against CLAUDE.md's conventions, and for backend Java against the `immutable-java` skill's rules and its "When reviewing" list. Name that skill's path in the brief.
+- It checks the diff against CLAUDE.md's conventions, and for backend Java against the `immutable-java` skill's rules and its "When reviewing" section. Name that skill's path in the brief.
 - If it builds, it uses its own worktree. It never checks out branches in the main clone.
 - It follows the separate implementer's rule for long-running commands: run them in the foreground with a long `timeout`, or poll with Monitor. It never waits for a background completion notice.
 - It labels each finding blocking or nit and posts them with `gh pr review <n> --comment`. It cannot approve, because it runs on the PR author's account. The review starts with exactly one verdict:

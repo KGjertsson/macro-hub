@@ -12,7 +12,10 @@ COPIES = re.compile(r'ImmutableCopies\.\w+\(|Collections\.unmodifiable\w+\(')
 
 def main_sources(args):
     if args:
-        return [pathlib.Path(a) for a in args if a.endswith('.java') and '/src/main/' in a and 'jooq/generated' not in a]
+        checked = [a for a in args if a.endswith('.java') and '/src/main/' in a and 'jooq/generated' not in a]
+        for skipped in sorted(set(args) - set(checked)):
+            print('skipped (not hand-written main Java):', skipped)
+        return [pathlib.Path(a) for a in checked if pathlib.Path(a).exists()]
     return [p for p in pathlib.Path('macro-backend').glob('*/src/main/java/**/*.java') if 'jooq/generated' not in str(p)]
 
 
@@ -29,11 +32,11 @@ def split_top_level(text):
     return parts + [current]
 
 
-def closing_paren(text, start):
+def closing(text, start, opening, closing_char):
     depth = 1
     i = start
     while depth:
-        depth += {'(': 1, ')': -1}.get(text[i], 0)
+        depth += {opening: 1, closing_char: -1}.get(text[i], 0)
         i += 1
     return i
 
@@ -42,7 +45,7 @@ def record_errors(path, source):
     errors = []
     for match in re.finditer(r'\brecord\s+(\w+)\s*(?:<[^>]*>)?\s*\(', source):
         name = match.group(1)
-        end = closing_paren(source, match.end())
+        end = closing(source, match.end(), '(', ')')
         header = re.sub(r'//[^\n]*', '', source[match.end():end - 1])
         header = re.sub(r'@\w+(\([^)]*\))?', '', header)
         components = []
@@ -54,12 +57,14 @@ def record_errors(path, source):
                     components.append(component)
         if not components:
             continue
-        compact = re.search(r'\n\s*public\s+' + name + r'\s*\{(.*?)\n\s*\}\n', source[end:], re.S)
+        compact = re.search(r'\n\s*(?:(?:public|protected|private)\s+)?' + name + r'\s*\{', source[end:])
         if not compact:
             errors.append(f'{path}: record {name} has collection components {components} but no compact constructor')
             continue
+        body_start = end + compact.end()
+        body = source[body_start:closing(source, body_start, '{', '}') - 1]
         for component in components:
-            if not re.search(r'\b' + component + r'\s*=\s*(?:' + COPIES.pattern + ')', compact.group(1)):
+            if not re.search(r'\b' + component + r'\s*=\s*(?:' + COPIES.pattern + ')', body):
                 errors.append(f'{path}: record {name} does not copy or wrap {component} in its compact constructor')
     return errors
 
