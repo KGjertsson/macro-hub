@@ -1,5 +1,8 @@
 package com.kg.macroanalyzer.scrape.application.service.enqueue.queuestrategy;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class QueueStrategyFactory {
 
     public static QueueTimeStrategy buildQueueStrategy(Strategy strategy) {

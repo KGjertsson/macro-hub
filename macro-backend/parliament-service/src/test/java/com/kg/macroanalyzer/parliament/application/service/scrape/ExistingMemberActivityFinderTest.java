@@ -13,8 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import static com.kg.macroanalyzer.parliament.domain.TestMemberFactory.chamberSeat;
-import static com.kg.macroanalyzer.parliament.domain.TestMemberFactory.member;
+import static com.kg.macroanalyzer.parliament.domain.TestMemberFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;

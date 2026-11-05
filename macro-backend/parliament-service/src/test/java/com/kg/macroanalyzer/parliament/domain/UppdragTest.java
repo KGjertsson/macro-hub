@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static com.kg.macroanalyzer.parliament.domain.TestMemberFactory.chamberSeat;
+import static com.kg.macroanalyzer.parliament.domain.TestMemberFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UppdragTest {
