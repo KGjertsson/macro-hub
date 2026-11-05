@@ -11,6 +11,13 @@ if [ "${CI:-}" != "true" ]; then
     exit 1
 fi
 
+# CI=true doesn't prove a throwaway runner: act sets it too, and uses the host's Docker. These never exist on a fresh runner
+if docker volume inspect docker_pgdata >/dev/null 2>&1 || docker container inspect macrohub-postgres >/dev/null 2>&1; then
+    echo "compose-smoke.sh refuses to run: docker_pgdata or macrohub-postgres exists, so this Docker holds a local stack." >&2
+    echo "docker_pgdata holds the only copy of parliament's data, and this script is only for a fresh CI runner." >&2
+    exit 1
+fi
+
 gateway=http://localhost:8081
 seconds_until_up=300
 
@@ -43,10 +50,9 @@ status_of() {
 }
 
 wait_until_answers() {
-    deadline=$(($(date +%s) + seconds_until_up))
     until [ "$(status_of "$1")" = "$2" ]; do
         if [ "$(date +%s)" -ge "$deadline" ]; then
-            fail "$1 didn't answer $2 within ${seconds_until_up}s, last answer $(status_of "$1")"
+            fail "$1 didn't answer $2 within ${seconds_until_up}s of the start, last answer $(status_of "$1")"
         fi
         sleep 2
     done
@@ -61,12 +67,6 @@ expect_json() {
     echo "ok: $1 | jq '$2' is $3"
 }
 
-sh ./mvnw -B -DskipTests clean package
-docker build -t regional-statistics-service:latest regional-statistics-service
-docker build -t macro-series-service:latest macro-series-service
-docker build -t parliament-service:latest parliament-service
-docker build -t election-service:latest election-service
-
 cp macro-series-service/.env.example macro-series-service/.env
 
 services_with_crons="$(compose config --format json | jq -c '[.services | to_entries[]
@@ -76,7 +76,16 @@ if [ "$services_with_crons" != "[]" ]; then
     fail "add SCHEDULER_ENABLED to compose-smoke.override.yml for $services_with_crons, or its crons could call real sources"
 fi
 
+sh ./mvnw -B -DskipTests clean package
+docker build -t regional-statistics-service:latest regional-statistics-service
+docker build -t macro-series-service:latest macro-series-service
+docker build -t parliament-service:latest parliament-service
+docker build -t election-service:latest election-service
+
 compose up -d --build
+
+# One deadline for all the waits, so the job's own timeout can't kill the script before it dumps the logs
+deadline=$(($(date +%s) + seconds_until_up))
 
 wait_until_answers /macro-analyzer/series-config 200
 wait_until_answers /macro-analyzer/parliament/parties 200
