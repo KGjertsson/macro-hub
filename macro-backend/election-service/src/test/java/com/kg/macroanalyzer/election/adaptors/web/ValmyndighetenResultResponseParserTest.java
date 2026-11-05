@@ -13,6 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ValmyndighetenResultResponseParserTest {
 
@@ -151,9 +152,66 @@ public class ValmyndighetenResultResponseParserTest {
 
     @Test
     void shouldThrow_whenMunicipalityCodeIsMissing() {
-        assertThrows(ScrapeException.class, () -> parser.parse("""
+        assertThrowsWithMessage("without kod", """
                 {"valtyp": "KF", "valdatum": "2026-09-13", "valomrade": {}}
-                """));
+                """);
+    }
+
+    @Test
+    void shouldThrow_whenRegionCodeIsMissing() {
+        assertThrowsWithMessage("without kod", """
+                {"valtyp": "RF", "valdatum": "2026-09-13", "valomrade": {"namn": "Region Skåne"}}
+                """);
+    }
+
+    @Test
+    void shouldThrow_whenRegionCodeIsNull() {
+        assertThrowsWithMessage("without kod", """
+                {"valtyp": "RF", "valdatum": "2026-09-13", "valomrade": {"kod": null}}
+                """);
+    }
+
+    @Test
+    void shouldThrow_whenRegionCodeIsBlank() {
+        assertThrowsWithMessage("without kod", """
+                {"valtyp": "RF", "valdatum": "2026-09-13", "valomrade": {"kod": "  "}}
+                """);
+    }
+
+    @Test
+    void shouldThrow_whenRiksdagFileHasNoValkretsLista() {
+        assertThrowsWithMessage("holds no valkretsar", """
+                {"valtyp": "RD", "valdatum": "2026-09-13", "valomrade": {}}
+                """);
+    }
+
+    @Test
+    void shouldThrow_whenRiksdagFileHasEmptyValkretsLista() {
+        assertThrowsWithMessage("holds no valkretsar", """
+                {"valtyp": "RD", "valdatum": "2026-09-13", "valomrade": {"valkretsLista": []}}
+                """);
+    }
+
+    @Test
+    void shouldThrow_whenOneValkretsHasNoCode() {
+        assertThrowsWithMessage("without kod", """
+                {
+                  "valtyp": "RD",
+                  "valdatum": "2026-09-13",
+                  "valomrade": {
+                    "valkretsLista": [
+                      {"kod": "01", "namnValkrets": "Stockholms kommun"},
+                      {"namnValkrets": "Gotlands län"}
+                    ]
+                  }
+                }
+                """);
+    }
+
+    private void assertThrowsWithMessage(String expectedMessagePart, String response) {
+        final var exception = assertThrows(ScrapeException.class, () -> parser.parse(response));
+
+        assertTrue(exception.getMessage().contains(expectedMessagePart), exception.getMessage());
     }
 
 }
