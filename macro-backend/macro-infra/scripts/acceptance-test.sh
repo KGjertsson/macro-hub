@@ -12,5 +12,9 @@ docker build -t regional-statistics-service:acceptance regional-statistics-servi
 docker build -t macro-series-service:acceptance macro-series-service
 docker build -t parliament-service:acceptance parliament-service
 docker build -t election-service:acceptance election-service
-docker build -t macro-frontend:acceptance ../macro-frontend
+# CI builds this image first, with a layer cache, and passes its id. Any other image under this tag gets rebuilt.
+if [ -z "${ACCEPTANCE_FRONTEND_IMAGE_ID:-}" ] ||
+  [ "$(docker image inspect --format '{{.Id}}' macro-frontend:acceptance 2>/dev/null)" != "$ACCEPTANCE_FRONTEND_IMAGE_ID" ]; then
+  docker build -t macro-frontend:acceptance ../macro-frontend
+fi
 sh ./mvnw -B -pl acceptance-tests verify "$@"

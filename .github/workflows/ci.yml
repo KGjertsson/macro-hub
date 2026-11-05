@@ -69,7 +69,32 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
+      # use: false, because the script's docker build would otherwise run on this builder and not load its images
+      - uses: docker/setup-buildx-action@v4
+        id: buildx
+        continue-on-error: true
+        with:
+          use: false
+      # A failure here only means the script builds the image itself, which fails the job if the frontend is broken
+      - uses: docker/build-push-action@v7
+        id: frontend-image
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: macro-frontend
+          tags: macro-frontend:acceptance
+          load: true
+          provenance: false
+          cache-from: type=gha,scope=acceptance-frontend
+          # mode=max, because npm ci and npm run build are in a stage whose layers aren't in the final image
+          cache-to: type=gha,scope=acceptance-frontend,mode=max,ignore-error=true
       - run: sh macro-backend/macro-infra/scripts/acceptance-test.sh
+        env:
+          ACCEPTANCE_FRONTEND_IMAGE_ID: ${{ steps.frontend-image.outputs.digest }}
 
   # Not a required check, see the same ADR
   compose-smoke:
