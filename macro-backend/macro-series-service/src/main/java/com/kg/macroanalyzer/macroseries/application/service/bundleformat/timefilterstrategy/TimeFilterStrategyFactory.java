@@ -1,22 +1,23 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy;
 
 import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Component
-public class TimeFilterStrategyFactory {
+public final class TimeFilterStrategyFactory {
 
-    public TimeFilterStrategy build(TimeFrame timeFrame) {
+    private TimeFilterStrategyFactory() {
+    }
+
+    public static TimeFilterStrategy build(TimeFrame timeFrame) {
         final var nullMsg = "Found unexpected instance of null in TimeFilterStrategy";
 
         return Optional.ofNullable(timeFrame)
-                .map(this::buildStrategy)
+                .map(TimeFilterStrategyFactory::buildStrategy)
                 .orElseThrow(() -> new IllegalArgumentException(nullMsg));
     }
 
-    private TimeFilterStrategy buildStrategy(TimeFrame timeFrame) {
+    private static TimeFilterStrategy buildStrategy(TimeFrame timeFrame) {
         return switch (timeFrame) {
             case ALL -> new TimeFilterStrategyAll();
             case ONEYEAR -> new TimeFilterStrategyYear(1);

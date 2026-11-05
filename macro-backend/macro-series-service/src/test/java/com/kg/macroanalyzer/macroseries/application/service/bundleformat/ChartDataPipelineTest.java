@@ -8,9 +8,6 @@ import com.kg.macroanalyzer.macroseries.application.port.in.ChartDataWithLabels;
 import com.kg.macroanalyzer.macroseries.application.port.in.MacroSeriesQueries;
 import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
-import com.kg.macroanalyzer.macroseries.application.service.LabelGenerationService;
-import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.StrategyFactory;
-import com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
 import org.junit.jupiter.api.Test;
@@ -36,12 +33,6 @@ import static org.mockito.Mockito.when;
 public class ChartDataPipelineTest {
 
     private static final LocalDate TODAY = LocalDate.now();
-
-    private final TimeFilterService timeFilterService = new TimeFilterService(new TimeFilterStrategyFactory());
-    private final AlignmentService alignmentService = new AlignmentService(
-            new LabelGenerationService(),
-            new StrategyFactory()
-    );
 
     static Stream<Arguments> strategiesAndTimeFrames() {
         return Arrays.stream(Strategy.values())
@@ -168,8 +159,8 @@ public class ChartDataPipelineTest {
             Strategy strategy,
             TimeFrame timeFrame
     ) {
-        final var bundle = timeFilterService.shrinkToTimeFrame(macroSeries, timeFrame)
-                .flatMap(filtered -> alignmentService.align(filtered, strategy));
+        final var bundle = TimeFilter.shrinkToTimeFrame(macroSeries, timeFrame)
+                .flatMap(filtered -> Alignment.align(filtered, strategy));
         final var macroSeriesQueries = mock(MacroSeriesQueries.class);
         when(macroSeriesQueries.buildAlignedBundle(any())).thenReturn(bundle);
         final var params = BuildChartDataParams.builder()

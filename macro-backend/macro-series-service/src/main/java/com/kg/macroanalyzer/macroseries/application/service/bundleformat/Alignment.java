@@ -1,64 +1,51 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 
 import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
-import com.kg.macroanalyzer.macroseries.application.service.LabelGenerationService;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.StrategyFactory;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.UniqueMacroPointCollector;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class AlignmentService {
+public final class Alignment {
 
-    private final LabelGenerationService labelGenerationService;
-    private final StrategyFactory strategyFactory;
-
-    @Autowired
-    public AlignmentService(
-            LabelGenerationService labelGenerationService,
-            StrategyFactory strategyFactory
-    ) {
-        this.labelGenerationService = labelGenerationService;
-        this.strategyFactory = strategyFactory;
+    private Alignment() {
     }
 
-    public Optional<AlignedBundle> align(
+    public static Optional<AlignedBundle> align(
             List<MacroSeries> macroSeriesList,
             Strategy strategy
     ) {
-        final var sampleStrategy = strategyFactory.build(strategy);
+        final var sampleStrategy = StrategyFactory.build(strategy);
 
         return Optional.ofNullable(macroSeriesList)
-                .map(this::sortMacroSeries)
-                .map(this::removeDuplicateFromSeries)
-                .flatMap(labelGenerationService::padToFullLabels)
+                .map(Alignment::sortMacroSeries)
+                .map(Alignment::removeDuplicateFromSeries)
+                .flatMap(LabelPadding::padToFullLabels)
                 .flatMap(sampleStrategy::sample);
     }
 
-    private List<MacroSeries> sortMacroSeries(List<MacroSeries> macroSeriesList) {
+    private static List<MacroSeries> sortMacroSeries(List<MacroSeries> macroSeriesList) {
         return macroSeriesList.stream()
-                .map(this::sortMacroPoints)
+                .map(Alignment::sortMacroPoints)
                 .toList();
     }
 
-    private MacroSeries sortMacroPoints(MacroSeries macroSeries) {
+    private static MacroSeries sortMacroPoints(MacroSeries macroSeries) {
         return macroSeries.toBuilder()
                 .macroPoints(macroSeries.macroPoints().stream().sorted().toList())
                 .build();
     }
 
-    private List<MacroSeries> removeDuplicateFromSeries(List<MacroSeries> macroSeriesList) {
+    private static List<MacroSeries> removeDuplicateFromSeries(List<MacroSeries> macroSeriesList) {
         return macroSeriesList.stream()
-                .map(this::removeDuplicatePoints)
+                .map(Alignment::removeDuplicatePoints)
                 .toList();
     }
 
-    private MacroSeries removeDuplicatePoints(MacroSeries macroSeries) {
+    private static MacroSeries removeDuplicatePoints(MacroSeries macroSeries) {
         return macroSeries.toBuilder()
                 .macroPoints(
                         macroSeries.macroPoints()

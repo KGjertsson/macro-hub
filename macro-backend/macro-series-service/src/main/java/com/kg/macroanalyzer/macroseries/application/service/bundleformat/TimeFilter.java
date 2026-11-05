@@ -3,25 +3,20 @@ package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy.TimeFilterStrategyFactory;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class TimeFilterService {
+public final class TimeFilter {
 
-    private final TimeFilterStrategyFactory timeFilterStrategyFactory;
-
-    public TimeFilterService(TimeFilterStrategyFactory timeFilterStrategyFactory) {
-        this.timeFilterStrategyFactory = timeFilterStrategyFactory;
+    private TimeFilter() {
     }
 
-    public Optional<List<MacroSeries>> shrinkToTimeFrame(
+    public static Optional<List<MacroSeries>> shrinkToTimeFrame(
             List<MacroSeries> macroSeriesList,
             TimeFrame timeFrame
     ) {
-        final var timeFilterStrategy = timeFilterStrategyFactory.build(timeFrame);
+        final var timeFilterStrategy = TimeFilterStrategyFactory.build(timeFrame);
 
         return Optional.ofNullable(macroSeriesList)
                 .map(timeFilterStrategy::filter);

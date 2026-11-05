@@ -2,22 +2,23 @@ package com.kg.macroanalyzer.macroseries.application.service.bundleformat.sample
 
 import com.kg.macroanalyzer.macroseries.application.port.in.Strategy;
 import lombok.NonNull;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Component
-public class StrategyFactory {
+public final class StrategyFactory {
 
-    public SampleStrategy build(Strategy strategy) {
+    private StrategyFactory() {
+    }
+
+    public static SampleStrategy build(Strategy strategy) {
         final var nullMsg = "Found unexpected instance of null in StrategyFactory";
 
         return Optional.ofNullable(strategy)
-                .map(this::buildStrategy)
+                .map(StrategyFactory::buildStrategy)
                 .orElseThrow(() -> new IllegalArgumentException(nullMsg));
     }
 
-    private SampleStrategy buildStrategy(@NonNull Strategy strategy) {
+    private static SampleStrategy buildStrategy(@NonNull Strategy strategy) {
         return switch (strategy) {
             case YEAR -> new SampleStrategyYear();
             case MONTH -> new SampleStrategyMonth();

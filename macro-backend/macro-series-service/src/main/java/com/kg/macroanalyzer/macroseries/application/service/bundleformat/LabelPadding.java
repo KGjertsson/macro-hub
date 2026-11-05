@@ -1,9 +1,8 @@
-package com.kg.macroanalyzer.macroseries.application.service;
+package com.kg.macroanalyzer.macroseries.application.service.bundleformat;
 
 import com.kg.macroanalyzer.macroseries.domain.MacroPoint;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
 import lombok.Builder;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -15,21 +14,23 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
-@Service
-public class LabelGenerationService {
+public final class LabelPadding {
 
-    private final LabelEdges IDENTITY_LABELS = LabelEdges.builder()
+    private static final LabelEdges IDENTITY_LABELS = LabelEdges.builder()
             .startDate(LocalDate.MAX)
             .endDate(LocalDate.MIN)
             .build();
 
-    public Optional<List<MacroSeries>> padToFullLabels(List<MacroSeries> macroSeriesList) {
+    private LabelPadding() {
+    }
+
+    public static Optional<List<MacroSeries>> padToFullLabels(List<MacroSeries> macroSeriesList) {
         return findEdges(macroSeriesList)
-                .map(this::generateDatesBetween)
+                .map(LabelPadding::generateDatesBetween)
                 .map(paddedLabels -> extendToFullLabels(macroSeriesList, paddedLabels));
     }
 
-    private List<MacroSeries> extendToFullLabels(
+    private static List<MacroSeries> extendToFullLabels(
             List<MacroSeries> macroSeriesList,
             List<LocalDate> paddedLabels
     ) {
@@ -40,7 +41,7 @@ public class LabelGenerationService {
                 .toList();
     }
 
-    private MacroSeries emptyOnLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
+    private static MacroSeries emptyOnLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
         final var newPoints = paddedLabels.stream()
                 .map(label -> MacroPoint.builder().date(label).build())
                 .toList();
@@ -50,7 +51,7 @@ public class LabelGenerationService {
                 .build();
     }
 
-    private MacroSeries alignToLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
+    private static MacroSeries alignToLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
         final var macroPoints = macroSeries.macroPoints();
         final var startDate = LocalDate.from(macroPoints.getFirst().date());
         final var startDateIndexInFull = paddedLabels.indexOf(startDate);
@@ -65,7 +66,7 @@ public class LabelGenerationService {
                 .build();
     }
 
-    private MacroSeries fillGapsInSeries(MacroSeries macroSeries) {
+    private static MacroSeries fillGapsInSeries(MacroSeries macroSeries) {
         final var macroPoints = macroSeries.macroPoints();
         final var endDate = (LocalDate) macroPoints.getLast().date();
         final var filledList = new ArrayList<MacroPoint>();
@@ -106,7 +107,7 @@ public class LabelGenerationService {
                 .build();
     }
 
-    private MacroPoint pointFromLabel(
+    private static MacroPoint pointFromLabel(
             Integer index,
             Integer startDateIndexInFull,
             List<LocalDate> fullLabels,
@@ -125,7 +126,7 @@ public class LabelGenerationService {
         }
     }
 
-    private List<LocalDate> generateDatesBetween(LabelEdges labelEdges) {
+    private static List<LocalDate> generateDatesBetween(LabelEdges labelEdges) {
         final var start = labelEdges.startDate;
         final var end = labelEdges.endDate;
 
@@ -134,19 +135,19 @@ public class LabelGenerationService {
                 .collect(toList());
     }
 
-    private Optional<LabelEdges> findEdges(List<MacroSeries> macroSeriesList) {
+    private static Optional<LabelEdges> findEdges(List<MacroSeries> macroSeriesList) {
         return macroSeriesList.stream()
-                .flatMap(this::toLabelEdges)
-                .reduce(IDENTITY_LABELS, this::findEdges)
+                .flatMap(LabelPadding::toLabelEdges)
+                .reduce(IDENTITY_LABELS, LabelPadding::findEdges)
                 .toOptional()
-                .filter(this::isNotIdentity);
+                .filter(LabelPadding::isNotIdentity);
     }
 
-    private boolean isNotIdentity(LabelEdges labelEdges) {
+    private static boolean isNotIdentity(LabelEdges labelEdges) {
         return !labelEdges.equals(IDENTITY_LABELS);
     }
 
-    private LabelEdges findEdges(LabelEdges acc, LabelEdges element) {
+    private static LabelEdges findEdges(LabelEdges acc, LabelEdges element) {
         final var edgeBuilder = acc.toBuilder();
         if (element.startDate.isBefore(acc.startDate)) {
             edgeBuilder.startDate(element.startDate);
@@ -157,7 +158,7 @@ public class LabelGenerationService {
         return edgeBuilder.build();
     }
 
-    private Stream<LabelEdges> toLabelEdges(MacroSeries macroSeries) {
+    private static Stream<LabelEdges> toLabelEdges(MacroSeries macroSeries) {
         if (macroSeries.macroPoints().isEmpty()) return Stream.empty();
         final var labelEdges =  LabelEdges.builder()
                 .startDate(LocalDate.from(macroSeries.macroPoints().getFirst().date()))
