@@ -154,7 +154,7 @@ docker compose --env-file macro-backend/macro-series-service/.env -f macro-backe
   - `REGIONAL_STATISTICS_URL` (`http://regional-statistics:8082`): `/macro-analyzer/regional-statistics/`, `/macro-analyzer/scrape/regional-statistics/`
   - `PARLIAMENT_URL` (`http://parliament:8084`): `/macro-analyzer/parliament/`, `/macro-analyzer/scrape/parliament/`
   - `ELECTION_URL` (`http://election:8085`): `/macro-analyzer/municipalities/`, `/macro-analyzer/regions/`, `/macro-analyzer/constituencies/`, `/macro-analyzer/scrape/election/`
-  - Any other path under `/macro-analyzer/`, and `/macro-analyzer` itself, answers 404 for every method. Without that it would fall through to `location /` and get `index.html` with a 200. The exception is a routed prefix without its slash, such as `/macro-analyzer/municipalities` or `/macro-analyzer/scrape/election`: nginx's automatic redirect answers those with a 301
+  - Any other path under `/macro-analyzer/`, and `/macro-analyzer` itself, answers 404 for every method. Without that it would fall through to `location /` and get `index.html` with a 200. The exception is a routed prefix without its slash, such as `/macro-analyzer/municipalities` or `/macro-analyzer/scrape/election`: nginx's automatic redirect answers those with a 301 and a relative `Location` (`absolute_redirect off`), which keeps the client's host and port, as the container's own port is 80 whatever port it is published on. The same goes for a directory of the frontend, such as `/assets` or `/geo`
 - A new variable needs a default in the Dockerfile, because the entrypoint leaves an unset one as the literal `${X}`. A variable set to an empty value makes nginx exit at startup (`invalid number of arguments in "set" directive`), so write literal values in Compose rather than `${X:-}`. The proxy settings, including the 30-minute `proxy_read_timeout`, are set once on the `server` and inherited by every route
 - The nginx image's envsubst entrypoint renders the template; each upstream is resolved per request with the resolver from `/etc/resolv.conf` (`NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1`), so nginx starts before the backend is up. nginx's resolver ignores resolv.conf search domains, so outside compose give the variables a fully qualified name
 
@@ -263,7 +263,7 @@ A new domain is a new service. Follow [`docs/adding-a-service.md`](docs/adding-a
 - `POST /macro-analyzer/scrape/{regional-statistics,macro-series,parliament,election}/enqueue?name={series}` — on that service: enqueue one of its series for scraping (202; a name it doesn't know also answers 202 and does nothing)
 - `POST /macro-analyzer/scrape/{service}/enqueue-all` — enqueue all of that service's series (202)
 - `POST /macro-analyzer/scrape/{service}/scrape-from-queue` — execute that service's pending scrapes (200, 409 while one is running)
-- Any other path under `/macro-analyzer/` answers 404 on the gateway, for every method (a routed prefix without its slash gets nginx's 301 to the slash)
+- Any other path under `/macro-analyzer/` answers 404 on the gateway, for every method (a routed prefix without its slash gets nginx's 301 to the slash, a relative `Location` that keeps the client's host and port)
 - `GET /macro-analyzer/parliament/elections` — on `parliament-service`, as are the other `/parliament/*` endpoints: official seat results per election (newest first)
 - `GET /macro-analyzer/parliament/composition` — live seats per party from currently serving MPs
 - `GET /macro-analyzer/parliament/parties` — party names, colours, ideology

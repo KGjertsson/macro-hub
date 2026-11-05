@@ -3,6 +3,8 @@
 server {
     listen 80;
     root /usr/share/nginx/html;
+    # The container listens on 80 whatever port it is published on, so an absolute redirect would name the wrong port
+    absolute_redirect off;
 
     # Each upstream is a variable so it is resolved per request: nginx starts even when a backend
     # is not up yet, and picks up a new address when its container is recreated.
