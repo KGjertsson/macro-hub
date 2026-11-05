@@ -212,7 +212,7 @@ class ElectionAcceptanceTest {
     }
 
     @Test
-    void aPartyOutsideTheRiksdagKeepsTheColourValmyndighetenGivesIt() {
+    void aLocalPartyIsShownInTheColourValmyndighetenGivesIt() {
         // when
         final var kiruna = jsonFrom(gateway, "/macro-analyzer/municipalities/2584").get("summary");
 
@@ -237,7 +237,7 @@ class ElectionAcceptanceTest {
     void aScrapeOfAnUnchangedIndexFetchesTheIndexAgainButNoFile() {
         // given
         final var indexFetches = sources.requestCount(Valmyndigheten.INDEX);
-        final var lundBefore = jsonFrom(gateway, "/macro-analyzer/municipalities/1281");
+        final var lundBefore = withoutColours(jsonFrom(gateway, "/macro-analyzer/municipalities/1281"));
 
         // when
         scrape(gateway, MUNICIPAL);
@@ -248,7 +248,7 @@ class ElectionAcceptanceTest {
         assertEquals(indexFetches + 3, sources.requestCount(Valmyndigheten.INDEX));
         List.of(LUND, KIRUNA, SKANE, NORRBOTTEN, VALKRETSAR)
                 .forEach(file -> assertEquals(1, sources.requestCount(file.url()), file.url()));
-        assertEquals(lundBefore, jsonFrom(gateway, "/macro-analyzer/municipalities/1281"));
+        assertEquals(lundBefore, withoutColours(jsonFrom(gateway, "/macro-analyzer/municipalities/1281")));
     }
 
     @Test
