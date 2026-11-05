@@ -41,6 +41,7 @@ public final class AcceptanceStack implements AutoCloseable {
 
     private final Network network = Network.newNetwork();
     private final List<GenericContainer<?>> containers = new CopyOnWriteArrayList<>();
+    private final GenericContainer<?> postgres;
     private final Gateway gateway;
     private final Sources sources;
 
@@ -59,12 +60,12 @@ public final class AcceptanceStack implements AutoCloseable {
 
     private AcceptanceStack(List<BackendService> services) {
         try {
-            final var postgres = postgres();
+            this.postgres = postgres();
             final var wireMock = wireMock();
             containers.addAll(List.of(postgres, wireMock));
             Startables.deepStart(postgres, wireMock).join();
-            startAll(services, postgres);
-            final var frontend = startGateway(services);
+            startAll(services);
+            final var frontend = startGateway();
 
             this.gateway = new Gateway(baseUrl(frontend, GATEWAY_PORT));
             this.sources = new Sources(new Gateway(baseUrl(wireMock, SOURCES_PORT)));
@@ -72,6 +73,10 @@ public final class AcceptanceStack implements AutoCloseable {
             close();
             throw e;
         }
+    }
+
+    public void startLater(BackendService service) {
+        startWithSourcesRedirected(service);
     }
 
     public Gateway gateway() {
@@ -122,11 +127,11 @@ public final class AcceptanceStack implements AutoCloseable {
     }
 
     // allOf waits for every start, also after one has failed, so close() can't miss a container that is still starting
-    private void startAll(List<BackendService> services, GenericContainer<?> postgres) {
+    private void startAll(List<BackendService> services) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             CompletableFuture.allOf(services.stream()
                     .map(service -> CompletableFuture.runAsync(
-                            () -> startWithSourcesRedirected(service, postgres), executor))
+                            () -> startWithSourcesRedirected(service), executor))
                     .toArray(CompletableFuture[]::new)).join();
         }
     }
@@ -134,11 +139,11 @@ public final class AcceptanceStack implements AutoCloseable {
     // Flyway seeds series_configuration with the real sources' URLs, and a service only reads it at start-up. So it starts
     // once to seed, and again to read the rows pointing at the stub. The first start has no reason to call anything: the
     // scheduler is off and nothing has been enqueued
-    private void startWithSourcesRedirected(BackendService service, GenericContainer<?> postgres) {
+    private void startWithSourcesRedirected(BackendService service) {
         final var container = serviceContainer(service);
         containers.add(container);
         container.start();
-        redirectSources(service, postgres);
+        redirectSources(service);
         container.stop();
         container.start();
     }
@@ -157,11 +162,11 @@ public final class AcceptanceStack implements AutoCloseable {
                 .waitingFor(Wait.forHttp(HEALTH_PATH).withStartupTimeout(STARTUP_TIMEOUT));
     }
 
-    private void redirectSources(BackendService service, GenericContainer<?> postgres) {
-        psql(postgres, service.database(), """
+    private void redirectSources(BackendService service) {
+        psql(service.database(), """
                 UPDATE series_configuration
                 SET scrape_url = regexp_replace(scrape_url, '^https?://[^/]+', '%s')""".formatted(SOURCES_URL));
-        final var stillReal = psql(postgres, service.database(), """
+        final var stillReal = psql(service.database(), """
                 SELECT count(*) FROM series_configuration WHERE scrape_url !~ '^%s(/|$)'""".formatted(SOURCES_URL));
         if (!"0".equals(stillReal.strip())) {
             throw new IllegalStateException(
@@ -169,7 +174,7 @@ public final class AcceptanceStack implements AutoCloseable {
         }
     }
 
-    private String psql(GenericContainer<?> postgres, String database, String sql) {
+    private String psql(String database, String sql) {
         try {
             final var result = postgres.execInContainer(
                     "psql", "-U", POSTGRES_SUPERUSER, "-d", database, "-v", "ON_ERROR_STOP=1", "-tAc", sql);
@@ -185,14 +190,15 @@ public final class AcceptanceStack implements AutoCloseable {
         }
     }
 
-    // nginx resolves an upstream per request, so the routes of services left out here answer 502 and don't stop it starting
-    private GenericContainer<?> startGateway(List<BackendService> services) {
+    // nginx resolves an upstream per request, so the routes of a service that isn't running answer 502, don't stop it
+    // starting, and work once the service has started under its network alias
+    private GenericContainer<?> startGateway() {
         final var image = System.getProperty(GATEWAY_IMAGE_PROPERTY, GATEWAY_DEFAULT_IMAGE);
         final GenericContainer<?> frontend = new GenericContainer<>(requireBuilt(image))
                 .withNetwork(network)
                 .withExposedPorts(GATEWAY_PORT)
                 .waitingFor(Wait.forHttp("/").withStartupTimeout(STARTUP_TIMEOUT));
-        services.forEach(service -> frontend.withEnv(service.gatewayUrlVariable(), service.internalUrl()));
+        BackendService.ALL.forEach(service -> frontend.withEnv(service.gatewayUrlVariable(), service.internalUrl()));
         containers.add(frontend);
         frontend.start();
 
