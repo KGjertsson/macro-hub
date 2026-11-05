@@ -11,6 +11,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,16 +45,14 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
         }
     }
 
-    private static List<LocalElectionResult> results(JsonNode root) {
+    private static List<LocalElectionResult> results(JsonNode root) throws ScrapeException {
         final var area = root.path("valomrade");
         final var type = LocalElectionType.valueOf(root.path("valtyp").asString());
         final var year = LocalDate.parse(root.path("valdatum").asString()).getYear();
         if (type == LocalElectionType.RD) {
-            return area.path("valkretsLista").valueStream()
-                    .map(valkrets -> constituency(year, valkrets))
-                    .toList();
+            return constituencies(year, area);
         }
-        final var code = area.path("kod").asString();
+        final var code = areaCode(area);
 
         return List.of(result(year, type, area)
                 .areaCode(code)
@@ -63,10 +62,23 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
                 .build());
     }
 
+    private static List<LocalElectionResult> constituencies(int year, JsonNode area) throws ScrapeException {
+        final var valkretsar = area.path("valkretsLista").valueStream().toList();
+        if (valkretsar.isEmpty()) {
+            throw new ScrapeException("Valmyndigheten RD result file holds no valkretsar");
+        }
+        final var results = new ArrayList<LocalElectionResult>();
+        for (final var valkrets : valkretsar) {
+            results.add(constituency(year, valkrets));
+        }
+
+        return results;
+    }
+
     // A valkrets only states its fixed seats, so the total is summed from the parties' seats, which include
     // the utjämningsmandat that were assigned to the valkrets
-    private static LocalElectionResult constituency(int year, JsonNode valkrets) {
-        final var code = valkrets.path("kod").asString();
+    private static LocalElectionResult constituency(int year, JsonNode valkrets) throws ScrapeException {
+        final var code = areaCode(valkrets);
 
         return result(year, LocalElectionType.RD, valkrets)
                 .areaCode(code)
@@ -74,6 +86,15 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
                 .lanCode(VALKRETS_LAN.getOrDefault(code, code))
                 .totalSeats(seatsByParty(valkrets).values().stream().mapToInt(Integer::intValue).sum())
                 .build();
+    }
+
+    private static String areaCode(JsonNode area) throws ScrapeException {
+        final var code = area.path("kod").asString("");
+        if (code.isBlank()) {
+            throw new ScrapeException("Valmyndigheten result file has an area without kod");
+        }
+
+        return code;
     }
 
     private static LocalElectionResult.LocalElectionResultBuilder result(int year, LocalElectionType type, JsonNode area) {
