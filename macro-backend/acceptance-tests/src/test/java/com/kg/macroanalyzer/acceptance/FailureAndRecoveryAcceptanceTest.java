@@ -28,6 +28,18 @@ class FailureAndRecoveryAcceptanceTest {
     private static final String USD_SEK_LABELS = "[[2024,3,4],[2024,3,5],[2024,3,6]]";
     private static final String USD_SEK_VALUES = "[10.30,10.35,10.40]";
 
+    private static final String SHORT_RATE = "EuroMarketRateUsa3Month";
+    private static final String SHORT_RATE_SOURCE = "/swea/v1/Observations/EUDP3MUSD/1979-11-28";
+    private static final String SHORT_RATE_FIXTURE = "riksbanken/euro-market-rate-usa-3-month.json";
+    private static final String SHORT_RATE_LABELS = "[[2024,1,30],[2024,1,31],[2024,2,1],[2024,2,2]]";
+    private static final String SHORT_RATE_VALUES = "[5.5,5.5,5.4,5.3]";
+
+    private static final String LONG_RATE = "IntGovBondsUsa10Year";
+    private static final String LONG_RATE_SOURCE = "/swea/v1/Observations/USGVB10Y/1991-01-02";
+    private static final String LONG_RATE_FIXTURE = "riksbanken/gov-bond-usa-10-year.json";
+    private static final String LONG_RATE_LABELS = "[[2024,1,31],[2024,2,1],[2024,2,2],[2024,2,3]]";
+    private static final String LONG_RATE_VALUES = "[4.1,4.1,4.1,4.2]";
+
     private static final String DRAIN = "/macro-analyzer/scrape/macro-series/scrape-from-queue";
     private static final Duration HOLD_THE_SCRAPE_OPEN = Duration.ofSeconds(10);
     private static final Duration BACK_AFTER_POSTGRES = Duration.ofSeconds(60);
@@ -112,39 +124,40 @@ class FailureAndRecoveryAcceptanceTest {
         assertEquals(1, sources.requestCount(USD_SEK_SOURCE));
     }
 
+    // Tests of a class run in turn, so this one stops Postgres under the class's stack. Its own series keep the other
+    // tests' request counts and charts out of it
     @Test
     void afterAPostgresRestartTheDataIsStillThereAndAScrapeWorksWithoutRestartingTheService() {
-        try (var ownStack = AcceptanceStack.startWith(List.of(BackendService.MACRO_SERIES))) {
-            // given
-            final var ownGateway = ownStack.gateway();
-            final var ownSources = ownStack.sources();
-            ownSources.serveJson(POLICY_RATE_SOURCE, POLICY_RATE_FIXTURE);
-            ownSources.serveJson(USD_SEK_SOURCE, USD_SEK_FIXTURE);
-            enqueue(ownGateway, POLICY_RATE);
-            assertEquals(200, ownGateway.post(DRAIN).statusCode());
-            assertChart(ownGateway, POLICY_RATE, POLICY_RATE_LABELS, POLICY_RATE_VALUES);
+        // given
+        sources.serveJson(SHORT_RATE_SOURCE, SHORT_RATE_FIXTURE);
+        sources.serveJson(LONG_RATE_SOURCE, LONG_RATE_FIXTURE);
+        enqueue(gateway, SHORT_RATE);
+        assertEquals(200, gateway.post(DRAIN).statusCode());
+        assertChart(gateway, SHORT_RATE, SHORT_RATE_LABELS, SHORT_RATE_VALUES);
 
+        // when
+        stack.stopPostgres();
+
+        // then
+        // The finally keeps a failure here from leaving Postgres stopped for the class's other tests
+        try {
+            assertEquals(500, chartRequest(gateway, SHORT_RATE).statusCode());
+        } finally {
             // when
-            ownStack.stopPostgres();
-
-            // then
-            assertEquals(500, chartRequest(ownGateway, POLICY_RATE).statusCode());
-
-            // when
-            ownStack.startStoppedPostgres();
-
-            // then
-            Eventually.assertWithin(BACK_AFTER_POSTGRES, "The chart answers again, with the data from before", () ->
-                    assertChart(ownGateway, POLICY_RATE, POLICY_RATE_LABELS, POLICY_RATE_VALUES));
-
-            // when
-            enqueue(ownGateway, USD_SEK);
-            assertEquals(200, ownGateway.post(DRAIN).statusCode());
-
-            // then
-            assertChart(ownGateway, USD_SEK, USD_SEK_LABELS, USD_SEK_VALUES);
-            assertEquals(1, ownSources.requestCount(USD_SEK_SOURCE));
+            stack.startStoppedPostgres();
         }
+
+        // then
+        Eventually.assertWithin(BACK_AFTER_POSTGRES, "The chart answers again, with the data from before", () ->
+                assertChart(gateway, SHORT_RATE, SHORT_RATE_LABELS, SHORT_RATE_VALUES));
+
+        // when
+        enqueue(gateway, LONG_RATE);
+        assertEquals(200, gateway.post(DRAIN).statusCode());
+
+        // then
+        assertChart(gateway, LONG_RATE, LONG_RATE_LABELS, LONG_RATE_VALUES);
+        assertEquals(1, sources.requestCount(LONG_RATE_SOURCE));
     }
 
     private void enqueue(Gateway target, String series) {

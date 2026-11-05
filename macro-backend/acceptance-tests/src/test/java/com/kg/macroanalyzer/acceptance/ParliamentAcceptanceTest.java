@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // Composition and member lists are answers about all of parliament, so these journeys don't use the shared stack, where
-// another journey's scrape would change them. The re-scrape journey starts a stack of its own for the same reason
+// another journey's scrape would change them. The re-scrape journey starts a stack of its own for the same reason.
+// The stack runs no other service, so it also shows what the gateway answers for the routes of services that aren't running
 class ParliamentAcceptanceTest {
 
     private static final String MEMBERS = "/personlista/";
@@ -204,6 +205,23 @@ class ParliamentAcceptanceTest {
     @Test
     void anUnknownMemberIsNotFound() {
         assertEquals(404, gateway.get("/macro-analyzer/parliament/members/0999999999999").statusCode());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "/macro-analyzer/series-config",
+            "/macro-analyzer/regional-statistics/indicators",
+            "/macro-analyzer/municipalities/elections"
+    })
+    void theRoutesOfAServiceThatIsntRunningAnswerBadGateway(String path) {
+        assertEquals(502, gateway.get(path).statusCode());
+    }
+
+    @Test
+    void theRestOfTheSystemKeepsWorkingWithoutTheOtherServices() {
+        assertEquals(200, gateway.get("/macro-analyzer/parliament/parties").statusCode());
+        assertEquals(200, gateway.get("/parliament").statusCode());
+        assertEquals(404, gateway.get("/macro-analyzer/unknown").statusCode());
     }
 
     @Test

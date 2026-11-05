@@ -1,7 +1,5 @@
 package com.kg.macroanalyzer.acceptance;
 
-import org.junit.jupiter.api.AutoClose;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -15,27 +13,20 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+// On the shared stack, where nothing scrapes regional statistics, parliament or elections, and the chart series asked
+// for here is one no journey scrapes
 class FreshSystemAcceptanceTest {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
-    @AutoClose
-    private static AcceptanceStack stack;
-
-    private static Gateway gateway;
-
-    @BeforeAll
-    static void startAStackNothingHasScraped() {
-        stack = AcceptanceStack.startWith(BackendService.ALL);
-        gateway = stack.gateway();
-    }
+    private static final Gateway gateway = AcceptanceStack.running().gateway();
 
     @Test
     void everyChartSeriesIsListedAndNoneHasDataYet() {
         // when
         final var series = jsonFrom("/macro-analyzer/series-config");
         final var chart = gateway.postJson("/macro-analyzer/chart-data", """
-                {"strategy":"DAY","timeFrame":"ALL","chartSeriesParams":[{"name":"PolicyRateSweden"}]}""");
+                {"strategy":"DAY","timeFrame":"ALL","chartSeriesParams":[{"name":"DebtPcGdpSk"}]}""");
 
         // then
         assertEquals(108, series.size());
