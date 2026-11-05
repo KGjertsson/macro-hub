@@ -1,0 +1,11 @@
+{
+  "version": "2.0",
+  "class": "dataset",
+  "updated": "2026-03-24T07:00:00Z",
+  "id": ["Region", "Tid"],
+  "size": [0, 0],
+  "dimension": {
+    "Region": {"label": "region", "category": {"index": {}}},
+    "Tid": {"label": "år", "category": {"index": {}}}
+  }
+}
