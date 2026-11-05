@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.regionalstatistics.adaptors.web;
 
 import com.kg.macroanalyzer.shared.web.ScrapeException;
+import lombok.experimental.UtilityClass;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -12,12 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 // category.index is either an array of codes or an object from code to position
-final class JsonStat2 {
+@UtilityClass
+class JsonStat2 {
 
     private static final JsonMapper JSON_MAPPER = JsonMapper.builder().build();
-
-    private JsonStat2() {
-    }
 
     static JsonNode readTree(String response, String source) throws ScrapeException {
         if (response == null || response.isBlank()) {

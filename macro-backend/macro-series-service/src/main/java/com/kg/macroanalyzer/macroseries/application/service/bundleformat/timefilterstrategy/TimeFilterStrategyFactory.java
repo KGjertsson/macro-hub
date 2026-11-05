@@ -1,13 +1,12 @@
 package com.kg.macroanalyzer.macroseries.application.service.bundleformat.timefilterstrategy;
 
 import com.kg.macroanalyzer.macroseries.application.port.in.TimeFrame;
+import lombok.experimental.UtilityClass;
 
 import java.util.Optional;
 
-public final class TimeFilterStrategyFactory {
-
-    private TimeFilterStrategyFactory() {
-    }
+@UtilityClass
+public class TimeFilterStrategyFactory {
 
     public static TimeFilterStrategy build(TimeFrame timeFrame) {
         final var nullMsg = "Found unexpected instance of null in TimeFilterStrategy";

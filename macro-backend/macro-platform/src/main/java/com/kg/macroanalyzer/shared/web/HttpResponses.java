@@ -1,5 +1,6 @@
 package com.kg.macroanalyzer.shared.web;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -18,10 +19,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 @Slf4j
-final class HttpResponses {
-
-    private HttpResponses() {
-    }
+@UtilityClass
+class HttpResponses {
 
     static int connect(HttpURLConnection connection) throws IOException {
         if (connection instanceof HttpsURLConnection httpsURLConnection) {

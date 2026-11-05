@@ -1,5 +1,7 @@
 package com.kg.macroanalyzer.acceptance;
 
+import lombok.experimental.UtilityClass;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -13,14 +15,12 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public final class Valmyndigheten {
+@UtilityClass
+public class Valmyndigheten {
 
     private static final String ELECTION_FOLDER = "/resultatfiler/val2026";
 
     public static final String INDEX = ELECTION_FOLDER + "/index.md5";
-
-    private Valmyndigheten() {
-    }
 
     public static void publish(Sources sources, ResultFile... files) {
         Stream.of(files).forEach(file -> sources.serveBytes(file.url(), file.zip()));

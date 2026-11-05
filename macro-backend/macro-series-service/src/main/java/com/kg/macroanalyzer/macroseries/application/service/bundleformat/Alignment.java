@@ -5,14 +5,13 @@ import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samples
 import com.kg.macroanalyzer.macroseries.application.service.bundleformat.samplestrategy.UniqueMacroPointCollector;
 import com.kg.macroanalyzer.macroseries.domain.AlignedBundle;
 import com.kg.macroanalyzer.macroseries.domain.MacroSeries;
+import lombok.experimental.UtilityClass;
 
 import java.util.List;
 import java.util.Optional;
 
-public final class Alignment {
-
-    private Alignment() {
-    }
+@UtilityClass
+public class Alignment {
 
     public static Optional<AlignedBundle> align(
             List<MacroSeries> macroSeriesList,
