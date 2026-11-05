@@ -7,6 +7,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.MountableFile;
 
@@ -31,6 +32,12 @@ public final class AcceptanceStack implements AutoCloseable {
     private static final String SOURCES_ALIAS = "sources";
     private static final int SOURCES_PORT = 8080;
     private static final String SOURCES_URL = "http://%s:%d".formatted(SOURCES_ALIAS, SOURCES_PORT);
+
+    private static final String REDIRECT_LOCATION = "/acceptance-flyway";
+    private static final String REDIRECT_SOURCES_SQL = """
+            UPDATE series_configuration
+            SET scrape_url = regexp_replace(scrape_url, '^https?://[^/]+', '%s');
+            """.formatted(SOURCES_URL);
 
     private static final String GATEWAY_IMAGE_PROPERTY = "acceptance.image.gateway";
     private static final String GATEWAY_DEFAULT_IMAGE = "macro-frontend:acceptance";
@@ -145,16 +152,11 @@ public final class AcceptanceStack implements AutoCloseable {
         }
     }
 
-    // Flyway seeds series_configuration with the real sources' URLs, and a service only reads it at start-up. So it starts
-    // once to seed, and again to read the rows pointing at the stub. The first start has no reason to call anything: the
-    // scheduler is off and nothing has been enqueued
     private void startWithSourcesRedirected(BackendService service) {
         final var container = serviceContainer(service);
         containers.add(container);
         container.start();
-        redirectSources(service);
-        container.stop();
-        container.start();
+        requireNoRealSources(service);
     }
 
     private GenericContainer<?> serviceContainer(BackendService service) {
@@ -166,15 +168,18 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withEnv("SPRING_DATASOURCE_PASSWORD", service.databasePassword())
                 .withEnv("SCHEDULER_ENABLED", "false")
                 .withEnv(service.environment())
+                // Flyway seeds series_configuration with the real sources' URLs, and a service reads it once, right after
+                // migrating. A callback in the same run points the rows at the stub before that read
+                // The variable replaces spring.flyway.locations, so it repeats Boot's default, and a service that set its own
+                // locations would need them here too
+                .withEnv("SPRING_FLYWAY_LOCATIONS", "classpath:db/migration,filesystem:" + REDIRECT_LOCATION)
+                .withCopyToContainer(Transferable.of(REDIRECT_SOURCES_SQL), REDIRECT_LOCATION + "/afterMigrate.sql")
                 .withExposedPorts(service.port())
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(service.networkAlias())))
                 .waitingFor(Wait.forHttp(HEALTH_PATH).withStartupTimeout(STARTUP_TIMEOUT));
     }
 
-    private void redirectSources(BackendService service) {
-        psql(service.database(), """
-                UPDATE series_configuration
-                SET scrape_url = regexp_replace(scrape_url, '^https?://[^/]+', '%s')""".formatted(SOURCES_URL));
+    private void requireNoRealSources(BackendService service) {
         final var stillReal = psql(service.database(), """
                 SELECT count(*) FROM series_configuration WHERE scrape_url !~ '^%s(/|$)'""".formatted(SOURCES_URL));
         if (!"0".equals(stillReal.strip())) {
