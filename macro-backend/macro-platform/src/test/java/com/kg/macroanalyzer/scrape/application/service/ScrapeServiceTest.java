@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.scrape.application.service;
 
 import com.kg.macroanalyzer.scrape.application.port.in.ScrapeRun;
+import com.kg.macroanalyzer.scrape.application.port.out.ScrapeMetricsPort;
 import com.kg.macroanalyzer.scrape.application.port.out.ScrapeQueuePort;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.RegisteredScrapeFlow;
 import com.kg.macroanalyzer.scrape.application.service.scrapeflow.SeriesConfigPreparer;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
@@ -57,6 +61,8 @@ public class ScrapeServiceTest {
 
     @Mock
     ScrapeQueuePort scrapeQueuePort;
+    @Mock
+    ScrapeMetricsPort scrapeMetricsPort;
     @Mock
     RegisteredScrapeFlow macroPointScrapeFlow;
     @Mock
@@ -86,7 +92,7 @@ public class ScrapeServiceTest {
     }
 
     private ScrapeService scrapeService(List<RegisteredScrapeFlow> flows, List<SeriesConfig> configs) {
-        return new ScrapeService(scrapeQueuePort, flows, configs, new SeriesConfigPreparer(configs));
+        return new ScrapeService(scrapeQueuePort, flows, configs, new SeriesConfigPreparer(configs), scrapeMetricsPort);
     }
 
     private static SeriesConfig config(String name, String scrapeFlow) {
@@ -359,6 +365,121 @@ public class ScrapeServiceTest {
 
     private static List<ScrapeResult> completedResults(ScrapeRun run) {
         return assertInstanceOf(ScrapeRun.Completed.class, run).results();
+    }
+
+    @Test
+    void shouldRegisterEveryFlow_forItsMetricsToStartAtZero() {
+        // then
+        verify(scrapeMetricsPort).registerFlows(argThat(flowIds -> flowIds.containsAll(
+                List.of(MACRO_POINT, MEMBER_OF_PARLIAMENT, MEMBER_ACTIVITY, LOCAL_ELECTION, SCB_REGIONAL))));
+    }
+
+    @Test
+    void shouldRecordFlowAndResult_whenItemSucceeds() {
+        // given
+        final var now = LocalDateTime.now();
+        final var item = ScrapeQueueItem.of("test-name");
+        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(item));
+        when(macroPointScrapeFlow.run(item)).thenReturn(ScrapeResult.SUCCESS);
+
+        // when
+        scrapeService.scrapeFromQueue(now);
+
+        // then
+        verify(scrapeMetricsPort).recordItem(eq(MACRO_POINT), eq(ScrapeResult.SUCCESS), any(Duration.class));
+    }
+
+    @Test
+    void shouldRecordEmptyResult_whenItemHadNothingNew() {
+        // given
+        final var now = LocalDateTime.now();
+        final var item = ScrapeQueueItem.of("test-name");
+        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(item));
+        when(macroPointScrapeFlow.run(item)).thenReturn(ScrapeResult.EMPTY);
+
+        // when
+        scrapeService.scrapeFromQueue(now);
+
+        // then
+        verify(scrapeMetricsPort).recordItem(eq(MACRO_POINT), eq(ScrapeResult.EMPTY), any(Duration.class));
+    }
+
+    @Test
+    void shouldRecordAsFailed_whenFlowReturnsFailedWithoutThrowing(CapturedOutput output) {
+        // given
+        final var now = LocalDateTime.now();
+        final var item = ScrapeQueueItem.of("MunicipalElections");
+        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(item));
+        when(localElectionScrapeFlow.run(item)).thenReturn(ScrapeResult.FAILED);
+
+        // when
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
+
+        // then
+        assertEquals(List.of(ScrapeResult.FAILED), result);
+        verify(scrapeMetricsPort).recordItem(eq(LOCAL_ELECTION), eq(ScrapeResult.FAILED), any(Duration.class));
+        assertTrue(output.getOut().contains("Scrape item failed: name=MunicipalElections flow=LOCAL_ELECTION"), output.getOut());
+    }
+
+    @Test
+    void shouldRecordFlowOfTheFailingItem_whenFlowThrows(CapturedOutput output) {
+        // given
+        final var now = LocalDateTime.now();
+        final var item = ScrapeQueueItem.of("test-name");
+        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(item));
+        when(macroPointScrapeFlow.run(item)).thenThrow(new RuntimeException("source down"));
+
+        // when
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
+
+        // then
+        assertEquals(List.of(ScrapeResult.FAILED), result);
+        verify(scrapeMetricsPort).recordItem(eq(MACRO_POINT), eq(ScrapeResult.FAILED), any(Duration.class));
+        assertTrue(output.getOut().contains("Scrape item failed: name=test-name flow=MACRO_POINT"), output.getOut());
+    }
+
+    @Test
+    void shouldRecordUnderUnknownFlow_whenNoConfigMatchesTheItem(CapturedOutput output) {
+        // given
+        final var now = LocalDateTime.now();
+        final var item = ScrapeQueueItem.of("no-such-series");
+        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(item));
+
+        // when
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
+
+        // then
+        assertEquals(List.of(ScrapeResult.FAILED), result);
+        verify(scrapeMetricsPort).recordItem(eq(ScrapeMetricsPort.UNKNOWN_FLOW), eq(ScrapeResult.FAILED), any(Duration.class));
+        assertTrue(output.getOut().contains("Scrape item failed: name=no-such-series flow=unknown"), output.getOut());
+    }
+
+    @Test
+    void shouldStillScrape_whenRecordingMetricsFails() {
+        // given
+        final var now = LocalDateTime.now();
+        final var first = ScrapeQueueItem.of("test-name");
+        final var second = ScrapeQueueItem.of("MembersOfParliament");
+        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(first, second));
+        when(macroPointScrapeFlow.run(first)).thenReturn(ScrapeResult.SUCCESS);
+        when(memberScrapeFlow.run(second)).thenReturn(ScrapeResult.SUCCESS);
+        doThrow(new RuntimeException("registry broken"))
+                .when(scrapeMetricsPort).recordItem(any(), any(), any());
+
+        // when
+        final var result = completedResults(scrapeService.scrapeFromQueue(now));
+
+        // then
+        assertEquals(List.of(ScrapeResult.SUCCESS, ScrapeResult.SUCCESS), result);
+    }
+
+    @Test
+    void shouldStart_whenRegisteringFlowsWithMetricsFails() {
+        // given
+        doThrow(new RuntimeException("registry broken")).when(scrapeMetricsPort).registerFlows(any());
+
+        // when / then
+        assertDoesNotThrow(() -> scrapeService(allFlows(), SERIES_CONFIGS));
     }
 
 }

@@ -14,6 +14,8 @@ public interface ScrapeQueuePort {
 
     List<ScrapeQueueItem> getItemsToScrape(LocalDateTime timeStamp);
 
+    int countPending();
+
     void markAsDone(SeriesConfig seriesConfig);
 
 }

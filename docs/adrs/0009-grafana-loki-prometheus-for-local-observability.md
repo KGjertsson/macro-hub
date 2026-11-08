@@ -39,3 +39,4 @@ It is a Compose project of its own, `macrohub-observability`, with its own named
 - Nothing in CI starts this stack, so a version bump or a config change is only tested by starting it.
 - This is the container level only: no application metrics, dashboards or alerts, and logs are plain text lines.
   - *Note, 2026-11-08:* the services now log JSON under Compose and expose Prometheus metrics on their own ports, and the gateway logs its access lines as JSON, so `level` and, for the gateway, `route` are Loki labels besides `service` and `container`. Dashboards are provisioned from files. Alerts are still left out.
+  - *Note, 2026-11-09:* scrape metrics, a Scrapes dashboard and Grafana-managed alert rules, provisioned from files, are added. There is no contact point, so alerts are only visible in Grafana.

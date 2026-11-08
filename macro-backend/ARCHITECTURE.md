@@ -91,7 +91,7 @@ an id or a config names an id without a flow, and logs a warning for a flow that
 ```
 
 `ScrapeService` catches a `RuntimeException` per item: the item is `FAILED` and stays pending, the rest of the run
-continues, and the cron retries it on its next drain. `LocalElectionPersister` also leaves an item `FAILED` and
+continues, and the cron retries it on its next drain. Every item's result and duration then go through `ScrapeMetricsPort`. `LocalElectionPersister` also leaves an item `FAILED` and
 pending, without throwing, after writing what it got when some result files failed.
 
 | Flow id (`scrape_flow`) | Constant                                                          | Flow built in                                                           | Configs                                                    |

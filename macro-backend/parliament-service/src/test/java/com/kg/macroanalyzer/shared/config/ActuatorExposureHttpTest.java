@@ -45,6 +45,19 @@ public class ActuatorExposureHttpTest {
     }
 
     @Test
+    void shouldServeScrapeMetrics_beforeAnyScrape() throws Exception {
+        // when
+        final var metrics = get("/actuator/prometheus").body();
+
+        // then
+        assertTrue(metrics.contains("macro_scrape_items_total{application=\"parliament\",flow=\"MEMBER_OF_PARLIAMENT\",result=\"failed\"} 0"), metrics);
+        assertTrue(metrics.contains("macro_scrape_items_total{application=\"parliament\",flow=\"MEMBER_OF_PARLIAMENT\",result=\"success\"} 0"), metrics);
+        assertTrue(metrics.contains("macro_scrape_items_total{application=\"parliament\",flow=\"unknown\",result=\"failed\"} 0"), metrics);
+        assertTrue(metrics.contains("macro_scrape_item_duration_seconds_bucket{application=\"parliament\",flow=\"MEMBER_OF_PARLIAMENT\",le=\"1800.0\"} 0"), metrics);
+        assertTrue(metrics.contains("macro_scrape_queue_pending{application=\"parliament\"}"), metrics);
+    }
+
+    @Test
     void shouldServeHealth() throws Exception {
         // when
         final var response = get("/actuator/health");
