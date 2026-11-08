@@ -32,6 +32,9 @@ compactor:
 
 limits_config:
   retention_period: 720h
+  # Alloy reads a container's whole log on a first start, and the default of a week would drop what retention keeps
+  reject_old_samples_max_age: 720h
+  discover_service_name: []
 
 analytics:
   reporting_enabled: false
