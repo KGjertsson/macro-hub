@@ -238,8 +238,8 @@
       },
       "targets": [
         {
-          "expr": "sum by (flow, result) (increase(macro_scrape_items_total{application=~\"$application\", flow=~\"$flow\"}[$__rate_interval]))",
-          "legendFormat": "{{flow}} {{result}}",
+          "expr": "sum by (application, flow, result) (increase(macro_scrape_items_total{application=~\"$application\", flow=~\"$flow\"}[$__rate_interval]))",
+          "legendFormat": "{{application}} {{flow}} {{result}}",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
