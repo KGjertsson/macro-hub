@@ -5,3 +5,12 @@ scrape_configs:
   - job_name: cadvisor
     static_configs:
       - targets: [ "cadvisor:8080" ]
+
+  - job_name: services
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - regional-statistics:8082
+          - macro-series:8083
+          - parliament:8084
+          - election:8085

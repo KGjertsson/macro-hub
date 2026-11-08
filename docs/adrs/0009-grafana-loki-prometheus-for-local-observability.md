@@ -38,3 +38,4 @@ It is a Compose project of its own, `macrohub-observability`, with its own named
 - cAdvisor reports every container on the host, not only the app's. Its labels are limited to the name, image and the two Compose labels.
 - Nothing in CI starts this stack, so a version bump or a config change is only tested by starting it.
 - This is the container level only: no application metrics, dashboards or alerts, and logs are plain text lines.
+  - *Note, 2026-11-08:* the services now log JSON under Compose and expose Prometheus metrics on their own ports, and the gateway logs its access lines as JSON, so `level` and, for the gateway, `route` are Loki labels besides `service` and `container`. Dashboards are provisioned from files. Alerts are still left out.
