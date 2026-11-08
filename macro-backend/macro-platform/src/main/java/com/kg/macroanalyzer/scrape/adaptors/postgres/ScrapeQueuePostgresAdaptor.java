@@ -37,6 +37,11 @@ public class ScrapeQueuePostgresAdaptor implements ScrapeQueuePort {
     }
 
     @Override
+    public int countPending() {
+        return scrapeRepository.countPending();
+    }
+
+    @Override
     public void markAsDone(SeriesConfig seriesConfig) {
         scrapeRepository.markAsDone(seriesConfig.name());
     }

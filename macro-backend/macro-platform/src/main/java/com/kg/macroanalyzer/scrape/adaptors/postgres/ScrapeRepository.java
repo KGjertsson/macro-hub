@@ -41,6 +41,10 @@ public class ScrapeRepository {
                 .map(this::toScrapeQueueItem);
     }
 
+    public int countPending() {
+        return dslContext.fetchCount(SCRAPE_ACTION_QUEUE, SCRAPE_ACTION_QUEUE.STATUS.eq(0));
+    }
+
     public void addScrapeQueueItem(ScrapeQueueItem scrapeQueueItem) {
         final var name = scrapeQueueItem.name();
         final var time = scrapeQueueItem.scrapeDate()
