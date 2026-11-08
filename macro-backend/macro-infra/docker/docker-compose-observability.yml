@@ -1,0 +1,82 @@
+name: macrohub-observability
+
+services:
+  grafana:
+    image: grafana/grafana:13.2.5
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      # Only read when the volume is empty: afterwards the password lives in Grafana's database
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-grafanapassword}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    depends_on:
+      - loki
+      - prometheus
+
+  loki:
+    image: grafana/loki:3.6.20
+    command: [ "-config.file=/etc/loki/loki.yml" ]
+    volumes:
+      - loki-data:/loki
+      - ./observability/loki.yml:/etc/loki/loki.yml:ro
+
+  alloy:
+    image: grafana/alloy:v1.21.3
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      # Holds the read positions: without them a re-created Alloy reads every container's whole log again
+      - alloy-data:/var/lib/alloy/data
+      - ./observability/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+
+  prometheus:
+    image: prom/prometheus:v3.16.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --storage.tsdb.retention.size=5GB
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - cadvisor
+
+  cadvisor:
+    image: ghcr.io/google/cadvisor:v0.60.6
+    privileged: true
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=15s
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.project,com.docker.compose.service
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /dev/disk:/dev/disk:ro
+      - ${DOCKER_ROOT:-/var/lib/docker}:${DOCKER_ROOT:-/var/lib/docker}:ro
+
+networks:
+  default:
+    name: docker_default
+    external: true
+
+volumes:
+  grafana-data:
+  loki-data:
+  alloy-data:
+  prometheus-data:

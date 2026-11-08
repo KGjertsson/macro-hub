@@ -158,6 +158,20 @@ docker compose --env-file macro-backend/macro-series-service/.env -f macro-backe
 - A new variable needs a default in the Dockerfile, because the entrypoint leaves an unset one as the literal `${X}`. A variable set to an empty value makes nginx exit at startup (`invalid number of arguments in "set" directive`), so write literal values in Compose rather than `${X:-}`. The proxy settings, including the 30-minute `proxy_read_timeout`, are set once on the `server` and inherited by every route
 - The nginx image's envsubst entrypoint renders the template; each upstream is resolved per request with the resolver from `/etc/resolv.conf` (`NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1`), so nginx starts before the backend is up. nginx's resolver ignores resolv.conf search domains, so outside compose give the variables a fully qualified name
 
+### Observability (from repo root)
+
+Grafana, Loki, Grafana Alloy, Prometheus and cAdvisor run from `macro-backend/macro-infra/docker/docker-compose-observability.yml`, with their config in `observability/` next to it ([ADR 0009](docs/adrs/0009-grafana-loki-prometheus-for-local-observability.md)). They are a Compose project of their own, `macrohub-observability`, so stopping or re-creating them doesn't touch the app, and no orphan warnings appear.
+
+```bash
+DOCKER_ROOT=$(docker info -f '{{.DockerRootDir}}') docker compose -f macro-backend/macro-infra/docker/docker-compose-observability.yml up -d
+```
+
+- Open `http://localhost:3000` and log in as `admin` with `GRAFANA_ADMIN_PASSWORD` (default `grafanapassword`, read only on an empty volume). Loki and Prometheus are provisioned as data sources. Under Explore, `{service="election"}` shows a service's logs. Prometheus is also on `http://localhost:9090`. Both ports are bound to 127.0.0.1, and Loki, Alloy and cAdvisor publish none
+- **The app stack must have been created first:** the project joins its `docker_default` network as an external network, and fails to start without it. Any `up` of `docker-compose-all.yml` or `docker-compose-dependencies.yml` creates it, and the network stays after the containers stop. Don't create it by hand, because Compose rejects a network without its labels. A `docker compose down` of the app stack leaves `docker_default` in place while the observability stack is attached to it
+- `DOCKER_ROOT` is the Docker root that cAdvisor mounts, by default `/var/lib/docker`. The snap install's is `/var/snap/docker/common/var-lib-docker`; the command above reads it from the daemon
+- Alloy reads the logs of the Compose project `docker` only, through the Docker socket, with the labels `service` (Compose service) and `container`. Other projects on the machine stay out of Loki. cAdvisor reports every container on the host, with the container name in the `name` label: `container_cpu_usage_seconds_total{name="macrohub-election"}`
+- Retention is 30 days in Loki, and 30 days or 5 GB in Prometheus. `docker compose -f ... down -v` on this file only removes this project's volumes, and none of them is `docker_pgdata`
+
 Docker Compose is the only way to run the app. There is no Kubernetes deployment: [ADR 0007](docs/adrs/0007-remove-the-kubernetes-deployment-until-its-needed.md) says why, and holds the findings worth keeping.
 
 ## Architecture
