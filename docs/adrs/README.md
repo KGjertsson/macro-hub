@@ -16,6 +16,7 @@ The split into services was tracked step by step in the [migration guide](https:
 | [0006](0006-kubernetes-as-eventual-deployment-target.md) | Kubernetes as the eventual deployment target | Accepted | 2026-11-01 |
 | [0007](0007-remove-the-kubernetes-deployment-until-its-needed.md) | Remove the Kubernetes deployment until it's needed | Accepted | 2026-11-04 |
 | [0008](0008-black-box-acceptance-tests-through-the-gateway.md) | Black-box acceptance tests through the gateway | Accepted | 2026-11-04 |
+| [0009](0009-grafana-loki-prometheus-for-local-observability.md) | Grafana, Loki and Prometheus for local observability | Accepted | 2026-11-08 |
 
 ## Statuses
 
