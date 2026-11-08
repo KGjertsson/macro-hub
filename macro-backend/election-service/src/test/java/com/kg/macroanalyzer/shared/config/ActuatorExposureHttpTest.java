@@ -29,6 +29,9 @@ public class ActuatorExposureHttpTest {
 
     @Test
     void shouldServeMetrics_withApplicationLabel() throws Exception {
+        // given
+        get("/actuator/health");
+
         // when
         final var response = get("/actuator/prometheus");
 
@@ -37,6 +40,7 @@ public class ActuatorExposureHttpTest {
         assertTrue(response.body().contains(APPLICATION_LABEL), response.body());
         assertTrue(response.body().contains("jvm_memory_used_bytes"));
         assertTrue(response.body().contains("hikaricp_connections_max"));
+        assertTrue(response.body().contains("http_server_requests_seconds_bucket"));
     }
 
     @Test

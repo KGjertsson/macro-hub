@@ -106,7 +106,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (service) (count_over_time({service=~\"$service\", level=~\"$level\"} |~ \"(?i)$search\" [$__auto]))",
+          "expr": "sum by (service) (count_over_time({service=~\"$service\", level=~\"$level\"} |~ `(?i)${search:regex}` [$__auto]))",
           "legendFormat": "{{service}}",
           "datasource": {
             "type": "loki",
@@ -166,7 +166,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service=~\"$service\", level=~\"$level\"} |~ \"(?i)$search\" | json | line_format \"{{ if .message }}{{ .message }}{{ if .error_stack_trace }}\\n{{ .error_stack_trace }}{{ end }}{{ else }}{{ __line__ }}{{ end }}\""
+          "expr": "{service=~\"$service\", level=~\"$level\"} |~ `(?i)${search:regex}` | json | line_format \"{{ if .message }}{{ .message }}{{ if .error_stack_trace }}\\n{{ .error_stack_trace }}{{ end }}{{ else }}{{ __line__ }}{{ end }}\""
         }
       ],
       "options": {
