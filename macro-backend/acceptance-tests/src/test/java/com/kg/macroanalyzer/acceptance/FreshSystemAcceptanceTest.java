@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 // On the shared stack, where nothing scrapes regional statistics, parliament or elections, and the chart series asked
 // for here is one no journey scrapes
@@ -99,6 +100,15 @@ class FreshSystemAcceptanceTest {
         assertEquals(204, gateway.get("/macro-analyzer/parliament/composition").statusCode());
         assertEquals(204, gateway.get("/macro-analyzer/parliament/members").statusCode());
         assertEquals(404, gateway.get("/macro-analyzer/parliament/members/0123456789").statusCode());
+    }
+
+    @Test
+    void actuatorEndpointsAreNotServedThroughTheGateway() {
+        // when
+        final var metrics = gateway.get("/actuator/prometheus");
+
+        // then
+        assertFalse(metrics.body().contains("jvm_memory"));
     }
 
     @ParameterizedTest

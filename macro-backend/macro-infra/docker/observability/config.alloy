@@ -25,7 +25,49 @@ discovery.relabel "app" {
 loki.source.docker "app" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.relabel.app.output
+  forward_to = [loki.process.app.receiver]
+}
+
+// A line that isn't JSON, such as Postgres's or nginx's error log, only passes through without these labels
+loki.process "app" {
   forward_to = [loki.write.local.receiver]
+
+  stage.match {
+    selector = "{service=~\"regional-statistics|macro-series|parliament|election\"}"
+
+    // A logged exception is one JSON line. This is for what doesn't go through the logger, an uncaught exception or an
+    // OutOfMemoryError on the JVM's stderr: a line starting with whitespace or "Cau" (Caused by) belongs to the one before.
+    // RE2 has no negative lookahead, hence the spelled-out alternatives
+    stage.multiline {
+      firstline     = "^([^\\sC]|C[^a]|Ca[^u])"
+      max_wait_time = "3s"
+    }
+
+    stage.json {
+      expressions = { level = "log.level" }
+    }
+
+    stage.template {
+      source   = "level"
+      template = "{{ ToLower .Value }}"
+    }
+
+    stage.labels {
+      values = { level = "" }
+    }
+  }
+
+  stage.match {
+    selector = "{service=\"macro-frontend\"}"
+
+    stage.json {
+      expressions = { level = "", route = "" }
+    }
+
+    stage.labels {
+      values = { level = "", route = "" }
+    }
+  }
 }
 
 loki.write "local" {

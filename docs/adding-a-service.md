@@ -38,12 +38,13 @@ A column change in a platform table needs a new `db/platform` version and a rege
 ## Compose and docs
 
 - [ ] Add the service to `docker-compose-all.yml`, with its image, database URL and role. Add the new URL variable to `macro-frontend`'s `environment`, as a literal value, and the service to that container's `depends_on`. The `backend` CI job needs no change, because it runs every module of the reactor. The `acceptance` and `compose-smoke` jobs only run what their scripts build, see "Tests" below.
+- [ ] Give the service `micrometer-registry-prometheus` (runtime) and the three `management.*` lines in its properties, set `LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs` and `SPRING_MAIN_BANNER_MODE: "off"` in Compose, add the service to the `services` job in `observability/prometheus.yml`, to Alloy's service selector in `observability/config.alloy`, and to the `map $uri` route list in `macro-frontend/nginx/default.conf.template` ("Observability" in `CLAUDE.md`).
 - [ ] Add the image to the build commands in `CLAUDE.md` and `README.md`, and to the after-merge commands in `.claude/skills/ship/SKILL.md`.
 - [ ] Update `CLAUDE.md`, `macro-backend/ARCHITECTURE.md` and `docs/architecture.md`, and give the service its own README.
 
 ## Tests
 
-- [ ] Give the service its own `ArchitectureTest` for its layers, and copies of `BaseConfigurationTest`, `NoStaticResourceHandlersHttpTest`, `ManualScrapePathsHttpTest` and `ConnectionPoolIntegrationTest`.
+- [ ] Give the service its own `ArchitectureTest` for its layers, and copies of `BaseConfigurationTest`, `NoStaticResourceHandlersHttpTest`, `ManualScrapePathsHttpTest`, `ActuatorExposureHttpTest` and `ConnectionPoolIntegrationTest`.
 - [ ] Add `src/test/resources/application-test.properties` with a TestContainers datasource, like the other services'. Without it, `@ActiveProfiles("test")` falls back to the base properties, so the copied tests run Flyway and write against the Compose Postgres.
 - [ ] Add an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
 - [ ] In `macro-backend/acceptance-tests`, add a `BackendService` constant with its gateway URL variable and put it in `BackendService.ALL`, add a `docker build` line to `macro-backend/macro-infra/scripts/acceptance-test.sh`, and add its routes to `GatewayRoutingAcceptanceTest` ([ADR 0008](adrs/0008-black-box-acceptance-tests-through-the-gateway.md)).
