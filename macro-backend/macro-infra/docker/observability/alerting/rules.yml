@@ -318,7 +318,7 @@ groups:
                 uid: loki
               instant: true
               expr: |-
-                sum by (route) (count_over_time({service="macro-frontend", route=~".+", level="error"}[5m])) > 10
+                sum by (route) (count_over_time({service="macro-frontend", route=~".+", route!="telemetry", level="error"}[5m])) > 10
               queryType: instant
           - refId: C
             datasourceUid: __expr__

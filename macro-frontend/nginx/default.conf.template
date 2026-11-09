@@ -11,6 +11,7 @@ map $uri $gateway_route {
     ~^/macro-analyzer/(series-config|chart-data|regional-statistics|parliament|municipalities|regions|constituencies)(/|$) $1;
     ~^/macro-analyzer/scrape/(regional-statistics|macro-series|parliament|election)(/|$) scrape-$1;
     ~^/macro-analyzer(/|$) unknown-api;
+    /telemetry/collect telemetry;
     default frontend;
 }
 
@@ -93,6 +94,24 @@ server {
     }
     location = /macro-analyzer {
         return 404;
+    }
+
+    location = /telemetry/collect {
+        if ($request_method != POST) {
+            add_header Allow POST always;
+            return 405;
+        }
+
+        client_max_body_size 256k;
+        # The observability stack is optional: a browser's POST must fail fast while it is down. Docker's DNS takes
+        # seconds to give up on the name of a stopped container, hence the short resolver_timeout
+        resolver_timeout 1s;
+        proxy_connect_timeout 2s;
+        proxy_send_timeout 5s;
+        proxy_read_timeout 5s;
+
+        set $backend ${FARO_URL}/collect;
+        proxy_pass $backend;
     }
 
     # Hashed build assets never change, so they can be cached indefinitely
