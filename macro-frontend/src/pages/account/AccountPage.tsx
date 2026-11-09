@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { UserRound } from 'lucide-react';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
@@ -10,6 +11,9 @@ type Props = {
 
 const AccountPage = ({ title, children }: Props) => (
   <div className='min-h-screen flex flex-col bg-background'>
+    <Helmet>
+      <title>{title} | Macro Hub</title>
+    </Helmet>
     <Header />
     <main className='flex-1 container mx-auto px-4 pt-24 pb-12'>
       <div className='max-w-md mx-auto'>

@@ -1,4 +1,5 @@
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import * as authApi from '@/api/auth';
 import { AuthContext } from '@/auth/authContext';
 
@@ -72,6 +73,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [refresh]);
 
+  // The other tabs' logins and logouts arrive through storage. Returning to a tab whose token has run out is when a session
+  // revoked elsewhere shows up
+  useEffect(() => {
+    const followOtherTab = (event: StorageEvent) => {
+      if (event.key !== SIGNED_IN_HINT) {
+        return;
+      }
+      generation.current += 1;
+      if (event.newValue === null) {
+        token.current = null;
+        setUser(null);
+      } else {
+        void refresh();
+      }
+    };
+    const recheckWhenVisible = () => {
+      const expired = !token.current || token.current.expiresAtMs <= Date.now();
+      if (document.visibilityState === 'visible' && expired && hasSignedInHint()) {
+        void refresh();
+      }
+    };
+    window.addEventListener('storage', followOtherTab);
+    document.addEventListener('visibilitychange', recheckWhenVisible);
+
+    return () => {
+      window.removeEventListener('storage', followOtherTab);
+      document.removeEventListener('visibilitychange', recheckWhenVisible);
+    };
+  }, [refresh]);
+
   const value = useMemo(
     () => ({
       user,
@@ -85,8 +116,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         generation.current += 1;
         try {
           await authApi.logout();
-        } finally {
           forget();
+        } catch {
+          // The session still exists, so showing the visitor as logged out would be wrong
+          toast.error('Det gick inte att logga ut. Försök igen.');
         }
       },
       getAccessToken: async () => {
