@@ -11,7 +11,7 @@ The split into services was tracked step by step in the [migration guide](https:
 | [0001](0001-split-backend-into-one-service-per-domain.md) | Split the backend into one service per domain | Accepted | 2026-11-01 |
 | [0002](0002-keep-scrape-as-a-shared-library.md) | Keep scrape as a shared library | Accepted | 2026-11-01 |
 | [0003](0003-one-database-per-service-on-one-postgres-instance.md) | One database per service on one Postgres instance | Accepted | 2026-11-01 |
-| [0004](0004-keep-manual-scrape-endpoints-public-for-now.md) | Keep manual scrape endpoints public for now | Accepted | 2026-11-01 |
+| [0004](0004-keep-manual-scrape-endpoints-public-for-now.md) | Keep manual scrape endpoints public for now | Superseded by 0010 | 2026-11-01 |
 | [0005](0005-cached-rest-between-services-and-no-message-broker.md) | Cached REST between services and no message broker | Accepted | 2026-11-01 |
 | [0006](0006-kubernetes-as-eventual-deployment-target.md) | Kubernetes as the eventual deployment target | Accepted | 2026-11-01 |
 | [0007](0007-remove-the-kubernetes-deployment-until-its-needed.md) | Remove the Kubernetes deployment until it's needed | Accepted | 2026-11-04 |

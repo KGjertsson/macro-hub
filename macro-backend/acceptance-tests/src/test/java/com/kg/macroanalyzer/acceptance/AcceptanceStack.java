@@ -91,6 +91,7 @@ public final class AcceptanceStack implements AutoCloseable {
 
             this.gateway = new Gateway(baseUrl(frontend, GATEWAY_PORT));
             this.sources = new Sources(new Gateway(baseUrl(wireMock, SOURCES_PORT)));
+            sources.serveJsonBody(AdminToken.KEYS_PATH, AdminToken.publicKeys());
         } catch (RuntimeException e) {
             close();
             throw e;
@@ -198,6 +199,7 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withEnv("SPRING_DATASOURCE_PASSWORD", service.databasePassword())
                 .withEnv("SCHEDULER_ENABLED", "false")
                 .withEnv("JAVA_TOOL_OPTIONS", CHEAP_BOOT_JVM_OPTIONS)
+                .withEnv("AUTH_JWKS_URI", SOURCES_URL + AdminToken.KEYS_PATH)
                 .withEnv(service.environment())
                 .withExposedPorts(service.port())
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("%s/%s".formatted(logTag, service.networkAlias()))))

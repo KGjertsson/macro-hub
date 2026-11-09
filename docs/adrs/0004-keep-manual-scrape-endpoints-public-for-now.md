@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. This is an accepted risk to revisit, not a permanent decision.
+Superseded by [0010](0010-own-auth-service-with-sessions-and-jwts.md): the manual scrape endpoints need an admin. `POST /macro-analyzer/chart-data` stays public.
 
 ## Date
 

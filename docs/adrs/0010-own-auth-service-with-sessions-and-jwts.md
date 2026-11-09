@@ -26,6 +26,8 @@ A fifth service, `auth-service`, on its own database, holds accounts, password c
 
 The project owner chose JWTs verified in every service, over the recommended gateway check of a session (nginx `auth_request`).
 
+*Note, 2026-11-09:* every service now verifies the JWT on its `/macro-analyzer/scrape/*` paths and requires `ADMIN`, which supersedes [0004](0004-keep-manual-scrape-endpoints-public-for-now.md). The filter chain covers only those paths, so the public routes are unchanged. The crons don't go through HTTP. `POST /macro-analyzer/chart-data` stays public, and with it the memory cost 0004 describes.
+
 ## Alternatives considered
 
 - **nginx `auth_request` and trusted headers.** Less code in each service, and logging out takes effect at once. But a service would trust any caller that reaches its port, and each protected request would need a call to auth.

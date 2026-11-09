@@ -12,6 +12,7 @@ public record Gateway(String baseUrl) {
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private static final Duration SCRAPE_MAY_TAKE_THIS_LONG = Duration.ofMinutes(5);
+    private static final String SCRAPE_PATHS = "/macro-analyzer/scrape/";
 
     public HttpResponse<String> get(String path) {
         return send(request(path).GET());
@@ -33,7 +34,23 @@ public record Gateway(String baseUrl) {
                 .POST(HttpRequest.BodyPublishers.noBody()));
     }
 
+    public HttpResponse<String> postAnonymously(String path) {
+        return send(anonymousRequest(path).POST(HttpRequest.BodyPublishers.noBody()));
+    }
+
+    public HttpResponse<String> postWithBearer(String path, String token) {
+        return send(anonymousRequest(path)
+                .header("Authorization", "Bearer " + token)
+                .POST(HttpRequest.BodyPublishers.noBody()));
+    }
+
     private HttpRequest.Builder request(String path) {
+        final var request = anonymousRequest(path);
+
+        return path.startsWith(SCRAPE_PATHS) ? request.header("Authorization", "Bearer " + AdminToken.value()) : request;
+    }
+
+    private HttpRequest.Builder anonymousRequest(String path) {
         return HttpRequest.newBuilder(URI.create(baseUrl + path)).timeout(SCRAPE_MAY_TAKE_THIS_LONG);
     }
 
