@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class ParliamentPostgresAdaptor implements ParliamentRepositoryPort {
@@ -35,6 +36,16 @@ public class ParliamentPostgresAdaptor implements ParliamentRepositoryPort {
     @Override
     public List<MemberOfParliament> readMembersOfParliament() {
         return sweParMemberRepository.readMembers();
+    }
+
+    @Override
+    public Optional<MemberOfParliament> readMemberOfParliament(String intressentId) {
+        return sweParMemberRepository.readMember(intressentId);
+    }
+
+    @Override
+    public Map<String, Integer> countMembersByPartyWhereStatusContainsIgnoringCase(String statusFragment) {
+        return sweParMemberRepository.countMembersByParty(statusFragment);
     }
 
     @Override

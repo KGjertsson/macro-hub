@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.kg.macroanalyzer.parliament.domain.TestMemberFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -102,14 +103,9 @@ public class ParliamentServiceTest {
     }
 
     @Test
-    void shouldCountServingMembersPerParty_forComposition() {
+    void shouldCountMembersWithAServingStatus_forComposition() {
         // given
-        when(repositoryPort.readMembersOfParliament()).thenReturn(List.of(
-                member("1", "S", "Tjänstgörande riksdagsledamot", List.of()),
-                member("2", "S", "Tjänstgörande statsrådsersättare", List.of()),
-                member("3", "M", "Tjänstledig riksdagsledamot", List.of()),
-                member("4", "M", "Tjänstgörande riksdagsledamot", List.of())
-        ));
+        when(repositoryPort.countMembersByPartyWhereStatusContainsIgnoringCase("tjänstgörande")).thenReturn(Map.of("S", 2, "M", 1));
 
         // when
         final var result = parliamentService.getComposition();
@@ -120,38 +116,16 @@ public class ParliamentServiceTest {
     }
 
     @Test
-    void shouldCountDeputySpeakersAndPartilosa_butNotMembersOnLeave_forComposition() {
+    void shouldNameMembersWithoutAParty_forComposition() {
         // given
-        when(repositoryPort.readParties()).thenReturn(List.of(
-                new Party("S", "Socialdemokraterna", "#E8112d", "Social Democracy", true),
-                new Party("M", "Moderaterna", "#52BDEC", "Liberal Conservatism", true),
-                new Party("-", "Politisk vilde", "#9CA3AF", null, false)
-        ));
-        when(repositoryPort.readMembersOfParliament()).thenReturn(List.of(
-                member("1", "S", "Förste vice talman (tjänstgörande riksdagsledamot)", List.of()),
-                member("2", "M", "Andre vice talman (tjänstgörande riksdagsledamot)", List.of()),
-                member("3", "M", "Tredje vice talman (tjänstgörande riksdagsledamot)", List.of()),
-                member("4", "S", "Tjänstgörande riksdagsledamot", List.of()),
-                member("5", "S", "Tjänstgörande ersättare", List.of()),
-                member("6", "S", "Tjänstgörande statsrådsersättare", List.of()),
-                member("7", "M", "Tjänstgörande talmansersättare", List.of()),
-                member("8", "-", "Tjänstgörande riksdagsledamot", List.of()),
-                member("9", "S", "Tjänstledig riksdagsledamot", List.of()),
-                member("10", "S", "Tidigare riksdagsledamot", List.of()),
-                member("11", "M", "Avgången riksdagsledamot", List.of()),
-                member("12", "M", "Tillgänglig ersättare", List.of()),
-                member("13", "-", "Tidigare ersättare", List.of())
-        ));
+        when(repositoryPort.readParties()).thenReturn(List.of(new Party("-", "Politisk vilde", "#9CA3AF", null, false)));
+        when(repositoryPort.countMembersByPartyWhereStatusContainsIgnoringCase("tjänstgörande")).thenReturn(Map.of("-", 2, "", 1));
 
         // when
         final var result = parliamentService.getComposition();
 
         // then
-        assertEquals(List.of(
-                new PartySeats("S", "Socialdemokraterna", "#E8112d", 4),
-                new PartySeats("M", "Moderaterna", "#52BDEC", 3),
-                new PartySeats("-", "Politisk vilde", "#9CA3AF", 1)
-        ), result.parties());
+        assertEquals(List.of("Politisk vilde", "Okänt parti"), result.parties().stream().map(PartySeats::name).toList());
     }
 
     @Test
@@ -209,7 +183,7 @@ public class ParliamentServiceTest {
     @Test
     void shouldBuildDetail_withContactAssignmentsAndActivity() {
         // given
-        when(repositoryPort.readMembersOfParliament()).thenReturn(List.of(member(
+        when(repositoryPort.readMemberOfParliament("1")).thenReturn(Optional.of(member(
                 "1", "S", "Tjänstgörande riksdagsledamot",
                 List.of(chamberSeat("2026-09-28", "2030-09-23"),
                         uppdrag("uppdrag", "FiU", "Suppleant", "", "2026-10-06", "2030-09-23")),
@@ -241,7 +215,7 @@ public class ParliamentServiceTest {
     @Test
     void shouldReturnEmpty_whenMemberUnknown() {
         // given
-        when(repositoryPort.readMembersOfParliament()).thenReturn(List.of());
+        when(repositoryPort.readMemberOfParliament("missing")).thenReturn(Optional.empty());
 
         // when / then
         assertTrue(parliamentService.getMemberOfParliament("missing").isEmpty());

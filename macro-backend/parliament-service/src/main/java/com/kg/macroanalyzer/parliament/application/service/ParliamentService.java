@@ -69,18 +69,12 @@ public class ParliamentService implements ParliamentQueries {
 
     @Override
     public CompositionDto getComposition() {
-        final var seats = repositoryPort.readMembersOfParliament().stream()
-                .filter(m -> isServing(m.status()))
-                .collect(Collectors.groupingBy(m -> Objects.requireNonNullElse(m.parti(), ""), Collectors.summingInt(m -> 1)));
+        final var seats = repositoryPort.countMembersByPartyWhereStatusContainsIgnoringCase(SERVING_STATUS_MARKER);
 
         return CompositionDto.builder()
                 .asOf(today().toString())
                 .parties(toPartySeats(seats, partiesByCode()))
                 .build();
-    }
-
-    private static boolean isServing(String status) {
-        return status != null && status.toLowerCase(Locale.ROOT).contains(SERVING_STATUS_MARKER);
     }
 
     @Override
@@ -104,12 +98,8 @@ public class ParliamentService implements ParliamentQueries {
 
     @Override
     public Optional<MemberDetailDto> getMemberOfParliament(String intressentId) {
-        final var context = buildContext();
-
-        return repositoryPort.readMembersOfParliament().stream()
-                .filter(m -> intressentId.equals(m.intressent_id()))
-                .findFirst()
-                .map(m -> toDetail(m, context));
+        return repositoryPort.readMemberOfParliament(intressentId)
+                .map(m -> toDetail(m, buildContext()));
     }
 
     private MemberDetailDto toDetail(MemberOfParliament member, Context context) {

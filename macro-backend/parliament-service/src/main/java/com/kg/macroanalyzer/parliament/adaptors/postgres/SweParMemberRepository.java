@@ -4,13 +4,17 @@ import com.kg.macroanalyzer.parliament.domain.MemberOfParliament;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Query;
+import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.kg.macroanalyzer.parliament.jooq.generated.Tables.SWEDISH_MEMBERS_OF_PARLIAMENT;
@@ -33,8 +37,31 @@ public class SweParMemberRepository {
     public List<MemberOfParliament> readMembers() {
         return dslContext.select(SWEDISH_MEMBERS_OF_PARLIAMENT.MEMBER_DATA)
                 .from(SWEDISH_MEMBERS_OF_PARLIAMENT)
-                .fetch()
-                .map(r -> JSON_MAPPER.readValue(r.value1().data(), MemberOfParliament.class));
+                .fetch(r -> toMember(r.value1()));
+    }
+
+    public Optional<MemberOfParliament> readMember(String intressentId) {
+        return dslContext.select(SWEDISH_MEMBERS_OF_PARLIAMENT.MEMBER_DATA)
+                .from(SWEDISH_MEMBERS_OF_PARLIAMENT)
+                .where(SWEDISH_MEMBERS_OF_PARLIAMENT.INTRESSENT_ID.eq(intressentId))
+                .fetchOptional(r -> toMember(r.value1()));
+    }
+
+    public Map<String, Integer> countMembersByParty(String statusFragment) {
+        // Inlined: as bind values, the same expression in SELECT and GROUP BY would be two different ones to Postgres
+        final var party = DSL.coalesce(DSL.jsonbGetAttributeAsText(SWEDISH_MEMBERS_OF_PARLIAMENT.MEMBER_DATA, DSL.inline("parti")), DSL.inline(""));
+        final var status = DSL.jsonbGetAttributeAsText(SWEDISH_MEMBERS_OF_PARLIAMENT.MEMBER_DATA, DSL.inline("status"));
+        final var seats = DSL.count();
+
+        return Collections.unmodifiableMap(dslContext.select(party, seats)
+                .from(SWEDISH_MEMBERS_OF_PARLIAMENT)
+                .where(status.containsIgnoreCase(statusFragment))
+                .groupBy(party)
+                .fetchMap(party, seats));
+    }
+
+    private static MemberOfParliament toMember(JSONB memberData) {
+        return JSON_MAPPER.readValue(memberData.data(), MemberOfParliament.class);
     }
 
     // Riksdagen returns every member on each scrape, so all rows are upserted every time
