@@ -15,6 +15,9 @@ import Regions from './pages/Regions';
 import Municipalities from './pages/Municipalities';
 import Constituencies from './pages/Constituencies';
 import NotFound from './pages/NotFound';
+import Login from './pages/account/Login';
+import Register from './pages/account/Register';
+import ResetPassword from './pages/account/ResetPassword';
 
 // MapLibre is about 1 MB, so the map page and its dependencies load only when visited
 const RegionalStatistics = lazy(() => import('./pages/RegionalStatistics'));
@@ -46,6 +49,9 @@ const App = () => (
                 </Suspense>
               }
             />
+            <Route path='/konto/logga-in' element={<Login />} />
+            <Route path='/konto/registrera' element={<Register />} />
+            <Route path='/konto/aterstall-losenord' element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path='*' element={<NotFound />} />
           </Routes>

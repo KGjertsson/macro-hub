@@ -144,10 +144,11 @@ class GatewayRoutingAcceptanceTest {
         assertFalse(response.body().contains(FRONTEND_PAGE_MARKER));
     }
 
-    @Test
-    void aPageOfTheDashboardGetsTheFrontend() {
+    @ParameterizedTest
+    @ValueSource(strings = {"/parliament", "/konto/logga-in", "/konto/registrera", "/konto/aterstall-losenord"})
+    void aPageOfTheDashboardGetsTheFrontend(String page) {
         // when
-        final var response = gateway.get("/parliament");
+        final var response = gateway.get(page);
 
         // then
         assertEquals(200, response.statusCode());
