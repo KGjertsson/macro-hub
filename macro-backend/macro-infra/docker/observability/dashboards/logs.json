@@ -171,6 +171,7 @@
       ],
       "options": {
         "showTime": false,
+        "showLevel": true,
         "showLabels": false,
         "showCommonLabels": false,
         "wrapLogMessage": true,
