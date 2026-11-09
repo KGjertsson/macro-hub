@@ -150,9 +150,10 @@ class TracingHttpTest {
         final var traceId = newTraceId();
 
         // when
-        get(FAILING_QUERY_PATH, traceparent(traceId));
+        final var response = get(FAILING_QUERY_PATH, traceparent(traceId));
 
         // then
+        assertEquals("failed", response.body());
         awaitServerSpanOfTrace(traceId);
         final var query = querySpanOfTrace(traceId);
         assertEquals("select no_such_table", query.getName());
