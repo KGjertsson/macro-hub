@@ -91,8 +91,8 @@ class FreshSystemAcceptanceTest {
                         party -> party.get("code").asString(),
                         party -> party.get("seats").asInt())));
         assertEquals(
-                List.of(99, 70, 62, 30, 25, 22, 22, 19),
-                parties.valueStream().map(party -> party.get("seats").asInt()).toList());
+                List.of("V", "S", "MP", "C", "L", "M", "KD", "SD"),
+                parties.valueStream().map(party -> party.get("code").asString()).toList());
     }
 
     @Test
