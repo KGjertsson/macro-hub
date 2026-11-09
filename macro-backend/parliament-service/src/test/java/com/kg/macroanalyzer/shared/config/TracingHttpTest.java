@@ -19,7 +19,10 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "management.opentelemetry.enabled=true",
@@ -44,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Import(TracingHttpTest.TestRoutes.class)
 class TracingHttpTest {
 
+    private static final String ADMIN_TOKEN = "admin-token";
     private static final String PARENT_SPAN_ID = "b7ad6b7169203331";
     private static final String API_PATH = "/macro-analyzer/parliament/parties";
     private static final String SERVICE_NAME = "parliament";
@@ -57,6 +62,9 @@ class TracingHttpTest {
 
     @Autowired
     SdkTracerProvider tracerProvider;
+
+    @MockitoBean
+    JwtDecoder jwtDecoder;
 
     @Value("${local.server.port}")
     int port;
@@ -155,7 +163,7 @@ class TracingHttpTest {
         final var traceId = newTraceId();
 
         // when
-        final var response = get(SCRAPE_QUERY_PATH, traceparent(traceId));
+        final var response = getAsAdmin(SCRAPE_QUERY_PATH, traceparent(traceId));
 
         // then
         awaitServerSpanOfTrace(traceId);
@@ -207,6 +215,17 @@ class TracingHttpTest {
     private List<SpanData> finishedSpans() {
         tracerProvider.forceFlush().join(10, TimeUnit.SECONDS);
         return spanExporter.getFinishedSpanItems();
+    }
+
+    private HttpResponse<String> getAsAdmin(String path, String traceparent) throws Exception {
+        when(jwtDecoder.decode(ADMIN_TOKEN)).thenReturn(Jwt.withTokenValue(ADMIN_TOKEN).header("alg", "ES256").subject("admin").claim("roles", List.of("ADMIN")).build());
+        final var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+                .header("traceparent", traceparent)
+                .header("Authorization", "Bearer " + ADMIN_TOKEN)
+                .GET()
+                .build();
+
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     private HttpResponse<String> get(String path, String traceparent) throws Exception {
