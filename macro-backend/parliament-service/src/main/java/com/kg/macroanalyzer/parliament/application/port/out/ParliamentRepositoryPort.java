@@ -17,7 +17,7 @@ public interface ParliamentRepositoryPort {
 
     Optional<MemberOfParliament> readMemberOfParliament(String intressentId);
 
-    Map<String, Integer> countMembersByPartyWhereStatusContains(String statusFragment);
+    Map<String, Integer> countMembersByPartyWhereStatusContainsIgnoringCase(String statusFragment);
 
     Integer writeMemberActivity(List<MemberActivity> memberActivity);
 

@@ -69,7 +69,7 @@ public class ParliamentService implements ParliamentQueries {
 
     @Override
     public CompositionDto getComposition() {
-        final var seats = repositoryPort.countMembersByPartyWhereStatusContains(SERVING_STATUS_MARKER);
+        final var seats = repositoryPort.countMembersByPartyWhereStatusContainsIgnoringCase(SERVING_STATUS_MARKER);
 
         return CompositionDto.builder()
                 .asOf(today().toString())

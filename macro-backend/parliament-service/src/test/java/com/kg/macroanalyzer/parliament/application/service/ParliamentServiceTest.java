@@ -105,7 +105,7 @@ public class ParliamentServiceTest {
     @Test
     void shouldCountMembersWithAServingStatus_forComposition() {
         // given
-        when(repositoryPort.countMembersByPartyWhereStatusContains("tjänstgörande")).thenReturn(Map.of("S", 2, "M", 1));
+        when(repositoryPort.countMembersByPartyWhereStatusContainsIgnoringCase("tjänstgörande")).thenReturn(Map.of("S", 2, "M", 1));
 
         // when
         final var result = parliamentService.getComposition();
@@ -119,7 +119,7 @@ public class ParliamentServiceTest {
     void shouldNameMembersWithoutAParty_forComposition() {
         // given
         when(repositoryPort.readParties()).thenReturn(List.of(new Party("-", "Politisk vilde", "#9CA3AF", null, false)));
-        when(repositoryPort.countMembersByPartyWhereStatusContains("tjänstgörande")).thenReturn(Map.of("-", 2, "", 1));
+        when(repositoryPort.countMembersByPartyWhereStatusContainsIgnoringCase("tjänstgörande")).thenReturn(Map.of("-", 2, "", 1));
 
         // when
         final var result = parliamentService.getComposition();

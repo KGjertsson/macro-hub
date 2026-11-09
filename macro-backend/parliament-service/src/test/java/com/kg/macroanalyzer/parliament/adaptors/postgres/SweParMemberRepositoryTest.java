@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.parliament.adaptors.postgres;
 
 import com.kg.macroanalyzer.parliament.domain.MemberOfParliament;
+import com.kg.macroanalyzer.parliament.domain.TestMemberFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -79,8 +80,7 @@ class SweParMemberRepositoryTest {
     }
 
     private static MemberOfParliament member(String id, String party, String status) {
-        return new MemberOfParliament(null, null, id, null, null, null, "Andersson", "Anna", null, null, party, null, status,
-                null, null, null, null, null, null);
+        return TestMemberFactory.member(id, party, status, List.of());
     }
 
 }
