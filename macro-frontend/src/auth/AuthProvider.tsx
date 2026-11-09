@@ -81,6 +81,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       generation.current += 1;
+      // A refresh still in flight belongs to the old generation, and its answer will be dropped, so it can't be joined
+      refreshing.current = null;
       if (event.newValue === null) {
         token.current = null;
         setUser(null);
