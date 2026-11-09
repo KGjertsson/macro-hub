@@ -55,6 +55,7 @@ server {
     # Always replaced, also when a client sent one: port 8081 is published, and a caller must not choose trace ids or sampling
     proxy_set_header traceparent "00-$request_id-$gateway_span_id-01";
     proxy_set_header tracestate "";
+    proxy_set_header baggage "";
     # A full SCB or election scrape triggered through the proxy can run for minutes
     proxy_read_timeout 30m;
 
