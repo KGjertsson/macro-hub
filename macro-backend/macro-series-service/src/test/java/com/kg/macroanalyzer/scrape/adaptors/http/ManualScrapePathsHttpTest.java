@@ -69,6 +69,24 @@ class ManualScrapePathsHttpTest {
         assertEquals(400, post("/macro-analyzer/scrape/macro-series/enqueue;x=1?name=unknown", null));
     }
 
+    @Test
+    void shouldAnswerAPreflight_withoutAToken() throws Exception {
+        // given
+        final var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/macro-analyzer/scrape/macro-series/enqueue"))
+                .method("OPTIONS", HttpRequest.BodyPublishers.noBody())
+                .header("Origin", "http://example.test")
+                .header("Access-Control-Request-Method", "POST")
+                .header("Access-Control-Request-Headers", "authorization")
+                .build();
+
+        // when
+        final var response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+
+        // then
+        assertEquals(200, response.statusCode());
+        assertEquals("*", response.headers().firstValue("Access-Control-Allow-Origin").orElseThrow());
+    }
+
     @BeforeEach
     void knowTheTokens() {
         when(jwtDecoder.decode(anyString())).thenThrow(new BadJwtException("invalid"));

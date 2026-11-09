@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -34,9 +35,13 @@ public class ScrapeSecurityConfiguration {
 
     // Only the scrape paths: with no filter chain on the public routes, a stale token in a request can't turn a read into a 401
     @Bean
-    SecurityFilterChain scrapeSecurityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain scrapeSecurityFilterChain(
+            HttpSecurity http,
+            @Value("${macro.scrape.path-prefix}") String pathPrefix
+    ) throws Exception {
         return http
-                .securityMatcher("/macro-analyzer/scrape/**")
+                .securityMatcher("/" + pathPrefix + "/**")
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests.anyRequest().hasRole("ADMIN"))
