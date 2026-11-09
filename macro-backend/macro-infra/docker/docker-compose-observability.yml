@@ -50,6 +50,9 @@ services:
       - --storage.tsdb.retention.time=30d
       - --storage.tsdb.retention.size=5GB
       - --enable-feature=exemplar-storage
+      # Only for the load tests' k6, which pushes its metrics. The port is only published on 127.0.0.1, and the rest of the
+      # stack is on docker_default
+      - --web.enable-remote-write-receiver
     ports:
       - "127.0.0.1:9090:9090"
     volumes:
