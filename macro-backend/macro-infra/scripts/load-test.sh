@@ -71,7 +71,7 @@ set --
 prometheus_status="$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 -X POST http://127.0.0.1:9090/api/v1/write || true)"
 prometheus_env=""
 case "$prometheus_status" in
-    000)
+    ""|000)
         echo "No Prometheus on 127.0.0.1:9090: results only in the summary below."
         ;;
     404)

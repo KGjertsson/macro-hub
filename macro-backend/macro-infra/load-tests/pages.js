@@ -3,8 +3,10 @@ import { endpoints, send } from './gateway.js';
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
-const pickSome = (list, count) =>
-  Array.from({ length: Math.min(count, list.length) }, (_, index) => list[(Math.floor(Math.random() * list.length) + index) % list.length]);
+const pickSome = (list, count) => {
+  const start = Math.floor(Math.random() * list.length);
+  return Array.from({ length: Math.min(count, list.length) }, (_, index) => list[(start + index) % list.length]);
+};
 
 const namesFrom = (data) => (data.chartSeries.length ? data.chartSeries : data.seriesNames);
 
@@ -18,8 +20,6 @@ const startPage = (data) => {
   send(endpoints.seriesConfig);
   postChartData(pickSome(namesFrom(data), 4), SAMPLE.DAY, TIME_FRAME.ONE_YEAR);
   postChartData(pickSome(namesFrom(data), 1), SAMPLE.DAY, TIME_FRAME.TEN_YEAR);
-  postChartData(pickSome(namesFrom(data), 1), SAMPLE.MONTH, TIME_FRAME.TEN_YEAR);
-  postChartData(pickSome(namesFrom(data), 1), SAMPLE.MONTH, TIME_FRAME.TEN_YEAR);
 };
 
 const chartPage = (data) => {
@@ -65,7 +65,8 @@ const regionalPage = (data) => {
 };
 
 // Weights are a guess at how the site is used: the start page is the landing page, the maps and the Riksdag follow, and
-// the smaller maps get less. A page issues the calls the real page does, including the chart trends' one request each
+// the smaller maps get less. A page issues the calls the real page makes on load, so the start page asks for one trend:
+// the tabs only mount the active one, and the others fetch when clicked
 export const pages = [
   { name: 'start', weight: 30, visit: startPage },
   { name: 'macroindicator', weight: 15, visit: chartPage },

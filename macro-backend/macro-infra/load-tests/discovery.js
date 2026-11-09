@@ -76,7 +76,7 @@ const noDataLines = (found) => {
     ['constituencies', found.constituencies],
   ]
     .filter(([, codes]) => codes.length === 0)
-    .forEach(([kind, ]) => lines.push(`${kind}: no election results, so ${kind}/{code} is skipped`));
+    .forEach(([kind]) => lines.push(`${kind}: no election results, so ${kind}/{code} is skipped`));
   if (found.levelsWithData.length === 0) {
     lines.push('regional-statistics: no indicator has data, so values answers 204');
   }
