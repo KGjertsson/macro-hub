@@ -32,7 +32,7 @@ A column change in a platform table needs a new `db/platform` version and a rege
 
 ## Manual scrape endpoints and the gateway
 
-- [ ] Set `macro.scrape.path-prefix` to `macro-analyzer/scrape/<service>`. It has no default, so a service without it fails at start-up with `Could not resolve placeholder`. The service then has `enqueue?name=`, `enqueue-all` and `scrape-from-queue` under that path, public like the others ([ADR 0004](adrs/0004-keep-manual-scrape-endpoints-public-for-now.md)).
+- [ ] Set `macro.scrape.path-prefix` to `macro-analyzer/scrape/<service>`. It has no default, so a service without it fails at start-up with `Could not resolve placeholder`. The service then has `enqueue?name=`, `enqueue-all` and `scrape-from-queue` under that path, for admins only like the others ([ADR 0010](adrs/0010-own-auth-service-with-sessions-and-jwts.md)). Set `auth.jwks-uri` in its properties and `AUTH_JWKS_URI` in Compose, as the other services do, or it doesn't start.
 - [ ] Add its routes to `macro-frontend/nginx/default.conf.template`, including `/macro-analyzer/scrape/<service>/`, with their own URL variable. The variable needs a default in `macro-frontend/Dockerfile`. The proxy settings, with the 30-minute timeout, are inherited from the `server`.
 - [ ] Add the same routes to the proxy in `macro-frontend/vite.config.ts`, above the catch-all `^/macro-analyzer(/|\?|$)` entry. The first match wins, so a route added after it answers 404.
 - [ ] Add the service's name to `services` in `macro-backend/macro-infra/scripts/scrape-all.sh`.
@@ -61,7 +61,7 @@ A new database starts empty and is filled by a scrape. Use the service's manual 
 - [ ] `mvn test` passes and CI is green.
 - [ ] The full stack starts, and every page that uses the domain works through the gateway.
 - [ ] The role can't connect to another service's database.
-- [ ] A manual scrape on `/macro-analyzer/scrape/<service>/` works through the gateway, and a second one during the run answers 409.
+- [ ] A manual scrape on `/macro-analyzer/scrape/<service>/` works through the gateway with an admin's token, and a second one during the run answers 409.
 
 The Compose files set fixed container names and ports, so verify on a throwaway project. Give it an override file that sets another `container_name`, `image` and port for each service (`ports: !override` replaces the list rather than adding to it), and run `docker compose -p <name> -f docker-compose-all.yml -f <override> up -d`. `-p` also gives it its own volume. Check the override with `docker compose ... config` first, without `--env-file`, because `config` prints the values it reads, keys included. Set `SCHEDULER_ENABLED: "false"` on each application in the override unless you are testing the cron: during the 22:00 hour it would otherwise enqueue every series, against the real APIs. Docker installed as a snap can't read `/tmp`, so the Compose files and build contexts have to be under `$HOME`.
 

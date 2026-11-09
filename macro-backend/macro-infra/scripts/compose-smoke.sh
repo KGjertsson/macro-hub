@@ -103,6 +103,8 @@ expect_json /macro-analyzer/regional-statistics/indicators 'length' 26
 expect_json /macro-analyzer/regional-statistics/indicators 'map(.id) | index("households") != null' true
 expect_json /macro-analyzer/auth/jwks.json '.keys | length' 1
 
+# Without a token, so this reached the service and its security
+wait_until_answers /macro-analyzer/scrape/election/enqueue-all 401
 wait_until_answers /macro-analyzer/unknown 404
 wait_until_answers / 200
 

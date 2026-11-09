@@ -18,6 +18,13 @@
         <dependency>
             <groupId>com.kg</groupId>
             <artifactId>macro-platform</artifactId>
+            <!-- For the scrape paths, which auth doesn't have. On the classpath, Boot would lock every route of this service -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

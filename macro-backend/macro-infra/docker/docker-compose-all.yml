@@ -41,6 +41,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/regional_statistics
       SPRING_DATASOURCE_USERNAME: regional_statistics
       SPRING_DATASOURCE_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
+      AUTH_JWKS_URI: http://auth:8086/macro-analyzer/auth/jwks.json
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       SPRING_MAIN_BANNER_MODE: "off"
       # The observability stack is optional: while Tempo is down, spans are dropped without log lines
@@ -62,6 +63,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/macro_series
       SPRING_DATASOURCE_USERNAME: macro_series
       SPRING_DATASOURCE_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
+      AUTH_JWKS_URI: http://auth:8086/macro-analyzer/auth/jwks.json
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       SPRING_MAIN_BANNER_MODE: "off"
       # The observability stack is optional: while Tempo is down, spans are dropped without log lines
@@ -83,6 +85,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/parliament
       SPRING_DATASOURCE_USERNAME: parliament
       SPRING_DATASOURCE_PASSWORD: ${PARLIAMENT_DB_PASSWORD:-parliamentpassword}
+      AUTH_JWKS_URI: http://auth:8086/macro-analyzer/auth/jwks.json
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       SPRING_MAIN_BANNER_MODE: "off"
       # The observability stack is optional: while Tempo is down, spans are dropped without log lines
@@ -102,6 +105,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/election
       SPRING_DATASOURCE_USERNAME: election
       SPRING_DATASOURCE_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
+      AUTH_JWKS_URI: http://auth:8086/macro-analyzer/auth/jwks.json
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       SPRING_MAIN_BANNER_MODE: "off"
       # The observability stack is optional: while Tempo is down, spans are dropped without log lines
