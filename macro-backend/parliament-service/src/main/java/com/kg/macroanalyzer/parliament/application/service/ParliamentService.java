@@ -22,8 +22,7 @@ public class ParliamentService implements ParliamentQueries {
     private static final String SERVING_STATUS_MARKER = "tjänstgörande";
     private static final String SERVING_ASSIGNMENT_STATUS = "Tjänstgörande";
     private static final String UNKNOWN_PARTY_COLOR = "#9CA3AF";
-    // Left to right: the seat chart on the Riksdag page places the parties in this order
-    private static final List<String> PARTY_ORDER = List.of("V", "S", "MP", "C", "L", "M", "KD", "SD");
+    private static final List<String> PARTIES_LEFT_TO_RIGHT = List.of("V", "S", "MP", "C", "L", "M", "KD", "SD");
     private static final String COMMITTEE_MEMBER_ROLE = "Ledamot";
     private static final Set<String> CHAIR_ROLES = Set.of(
             "Ordförande", "Vice ordförande", "Förste vice ordförande", "Andre vice ordförande", "Tredje vice ordförande"
@@ -255,8 +254,8 @@ public class ParliamentService implements ParliamentQueries {
     }
 
     private static int partyPosition(String code) {
-        final var position = PARTY_ORDER.indexOf(code);
-        return position < 0 ? PARTY_ORDER.size() : position;
+        final var position = PARTIES_LEFT_TO_RIGHT.indexOf(code);
+        return position < 0 ? PARTIES_LEFT_TO_RIGHT.size() : position;
     }
 
     private static String partyFallbackName(String code) {
