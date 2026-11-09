@@ -33,6 +33,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<authApi.AuthUser | null>(null);
   const token = useRef<HeldToken | null>(null);
   const refreshing = useRef<Promise<string | null> | null>(null);
+  // A login or logout moves this on, so the answer to a refresh started before it can't overwrite what it did
+  const generation = useRef(0);
 
   const hold = useCallback((answer: authApi.AuthenticatedResponse): string => {
     token.current = { value: answer.accessToken, expiresAtMs: Date.now() + answer.expiresInSeconds * 1000 };
@@ -47,12 +49,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const refresh = useCallback((): Promise<string | null> => {
+    const startedIn = generation.current;
     refreshing.current ??= authApi
       .refreshAccessToken()
-      .then(hold)
+      .then((answer) => (generation.current === startedIn ? hold(answer) : (token.current?.value ?? null)))
       .catch((error: unknown) => {
         // Only a refused session ends the signed-in state: the service may just be restarting
-        if (error instanceof authApi.AuthError && error.status === 401) {
+        if (generation.current === startedIn && error instanceof authApi.AuthError && error.status === 401) {
           forget();
         }
         return null;
@@ -73,10 +76,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       user,
       login: async (email: string, password: string) => {
-        hold(await authApi.login(email, password));
+        const answer = await authApi.login(email, password);
+        generation.current += 1;
+        hold(answer);
         setSignedInHint(true);
       },
       logout: async () => {
+        generation.current += 1;
         try {
           await authApi.logout();
         } finally {
