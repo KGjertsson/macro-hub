@@ -8,7 +8,7 @@ map $status $log_level {
 
 # A closed set of values, one per routed prefix: the route is a Loki label, unlike the URI
 map $uri $gateway_route {
-    ~^/macro-analyzer/(series-config|chart-data|regional-statistics|parliament|municipalities|regions|constituencies)(/|$) $1;
+    ~^/macro-analyzer/(series-config|chart-data|regional-statistics|parliament|municipalities|regions|constituencies|auth)(/|$) $1;
     ~^/macro-analyzer/scrape/(regional-statistics|macro-series|parliament|election)(/|$) scrape-$1;
     ~^/macro-analyzer(/|$) unknown-api;
     /telemetry/collect telemetry;
@@ -29,6 +29,9 @@ map $gateway_route $trace_id {
     unknown-api "";
     default     $request_id;
 }
+
+# Per client address, for what guesses passwords or sends mail. /token, /logout and /jwks.json aren't: they guess nothing, and the app calls /token often
+limit_req_zone $binary_remote_addr zone=auth_guessable:1m rate=10r/m;
 
 log_format json_access escape=json
     '{"time":"$time_iso8601","level":"$log_level","method":"$request_method","uri":"$request_uri",'
@@ -105,6 +108,26 @@ server {
 
     location /macro-analyzer/scrape/election/ {
         set $backend ${ELECTION_URL};
+        proxy_pass $backend;
+    }
+
+    # Limited by default and exempted by exact match: a list of limited paths misses /login;x=1, which Spring still routes to login
+    location /macro-analyzer/auth/ {
+        limit_req zone=auth_guessable burst=10 nodelay;
+        limit_req_status 429;
+        set $backend ${AUTH_URL};
+        proxy_pass $backend;
+    }
+    location = /macro-analyzer/auth/token {
+        set $backend ${AUTH_URL};
+        proxy_pass $backend;
+    }
+    location = /macro-analyzer/auth/logout {
+        set $backend ${AUTH_URL};
+        proxy_pass $backend;
+    }
+    location = /macro-analyzer/auth/jwks.json {
+        set $backend ${AUTH_URL};
         proxy_pass $backend;
     }
 

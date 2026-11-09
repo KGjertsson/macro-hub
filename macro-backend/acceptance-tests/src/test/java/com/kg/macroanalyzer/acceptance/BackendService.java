@@ -12,7 +12,8 @@ public record BackendService(
         String database,
         String databasePassword,
         String gatewayUrlVariable,
-        Map<String, String> environment
+        Map<String, String> environment,
+        boolean scrapes
 ) {
 
     public static final String FED_SUBSCRIPTION_KEY = "acceptance-fed-key";
@@ -25,7 +26,8 @@ public record BackendService(
             "regional_statistics",
             "regionalstatisticspassword",
             "REGIONAL_STATISTICS_URL",
-            Map.of()
+            Map.of(),
+            true
     );
 
     public static final BackendService MACRO_SERIES = new BackendService(
@@ -36,7 +38,8 @@ public record BackendService(
             "macro_series",
             "macroseriespassword",
             "MACRO_SERIES_URL",
-            Map.of("FED_PROD_SUBSCRIPTION_KEY", FED_SUBSCRIPTION_KEY)
+            Map.of("FED_PROD_SUBSCRIPTION_KEY", FED_SUBSCRIPTION_KEY),
+            true
     );
 
     public static final BackendService PARLIAMENT = new BackendService(
@@ -47,7 +50,8 @@ public record BackendService(
             "parliament",
             "parliamentpassword",
             "PARLIAMENT_URL",
-            Map.of()
+            Map.of(),
+            true
     );
 
     public static final BackendService ELECTION = new BackendService(
@@ -58,17 +62,30 @@ public record BackendService(
             "election",
             "electionpassword",
             "ELECTION_URL",
-            Map.of("ELECTION_PARLIAMENT_URL", PARLIAMENT.internalUrl())
+            Map.of("ELECTION_PARLIAMENT_URL", PARLIAMENT.internalUrl()),
+            true
     );
 
-    public static final List<BackendService> ALL = List.of(REGIONAL_STATISTICS, MACRO_SERIES, PARLIAMENT, ELECTION);
+    public static final BackendService AUTH = new BackendService(
+            "auth",
+            "acceptance.image.auth",
+            "auth-service:acceptance",
+            8086,
+            "auth",
+            "authpassword",
+            "AUTH_URL",
+            Map.of(),
+            false
+    );
+
+    public static final List<BackendService> ALL = List.of(REGIONAL_STATISTICS, MACRO_SERIES, PARLIAMENT, ELECTION, AUTH);
 
     public BackendService withEnvironment(Map<String, String> added) {
         final var merged = new HashMap<>(environment);
         merged.putAll(added);
 
         return new BackendService(
-                networkAlias, imageProperty, defaultImage, port, database, databasePassword, gatewayUrlVariable, Map.copyOf(merged));
+                networkAlias, imageProperty, defaultImage, port, database, databasePassword, gatewayUrlVariable, Map.copyOf(merged), scrapes);
     }
 
     public String image() {

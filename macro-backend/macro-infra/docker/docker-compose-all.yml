@@ -17,6 +17,7 @@ services:
       MACRO_SERIES_DB_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
       PARLIAMENT_DB_PASSWORD: ${PARLIAMENT_DB_PASSWORD:-parliamentpassword}
       ELECTION_DB_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:-authpassword}
       MONITORING_DB_PASSWORD: ${MONITORING_DB_PASSWORD:-monitoringpassword}
     ports:
       - "5432:5432"
@@ -113,6 +114,39 @@ services:
     ports:
       - "8085:8085"
 
+  auth:
+    image: auth-service:latest
+    container_name: macrohub-auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth
+      SPRING_DATASOURCE_USERNAME: auth
+      SPRING_DATASOURCE_PASSWORD: ${AUTH_DB_PASSWORD:-authpassword}
+      LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
+      SPRING_MAIN_BANNER_MODE: "off"
+      # The observability stack is optional: while Tempo is down, spans are dropped without log lines
+      MANAGEMENT_OPENTELEMETRY_ENABLED: "true"
+      MANAGEMENT_TRACING_EXPORT_ENABLED: "true"
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
+      AUTH_PUBLIC_URL: ${AUTH_PUBLIC_URL:-http://localhost:8081}
+      AUTH_ADMIN_EMAIL: ${AUTH_ADMIN_EMAIL:-}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
+      # log writes every mail, with its link, to this container's log. smtp needs the SPRING_MAIL_ variables
+      AUTH_MAIL_MODE: ${AUTH_MAIL_MODE:-log}
+      AUTH_MAIL_FROM: ${AUTH_MAIL_FROM:-noreply@localhost}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      # Required, so a provider that doesn't offer TLS fails instead of receiving the password in the clear
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+    ports:
+      - "127.0.0.1:8086:8086"
+
   macro-frontend:
     build: ../../../macro-frontend
     image: macro-frontend:latest
@@ -122,6 +156,7 @@ services:
       - macro-series
       - parliament
       - election
+      - auth
     environment:
       # scheme://host:port only: a trailing slash or path makes every proxied request 404
       # Write literal values: an empty one, as ${X:-} can give, makes nginx exit at startup
@@ -129,6 +164,7 @@ services:
       REGIONAL_STATISTICS_URL: http://regional-statistics:8082
       PARLIAMENT_URL: http://parliament:8084
       ELECTION_URL: http://election:8085
+      AUTH_URL: http://auth:8086
       FARO_URL: http://alloy:12347
     ports:
       - "8081:80"

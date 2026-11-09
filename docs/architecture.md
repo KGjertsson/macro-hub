@@ -47,6 +47,8 @@ The components that run, and how they connect. It is what Docker Compose starts
   . and gives it the scrape queue, the cron jobs, the scrape/ endpoints and the ScrapeFlow.       .
   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
+  Not drawn: auth, :8086 (route auth/, database auth, an SMTP provider). It holds accounts, sessions
+  and the keys for the JWTs. It has no scraping, and uses only macro-platform's shared code.
   Under a service: the external APIs it scrapes, over HTTPS.
   (1) election reads the party colours from parliament directly, at http://parliament:8084:
       GET /macro-analyzer/parliament/parties, cached in memory, refreshed hourly in the background.

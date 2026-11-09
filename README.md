@@ -55,10 +55,10 @@ EU27_2020 = European Union (27 countries as of 2020).
 
 ## Set Up Guide
 
-The backend is four services and a shared library, in `macro-backend/`, and the dashboard is in `macro-frontend/`. See `CLAUDE.md` for the architecture and all the ways to run them, and `macro-backend/ARCHITECTURE.md` for diagrams.
+The backend is five services and a shared library, in `macro-backend/`, and the dashboard is in `macro-frontend/`. See `CLAUDE.md` for the architecture and all the ways to run them, and `macro-backend/ARCHITECTURE.md` for diagrams.
 
 1. `cp macro-backend/macro-series-service/.env.example macro-backend/macro-series-service/.env`. The keys in it are only needed to scrape Riksbanken and Fed series
-2. Build the backend images: `(cd macro-backend && ./mvnw clean package && docker build -t regional-statistics-service regional-statistics-service && docker build -t macro-series-service macro-series-service && docker build -t parliament-service parliament-service && docker build -t election-service election-service)`
+2. Build the backend images: `(cd macro-backend && ./mvnw clean package && docker build -t regional-statistics-service regional-statistics-service && docker build -t macro-series-service macro-series-service && docker build -t parliament-service parliament-service && docker build -t election-service election-service && docker build -t auth-service auth-service)`
 3. Start everything: `docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`, and open `http://localhost:8081`
 4. Run `macro-backend/macro-infra/scripts/scrape-all.sh` to populate the databases, which takes about 8 minutes
 

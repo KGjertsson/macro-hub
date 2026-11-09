@@ -4,6 +4,8 @@ The backend is one service per domain, so a new domain is a new service. This ch
 
 `<service>` is the service's name, and `<db>` its database and role (`macro_series`, for example).
 
+`auth-service` has no scraping, so it skips what this list says about `db/platform`, `series_configuration`, the scrape paths and the crons. It scans only `auth` and `shared`, and has `scrapes = false` in `BackendService`.
+
 ## Database and role
 
 - [ ] Add a `create_service_database <db> "${<DB>_DB_PASSWORD:-<default>}"` line to `macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`, and the password variable to `postgres` in both Compose files, to the service in `docker-compose-all.yml`, and as a comment to `macro-backend/macro-series-service/.env.example`, which lists every service's optional password. The script creates the role and the database, revokes `CONNECT` from `PUBLIC` on every database, can be re-run, and picks up a changed password.
