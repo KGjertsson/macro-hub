@@ -2,9 +2,12 @@ package com.kg.macroanalyzer.shared.config;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -15,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
@@ -42,6 +47,10 @@ class TracingHttpTest {
     private static final String PARENT_SPAN_ID = "b7ad6b7169203331";
     private static final String API_PATH = "/macro-analyzer/series-config";
     private static final String SERVICE_NAME = "macro-series";
+    private static final String QUERY_PATH = "/tracing-test/query";
+    private static final String FAILING_QUERY_PATH = "/tracing-test/failing-query";
+    private static final String SCRAPE_QUERY_PATH = "/macro-analyzer/scrape/macro-series/tracing-test";
+    private static final String QUERY_VALUE = "value-that-must-not-reach-a-span";
 
     @Autowired
     InMemorySpanExporter spanExporter;
@@ -51,6 +60,9 @@ class TracingHttpTest {
 
     @Value("${local.server.port}")
     int port;
+
+    @Autowired
+    DSLContext dsl;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -63,7 +75,7 @@ class TracingHttpTest {
         get(API_PATH, traceparent(traceId));
 
         // then
-        final var span = awaitSpanOfTrace(traceId);
+        final var span = awaitServerSpanOfTrace(traceId);
         assertEquals(PARENT_SPAN_ID, span.getParentSpanId());
         assertEquals(SpanKind.SERVER, span.getKind());
         assertEquals(SERVICE_NAME, span.getResource().getAttribute(AttributeKey.stringKey("service.name")));
@@ -92,12 +104,72 @@ class TracingHttpTest {
         // when
         final var response = get(path, traceparent(actuatorTrace));
         get(API_PATH, traceparent(laterTrace));
-        awaitSpanOfTrace(laterTrace);
+        awaitServerSpanOfTrace(laterTrace);
 
         // then
         assertEquals(200, response.statusCode());
         assertTrue(finishedSpans().stream().noneMatch(span -> span.getTraceId().equals(actuatorTrace)), () -> "Spans: " + finishedSpans());
         assertTrue(get("/actuator/prometheus", traceparent(newTraceId())).body().contains("uri=\"" + path + "\""));
+    }
+
+    @Test
+    void shouldAddAChildSpanForAQuery_namedAfterItsTable_withoutItsValues() throws Exception {
+        // given
+        final var traceId = newTraceId();
+
+        // when
+        get(QUERY_PATH, traceparent(traceId));
+
+        // then
+        final var server = awaitServerSpanOfTrace(traceId);
+        final var query = querySpanOfTrace(traceId);
+        final var text = query.getAttributes().get(AttributeKey.stringKey("db.query.text"));
+        assertEquals("select series_configuration", query.getName());
+        assertEquals(server.getSpanId(), query.getParentSpanId());
+        assertEquals("postgresql", query.getAttributes().get(AttributeKey.stringKey("db.system.name")));
+        assertTrue(text.contains("?"), text);
+        assertFalse(text.contains(QUERY_VALUE), text);
+    }
+
+    @Test
+    void shouldMarkTheSpanOfAFailingQueryAsAnError() throws Exception {
+        // given
+        final var traceId = newTraceId();
+
+        // when
+        get(FAILING_QUERY_PATH, traceparent(traceId));
+
+        // then
+        awaitServerSpanOfTrace(traceId);
+        final var query = querySpanOfTrace(traceId);
+        assertEquals("select no_such_table", query.getName());
+        assertEquals(StatusCode.ERROR, query.getStatus().getStatusCode());
+    }
+
+    @Test
+    void shouldNotAddQuerySpans_toAManualScrape() throws Exception {
+        // given
+        final var traceId = newTraceId();
+
+        // when
+        final var response = get(SCRAPE_QUERY_PATH, traceparent(traceId));
+
+        // then
+        awaitServerSpanOfTrace(traceId);
+        assertEquals(200, response.statusCode());
+        assertEquals(1, spansOfTrace(traceId).size(), () -> "Spans: " + spansOfTrace(traceId));
+    }
+
+    @Test
+    void shouldNotStartATrace_forAQueryOutsideOne() {
+        // given
+        final var marker = "untraced_" + newTraceId();
+
+        // when
+        dsl.fetchCount(DSL.table(DSL.name("public", "series_configuration")).as(marker));
+
+        // then
+        assertTrue(finishedSpans().stream().noneMatch(span -> String.valueOf(span.getAttributes().get(AttributeKey.stringKey("db.query.text"))).contains(marker)));
     }
 
     private String traceparent(String traceId) {
@@ -108,16 +180,25 @@ class TracingHttpTest {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    private SpanData awaitSpanOfTrace(String traceId) throws InterruptedException {
+    private SpanData awaitServerSpanOfTrace(String traceId) throws InterruptedException {
         final var deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
         while (System.nanoTime() < deadline) {
-            final var match = finishedSpans().stream().filter(span -> span.getTraceId().equals(traceId)).findFirst();
+            final var match = spansOfTrace(traceId).stream().filter(span -> span.getKind() == SpanKind.SERVER).findFirst();
             if (match.isPresent()) {
                 return match.get();
             }
             Thread.sleep(50);
         }
         throw new AssertionError("No span of trace " + traceId + ": " + finishedSpans());
+    }
+
+    private List<SpanData> spansOfTrace(String traceId) {
+        return finishedSpans().stream().filter(span -> span.getTraceId().equals(traceId)).toList();
+    }
+
+    private SpanData querySpanOfTrace(String traceId) {
+        return spansOfTrace(traceId).stream().filter(span -> span.getKind() == SpanKind.CLIENT).findFirst()
+                .orElseThrow(() -> new AssertionError("No query span of trace " + traceId + ": " + finishedSpans()));
     }
 
     private List<SpanData> finishedSpans() {
@@ -143,14 +224,44 @@ class TracingHttpTest {
         }
 
         @Bean
-        TracedRoute tracedRoute() {
-            return new TracedRoute();
+        TracedRoute tracedRoute(DSLContext dsl) {
+            return new TracedRoute(dsl);
         }
 
     }
 
     @RestController
     static class TracedRoute {
+
+        private final DSLContext dsl;
+
+        TracedRoute(DSLContext dsl) {
+            this.dsl = dsl;
+        }
+
+        @GetMapping(QUERY_PATH)
+        int query() {
+            return countSeriesConfigurations();
+        }
+
+        @GetMapping(SCRAPE_QUERY_PATH)
+        int queryDuringAManualScrape() {
+            return countSeriesConfigurations();
+        }
+
+        @GetMapping(FAILING_QUERY_PATH)
+        String failingQuery() {
+            try {
+                dsl.fetchCount(DSL.table(DSL.name("public", "no_such_table")));
+                return "no failure";
+            } catch (DataAccessException expected) {
+                return "failed";
+            }
+        }
+
+        private int countSeriesConfigurations() {
+            return dsl.fetchCount(DSL.table(DSL.name("public", "series_configuration")), DSL.field(DSL.name("name"), String.class).eq(QUERY_VALUE));
+        }
 
         @GetMapping("/tracing-test")
         String traceIdInTheLoggingContext() {
