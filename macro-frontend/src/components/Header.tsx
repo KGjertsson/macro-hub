@@ -1,11 +1,13 @@
-import {BarChart3, BookOpen, Building2, Landmark, LineChart, MapPin, MapPinned, Menu, Vote} from 'lucide-react';
+import {BarChart3, BookOpen, Building2, Landmark, LineChart, LogIn, LogOut, MapPin, MapPinned, Menu, UserRound, Vote} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useState} from 'react';
 import {Link, useLocation} from 'react-router-dom';
+import {useAuth} from '@/auth/authContext';
 
 const Header = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
+    const {user, logout} = useAuth();
     const isParliamentPage = location.pathname.startsWith('/parliament');
     const isConstituenciesPage = location.pathname === '/constituencies';
     const isRegionsPage = location.pathname === '/regions';
@@ -87,6 +89,25 @@ const Header = () => {
                                 Källor
                             </Button>
                         </Link>
+                        {user ? (
+                            <>
+                                <span className='text-sm text-muted-foreground flex items-center gap-1.5'>
+                                    <UserRound className='h-4 w-4'/>
+                                    {user.displayName}
+                                </span>
+                                <Button variant='ghost' size='sm' onClick={() => void logout()}>
+                                    <LogOut className='h-4 w-4 mr-2'/>
+                                    Logga ut
+                                </Button>
+                            </>
+                        ) : (
+                            <Link to='/konto/logga-in'>
+                                <Button variant='ghost' size='sm' className='text-muted-foreground hover:text-foreground'>
+                                    <LogIn className='h-4 w-4 mr-2'/>
+                                    Logga in
+                                </Button>
+                            </Link>
+                        )}
                     </div>
 
                     <Button
@@ -153,6 +174,24 @@ const Header = () => {
                                 <BookOpen className='h-4 w-4'/>
                                 Källor
                             </Link>
+                            {user ? (
+                                <button
+                                    type='button'
+                                    onClick={() => void logout()}
+                                    className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
+                                >
+                                    <LogOut className='h-4 w-4'/>
+                                    Logga ut ({user.displayName})
+                                </button>
+                            ) : (
+                                <Link
+                                    to='/konto/logga-in'
+                                    className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
+                                >
+                                    <LogIn className='h-4 w-4'/>
+                                    Logga in
+                                </Link>
+                            )}
                         </nav>
                     </div>
                 )}
