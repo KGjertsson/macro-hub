@@ -42,6 +42,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${REGIONAL_STATISTICS_DB_PASSWORD:-regionalstatisticspassword}
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       SPRING_MAIN_BANNER_MODE: "off"
+      # The observability stack is optional: while Tempo is down, spans are dropped without log lines
+      MANAGEMENT_OPENTELEMETRY_ENABLED: "true"
+      MANAGEMENT_TRACING_EXPORT_ENABLED: "true"
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
     # No memory limit: a first full SCB scrape keeps every fetched value on the heap until it is stored. If a limit is
     # added, leave room for that (see "SCB regional statistics" in CLAUDE.md for the measured peak)
     ports:
@@ -59,6 +63,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       SPRING_MAIN_BANNER_MODE: "off"
+      # The observability stack is optional: while Tempo is down, spans are dropped without log lines
+      MANAGEMENT_OPENTELEMETRY_ENABLED: "true"
+      MANAGEMENT_TRACING_EXPORT_ENABLED: "true"
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       RIKSBANKEN_PROD_SUBSCRIPTION_KEY: ${RIKSBANKEN_PROD_SUBSCRIPTION_KEY:-}
       FED_PROD_SUBSCRIPTION_KEY: ${FED_PROD_SUBSCRIPTION_KEY:-}
     ports:
@@ -76,6 +84,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${PARLIAMENT_DB_PASSWORD:-parliamentpassword}
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       SPRING_MAIN_BANNER_MODE: "off"
+      # The observability stack is optional: while Tempo is down, spans are dropped without log lines
+      MANAGEMENT_OPENTELEMETRY_ENABLED: "true"
+      MANAGEMENT_TRACING_EXPORT_ENABLED: "true"
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
     ports:
       - "8084:8084"
 
@@ -91,6 +103,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
       LOGGING_STRUCTURED_FORMAT_CONSOLE: ecs
       SPRING_MAIN_BANNER_MODE: "off"
+      # The observability stack is optional: while Tempo is down, spans are dropped without log lines
+      MANAGEMENT_OPENTELEMETRY_ENABLED: "true"
+      MANAGEMENT_TRACING_EXPORT_ENABLED: "true"
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       # No depends_on: it starts without parliament, uses Valmyndigheten's colours and keeps trying until the list has
       # loaded (ADR 0005)
       ELECTION_PARLIAMENT_URL: http://parliament:8084

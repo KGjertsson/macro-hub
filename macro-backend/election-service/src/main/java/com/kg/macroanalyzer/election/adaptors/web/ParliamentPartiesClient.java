@@ -1,18 +1,20 @@
 package com.kg.macroanalyzer.election.adaptors.web;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -22,31 +24,40 @@ public class ParliamentPartiesClient implements AutoCloseable {
     private static final String PARTIES_PATH = "/macro-analyzer/parliament/parties";
 
     private final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    private final ExecutorService exchanges = Executors.newThreadPerTaskExecutor(
+            Thread.ofPlatform().name("party-list-fetch").daemon().factory()
+    );
+    private final RestClient restClient;
     private final JsonMapper jsonMapper;
-    private final HttpRequest request;
     private final Duration timeout;
 
-    public ParliamentPartiesClient(String parliamentUrl, Duration timeout, JsonMapper jsonMapper) {
+    public ParliamentPartiesClient(RestClient.Builder restClientBuilder, String parliamentUrl, Duration timeout, JsonMapper jsonMapper) {
+        this.restClient = restClientBuilder
+                .baseUrl(parliamentUrl.replaceAll("/+$", ""))
+                .requestFactory(new JdkClientHttpRequestFactory(httpClient))
+                .build();
         this.jsonMapper = jsonMapper;
-        this.request = HttpRequest.newBuilder(URI.create(parliamentUrl.replaceAll("/+$", "") + PARTIES_PATH)).GET().build();
         this.timeout = timeout;
     }
 
     public Map<String, String> fetchPartyColors() throws IOException, InterruptedException, TimeoutException {
-        // The deadline is on the future, as HttpRequest.timeout doesn't cover a body that stalls after the headers
-        final var exchange = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        // The deadline is on the future, as no client timeout covers a body that stalls after the headers
+        final var exchange = exchanges.submit(this::exchange);
         try {
-            final var response = exchange.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-            return switch (response.statusCode()) {
-                case 200 -> parse(response.body());
-                case 204 -> Map.of();
-                default -> throw new IOException("HTTP " + response.statusCode());
-            };
+            return exchange.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
             throw new IOException(e.getCause());
         } finally {
             exchange.cancel(true);
         }
+    }
+
+    private Map<String, String> exchange() {
+        return restClient.get().uri(PARTIES_PATH).exchange((request, response) -> switch (response.getStatusCode().value()) {
+            case 200 -> parse(new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8));
+            case 204 -> Map.of();
+            default -> throw new IOException("HTTP " + response.getStatusCode().value());
+        });
     }
 
     private Map<String, String> parse(String body) throws IOException {
@@ -76,6 +87,7 @@ public class ParliamentPartiesClient implements AutoCloseable {
 
     @Override
     public void close() {
+        exchanges.shutdownNow();
         httpClient.shutdownNow();
     }
 

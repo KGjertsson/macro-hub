@@ -233,7 +233,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "refId": "A"
+          "refId": "A",
+          "exemplar": true
         }
       ],
       "fieldConfig": {

@@ -15,10 +15,26 @@ map $uri $gateway_route {
     default frontend;
 }
 
+# nginx has no OpenTelemetry module, so it makes no span. $request_id, 32 hex characters, is the trace id of everything the
+# backend does for this request, which is what ties this access line to that trace. Tempo sees the service's span as the
+# trace's first span, with a parent that was never exported
+map $request_id $gateway_span_id {
+    "~^(.{16})" $1;
+}
+
+# Empty on routes no service answers, so a line only offers a trace link where a trace exists
+map $gateway_route $trace_id {
+    frontend    "";
+    telemetry   "";
+    unknown-api "";
+    default     $request_id;
+}
+
 log_format json_access escape=json
     '{"time":"$time_iso8601","level":"$log_level","method":"$request_method","uri":"$request_uri",'
     '"route":"$gateway_route","status":$status,"bytes":$body_bytes_sent,"request_time":$request_time,'
-    '"upstream_response_time":"$upstream_response_time","upstream_status":"$upstream_status"}';
+    '"upstream_response_time":"$upstream_response_time","upstream_status":"$upstream_status",'
+    '"trace_id":"$trace_id"}';
 
 server {
     listen 80;
@@ -36,6 +52,10 @@ server {
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
+    # Always replaced, also when a client sent one: port 8081 is published, and a caller must not choose trace ids or sampling
+    proxy_set_header traceparent "00-$request_id-$gateway_span_id-01";
+    proxy_set_header tracestate "";
+    proxy_set_header baggage "";
     # A full SCB or election scrape triggered through the proxy can run for minutes
     proxy_read_timeout 30m;
 

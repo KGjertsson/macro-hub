@@ -8,6 +8,10 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     editable: false
+    jsonData:
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo
 
   - name: Loki
     uid: loki
@@ -15,3 +19,33 @@ datasources:
     access: proxy
     url: http://loki:3100
     editable: false
+    jsonData:
+      derivedFields:
+        - name: Trace
+          matcherType: regex
+          matcherRegex: '"(?:traceId|trace_id)":"([0-9a-f]{32})"'
+          url: "$${__value.raw}"
+          urlDisplayLabel: Open trace
+          datasourceUid: tempo
+        - name: traceId
+          matcherType: label
+          matcherRegex: traceId
+          url: "$${__value.raw}"
+          urlDisplayLabel: Open trace
+          datasourceUid: tempo
+
+  - name: Tempo
+    uid: tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    editable: false
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: -1m
+        spanEndTimeShift: 1m
+        customQuery: true
+        query: '{service=~".+"} |= "$${__trace.traceId}"'
+      lokiSearch:
+        datasourceUid: loki
