@@ -34,6 +34,11 @@ public final class AcceptanceStack implements AutoCloseable {
     private static final int SOURCES_PORT = 8080;
     private static final String SOURCES_URL = "http://%s:%d".formatted(SOURCES_ALIAS, SOURCES_PORT);
 
+    private static final String MAILBOX_IMAGE = "axllent/mailpit:v1.27.0";
+    private static final String MAILBOX_ALIAS = "mailbox";
+    private static final int MAILBOX_SMTP_PORT = 1025;
+    private static final int MAILBOX_API_PORT = 8025;
+
     private static final String REDIRECT_LOCATION = "/acceptance-flyway";
     private static final String REDIRECT_SOURCES_SQL = """
             UPDATE series_configuration
@@ -105,6 +110,19 @@ public final class AcceptanceStack implements AutoCloseable {
         postgres.getDockerClient().startContainerCmd(postgres.getContainerId()).exec();
     }
 
+    // A service that sends mail is started afterwards with startLater, with its SMTP settings pointed at MAILBOX_ALIAS
+    public Mailbox startMailbox() {
+        final GenericContainer<?> mailbox = new GenericContainer<>(MAILBOX_IMAGE)
+                .withNetwork(network)
+                .withNetworkAliases(MAILBOX_ALIAS)
+                .withExposedPorts(MAILBOX_SMTP_PORT, MAILBOX_API_PORT)
+                .waitingFor(Wait.forHttp("/api/v1/info").forPort(MAILBOX_API_PORT).withStartupTimeout(STARTUP_TIMEOUT));
+        containers.add(mailbox);
+        mailbox.start();
+
+        return new Mailbox(new Gateway(baseUrl(mailbox, MAILBOX_API_PORT)), MAILBOX_ALIAS, MAILBOX_SMTP_PORT);
+    }
+
     public Gateway gateway() {
         return gateway;
     }
@@ -166,11 +184,13 @@ public final class AcceptanceStack implements AutoCloseable {
         final var container = serviceContainer(service);
         containers.add(container);
         container.start();
-        requireNoRealSources(service);
+        if (service.scrapes()) {
+            requireNoRealSources(service);
+        }
     }
 
     private GenericContainer<?> serviceContainer(BackendService service) {
-        return new GenericContainer<>(requireBuilt(service.image()))
+        final GenericContainer<?> container = new GenericContainer<>(requireBuilt(service.image()))
                 .withNetwork(network)
                 .withNetworkAliases(service.networkAlias())
                 .withEnv("SPRING_DATASOURCE_URL", service.jdbcUrl(POSTGRES_ALIAS))
@@ -179,15 +199,21 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withEnv("SCHEDULER_ENABLED", "false")
                 .withEnv("JAVA_TOOL_OPTIONS", CHEAP_BOOT_JVM_OPTIONS)
                 .withEnv(service.environment())
-                // Flyway seeds series_configuration with the real sources' URLs, and a service reads it once, right after
-                // migrating. A callback in the same run points the rows at the stub before that read
-                // The variable replaces spring.flyway.locations, so it repeats Boot's default, and a service that set its own
-                // locations would need them here too
-                .withEnv("SPRING_FLYWAY_LOCATIONS", "classpath:db/migration,filesystem:" + REDIRECT_LOCATION)
-                .withCopyToContainer(Transferable.of(REDIRECT_SOURCES_SQL), REDIRECT_LOCATION + "/afterMigrate.sql")
                 .withExposedPorts(service.port())
                 .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("%s/%s".formatted(logTag, service.networkAlias()))))
                 .waitingFor(Wait.forHttp(HEALTH_PATH).withStartupTimeout(STARTUP_TIMEOUT));
+
+        return service.scrapes() ? withSourcesRedirected(container) : container;
+    }
+
+    private GenericContainer<?> withSourcesRedirected(GenericContainer<?> container) {
+        // Flyway seeds series_configuration with the real sources' URLs, and a service reads it once, right after
+        // migrating. A callback in the same run points the rows at the stub before that read
+        // The variable replaces spring.flyway.locations, so it repeats Boot's default, and a service that set its own
+        // locations would need them here too
+        return container
+                .withEnv("SPRING_FLYWAY_LOCATIONS", "classpath:db/migration,filesystem:" + REDIRECT_LOCATION)
+                .withCopyToContainer(Transferable.of(REDIRECT_SOURCES_SQL), REDIRECT_LOCATION + "/afterMigrate.sql");
     }
 
     private void requireNoRealSources(BackendService service) {

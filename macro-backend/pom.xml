@@ -22,6 +22,7 @@
         <module>macro-series-service</module>
         <module>parliament-service</module>
         <module>election-service</module>
+        <module>auth-service</module>
         <module>acceptance-tests</module>
     </modules>
 

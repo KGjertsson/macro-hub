@@ -70,7 +70,7 @@ expect_json() {
 cp macro-series-service/.env.example macro-series-service/.env
 
 services_with_crons="$(compose config --format json | jq -c '[.services | to_entries[]
-    | select(.key != "postgres" and .key != "macro-frontend" and .value.environment.SCHEDULER_ENABLED != "false")
+    | select(.key != "postgres" and .key != "macro-frontend" and .key != "auth" and .value.environment.SCHEDULER_ENABLED != "false")
     | .key]')"
 if [ "$services_with_crons" != "[]" ]; then
     fail "add SCHEDULER_ENABLED to compose-smoke.override.yml for $services_with_crons, or its crons could call real sources"
@@ -81,6 +81,7 @@ docker build -t regional-statistics-service:latest regional-statistics-service
 docker build -t macro-series-service:latest macro-series-service
 docker build -t parliament-service:latest parliament-service
 docker build -t election-service:latest election-service
+docker build -t auth-service:latest auth-service
 
 compose up -d --build
 
@@ -92,6 +93,7 @@ wait_until_answers /macro-analyzer/parliament/parties 200
 wait_until_answers /macro-analyzer/regional-statistics/indicators 200
 # nginx has no 204, so this reached election
 wait_until_answers /macro-analyzer/municipalities/elections 204
+wait_until_answers /macro-analyzer/auth/jwks.json 200
 
 expect_json /macro-analyzer/series-config 'length' 108
 expect_json /macro-analyzer/series-config '.[0].name' '"PolicyRateSweden"'
@@ -99,6 +101,7 @@ expect_json /macro-analyzer/parliament/parties 'length' 11
 expect_json /macro-analyzer/parliament/parties '.[0].code' '"S"'
 expect_json /macro-analyzer/regional-statistics/indicators 'length' 26
 expect_json /macro-analyzer/regional-statistics/indicators 'map(.id) | index("households") != null' true
+expect_json /macro-analyzer/auth/jwks.json '.keys | length' 1
 
 wait_until_answers /macro-analyzer/unknown 404
 wait_until_answers / 200

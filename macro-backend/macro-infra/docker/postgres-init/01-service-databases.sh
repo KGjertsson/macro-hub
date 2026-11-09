@@ -27,6 +27,7 @@ create_service_database regional_statistics "${REGIONAL_STATISTICS_DB_PASSWORD:-
 create_service_database macro_series "${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}"
 create_service_database parliament "${PARLIAMENT_DB_PASSWORD:-parliamentpassword}"
 create_service_database election "${ELECTION_DB_PASSWORD:-electionpassword}"
+create_service_database auth "${AUTH_DB_PASSWORD:-authpassword}"
 
 # Every role may connect to a database by default, so a service's boundary needs this on all of them: on its own
 # database against the other roles, and on the others (postgres, template1) against its role.

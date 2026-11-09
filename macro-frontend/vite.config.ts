@@ -9,6 +9,7 @@ const MACRO_SERIES_URL = "http://localhost:8083";
 const REGIONAL_STATISTICS_URL = "http://localhost:8082";
 const PARLIAMENT_URL = "http://localhost:8084";
 const ELECTION_URL = "http://localhost:8085";
+const AUTH_URL = "http://localhost:8086";
 
 const proxy = {
   "/macro-analyzer/series-config": MACRO_SERIES_URL,
@@ -22,6 +23,7 @@ const proxy = {
   "/macro-analyzer/regions/": ELECTION_URL,
   "/macro-analyzer/constituencies/": ELECTION_URL,
   "/macro-analyzer/scrape/election/": ELECTION_URL,
+  "/macro-analyzer/auth/": AUTH_URL,
   // Any other API path answers 404, like nginx. bypass returning false does that, so nothing reaches the target; without
   // this entry the dev server would answer a GET with index.html and a 200
   "^/macro-analyzer(/|\\?|$)": { target: ELECTION_URL, bypass: () => false as const },

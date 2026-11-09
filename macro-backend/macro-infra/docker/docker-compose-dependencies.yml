@@ -17,6 +17,7 @@ services:
       MACRO_SERIES_DB_PASSWORD: ${MACRO_SERIES_DB_PASSWORD:-macroseriespassword}
       PARLIAMENT_DB_PASSWORD: ${PARLIAMENT_DB_PASSWORD:-parliamentpassword}
       ELECTION_DB_PASSWORD: ${ELECTION_DB_PASSWORD:-electionpassword}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:-authpassword}
       MONITORING_DB_PASSWORD: ${MONITORING_DB_PASSWORD:-monitoringpassword}
     ports:
       - "5432:5432"

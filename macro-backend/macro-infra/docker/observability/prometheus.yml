@@ -18,3 +18,4 @@ scrape_configs:
           - macro-series:8083
           - parliament:8084
           - election:8085
+          - auth:8086

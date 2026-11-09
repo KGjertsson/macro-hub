@@ -27,6 +27,12 @@ public record Gateway(String baseUrl) {
                 .POST(HttpRequest.BodyPublishers.ofString(body)));
     }
 
+    public HttpResponse<String> postWithCookie(String path, String cookie) {
+        return send(request(path)
+                .header("Cookie", cookie)
+                .POST(HttpRequest.BodyPublishers.noBody()));
+    }
+
     private HttpRequest.Builder request(String path) {
         return HttpRequest.newBuilder(URI.create(baseUrl + path)).timeout(SCRAPE_MAY_TAKE_THIS_LONG);
     }
