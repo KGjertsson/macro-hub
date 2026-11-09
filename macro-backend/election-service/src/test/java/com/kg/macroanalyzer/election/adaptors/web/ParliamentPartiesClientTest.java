@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
@@ -64,7 +65,7 @@ class ParliamentPartiesClientTest {
                 """);
 
         // when
-        try (final var client = new ParliamentPartiesClient(url() + "/", Duration.ofSeconds(5), new JsonMapper())) {
+        try (final var client = new ParliamentPartiesClient(RestClient.builder(), url() + "/", Duration.ofSeconds(5), new JsonMapper())) {
             // then
             assertEquals(Map.of("S", "#E8112d"), client.fetchPartyColors());
         }
@@ -130,7 +131,7 @@ class ParliamentPartiesClientTest {
         server.stop(0);
 
         // when
-        try (final var client = new ParliamentPartiesClient(url, Duration.ofSeconds(5), new JsonMapper())) {
+        try (final var client = new ParliamentPartiesClient(RestClient.builder(), url, Duration.ofSeconds(5), new JsonMapper())) {
             // then
             assertThrows(IOException.class, client::fetchPartyColors);
         }
@@ -183,7 +184,7 @@ class ParliamentPartiesClientTest {
     }
 
     private ParliamentPartiesClient client(Duration timeout) {
-        return new ParliamentPartiesClient(url(), timeout, new JsonMapper());
+        return new ParliamentPartiesClient(RestClient.builder(), url(), timeout, new JsonMapper());
     }
 
     private String url() {

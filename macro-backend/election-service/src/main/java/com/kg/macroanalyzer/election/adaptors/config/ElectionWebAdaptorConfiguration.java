@@ -11,6 +11,7 @@ import com.kg.macroanalyzer.shared.web.WebPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -32,11 +33,12 @@ public class ElectionWebAdaptorConfiguration {
 
     @Bean
     public ParliamentPartiesClient parliamentPartiesClient(
+            RestClient.Builder restClientBuilder,
             @Value("${election.parliament.url}") String parliamentUrl,
             @Value("${election.parliament.timeout}") Duration timeout,
             JsonMapper jsonMapper
     ) {
-        return new ParliamentPartiesClient(parliamentUrl, timeout, jsonMapper);
+        return new ParliamentPartiesClient(restClientBuilder, parliamentUrl, timeout, jsonMapper);
     }
 
     @Bean

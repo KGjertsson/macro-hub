@@ -19,6 +19,7 @@ services:
     depends_on:
       - loki
       - prometheus
+      - tempo
 
   loki:
     image: grafana/loki:3.6.20
@@ -48,6 +49,7 @@ services:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=30d
       - --storage.tsdb.retention.size=5GB
+      - --enable-feature=exemplar-storage
     ports:
       - "127.0.0.1:9090:9090"
     volumes:
@@ -74,6 +76,13 @@ services:
       - /dev/disk:/dev/disk:ro
       - ${DOCKER_ROOT:-/var/lib/docker}:${DOCKER_ROOT:-/var/lib/docker}:ro
 
+  tempo:
+    image: grafana/tempo:3.1.1
+    command: [ "-target=all", "-config.file=/etc/tempo/tempo.yml" ]
+    volumes:
+      - tempo-data:/var/tempo
+      - ./observability/tempo.yml:/etc/tempo/tempo.yml:ro
+
   postgres-exporter:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.20.1
     environment:
@@ -91,3 +100,4 @@ volumes:
   loki-data:
   alloy-data:
   prometheus-data:
+  tempo-data:
