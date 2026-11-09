@@ -166,11 +166,12 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service=~\"$service\", level=~\"$level\"} |~ `(?i)${search:regex}` | json | drop trace_id=\"\" | line_format `{{ .level | default \"-\" | ToUpper | printf \"%-5s\" }} {{ printf \"%-19s\" .service }} {{ if .message }}{{ .message }}{{ else if .value }}{{ .value }}{{ else if .method }}{{ .method }} {{ .uri }} {{ .status }}{{ else if .page_url }}{{ .type }} {{ .page_url }}{{ else }}{{ __line__ }}{{ end }}`"
+          "expr": "{service=~\"$service\", level=~\"$level\"} |~ `(?i)${search:regex}` | json | drop __error__, __error_details__, trace_id=\"\" | label_format full_json=`{{ __line__ }}` | line_format `{{ printf \"%-19s\" .service }} {{ if .message }}{{ .message }}{{ else if .value }}{{ .value }}{{ else if .method }}{{ .method }} {{ .uri }} {{ .status }}{{ else if .page_url }}{{ .type }} {{ .page_url }}{{ else }}{{ __line__ }}{{ end }}`"
         }
       ],
       "options": {
-        "showTime": false,
+        "showTime": true,
+        "showLevel": true,
         "showLabels": false,
         "showCommonLabels": false,
         "wrapLogMessage": true,
