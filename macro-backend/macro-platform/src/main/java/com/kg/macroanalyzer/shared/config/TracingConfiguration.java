@@ -2,7 +2,6 @@ package com.kg.macroanalyzer.shared.config;
 
 import io.micrometer.tracing.Tracer;
 import org.jooq.impl.DefaultExecuteListenerProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.micrometer.tracing.autoconfigure.MicrometerTracingAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +17,8 @@ public class TracingConfiguration {
     }
 
     @Bean
-    public DefaultExecuteListenerProvider querySpanListenerProvider(Tracer tracer, @Value("${macro.scrape.path-prefix}") String scrapePathPrefix) {
-        return new DefaultExecuteListenerProvider(new QuerySpanListener(tracer, "/" + scrapePathPrefix));
+    public DefaultExecuteListenerProvider querySpanListenerProvider(Tracer tracer) {
+        return new DefaultExecuteListenerProvider(new QuerySpanListener(tracer));
     }
 
 }

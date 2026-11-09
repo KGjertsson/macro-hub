@@ -145,6 +145,8 @@ class TracingHttpTest {
         final var query = querySpanOfTrace(traceId);
         assertEquals("select no_such_table", query.getName());
         assertEquals(StatusCode.ERROR, query.getStatus().getStatusCode());
+        assertFalse(query.getStatus().getDescription().contains("no_such_table"), query.getStatus().getDescription());
+        assertFalse(query.getEvents().toString().contains("no_such_table"), () -> query.getEvents().toString());
     }
 
     @Test

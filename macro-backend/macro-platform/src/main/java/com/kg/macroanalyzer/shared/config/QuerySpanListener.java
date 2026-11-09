@@ -14,16 +14,15 @@ public final class QuerySpanListener implements ExecuteListener {
 
     private static final String SPAN = QuerySpanListener.class.getName() + ".span";
     private static final String DEFAULT_NAME = "query";
+    private static final String SCRAPE_PATH = "/macro-analyzer/scrape/";
     private static final Pattern OPERATION = Pattern.compile("^\\s*(\\w+)");
     // The lookahead skips a column, as in extract(year from "public"."t"."date")
     private static final Pattern TABLE = Pattern.compile("\\b(?:from|into|update)\\s+(?:\"[^\"]+\"\\.)?\"([^\"]+)\"(?!\\.)", Pattern.CASE_INSENSITIVE);
 
     private final Tracer tracer;
-    private final String scrapePath;
 
-    public QuerySpanListener(Tracer tracer, String scrapePath) {
+    public QuerySpanListener(Tracer tracer) {
         this.tracer = tracer;
-        this.scrapePath = scrapePath;
     }
 
     @Override
@@ -46,7 +45,7 @@ public final class QuerySpanListener implements ExecuteListener {
             span.tag("db.query.text", sql);
         }
         if (context.exception() != null) {
-            span.error(context.exception());
+            span.error(new QueryFailed(context.exception().getClass().getName()));
         }
         span.end();
     }
@@ -54,7 +53,7 @@ public final class QuerySpanListener implements ExecuteListener {
     // A scrape can run a very large number of statements under its one request, more than a trace can usefully show
     private boolean isManualScrape() {
         return RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes
-                && attributes.getRequest().getRequestURI().startsWith(scrapePath);
+                && attributes.getRequest().getRequestURI().startsWith(SCRAPE_PATH);
     }
 
     private static String spanName(String sql) {
@@ -67,6 +66,15 @@ public final class QuerySpanListener implements ExecuteListener {
         }
         final var table = TABLE.matcher(sql);
         return table.find() ? operation.group(1).toLowerCase() + " " + table.group(1) : operation.group(1).toLowerCase();
+    }
+
+    // In place of the real exception, whose message can repeat a bound value: Postgres's "Key (email)=(...) already exists"
+    private static final class QueryFailed extends RuntimeException {
+
+        private QueryFailed(String exceptionType) {
+            super(exceptionType, null, false, false);
+        }
+
     }
 
 }
