@@ -28,7 +28,7 @@ const Login = () => {
           label='Lösenord'
           type='password'
           autoComplete='current-password'
-          aria-invalid={form.errorMessage !== null && !form.isInvalid('email')}
+          aria-invalid={form.isInvalid('password')}
         />
         <FormError message={form.errorMessage} />
         <Button type='submit' className='w-full' disabled={form.submitting}>

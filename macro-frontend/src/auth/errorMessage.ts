@@ -12,6 +12,7 @@ const MESSAGES: Record<string, string> = {
 };
 
 const FIELDS: Record<string, AuthFormField> = {
+  invalid_credentials: 'password',
   invalid_email: 'email',
   invalid_password: 'password',
   invalid_displayName: 'displayName',
