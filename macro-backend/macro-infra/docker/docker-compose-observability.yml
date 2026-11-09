@@ -55,6 +55,7 @@ services:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
       - cadvisor
+      - postgres-exporter
 
   cadvisor:
     image: ghcr.io/google/cadvisor:v0.60.6
@@ -72,6 +73,13 @@ services:
       - /sys:/sys:ro
       - /dev/disk:/dev/disk:ro
       - ${DOCKER_ROOT:-/var/lib/docker}:${DOCKER_ROOT:-/var/lib/docker}:ro
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.20.1
+    environment:
+      DATA_SOURCE_URI: postgres:5432/postgres?sslmode=disable
+      DATA_SOURCE_USER: monitoring
+      DATA_SOURCE_PASS: ${MONITORING_DB_PASSWORD:-monitoringpassword}
 
 networks:
   default:

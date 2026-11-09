@@ -6,6 +6,10 @@ scrape_configs:
     static_configs:
       - targets: [ "cadvisor:8080" ]
 
+  - job_name: postgres
+    static_configs:
+      - targets: [ "postgres-exporter:9187" ]
+
   - job_name: services
     metrics_path: /actuator/prometheus
     static_configs:
