@@ -16,6 +16,7 @@ ENV MACRO_SERIES_URL=http://macro-series:8083 \
     REGIONAL_STATISTICS_URL=http://regional-statistics:8082 \
     PARLIAMENT_URL=http://parliament:8084 \
     ELECTION_URL=http://election:8085 \
+    AUTH_URL=http://auth:8086 \
     FARO_URL=http://alloy:12347 \
     NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template

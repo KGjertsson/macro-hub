@@ -47,6 +47,16 @@ class GatewayRoutingAcceptanceTest {
         assertEquals(204, response.statusCode());
     }
 
+    @Test
+    void signingKeysAreAnsweredByAuth() {
+        // when
+        final var response = gateway.get("/macro-analyzer/auth/jwks.json");
+
+        // then
+        assertEquals(200, response.statusCode());
+        assertEquals(1, JSON.readTree(response.body()).get("keys").size());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"regional-statistics", "macro-series", "parliament", "election"})
     void everyServiceAcceptsAScrapeRequestThroughTheGateway(String service) {
@@ -78,6 +88,7 @@ class GatewayRoutingAcceptanceTest {
             "municipalities",
             "regions",
             "constituencies",
+            "auth",
             "scrape/regional-statistics",
             "scrape/macro-series",
             "scrape/parliament",

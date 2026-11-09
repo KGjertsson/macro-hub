@@ -33,7 +33,7 @@ loki.process "app" {
   forward_to = [loki.write.local.receiver]
 
   stage.match {
-    selector = "{service=~\"regional-statistics|macro-series|parliament|election\"}"
+    selector = "{service=~\"regional-statistics|macro-series|parliament|election|auth\"}"
 
     // A logged exception is one JSON line. This is for what doesn't go through the logger, an uncaught exception or an
     // OutOfMemoryError on the JVM's stderr: a line starting with whitespace or "Cau" (Caused by) belongs to the one before.

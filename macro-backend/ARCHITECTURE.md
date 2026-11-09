@@ -19,6 +19,7 @@ repository's `CLAUDE.md`. The `ArchitectureTest` (ArchUnit) of each module with 
   parliament-service           parliament           Riksdagen members, activity, parties, seats (/parliament/*)         :8084
   election-service             election             Valmyndigheten's kommun, region and valkrets results
                                                                     (/municipalities/*, /regions/*, /constituencies/*)  :8085
+  auth-service                 auth                 accounts, sessions, JWTs      (/auth/*, no scraping, ADR 0010)      :8086
 
   acceptance-tests             no main code: black-box tests of the images through the gateway (ADR 0008)
 ```

@@ -30,6 +30,7 @@ docker build -t regional-statistics-service:acceptance regional-statistics-servi
 docker build -t macro-series-service:acceptance macro-series-service
 docker build -t parliament-service:acceptance parliament-service
 docker build -t election-service:acceptance election-service
+docker build -t auth-service:acceptance auth-service
 docker build -t macro-frontend:acceptance ../macro-frontend
 wait "$postgres_pull"
 wait "$wiremock_pull"
