@@ -36,9 +36,14 @@ class AuthAcceptanceTest {
                     "SPRING_MAIL_PORT", String.valueOf(mailbox.smtpPort()))));
             final var gateway = stack.gateway();
 
-            // when: nginx resolves the upstream per request, so the first answers can still be 502
+            // nginx resolves the upstream per request, so the first answers can still be 502. Polled on a route without a
+            // rate limit, because limit_req counts those 502s too
             Eventually.assertWithin(ROUTE_ANSWERS_WITHIN, "the route answers",
-                    () -> assertEquals(202, gateway.postJson(AUTH + "/register", "{\"email\":\"" + ADDRESS + "\"}").statusCode()));
+                    () -> assertEquals(200, gateway.get(AUTH + "/jwks.json").statusCode()));
+
+            // when
+            final var registered = gateway.postJson(AUTH + "/register", "{\"email\":\"" + ADDRESS + "\"}");
+            assertEquals(202, registered.statusCode());
             final var mail = new AtomicReference<String>();
             Eventually.assertWithin(MAIL_ARRIVES_WITHIN, "the mail arrives", () -> mail.set(mailbox.latestTextTo(ADDRESS)));
             assertTrue(mail.get().contains("http://localhost:8081/konto/registrera#token="), mail.get());
@@ -73,6 +78,8 @@ class AuthAcceptanceTest {
             // then
             assertTrue(guesses.contains(401), guesses::toString);
             assertTrue(guesses.contains(429), guesses::toString);
+            assertEquals(429, gateway.postJson(AUTH + "/login;x=1", "{}").statusCode());
+            assertEquals(200, gateway.get(AUTH + "/jwks.json").statusCode());
         }
     }
 

@@ -72,11 +72,8 @@ public class AuthService implements AuthCommands {
     @Override
     public void requestRegistration(String email) {
         final var normalized = AccountRules.normalizedEmail(email);
-        if (repository.userExists(normalized)) {
-            return;
-        }
-        sendEmailToken(normalized, EmailTokenPurpose.REGISTER, REGISTER_PATH, "Skapa ditt konto på Macro Hub",
-                "Öppna länken för att välja namn och lösenord. Den gäller i %d minuter.");
+        issueEmailToken(normalized, !repository.userExists(normalized), EmailTokenPurpose.REGISTER, REGISTER_PATH,
+                "Skapa ditt konto på Macro Hub", "Öppna länken för att välja namn och lösenord. Den gäller i %d minuter.");
     }
 
     @Override
@@ -93,11 +90,8 @@ public class AuthService implements AuthCommands {
     @Override
     public void requestPasswordReset(String email) {
         final var normalized = AccountRules.normalizedEmail(email);
-        if (!repository.userExists(normalized)) {
-            return;
-        }
-        sendEmailToken(normalized, EmailTokenPurpose.PASSWORD_RESET, PASSWORD_RESET_PATH, "Återställ ditt lösenord på Macro Hub",
-                "Öppna länken för att välja ett nytt lösenord. Den gäller i %d minuter.");
+        issueEmailToken(normalized, repository.userExists(normalized), EmailTokenPurpose.PASSWORD_RESET, PASSWORD_RESET_PATH,
+                "Återställ ditt lösenord på Macro Hub", "Öppna länken för att välja ett nytt lösenord. Den gäller i %d minuter.");
     }
 
     @Override
@@ -157,13 +151,15 @@ public class AuthService implements AuthCommands {
         return email.equals(adminEmail) ? Role.ADMIN : Role.USER;
     }
 
-    private void sendEmailToken(String email, EmailTokenPurpose purpose, String path, String subject, String instruction) {
+    // The token is stored also when nothing is mailed, so both cases take the same database work and the response time
+    // doesn't tell which addresses have accounts. Its value is discarded then, so that row can never be used
+    private void issueEmailToken(String email, boolean deliver, EmailTokenPurpose purpose, String path, String subject, String instruction) {
         final var now = clock.instant();
         final var token = SecretTokens.generate();
         final var saved = repository.saveEmailTokenUnlessIssuedSince(
                 new NewEmailToken(SecretTokens.hash(token), email, purpose, now, now.plus(emailTokenTtl)),
                 now.minus(emailTokenResendInterval));
-        if (saved) {
+        if (saved && deliver) {
             // In the fragment, which browsers don't send: the gateway's access log and Loki never see the token
             final var link = "%s%s#token=%s".formatted(publicUrl, path, token);
             mail.send(email, subject, "%s\n\n%s\n".formatted(instruction.formatted(emailTokenTtl.toMinutes()), link));

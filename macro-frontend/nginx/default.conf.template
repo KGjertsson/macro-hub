@@ -30,7 +30,7 @@ map $gateway_route $trace_id {
     default     $request_id;
 }
 
-# Per client address, for what guesses passwords or sends mail. /token isn't limited: it needs a valid session and the app calls it often
+# Per client address, for what guesses passwords or sends mail. /token, /logout and /jwks.json aren't: they guess nothing, and the app calls /token often
 limit_req_zone $binary_remote_addr zone=auth_guessable:1m rate=10r/m;
 
 log_format json_access escape=json
@@ -111,13 +111,22 @@ server {
         proxy_pass $backend;
     }
 
+    # Limited by default and exempted by exact match: a list of limited paths misses /login;x=1, which Spring still routes to login
     location /macro-analyzer/auth/ {
+        limit_req zone=auth_guessable burst=10 nodelay;
+        limit_req_status 429;
         set $backend ${AUTH_URL};
         proxy_pass $backend;
     }
-    location ~ ^/macro-analyzer/auth/(login|register|password-reset)(/|$) {
-        limit_req zone=auth_guessable burst=10 nodelay;
-        limit_req_status 429;
+    location = /macro-analyzer/auth/token {
+        set $backend ${AUTH_URL};
+        proxy_pass $backend;
+    }
+    location = /macro-analyzer/auth/logout {
+        set $backend ${AUTH_URL};
+        proxy_pass $backend;
+    }
+    location = /macro-analyzer/auth/jwks.json {
         set $backend ${AUTH_URL};
         proxy_pass $backend;
     }

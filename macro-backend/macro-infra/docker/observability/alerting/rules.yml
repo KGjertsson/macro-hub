@@ -10,7 +10,7 @@ groups:
     interval: 1m
     rules:
 
-      # Only with at least one service still up: a stack stopped on purpose isn't four outages, and Prometheus keeps
+      # Only with at least one service still up: a stack stopped on purpose isn't five outages, and Prometheus keeps
       # reporting up == 0 for every target while the observability stack runs without it
       - uid: macrohub-service-down
         title: Service down
@@ -247,7 +247,7 @@ groups:
                     params:
                       - 0
 
-      # The four services' pools add up to 32, so 80 of 100 means something other than a normal load
+      # The five services' pools add up to 40, so 80 of 100 means something other than a normal load
       - uid: macrohub-postgres-connections-near-max
         title: Postgres connections near maximum
         condition: C
