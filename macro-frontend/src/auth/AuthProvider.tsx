@@ -50,8 +50,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const refresh = useCallback((): Promise<string | null> => {
+    if (refreshing.current) {
+      return refreshing.current;
+    }
     const startedIn = generation.current;
-    refreshing.current ??= authApi
+    const pending: Promise<string | null> = authApi
       .refreshAccessToken()
       .then((answer) => (generation.current === startedIn ? hold(answer) : (token.current?.value ?? null)))
       .catch((error: unknown) => {
@@ -62,9 +65,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       })
       .finally(() => {
-        refreshing.current = null;
+        if (refreshing.current === pending) {
+          refreshing.current = null;
+        }
       });
-    return refreshing.current;
+    refreshing.current = pending;
+    return pending;
   }, [forget, hold]);
 
   useEffect(() => {
