@@ -33,6 +33,12 @@ datasources:
           url: "$${__value.raw}"
           urlDisplayLabel: Open trace
           datasourceUid: tempo
+        - name: trace_id
+          matcherType: label
+          matcherRegex: trace_id
+          url: "$${__value.raw}"
+          urlDisplayLabel: Open trace
+          datasourceUid: tempo
 
   - name: Tempo
     uid: tempo
