@@ -113,6 +113,7 @@ services:
       REGIONAL_STATISTICS_URL: http://regional-statistics:8082
       PARLIAMENT_URL: http://parliament:8084
       ELECTION_URL: http://election:8085
+      FARO_URL: http://alloy:12347
     ports:
       - "8081:80"
 

@@ -1,0 +1,843 @@
+{
+  "uid": "macrohub-browser",
+  "title": "Macro Hub Browser",
+  "tags": [
+    "macro-hub"
+  ],
+  "schemaVersion": 41,
+  "version": 1,
+  "editable": false,
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Errors",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({service=\"browser\", kind=\"exception\"}[$__range]))",
+          "legendFormat": "Errors",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "instant": true,
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "LCP p75",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_lcp\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (kind)",
+          "legendFormat": "LCP p75",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "instant": true,
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2500
+              },
+              {
+                "color": "red",
+                "value": 4000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "INP p75",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_inp\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (kind)",
+          "legendFormat": "INP p75",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "instant": true,
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 200
+              },
+              {
+                "color": "red",
+                "value": 500
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "CLS p75",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_cls\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (kind)",
+          "legendFormat": "CLS p75",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "instant": true,
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 0.25
+              }
+            ]
+          },
+          "decimals": 3
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "FCP p75",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_fcp\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (kind)",
+          "legendFormat": "FCP p75",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "instant": true,
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1800
+              },
+              {
+                "color": "red",
+                "value": 3000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "TTFB p75",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_ttfb\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (kind)",
+          "legendFormat": "TTFB p75",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "instant": true,
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 800
+              },
+              {
+                "color": "red",
+                "value": 1800
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Error rate",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (error_type) (count_over_time({service=\"browser\", kind=\"exception\"} | json error_type=\"type\" [$__auto]))",
+          "legendFormat": "{{error_type}}",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Web Vitals p75 over time",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_lcp\", page=\"page_url\" | v != \"\" | unwrap v [$__auto]) by (kind)",
+          "legendFormat": "LCP",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A"
+        },
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_inp\", page=\"page_url\" | v != \"\" | unwrap v [$__auto]) by (kind)",
+          "legendFormat": "INP",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "B"
+        },
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_fcp\", page=\"page_url\" | v != \"\" | unwrap v [$__auto]) by (kind)",
+          "legendFormat": "FCP",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "C"
+        },
+        {
+          "expr": "quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_ttfb\", page=\"page_url\" | v != \"\" | unwrap v [$__auto]) by (kind)",
+          "legendFormat": "TTFB",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Top error messages",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (message) (count_over_time({service=\"browser\", kind=\"exception\"} | json message=\"value\" [$__range])))",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "instant": true,
+          "queryType": "instant"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "labels": true,
+              "id": true,
+              "tsNs": true,
+              "Line": true,
+              "labelTypes": true
+            },
+            "indexByName": {
+              "message": 0,
+              "Value #A": 1
+            },
+            "renameByName": {
+              "message": "Message",
+              "Value #A": "Count"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Count",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Count"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Per page",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "expr": "topk(20, sum by (page) (count_over_time({service=\"browser\", kind=\"exception\"} | json page=\"page_url\" [$__range])))",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "instant": true,
+          "queryType": "instant"
+        },
+        {
+          "expr": "topk(20, quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_lcp\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (page))",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "B",
+          "instant": true,
+          "queryType": "instant"
+        },
+        {
+          "expr": "topk(20, quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_inp\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (page))",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "C",
+          "instant": true,
+          "queryType": "instant"
+        },
+        {
+          "expr": "topk(20, quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_cls\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (page))",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "D",
+          "instant": true,
+          "queryType": "instant"
+        },
+        {
+          "expr": "topk(20, quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_fcp\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (page))",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "E",
+          "instant": true,
+          "queryType": "instant"
+        },
+        {
+          "expr": "topk(20, quantile_over_time(0.75, {service=\"browser\", kind=\"measurement\"} | json v=\"value_ttfb\", page=\"page_url\" | v != \"\" | unwrap v [$__range]) by (page))",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "F",
+          "instant": true,
+          "queryType": "instant"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "page",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "page": 0
+            },
+            "renameByName": {
+              "page": "Page",
+              "Value #A": "Errors",
+              "Value #B": "LCP p75",
+              "Value #C": "INP p75",
+              "Value #D": "CLS p75",
+              "Value #E": "FCP p75",
+              "Value #F": "TTFB p75"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "(LCP|INP|FCP|TTFB) p75"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CLS p75"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "Errors|(LCP|INP|CLS|FCP|TTFB) p75"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 85
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 11,
+      "type": "logs",
+      "title": "Recent errors",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{service=\"browser\", kind=\"exception\"} | json | line_format \"{{ .page_url }}  {{ if .stacktrace }}{{ .stacktrace }}{{ else }}{{ .type }}: {{ .value }}{{ end }}\""
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      }
+    }
+  ]
+}

@@ -16,6 +16,7 @@ class GatewayRoutingAcceptanceTest {
 
     private static final String FRONTEND_PAGE_MARKER = "<div id=\"root\">";
     private static final String YEAR_WITHOUT_ELECTIONS = "1900";
+    private static final String TELEMETRY_PATH = "/telemetry/collect";
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
@@ -111,6 +112,25 @@ class GatewayRoutingAcceptanceTest {
         // then
         assertEquals(301, response.statusCode());
         assertEquals(path + "/", response.headers().firstValue("Location").orElseThrow());
+    }
+
+    @Test
+    void browserTelemetryAcceptsOnlyPost() {
+        // when
+        final var response = gateway.get(TELEMETRY_PATH);
+
+        // then
+        assertEquals(405, response.statusCode());
+    }
+
+    @Test
+    void browserTelemetryAnswersAGatewayErrorWithoutAlloy() {
+        // when
+        final var response = gateway.postJson(TELEMETRY_PATH, "{}");
+
+        // then
+        assertEquals(502, response.statusCode());
+        assertFalse(response.body().contains(FRONTEND_PAGE_MARKER));
     }
 
     @Test

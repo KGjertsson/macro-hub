@@ -70,6 +70,53 @@ loki.process "app" {
   }
 }
 
+// The gateway's port 8081 is published on all interfaces, so anyone who can reach it can post here through /telemetry/collect
+faro.receiver "browser" {
+  extra_log_labels = { service = "browser" }
+  log_format       = "json"
+
+  server {
+    listen_address           = "0.0.0.0"
+    listen_port              = 12347
+    max_allowed_payload_size = "256KiB"
+
+    rate_limiting {
+      enabled    = true
+      rate       = 10
+      burst_size = 30
+    }
+  }
+
+  // A stack frame's URL comes from the client, and by default Alloy fetches every one from inside docker_default
+  sourcemaps {
+    download = false
+  }
+
+  output {
+    logs = [loki.process.browser.receiver]
+  }
+}
+
+loki.process "browser" {
+  forward_to = [loki.write.local.receiver]
+
+  stage.json {
+    expressions = { kind = "" }
+  }
+
+  stage.labels {
+    values = { kind = "" }
+  }
+
+  stage.match {
+    selector = "{kind=\"exception\"}"
+
+    stage.static_labels {
+      values = { level = "error" }
+    }
+  }
+}
+
 loki.write "local" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
