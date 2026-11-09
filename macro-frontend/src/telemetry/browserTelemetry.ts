@@ -32,6 +32,7 @@ export function startBrowserTelemetry(): void {
     ],
     internalLoggerLevel: InternalLoggerLevel.OFF,
     instrumentations: [new ErrorsInstrumentation(), new WebVitalsInstrumentation()],
+    sessionTracking: { enabled: false },
     beforeSend: withPathOnly,
   });
 }
