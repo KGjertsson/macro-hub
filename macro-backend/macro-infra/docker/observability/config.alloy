@@ -87,6 +87,11 @@ faro.receiver "browser" {
     }
   }
 
+  // A stack frame's URL comes from the client, and by default Alloy fetches every one from inside docker_default
+  sourcemaps {
+    download = false
+  }
+
   output {
     logs = [loki.process.browser.receiver]
   }

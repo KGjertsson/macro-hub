@@ -825,7 +825,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{service=\"browser\", kind=\"exception\"} | json | line_format \"{{ .page_url }}  {{ .stacktrace }}\""
+          "expr": "{service=\"browser\", kind=\"exception\"} | json | line_format \"{{ .page_url }}  {{ if .stacktrace }}{{ .stacktrace }}{{ else }}{{ .type }}: {{ .value }}{{ end }}\""
         }
       ],
       "options": {
