@@ -9,8 +9,8 @@ interface SeatDistributionProps {
 }
 
 const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
-  const sortedParties = parties.filter(p => p.seats > 0).sort((a, b) => b.seats - a.seats);
-  const totalSeats = sortedParties.reduce((sum, p) => sum + p.seats, 0);
+  const seatedParties = parties.filter(p => p.seats > 0);
+  const totalSeats = seatedParties.reduce((sum, p) => sum + p.seats, 0);
 
   const arrangeInHemicycle = () => {
     const rows = 8;
@@ -69,7 +69,7 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
     const positioned: { x: number; y: number; color: string; partyName: string; partyShort: string }[] = [];
     let seatIndex = 0;
 
-    for (const party of sortedParties) {
+    for (const party of seatedParties) {
       for (let i = 0; i < party.seats && seatIndex < allPositions.length; i++) {
         const pos = allPositions[seatIndex];
         positioned.push({
@@ -145,7 +145,7 @@ const SeatDistribution = ({ title, parties }: SeatDistributionProps) => {
         </div>
 
         <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-border/50'>
-          {sortedParties.map(party => (
+          {seatedParties.map(party => (
             <div key={party.code} className='flex items-center gap-2 group cursor-pointer'>
               <div
                 className='w-4 h-4 rounded-full flex-shrink-0 transition-transform group-hover:scale-125'

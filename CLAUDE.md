@@ -330,8 +330,8 @@ A new domain is a new service. Follow [`docs/adding-a-service.md`](docs/adding-a
 - `POST /macro-analyzer/scrape/{service}/enqueue-all` — enqueue all of that service's series (202)
 - `POST /macro-analyzer/scrape/{service}/scrape-from-queue` — execute that service's pending scrapes (200, 409 while one is running)
 - Any other path under `/macro-analyzer/` answers 404 on the gateway, for every method, except under a scrape prefix, where the service's security answers first: 401 without a valid token, 400 for a path with `;` (a routed prefix without its slash gets nginx's 301 to the slash, a relative `Location` that keeps the client's host and port)
-- `GET /macro-analyzer/parliament/elections` — on `parliament-service`, as are the other `/parliament/*` endpoints: official seat results per election (newest first)
-- `GET /macro-analyzer/parliament/composition` — live seats per party from currently serving MPs
+- `GET /macro-analyzer/parliament/elections` — on `parliament-service`, as are the other `/parliament/*` endpoints: official seat results per election (newest first), the parties in the order V, S, MP, C, L, M, KD, SD, then any others by seats, which the Riksdag page's seat chart follows from left to right
+- `GET /macro-analyzer/parliament/composition` — live seats per party from currently serving MPs, in the same party order
 - `GET /macro-analyzer/parliament/parties` — party names, colours, ideology
 - `GET /macro-analyzer/parliament/members?year={electionYear}` — members who sat in that term (default: latest)
 - `GET /macro-analyzer/parliament/members/{intressentId}` — member detail (assignments, biography, contact, votes, speeches, motions)

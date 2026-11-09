@@ -63,7 +63,7 @@ public class ParliamentServiceTest {
     }
 
     @Test
-    void shouldReturnElections_withPartyNamesAndSeatsDescending() {
+    void shouldReturnElections_withPartyNamesAndSeats() {
         // when
         final var result = parliamentService.getElections();
 
@@ -73,6 +73,32 @@ public class ParliamentServiceTest {
                 new PartySeats("S", "Socialdemokraterna", "#E8112d", 99),
                 new PartySeats("M", "Moderaterna", "#52BDEC", 70)
         ), result.getFirst().parties());
+    }
+
+    @Test
+    void shouldOrderElectionParties_leftToRight_withOtherPartiesLastBySeats() {
+        // given
+        when(repositoryPort.readElections()).thenReturn(List.of(election(2026, "2026-09-28", "2030-09-23", Map.of(
+                "S", 99, "M", 70, "SD", 62, "V", 30, "C", 25, "KD", 22, "MP", 22, "L", 19, "NYD", 5, "X", 7
+        ))));
+
+        // when
+        final var result = parliamentService.getElections().getFirst().parties();
+
+        // then
+        assertEquals(List.of("V", "S", "MP", "C", "L", "M", "KD", "SD", "X", "NYD"), result.stream().map(PartySeats::code).toList());
+    }
+
+    @Test
+    void shouldOrderCompositionParties_leftToRight_withEquallySizedOthersByCode() {
+        // given
+        when(repositoryPort.countMembersByPartyWhereStatusContainsIgnoringCase("tjänstgörande")).thenReturn(Map.of("SD", 62, "S", 99, "V", 30, "NYD", 3, "-", 3));
+
+        // when
+        final var result = parliamentService.getComposition().parties();
+
+        // then
+        assertEquals(List.of("V", "S", "SD", "-", "NYD"), result.stream().map(PartySeats::code).toList());
     }
 
     @Test
