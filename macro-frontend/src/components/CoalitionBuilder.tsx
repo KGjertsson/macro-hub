@@ -10,6 +10,7 @@ import {
   DragStartEvent,
   KeyboardCoordinateGetter,
   KeyboardSensor,
+  Modifier,
   PointerSensor,
   pointerWithin,
   TouchSensor,
@@ -56,14 +57,26 @@ const SCREEN_READER_INSTRUCTIONS = {
 const collisionDetection: CollisionDetection = args =>
   args.pointerCoordinates ? pointerWithin(args) : closestCenter(args);
 
+const BAR_STEP_BY_ARROW: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: 0, ArrowDown: 0 };
+
 const moveBetweenBars: KeyboardCoordinateGetter = (event, { context, currentCoordinates }) => {
-  if (event.code !== 'ArrowRight' && event.code !== 'ArrowLeft') return undefined;
+  const step = BAR_STEP_BY_ARROW[event.code];
+  if (step === undefined) return undefined;
   event.preventDefault();
   const { collisionRect, droppableRects, over } = context;
-  if (!collisionRect || !over) return undefined;
-  const nextBar = BAR_IDS[BAR_IDS.indexOf(over.id as BarId) + (event.code === 'ArrowRight' ? 1 : -1)];
+  if (step === 0 || !collisionRect || !over) return undefined;
+  const nextBar = BAR_IDS[BAR_IDS.indexOf(over.id as BarId) + step];
   const nextRect = nextBar && droppableRects.get(nextBar);
   return nextRect ? { x: nextRect.left + (nextRect.width - collisionRect.width) / 2, y: currentCoordinates.y } : undefined;
+};
+
+const centreOverlayOnPointer: Modifier = ({ activatorEvent, activeNodeRect, overlayNodeRect, transform }) => {
+  if (!(activatorEvent instanceof MouseEvent) || !activeNodeRect || !overlayNodeRect) return transform;
+  return {
+    ...transform,
+    x: transform.x + activatorEvent.clientX - activeNodeRect.left - overlayNodeRect.width / 2,
+    y: transform.y + activatorEvent.clientY - activeNodeRect.top - overlayNodeRect.height / 2,
+  };
 };
 
 const draggedCode = (data: { current?: Record<string, unknown> }) => data.current?.code as string | undefined;
@@ -172,7 +185,7 @@ const SeatBar = ({
           {hasMajority(seats, totalSeats) ? 'Majoritet' : 'Ingen majoritet'}
         </p>
       </div>
-      <div className='relative border-b border-border' style={{ height: PLOT_HEIGHT_PX }}>
+      <div className='relative shadow-[0_1px_0_hsl(var(--border))]' style={{ height: PLOT_HEIGHT_PX }}>
         <div className='absolute inset-y-0 inset-x-0 mx-auto max-w-32'>
           {segments.map(segment => (
             <PartySegment
@@ -183,16 +196,12 @@ const SeatBar = ({
             />
           ))}
         </div>
-        <div
-          className='pointer-events-none absolute -inset-x-1 z-10 sm:-inset-x-2 translate-y-1/2 border-t-2 border-dotted border-white mix-blend-difference'
-          style={{ bottom: '50%' }}
-        />
       </div>
       <div className='grid grid-cols-1 content-start gap-1 lg:grid-cols-2'>
         {parties.map(party => (
           <PartyChip key={party.code} party={party} isBeingDragged={activeCode === party.code} />
         ))}
-        {parties.length === 0 && <p className='py-2 text-center text-xs text-muted-foreground'>Dra partier hit</p>}
+        {parties.length === 0 && <p className='col-span-full py-2 text-center text-xs text-muted-foreground'>Dra partier hit</p>}
       </div>
     </div>
   );
@@ -248,7 +257,7 @@ const CoalitionBuilder = ({ parties }: { parties: PartySeats[] }) => {
       </CardHeader>
       <CardContent>
         <p className='mb-4 flex items-center gap-2 text-sm'>
-          <span className='w-8 border-t-2 border-dotted border-foreground' />
+          <span className='w-8 border-t border-dotted border-foreground' />
           Majoritet: {majorityOf(totalSeats)} mandat
         </p>
         <DndContext
@@ -259,7 +268,7 @@ const CoalitionBuilder = ({ parties }: { parties: PartySeats[] }) => {
           onDragEnd={handleDragEnd}
           onDragCancel={() => setActiveCode(undefined)}
         >
-          <div className='grid grid-cols-3 gap-x-2 gap-y-2 sm:gap-x-4'>
+          <div className='relative grid grid-cols-3 grid-rows-[auto_auto_auto] gap-x-2 gap-y-2 sm:gap-x-4'>
             {BAR_IDS.map(bar => (
               <SeatBar
                 key={bar}
@@ -270,10 +279,17 @@ const CoalitionBuilder = ({ parties }: { parties: PartySeats[] }) => {
                 activeCode={activeCode}
               />
             ))}
+            {/* Absolutely positioned, the grid area of the bars' plot row is this element's containing block */}
+            <div className='pointer-events-none absolute inset-0 z-10 col-span-full row-start-2 row-end-3'>
+              <div
+                className='absolute inset-x-0 translate-y-1/2 border-t border-dotted border-white mix-blend-difference'
+                style={{ bottom: '50%' }}
+              />
+            </div>
           </div>
           {/* In the card, backdrop-filter would make the overlay's fixed position relative to the card rather than the viewport */}
           {createPortal(
-            <DragOverlay dropAnimation={null}>
+            <DragOverlay dropAnimation={null} modifiers={[centreOverlayOnPointer]}>
               {activeParty && (
                 <div className={cn(chipClassName, 'w-28 cursor-grabbing shadow-lg')}>
                   <PartyChipContent party={activeParty} />
