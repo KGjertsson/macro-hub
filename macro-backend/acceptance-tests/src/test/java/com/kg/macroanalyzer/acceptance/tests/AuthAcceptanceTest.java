@@ -1,5 +1,11 @@
-package com.kg.macroanalyzer.acceptance;
+package com.kg.macroanalyzer.acceptance.tests;
 
+import com.kg.macroanalyzer.acceptance.support.AcceptanceStack;
+import com.kg.macroanalyzer.acceptance.support.AdminToken;
+import com.kg.macroanalyzer.acceptance.support.BackendService;
+import com.kg.macroanalyzer.acceptance.support.Eventually;
+import com.kg.macroanalyzer.acceptance.support.Gateway;
+import com.kg.macroanalyzer.acceptance.support.Mailbox;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 

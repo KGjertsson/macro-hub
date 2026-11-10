@@ -1,5 +1,10 @@
-package com.kg.macroanalyzer.acceptance;
+package com.kg.macroanalyzer.acceptance.tests;
 
+import com.kg.macroanalyzer.acceptance.support.AcceptanceStack;
+import com.kg.macroanalyzer.acceptance.support.BackendService;
+import com.kg.macroanalyzer.acceptance.support.Eventually;
+import com.kg.macroanalyzer.acceptance.support.Gateway;
+import com.kg.macroanalyzer.acceptance.support.Sources;
 import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
