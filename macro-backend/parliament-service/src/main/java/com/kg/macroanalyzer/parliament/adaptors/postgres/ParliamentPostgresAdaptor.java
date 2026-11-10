@@ -15,27 +15,30 @@ import java.util.Optional;
 public class ParliamentPostgresAdaptor implements ParliamentRepositoryPort {
 
     private final SweParMemberRepository sweParMemberRepository;
+    private final CachedMembers cachedMembers;
     private final SweParActivityRepository sweParActivityRepository;
     private final RiksdagElectionRepository riksdagElectionRepository;
 
     public ParliamentPostgresAdaptor(
             SweParMemberRepository sweParMemberRepository,
+            CachedMembers cachedMembers,
             SweParActivityRepository sweParActivityRepository,
             RiksdagElectionRepository riksdagElectionRepository
     ) {
         this.sweParMemberRepository = sweParMemberRepository;
+        this.cachedMembers = cachedMembers;
         this.sweParActivityRepository = sweParActivityRepository;
         this.riksdagElectionRepository = riksdagElectionRepository;
     }
 
     @Override
     public Integer writeMembersOfParliament(List<MemberOfParliament> membersOfParliament) {
-        return sweParMemberRepository.upsertMembers(membersOfParliament);
+        return cachedMembers.write(membersOfParliament);
     }
 
     @Override
     public List<MemberOfParliament> readMembersOfParliament() {
-        return sweParMemberRepository.readMembers();
+        return cachedMembers.read();
     }
 
     @Override
