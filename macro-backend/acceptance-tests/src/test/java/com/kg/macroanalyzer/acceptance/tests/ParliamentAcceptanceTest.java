@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Composition and member lists are answers about all of parliament, so these journeys don't use the shared stack, where
 // another journey's scrape would change them. The re-scrape journey starts a stack of its own for the same reason.
@@ -113,6 +114,19 @@ class ParliamentAcceptanceTest {
     }
 
     @Test
+    void theMemberListShowsTheActivityOfEachMember() {
+        // when
+        final var anna = jsonFrom(gateway, "/macro-analyzer/parliament/members").get(0);
+
+        // then
+        assertEquals("Anna Andersson", anna.get("name").asString());
+        assertEquals(json("""
+                {"yes":130,"no":55,"absent":12,"abstain":3}"""), anna.get("votes"));
+        assertEquals(6, anna.get("speechCount").asInt());
+        assertEquals(12, anna.get("motionCount").asInt());
+    }
+
+    @Test
     void theMemberListOfAnEarlierTermShowsWhoSatThen() {
         assertEquals(List.of(
                 ANNA_ROW,
@@ -127,6 +141,10 @@ class ParliamentAcceptanceTest {
 
         // then
         assertEquals(List.of(new MemberRow("Ingrid Isaksson", "L", "Uppsala län", FORMER, null)), members);
+        final var ingrid = jsonFrom(gateway, "/macro-analyzer/parliament/members?year=2014").get(0);
+        assertTrue(ingrid.get("votes").isNull());
+        assertTrue(ingrid.get("speechCount").isNull());
+        assertTrue(ingrid.get("motionCount").isNull());
     }
 
     @Test
@@ -162,7 +180,10 @@ class ParliamentAcceptanceTest {
                     "status": "Tjänstgörande riksdagsledamot",
                     "imageUrl": "https://data.riksdagen.se/filarkiv/bilder/ledamot/anna_192.jpg",
                     "currentRole": "Ordförande, Finansutskottet",
-                    "attendancePct": 94.0
+                    "attendancePct": 94.0,
+                    "votes": {"yes":130,"no":55,"absent":12,"abstain":3},
+                    "speechCount": 6,
+                    "motionCount": 12
                   },
                   "imageUrlLarge": "https://data.riksdagen.se/filarkiv/bilder/ledamot/anna_max.jpg",
                   "birthYear": 1975,

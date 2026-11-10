@@ -8,6 +8,7 @@ import {MemberSummary} from '@/models/Parliament';
 interface PoliticianCardProps {
     member: MemberSummary;
     partyColor: string;
+    sortValue?: string;
 }
 
 export const MemberAvatar = ({imageUrl, color, className, iconClassName}: {
@@ -31,7 +32,7 @@ export const MemberAvatar = ({imageUrl, color, className, iconClassName}: {
     );
 };
 
-const PoliticianCard = ({member, partyColor}: PoliticianCardProps) => {
+const PoliticianCard = ({member, partyColor, sortValue}: PoliticianCardProps) => {
     return (
         <Link to={`/parliament/politician/${member.id}`}>
             <Card
@@ -73,6 +74,8 @@ const PoliticianCard = ({member, partyColor}: PoliticianCardProps) => {
                 </span>
                                 )}
                             </div>
+
+                            {sortValue && <p className="mt-2 text-sm font-medium text-primary">{sortValue}</p>}
                         </div>
                     </div>
                 </CardContent>

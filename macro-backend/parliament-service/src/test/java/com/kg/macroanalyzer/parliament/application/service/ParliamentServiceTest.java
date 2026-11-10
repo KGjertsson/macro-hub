@@ -1,6 +1,7 @@
 package com.kg.macroanalyzer.parliament.application.service;
 
 import com.kg.macroanalyzer.parliament.application.port.in.MemberSummaryDto;
+import com.kg.macroanalyzer.parliament.application.port.in.VotesDto;
 import com.kg.macroanalyzer.parliament.application.port.in.PartySeats;
 import com.kg.macroanalyzer.parliament.application.port.out.ParliamentRepositoryPort;
 import com.kg.macroanalyzer.parliament.domain.Election;
@@ -117,6 +118,33 @@ public class ParliamentServiceTest {
         // then
         assertEquals(List.of("A", "B"), latest.stream().map(MemberSummaryDto::id).toList());
         assertEquals(List.of("A", "C"), previous.stream().map(MemberSummaryDto::id).toList());
+    }
+
+    @Test
+    void shouldIncludeActivityInMemberList_withAndWithoutActivityRow() {
+        // given
+        when(repositoryPort.readMembersOfParliament()).thenReturn(List.of(
+                member("A", "S", "Tjänstgörande riksdagsledamot", List.of(chamberSeat("2026-09-28", "2030-09-23"))),
+                member("B", "M", "Tjänstgörande riksdagsledamot", List.of(chamberSeat("2026-09-28", "2030-09-23")))
+        ));
+        when(repositoryPort.readMemberActivity()).thenReturn(List.of(MemberActivity.builder()
+                .intressentId("A").votesYes(90).votesNo(5).votesAbsent(4).votesAbstain(1).speechCount(12).motionCount(3)
+                .votesBySession(List.of()).recentSpeeches(List.of()).recentMotions(List.of())
+                .build()));
+
+        // when
+        final var result = parliamentService.getMembersOfParliament(null);
+
+        // then
+        final var withActivity = result.getFirst();
+        assertEquals(new VotesDto(90, 5, 4, 1), withActivity.votes());
+        assertEquals(12, withActivity.speechCount());
+        assertEquals(3, withActivity.motionCount());
+        final var withoutActivity = result.getLast();
+        assertNull(withoutActivity.attendancePct());
+        assertNull(withoutActivity.votes());
+        assertNull(withoutActivity.speechCount());
+        assertNull(withoutActivity.motionCount());
     }
 
     @Test

@@ -124,8 +124,7 @@ public class ParliamentService implements ParliamentQueries {
                         .map(u -> new BiographyEntryDto(u.kod(), textOf(u)))
                         .filter(b -> !b.text().isBlank())
                         .toList())
-                .votes(activity.map(a -> new VotesDto(a.votesYes(), a.votesNo(), a.votesAbsent(), a.votesAbstain()))
-                        .orElse(null))
+                .votes(activity.map(ParliamentService::toVotes).orElse(null))
                 .votesBySession(activity.map(MemberActivity::votesBySession).orElse(List.of()))
                 .speechCount(activity.map(MemberActivity::speechCount).orElse(null))
                 .motionCount(activity.map(MemberActivity::motionCount).orElse(null))
@@ -147,7 +146,14 @@ public class ParliamentService implements ParliamentQueries {
                 .currentRole(currentRole(member, context))
                 .yearsInParliament(yearsInParliament(member))
                 .attendancePct(activity == null ? null : activity.attendancePct())
+                .votes(activity == null ? null : toVotes(activity))
+                .speechCount(activity == null ? null : activity.speechCount())
+                .motionCount(activity == null ? null : activity.motionCount())
                 .build();
+    }
+
+    private static VotesDto toVotes(MemberActivity activity) {
+        return new VotesDto(activity.votesYes(), activity.votesNo(), activity.votesAbsent(), activity.votesAbstain());
     }
 
     private List<AssignmentDto> toAssignments(MemberOfParliament member, Context context) {

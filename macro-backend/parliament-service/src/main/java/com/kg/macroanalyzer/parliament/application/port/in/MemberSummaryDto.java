@@ -12,6 +12,9 @@ public record MemberSummaryDto(
         String imageUrl,
         String currentRole,
         double yearsInParliament,
-        Double attendancePct
+        Double attendancePct,
+        VotesDto votes,
+        Integer speechCount,
+        Integer motionCount
 ) {
 }

@@ -6,6 +6,13 @@ import SeatDistribution from '@/components/SeatDistribution';
 import PoliticianCard from '@/components/PoliticianCard';
 import ParliamentBlog from '@/components/ParliamentBlog';
 import { partyColor, seatLabel, useComposition, useElections, useParliamentMembers, useParties } from '@/api/parliament';
+import {
+  defaultMemberSortOption,
+  findMemberSortOption,
+  formatMemberSortValue,
+  memberSortOptions,
+  sortMembers,
+} from '@/lib/memberSort';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -19,6 +26,7 @@ type SeatView = 'election' | 'current';
 const Parliament = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [partyFilter, setPartyFilter] = useState<string>('all');
+  const [sortOption, setSortOption] = useState(defaultMemberSortOption);
   const [yearOverride, setYearOverride] = useState<number>();
   const [seatView, setSeatView] = useState<SeatView>('election');
 
@@ -56,6 +64,7 @@ const Parliament = () => {
     const matchesParty = partyFilter === 'all' || member.party === partyFilter;
     return matchesSearch && matchesParty;
   });
+  const sortedPoliticians = sortMembers(filteredPoliticians, sortOption);
 
   return (
     <div className='min-h-screen bg-background'>
@@ -218,16 +227,39 @@ const Parliament = () => {
                 ))}
               </SelectContent>
             </Select>
+            <div className='flex items-center gap-2 w-full md:w-auto'>
+              <span id='member-sort-label' className='text-sm font-medium shrink-0'>Sortera:</span>
+              <Select value={sortOption.id} onValueChange={(id) => setSortOption(findMemberSortOption(id))}>
+                <SelectTrigger
+                  id='member-sort-trigger'
+                  aria-labelledby='member-sort-label member-sort-trigger'
+                  className='w-full md:w-56 bg-card border-border/50'
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {memberSortOptions.map(option => (
+                    <SelectItem key={option.id} value={option.id}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
+          {sortOption.note && <p className='-mt-3 mb-6 text-sm text-muted-foreground'>{sortOption.note}</p>}
+
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {filteredPoliticians.map((member, index) => (
+            {sortedPoliticians.map((member, index) => (
               <div
                 key={member.id}
                 className='animate-fade-in'
                 style={{ animationDelay: `${Math.min(index, 20) * 0.03}s` }}
               >
-                <PoliticianCard member={member} partyColor={partyColor(parties, member.party)} />
+                <PoliticianCard
+                  member={member}
+                  partyColor={partyColor(parties, member.party)}
+                  sortValue={formatMemberSortValue(member, sortOption)}
+                />
               </div>
             ))}
           </div>
