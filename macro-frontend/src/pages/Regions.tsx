@@ -58,7 +58,7 @@ const Regions = () => {
                 <div className="text-sm text-muted-foreground">Valdeltagande</div>
               </div>
               <div className="bg-card rounded-xl border border-border p-4 text-center">
-                <div className="text-3xl font-bold" style={{ color: '#E8112d' }}>S</div>
+                <div className="text-3xl font-bold" style={{ color: '#EE2020' }}>S</div>
                 <div className="text-sm text-muted-foreground">Största parti</div>
               </div>
             </div>
