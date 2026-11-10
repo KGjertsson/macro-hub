@@ -111,7 +111,7 @@ class ParliamentApplicationTests {
 
         // then
         assertEquals(List.of("S", "M", "C", "V", "KD", "L", "MP", "FP", "NYD", "-", "SD"), codes);
-        assertEquals("#FFCC00", sdColor);
+        assertEquals("#DDDD00", sdColor);
     }
 
     private List<String> successfulVersions(String historyTable) {
