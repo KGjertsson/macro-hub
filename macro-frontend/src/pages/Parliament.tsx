@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SeatDistribution from '@/components/SeatDistribution';
+import CoalitionBuilder from '@/components/CoalitionBuilder';
 import PoliticianCard from '@/components/PoliticianCard';
 import ParliamentBlog from '@/components/ParliamentBlog';
 import { partyColor, seatLabel, useComposition, useElections, useParliamentMembers, useParties } from '@/api/parliament';
@@ -184,6 +185,12 @@ const Parliament = () => {
             <p className='text-center py-12 text-muted-foreground'>Inga valresultat tillgängliga</p>
           )}
         </section>
+
+        {!electionsLoading && election && (
+          <section className='mb-12'>
+            <CoalitionBuilder parties={showCurrent ? composition.parties : election.parties} />
+          </section>
+        )}
 
         <section>
           <div className='flex items-center gap-3 mb-6'>
