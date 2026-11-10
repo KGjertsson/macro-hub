@@ -138,10 +138,10 @@ class ParliamentAcceptanceTest {
     void aMemberOfATermBeforeTheLatestTwoHasNoActivity() {
         // when
         final var members = memberRows(gateway, "?year=2014");
+        final var ingrid = jsonFrom(gateway, "/macro-analyzer/parliament/members?year=2014").get(0);
 
         // then
         assertEquals(List.of(new MemberRow("Ingrid Isaksson", "L", "Uppsala län", FORMER, null)), members);
-        final var ingrid = jsonFrom(gateway, "/macro-analyzer/parliament/members?year=2014").get(0);
         assertTrue(ingrid.get("votes").isNull());
         assertTrue(ingrid.get("speechCount").isNull());
         assertTrue(ingrid.get("motionCount").isNull());

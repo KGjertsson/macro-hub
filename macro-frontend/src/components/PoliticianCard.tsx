@@ -65,12 +65,12 @@ const PoliticianCard = ({member, partyColor, sortValue}: PoliticianCardProps) =>
                 </span>
                                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3"/>
-                                    {member.yearsInParliament} år
+                                    {member.yearsInParliament.toLocaleString('sv-SE')} år
                 </span>
                                 {member.attendancePct !== null && (
                                     <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3"/>
-                                        {member.attendancePct} % närvaro
+                                        {member.attendancePct.toLocaleString('sv-SE')} % närvaro
                 </span>
                                 )}
                             </div>
