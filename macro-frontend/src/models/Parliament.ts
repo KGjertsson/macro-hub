@@ -35,6 +35,9 @@ export interface MemberSummary {
   currentRole: string;
   yearsInParliament: number;
   attendancePct: number | null;
+  votes: { yes: number; no: number; absent: number; abstain: number } | null;
+  speechCount: number | null;
+  motionCount: number | null;
 }
 
 export interface Assignment {

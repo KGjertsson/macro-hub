@@ -8,6 +8,7 @@ import {MemberSummary} from '@/models/Parliament';
 interface PoliticianCardProps {
     member: MemberSummary;
     partyColor: string;
+    sortValue?: string;
 }
 
 export const MemberAvatar = ({imageUrl, color, className, iconClassName}: {
@@ -31,7 +32,7 @@ export const MemberAvatar = ({imageUrl, color, className, iconClassName}: {
     );
 };
 
-const PoliticianCard = ({member, partyColor}: PoliticianCardProps) => {
+const PoliticianCard = ({member, partyColor, sortValue}: PoliticianCardProps) => {
     return (
         <Link to={`/parliament/politician/${member.id}`}>
             <Card
@@ -64,15 +65,17 @@ const PoliticianCard = ({member, partyColor}: PoliticianCardProps) => {
                 </span>
                                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3"/>
-                                    {member.yearsInParliament} år
+                                    {member.yearsInParliament.toLocaleString('sv-SE')} år
                 </span>
                                 {member.attendancePct !== null && (
                                     <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3"/>
-                                        {member.attendancePct} % närvaro
+                                        {member.attendancePct.toLocaleString('sv-SE')} % närvaro
                 </span>
                                 )}
                             </div>
+
+                            {sortValue && <p className="mt-2 text-sm font-medium text-primary">{sortValue}</p>}
                         </div>
                     </div>
                 </CardContent>
