@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.acceptance;
+package com.kg.macroanalyzer.acceptance.support;
 
 import com.github.dockerjava.api.exception.NotFoundException;
 import org.slf4j.LoggerFactory;

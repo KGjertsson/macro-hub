@@ -1,5 +1,9 @@
-package com.kg.macroanalyzer.acceptance;
+package com.kg.macroanalyzer.acceptance.tests;
 
+import com.kg.macroanalyzer.acceptance.support.AcceptanceStack;
+import com.kg.macroanalyzer.acceptance.support.BackendService;
+import com.kg.macroanalyzer.acceptance.support.Gateway;
+import com.kg.macroanalyzer.acceptance.support.Sources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.acceptance;
+package com.kg.macroanalyzer.acceptance.support;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

@@ -1,4 +1,4 @@
-package com.kg.macroanalyzer.acceptance;
+package com.kg.macroanalyzer.acceptance.support;
 
 import java.util.HashMap;
 import java.util.List;
