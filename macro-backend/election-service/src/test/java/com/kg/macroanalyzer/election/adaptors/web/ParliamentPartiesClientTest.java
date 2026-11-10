@@ -53,7 +53,7 @@ class ParliamentPartiesClientTest {
         // when
         try (final var client = client(Duration.ofSeconds(5))) {
             // then
-            assertEquals(Map.of("S", "#E8112d", "SD", "#FFCC00"), client.fetchPartyColors());
+            assertEquals(Map.of("S", "#EE2020", "SD", "#DDDD00"), client.fetchPartyColors());
         }
     }
 

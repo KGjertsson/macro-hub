@@ -71,7 +71,7 @@ class FreshSystemAcceptanceTest {
                 parties.valueStream().map(party -> party.get("code").asString()).toList());
         assertEquals(
                 JSON.readTree("""
-                        {"code":"S","name":"Socialdemokraterna","color":"#E8112d","ideology":"Social Democracy","active":true}"""),
+                        {"code":"S","name":"Socialdemokraterna","color":"#EE2020","ideology":"Social Democracy","active":true}"""),
                 parties.get(0));
     }
 

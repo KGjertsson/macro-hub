@@ -88,9 +88,9 @@ class ParliamentAcceptanceTest {
         // then
         assertEquals(json("""
                 [
-                  {"code":"S","name":"Socialdemokraterna","color":"#E8112d","seats":3},
-                  {"code":"M","name":"Moderaterna","color":"#52BDEC","seats":2},
-                  {"code":"SD","name":"Sverigedemokraterna","color":"#FFCC00","seats":1}
+                  {"code":"S","name":"Socialdemokraterna","color":"#EE2020","seats":3},
+                  {"code":"M","name":"Moderaterna","color":"#1B49DD","seats":2},
+                  {"code":"SD","name":"Sverigedemokraterna","color":"#DDDD00","seats":1}
                 ]"""), composition.get("parties"));
     }
 

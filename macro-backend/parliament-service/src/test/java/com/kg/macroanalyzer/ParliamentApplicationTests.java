@@ -99,9 +99,9 @@ class ParliamentApplicationTests {
         assertEquals(43, dslContext.fetchCount(RIKSDAG_ORGAN));
     }
 
-    // /parliament/parties answers in the table's order, which the update of SD's colour left with SD last
+    // /parliament/parties answers in the table's order, with SD last, which V2 keeps by updating every row in one statement
     @Test
-    void shouldSeedThePartiesWithSdLast_andSdsColour() {
+    void shouldKeepThePartiesInTheirOrder_whenTheColoursAreUpdated() {
         // when
         final var codes = dslContext.select(RIKSDAG_PARTY.CODE).from(RIKSDAG_PARTY).fetch(RIKSDAG_PARTY.CODE);
         final var sdColor = dslContext.select(RIKSDAG_PARTY.COLOR)
@@ -111,7 +111,7 @@ class ParliamentApplicationTests {
 
         // then
         assertEquals(List.of("S", "M", "C", "V", "KD", "L", "MP", "FP", "NYD", "-", "SD"), codes);
-        assertEquals("#FFCC00", sdColor);
+        assertEquals("#DDDD00", sdColor);
     }
 
     private List<String> successfulVersions(String historyTable) {
