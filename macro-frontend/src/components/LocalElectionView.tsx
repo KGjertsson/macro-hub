@@ -1,4 +1,5 @@
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, ChevronDown, ChevronsUpDown, Users } from 'lucide-react';
 import ChoroplethMap from '@/components/ChoroplethMap';
 import { Button } from '@/components/ui/button';
@@ -247,9 +248,28 @@ const ElectedSection = ({ detail }: { detail: LocalElectionDetail }) => {
   );
 };
 
+// The selected area lives in the query (?a=0180) so a view can be shared and reloaded
+const useSelectedAreaParam = (): [string | null, (code: string | null) => void] => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const select = useCallback((code: string | null) => {
+    const params = new URLSearchParams(searchParams);
+    if (code === null) {
+      params.delete('a');
+    } else {
+      params.set('a', code);
+    }
+    navigate({ search: params.toString() }, { replace: true });
+  }, [searchParams, navigate]);
+
+  return [searchParams.get('a') || null, select];
+};
+
 const LocalElectionView = ({ kind, topoUrl, objectName, icon, labels }: LocalElectionViewProps) => {
-  const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [areaParam, setSelectedCode] = useSelectedAreaParam();
   const { data: areas, isLoading, isError } = useLocalElections(kind);
+  const selectedCode = areas?.some(a => a.code === areaParam) ? areaParam : null;
   const { data: detail } = useLocalElectionDetail(kind, selectedCode);
 
   const colorByCode = useMemo(
