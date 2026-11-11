@@ -5,7 +5,6 @@ import Footer from '@/components/Footer';
 import SeatDistribution from '@/components/SeatDistribution';
 import CoalitionBuilder from '@/components/CoalitionBuilder';
 import PoliticianCard from '@/components/PoliticianCard';
-import ParliamentBlog from '@/components/ParliamentBlog';
 import { partyColor, seatLabel, useComposition, useElections, useParliamentMembers, useParties } from '@/api/parliament';
 import {
   defaultMemberSortOption,
@@ -284,8 +283,6 @@ const Parliament = () => {
             </div>
           )}
         </section>
-
-        <ParliamentBlog />
       </main>
 
       <Footer />
