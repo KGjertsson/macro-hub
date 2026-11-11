@@ -23,8 +23,8 @@ The components that run, and how they connect. It is what Docker Compose starts
   | cron, queue    |  | cron, queue         |  | cron, queue    |     | cron, queue    |  | accounts,      |
   | - - - - - - -  |  | - - - - - - - - - - |  | - - - - - - -  |     | - - - - - - -  |  | sessions, JWTs |
   | macro-platform |  | macro-platform      |  | macro-platform |     | macro-platform |  | - - - - - - -  |
-  +-+--------------+  +-+-------------------+  +-+--------------+     +-+--------------+  | shared only    |
-    | |                 | |                      | |                    | |               +-+--------------+
+  +-+-+------------+  +-+-+-----------------+  +-+-+------------+     +-+-+------------+  | shared only    |
+    | |                 | |                      | |                    | |               +-+-+------------+
     | |                 | |                      | |                    | |                 | |
     | v                 | v                      | v                    | v                 | v
     | Riksbanken        | SCB                    | Riksdagen            | Valmyndigheten    | SMTP provider
