@@ -323,10 +323,15 @@ const LocalElectionView = ({ kind, topoUrl, objectName, icon, labels }: LocalEle
   }
 
   return (
-    <>
-      <div className="grid lg:grid-cols-2 gap-8 items-start">
-        <div className="bg-card rounded-2xl border border-border p-6 shadow-lg space-y-4">
+    <div className="space-y-6">
+      <div className="bg-card rounded-2xl border border-border p-4 shadow-lg">
+        <div className="max-w-md">
           <AreaSearch areas={areas ?? []} selectedCode={selectedCode} onSelect={selectFromSearch} labels={labels} />
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-2 bg-card rounded-2xl border border-border shadow-lg overflow-hidden">
           <div className="h-[60vh] sm:h-[70vh] min-h-[360px] sm:min-h-[420px]">
             <ElectionMap
               topoUrl={topoUrl}
@@ -361,7 +366,7 @@ const LocalElectionView = ({ kind, topoUrl, objectName, icon, labels }: LocalEle
           <ElectedSection key={selected.code} detail={detail} />
         </>
       )}
-    </>
+    </div>
   );
 };
 
