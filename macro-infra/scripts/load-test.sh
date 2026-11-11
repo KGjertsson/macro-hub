@@ -75,7 +75,7 @@ case "$prometheus_status" in
         echo "No Prometheus on 127.0.0.1:9090: results only in the summary below."
         ;;
     404)
-        echo "Prometheus runs without its remote-write receiver, so re-create it: docker compose -f macro-backend/macro-infra/docker/docker-compose-observability.yml up -d --no-deps prometheus. Results only in the summary below."
+        echo "Prometheus runs without its remote-write receiver, so re-create it: docker compose -f macro-infra/docker/docker-compose-observability.yml up -d --no-deps prometheus. Results only in the summary below."
         ;;
     *)
         echo "Prometheus found on 127.0.0.1:9090: results also go to the dashboard Macro Hub Load Tests (http://localhost:3000)."

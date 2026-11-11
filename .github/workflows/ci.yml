@@ -69,7 +69,7 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-      - run: sh macro-backend/macro-infra/scripts/acceptance-test.sh
+      - run: sh macro-infra/scripts/acceptance-test.sh
 
   # Not a required check, see the same ADR
   compose-smoke:
@@ -83,4 +83,4 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-      - run: sh macro-backend/macro-infra/scripts/compose-smoke.sh
+      - run: sh macro-infra/scripts/compose-smoke.sh

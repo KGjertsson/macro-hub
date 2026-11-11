@@ -21,13 +21,13 @@ fi
 gateway=http://localhost:8081
 seconds_until_up=300
 
-backend="$(cd "$(dirname "$0")/../.." && pwd)"
+backend="$(cd "$(dirname "$0")/../../macro-backend" && pwd)"
 cd "$backend"
 
 compose() {
     docker compose --env-file macro-series-service/.env \
-        -f macro-infra/docker/docker-compose-all.yml \
-        -f macro-infra/scripts/compose-smoke.override.yml "$@"
+        -f ../macro-infra/docker/docker-compose-all.yml \
+        -f ../macro-infra/scripts/compose-smoke.override.yml "$@"
 }
 
 fail() {

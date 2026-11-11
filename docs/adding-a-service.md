@@ -8,8 +8,8 @@ The backend is one service per domain, so a new domain is a new service. This ch
 
 ## Database and role
 
-- [ ] Add a `create_service_database <db> "${<DB>_DB_PASSWORD:-<default>}"` line to `macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`, and the password variable to `postgres` in both Compose files, to the service in `docker-compose-all.yml`, and as a comment to `macro-backend/macro-series-service/.env.example`, which lists every service's optional password. The script creates the role and the database, revokes `CONNECT` from `PUBLIC` on every database, can be re-run, and picks up a changed password.
-- [ ] Init scripts only run on an empty volume. An existing volume needs the script run by hand before the service starts, or the service fails with `database "<db>" does not exist`: `docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh`. **Don't delete the volume instead:** it holds `parliament`, the only copy of its data.
+- [ ] Add a `create_service_database <db> "${<DB>_DB_PASSWORD:-<default>}"` line to `macro-infra/docker/postgres-init/01-service-databases.sh`, and the password variable to `postgres` in both Compose files, to the service in `docker-compose-all.yml`, and as a comment to `macro-backend/macro-series-service/.env.example`, which lists every service's optional password. The script creates the role and the database, revokes `CONNECT` from `PUBLIC` on every database, can be re-run, and picks up a changed password.
+- [ ] Init scripts only run on an empty volume. An existing volume needs the script run by hand before the service starts, or the service fails with `database "<db>" does not exist`: `docker exec -i macrohub-postgres sh -s < macro-infra/docker/postgres-init/01-service-databases.sh`. **Don't delete the volume instead:** it holds `parliament`, the only copy of its data.
 - [ ] Pick the next free port (the table at the top of `CLAUDE.md` lists the ones in use).
 
 ## Flyway
@@ -35,7 +35,7 @@ A column change in a platform table needs a new `db/platform` version and a rege
 - [ ] Set `macro.scrape.path-prefix` to `macro-analyzer/scrape/<service>`. It has no default, so a service without it fails at start-up with `Could not resolve placeholder`. The service then has `enqueue?name=`, `enqueue-all` and `scrape-from-queue` under that path, for admins only like the others ([ADR 0010](adrs/0010-own-auth-service-with-sessions-and-jwts.md)). Set `auth.jwks-uri` in its properties and `AUTH_JWKS_URI` in Compose, as the other services do, or it doesn't start.
 - [ ] Add its routes to `macro-frontend/nginx/default.conf.template`, including `/macro-analyzer/scrape/<service>/`, with their own URL variable. The variable needs a default in `macro-frontend/Dockerfile`. The proxy settings, with the 30-minute timeout, are inherited from the `server`.
 - [ ] Add the same routes to the proxy in `macro-frontend/vite.config.ts`, above the catch-all `^/macro-analyzer(/|\?|$)` entry. The first match wins, so a route added after it answers 404.
-- [ ] Add the service's name to `services` in `macro-backend/macro-infra/scripts/scrape-all.sh`.
+- [ ] Add the service's name to `services` in `macro-infra/scripts/scrape-all.sh`.
 
 ## Compose and docs
 
@@ -49,8 +49,8 @@ A column change in a platform table needs a new `db/platform` version and a rege
 - [ ] Give the service its own `ArchitectureTest` for its layers, and copies of `BaseConfigurationTest`, `NoStaticResourceHandlersHttpTest`, `ManualScrapePathsHttpTest`, `ActuatorExposureHttpTest`, `TracingHttpTest` and `ConnectionPoolIntegrationTest`.
 - [ ] Add `src/test/resources/application-test.properties` with a TestContainers datasource, like the other services'. Without it, `@ActiveProfiles("test")` falls back to the base properties, so the copied tests run Flyway and write against the Compose Postgres.
 - [ ] Add an application test like `RegionalStatisticsApplicationTests`, which pins both Flyway runs.
-- [ ] In `macro-backend/acceptance-tests`, add a `BackendService` constant with its gateway URL variable and put it in `BackendService.ALL`, add a `docker build` line to `macro-backend/macro-infra/scripts/acceptance-test.sh`, and add its routes to `GatewayRoutingAcceptanceTest` ([ADR 0008](adrs/0008-black-box-acceptance-tests-through-the-gateway.md)).
-- [ ] In `macro-backend/macro-infra/scripts/compose-smoke.sh`, add a `docker build` line tagging the image `:latest` and a `wait_until_answers` for one of its routes, with an `expect_json` if that route answers with seeded data. Add the service to `compose-smoke.override.yml` with `SCHEDULER_ENABLED: "false"`: the script fails without it, because its crons could call real sources. The script only runs in CI, so the PR's `compose-smoke` job is how to try it.
+- [ ] In `macro-backend/acceptance-tests`, add a `BackendService` constant with its gateway URL variable and put it in `BackendService.ALL`, add a `docker build` line to `macro-infra/scripts/acceptance-test.sh`, and add its routes to `GatewayRoutingAcceptanceTest` ([ADR 0008](adrs/0008-black-box-acceptance-tests-through-the-gateway.md)).
+- [ ] In `macro-infra/scripts/compose-smoke.sh`, add a `docker build` line tagging the image `:latest` and a `wait_until_answers` for one of its routes, with an `expect_json` if that route answers with seeded data. Add the service to `compose-smoke.override.yml` with `SCHEDULER_ENABLED: "false"`: the script fails without it, because its crons could call real sources. The script only runs in CI, so the PR's `compose-smoke` job is how to try it.
 
 ## Data
 

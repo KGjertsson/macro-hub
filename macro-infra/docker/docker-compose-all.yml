@@ -152,7 +152,7 @@ services:
       - "127.0.0.1:8086:8086"
 
   macro-frontend:
-    build: ../../../macro-frontend
+    build: ../../macro-frontend
     image: macro-frontend:latest
     container_name: macrohub-macro-frontend
     depends_on:
