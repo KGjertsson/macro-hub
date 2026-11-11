@@ -5,8 +5,8 @@ The components that run, and how they connect. It is what Docker Compose starts
 
 ```
   +---------------------+     direct from the browser, not through the gateway:
-  | Browser             |--+---> OpenFreeMap   map style and tiles, on /omraden
-  | runs the React app  |  +---> Photon        address search, on /omraden
+  | Browser             |--+---> OpenFreeMap   map style and tiles, on /karta
+  | runs the React app  |  +---> Photon        address search, on /karta
   +---------------------+  +---> Google Fonts  Inter and Space Mono, on every page
             |
             | http://localhost:8081

@@ -1,4 +1,4 @@
-import {BarChart3, BookOpen, Building2, Landmark, LineChart, LogIn, LogOut, MapPin, MapPinned, Menu, UserRound, Vote} from 'lucide-react';
+import {BarChart3, BookOpen, Landmark, LineChart, LogIn, LogOut, MapPinned, Menu, UserRound} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {useState} from 'react';
 import {Link, useLocation} from 'react-router-dom';
@@ -9,10 +9,7 @@ const Header = () => {
     const location = useLocation();
     const {user, logout} = useAuth();
     const isParliamentPage = location.pathname.startsWith('/parliament');
-    const isConstituenciesPage = location.pathname === '/constituencies';
-    const isRegionsPage = location.pathname === '/regions';
-    const isMunicipalitiesPage = location.pathname === '/municipalities';
-    const isRegionalStatisticsPage = location.pathname === '/omraden';
+    const isMapPage = location.pathname === '/karta';
 
     return (
         <header className='fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl'>
@@ -45,40 +42,13 @@ const Header = () => {
                             Riksdagen
                         </Link>
                         <Link
-                            to='/constituencies'
+                            to='/karta'
                             className={`text-sm transition-colors flex items-center gap-1.5 ${
-                                isConstituenciesPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
-                            <Vote className='h-4 w-4'/>
-                            Valkretsar
-                        </Link>
-                        <Link
-                            to='/regions'
-                            className={`text-sm transition-colors flex items-center gap-1.5 ${
-                                isRegionsPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
-                            <MapPin className='h-4 w-4'/>
-                            Regioner
-                        </Link>
-                        <Link
-                            to='/municipalities'
-                            className={`text-sm transition-colors flex items-center gap-1.5 ${
-                                isMunicipalitiesPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
-                            <Building2 className='h-4 w-4'/>
-                            Kommuner
-                        </Link>
-                        <Link
-                            to='/omraden'
-                            className={`text-sm transition-colors flex items-center gap-1.5 ${
-                                isRegionalStatisticsPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
+                                isMapPage ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                             <MapPinned className='h-4 w-4'/>
-                            Områden
+                            Karta
                         </Link>
                     </nav>
 
@@ -146,32 +116,11 @@ const Header = () => {
                                 Riksdagen
                             </Link>
                             <Link
-                                to='/constituencies'
-                                className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
-                            >
-                                <Vote className='h-4 w-4'/>
-                                Valkretsar
-                            </Link>
-                            <Link
-                                to='/regions'
-                                className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
-                            >
-                                <MapPin className='h-4 w-4'/>
-                                Regioner
-                            </Link>
-                            <Link
-                                to='/municipalities'
-                                className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
-                            >
-                                <Building2 className='h-4 w-4'/>
-                                Kommuner
-                            </Link>
-                            <Link
-                                to='/omraden'
+                                to='/karta'
                                 className='text-sm transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground'
                             >
                                 <MapPinned className='h-4 w-4'/>
-                                Områden
+                                Karta
                             </Link>
                             <Link
                                 to='/sources'

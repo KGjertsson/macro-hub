@@ -6,16 +6,20 @@ import {
   WebVitalsInstrumentation,
   type TransportItem,
 } from "@grafana/faro-web-sdk";
+import { parseMapCategory } from "@/pages/mapCategories";
 
 const COLLECT_PATH = "/telemetry/collect";
 const REQUEST_TIMEOUT_MS = 5_000;
 
-// A page's query string holds what the visitor picked, such as the area found by an address search
+// A page's query string holds what the visitor picked, such as the area found by an address search. The map's
+// category is kept, from a closed set, because its four maps load and render differently
 function withPathOnly(item: TransportItem): TransportItem {
   const url = item.meta.page?.url;
   if (!url) return item;
 
-  return { ...item, meta: { ...item.meta, page: { ...item.meta.page, url: new URL(url).pathname } } };
+  const { pathname, searchParams } = new URL(url);
+  const page = pathname === "/karta" ? `${pathname}?k=${parseMapCategory(searchParams.get("k"))}` : pathname;
+  return { ...item, meta: { ...item.meta, page: { ...item.meta.page, url: page } } };
 }
 
 export function startBrowserTelemetry(): void {
