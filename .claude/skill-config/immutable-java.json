@@ -1,0 +1,5 @@
+{
+  "sources": ["macro-backend/*/src/main/java/**/*.java"],
+  "exclude": ["jooq/generated"],
+  "copyPatterns": ["ImmutableCopies\\.\\w+\\(", "Collections\\.unmodifiable\\w+\\("]
+}
