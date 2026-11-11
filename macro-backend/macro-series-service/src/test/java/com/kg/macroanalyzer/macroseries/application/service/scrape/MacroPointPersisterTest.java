@@ -93,10 +93,14 @@ public class MacroPointPersisterTest {
                 .build();
 
         // when
-        when(repositoryPort.writeMacroPoints(any())).thenThrow(new RuntimeException("connection reset"));
+        when(repositoryPort.writeMacroPoints(any()))
+                .thenThrow(new RuntimeException("connection reset"));
 
         // then
-        assertThrows(RuntimeException.class, () -> macroPointPersister.persist(configWithMacroPoints));
+        assertThrows(
+                RuntimeException.class,
+                () -> macroPointPersister.persist(configWithMacroPoints)
+        );
         verify(scrapeQueuePort, never()).markAsDone(any());
     }
 

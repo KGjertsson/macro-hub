@@ -40,7 +40,11 @@ public class ElectionPostgresAdaptor implements ElectionRepositoryPort {
     }
 
     @Override
-    public Optional<LocalElectionResult> readLocalElectionResult(LocalElectionType type, int year, String areaCode) {
+    public Optional<LocalElectionResult> readLocalElectionResult(
+            LocalElectionType type,
+            int year,
+            String areaCode
+    ) {
         return localElectionRepository.readResult(type, year, areaCode);
     }
 

@@ -52,7 +52,10 @@ class RiksbankenConnectionBuilderTest {
         final var builder = new RiksbankenConnectionBuilder("key");
 
         // when && then
-        final var exception = assertThrows(ScrapeException.class, () -> builder.buildConnection(seriesConfig));
+        final var exception = assertThrows(
+                ScrapeException.class,
+                () -> builder.buildConnection(seriesConfig)
+        );
         assertTrue(exception.getMessage().contains("Failed to build Riksbanken connection"));
     }
 }

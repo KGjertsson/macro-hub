@@ -53,7 +53,9 @@ public class ActuatorExposureHttpTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"env", "beans", "configprops", "metrics", "loggers", "heapdump", "threaddump"})
+    @ValueSource(strings = {
+            "env", "beans", "configprops", "metrics", "loggers", "heapdump", "threaddump"
+    })
     void shouldNotExpose_otherEndpoints(String endpoint) throws Exception {
         // when
         final var response = get("/actuator/" + endpoint);

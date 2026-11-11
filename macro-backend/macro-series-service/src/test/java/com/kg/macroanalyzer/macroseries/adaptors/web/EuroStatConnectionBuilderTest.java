@@ -25,8 +25,14 @@ class EuroStatConnectionBuilderTest {
         assertEquals("GET", connection.getRequestMethod());
         assertEquals(15_000, connection.getConnectTimeout());
         assertEquals(60_000, connection.getReadTimeout());
-        assertEquals("macro-hub/1.0 (contact: macro-hub)", connection.getRequestProperty("User-Agent"));
-        assertEquals("text/plain, text/tab-separated-values;q=0.9, */*;q=0.8", connection.getRequestProperty("Accept"));
+        assertEquals(
+                "macro-hub/1.0 (contact: macro-hub)",
+                connection.getRequestProperty("User-Agent")
+        );
+        assertEquals(
+                "text/plain, text/tab-separated-values;q=0.9, */*;q=0.8",
+                connection.getRequestProperty("Accept")
+        );
         assertEquals("gzip", connection.getRequestProperty("Accept-Encoding"));
         assertEquals("en", connection.getRequestProperty("Accept-Language"));
     }
@@ -70,7 +76,10 @@ class EuroStatConnectionBuilderTest {
         final var builder = new EuroStatConnectionBuilder();
 
         // when && then
-        final var exception = assertThrows(ScrapeException.class, () -> builder.buildConnection(seriesConfig));
+        final var exception = assertThrows(
+                ScrapeException.class,
+                () -> builder.buildConnection(seriesConfig)
+        );
         assertTrue(exception.getMessage().contains("Failed to build EuroStat connection"));
     }
 

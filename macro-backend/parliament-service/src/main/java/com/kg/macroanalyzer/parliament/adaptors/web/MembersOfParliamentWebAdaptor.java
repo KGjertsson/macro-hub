@@ -9,7 +9,8 @@ import com.kg.macroanalyzer.shared.web.WebPort;
 
 import java.util.stream.Stream;
 
-public class MembersOfParliamentWebAdaptor implements WebPort<SeriesConfig, Stream<MemberOfParliament>> {
+public class MembersOfParliamentWebAdaptor
+        implements WebPort<SeriesConfig, Stream<MemberOfParliament>> {
 
     @Override
     public Stream<MemberOfParliament> fetch(SeriesConfig seriesConfig) throws ScrapeException {

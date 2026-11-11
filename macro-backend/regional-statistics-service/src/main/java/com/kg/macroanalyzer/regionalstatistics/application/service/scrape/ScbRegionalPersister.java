@@ -13,13 +13,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-// Table stamps are written once, after every indicator: a stamp stored while another indicator on the same table
-// still holds old rows would make the scraper skip that indicator. Tables whose fetch failed, and every table of an
-// indicator whose write failed, lose their stored stamp, so the indicators using them are fetched again next time.
-// The queue item is only marked as done when something was written (or nothing needed writing), so a scrape where
-// every write failed is retried on the next queue drain
+// Table stamps are written once, after every indicator: a stamp stored while another indicator on
+// the same table still holds old rows would make the scraper skip that indicator. Tables whose
+// fetch failed, and every table of an indicator whose write failed, lose their stored stamp, so the
+// indicators using them are fetched again next time. The queue item is only marked as done when
+// something was written (or nothing needed writing), so a scrape where every write failed is
+// retried on the next queue drain
 @Slf4j
-public record ScbRegionalPersister(RegionalStatisticsRepositoryPort repositoryPort, ScrapeQueuePort scrapeQueuePort) implements Persister<ConfigWithScbIndicators> {
+public record ScbRegionalPersister(
+        RegionalStatisticsRepositoryPort repositoryPort,
+        ScrapeQueuePort scrapeQueuePort
+) implements Persister<ConfigWithScbIndicators> {
 
     @Override
     public ScrapeResult persist(ConfigWithScbIndicators configWithScbIndicators) {
@@ -37,7 +41,11 @@ public record ScbRegionalPersister(RegionalStatisticsRepositoryPort repositoryPo
             try {
                 final var persistedCount = repositoryPort.writeScbIndicatorResult(result);
                 written.add(result);
-                log.info("Replaced indicator {} with {} area values", result.indicator().id(), persistedCount);
+                log.info(
+                        "Replaced indicator {} with {} area values",
+                        result.indicator().id(),
+                        persistedCount
+                );
             } catch (RuntimeException e) {
                 log.error("Failed to write SCB indicator {}", result.indicator().id(), e);
                 droppedTables.addAll(result.indicator().tables());

@@ -21,8 +21,10 @@ public class AlignmentTest {
                 MacroSeries.builder()
                         .name("a")
                         .macroPoints(List.of(
-                                MacroPoint.builder().value(1.0).date(LocalDate.of(2024, 1, 31)).build(),
-                                MacroPoint.builder().value(2.0).date(LocalDate.of(2024, 2, 1)).build()
+                                MacroPoint.builder()
+                                        .value(1.0).date(LocalDate.of(2024, 1, 31)).build(),
+                                MacroPoint.builder()
+                                        .value(2.0).date(LocalDate.of(2024, 2, 1)).build()
                         ))
                         .build()
         );

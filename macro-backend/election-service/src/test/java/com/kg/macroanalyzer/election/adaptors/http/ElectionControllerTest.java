@@ -32,7 +32,8 @@ public class ElectionControllerTest {
         final var lund = LocalElectionSummaryDto.builder().code("1281").name("Lund").build();
 
         // when
-        when(electionQueries.getLocalElectionResults(LocalElectionType.KF, null)).thenReturn(List.of(lund));
+        when(electionQueries.getLocalElectionResults(LocalElectionType.KF, null))
+                .thenReturn(List.of(lund));
         final var response = electionController.getMunicipalityElections(null);
 
         // then
@@ -43,7 +44,8 @@ public class ElectionControllerTest {
     @Test
     public void shouldReturnNoContent_whenNoRegionElectionsScraped() {
         // when
-        when(electionQueries.getLocalElectionResults(LocalElectionType.RF, null)).thenReturn(List.of());
+        when(electionQueries.getLocalElectionResults(LocalElectionType.RF, null))
+                .thenReturn(List.of());
         final var response = electionController.getRegionElections(null);
 
         // then
@@ -59,7 +61,8 @@ public class ElectionControllerTest {
                 .build();
 
         // when
-        when(electionQueries.getLocalElectionResult(LocalElectionType.RF, 2026, "12")).thenReturn(Optional.of(detail));
+        when(electionQueries.getLocalElectionResult(LocalElectionType.RF, 2026, "12"))
+                .thenReturn(Optional.of(detail));
         final var response = electionController.getRegion("12", 2026);
 
         // then
@@ -70,10 +73,14 @@ public class ElectionControllerTest {
     @Test
     public void shouldReturnConstituencyElections_whenScraped() {
         // given
-        final var gotland = LocalElectionSummaryDto.builder().code("09").name("Gotlands län").build();
+        final var gotland = LocalElectionSummaryDto.builder()
+                .code("09")
+                .name("Gotlands län")
+                .build();
 
         // when
-        when(electionQueries.getLocalElectionResults(LocalElectionType.RD, null)).thenReturn(List.of(gotland));
+        when(electionQueries.getLocalElectionResults(LocalElectionType.RD, null))
+                .thenReturn(List.of(gotland));
         final var response = electionController.getConstituencyElections(null);
 
         // then
@@ -85,12 +92,16 @@ public class ElectionControllerTest {
     public void shouldReturnConstituencyDetail_whenFound() {
         // given
         final var detail = LocalElectionDetailDto.builder()
-                .summary(LocalElectionSummaryDto.builder().code("01").name("Stockholms kommun").build())
+                .summary(LocalElectionSummaryDto.builder()
+                        .code("01")
+                        .name("Stockholms kommun")
+                        .build())
                 .elected(List.of())
                 .build();
 
         // when
-        when(electionQueries.getLocalElectionResult(LocalElectionType.RD, null, "01")).thenReturn(Optional.of(detail));
+        when(electionQueries.getLocalElectionResult(LocalElectionType.RD, null, "01"))
+                .thenReturn(Optional.of(detail));
         final var response = electionController.getConstituency("01", null);
 
         // then
@@ -101,7 +112,8 @@ public class ElectionControllerTest {
     @Test
     public void shouldReturnNotFound_whenMunicipalityUnknown() {
         // when
-        when(electionQueries.getLocalElectionResult(LocalElectionType.KF, null, "9999")).thenReturn(Optional.empty());
+        when(electionQueries.getLocalElectionResult(LocalElectionType.KF, null, "9999"))
+                .thenReturn(Optional.empty());
         final var response = electionController.getMunicipality("9999", null);
 
         // then

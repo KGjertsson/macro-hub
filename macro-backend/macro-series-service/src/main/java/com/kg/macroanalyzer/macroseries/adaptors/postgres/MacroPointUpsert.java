@@ -39,7 +39,9 @@ class MacroPointUpsert {
                 dslContext,
                 upsert,
                 macroPoints,
-                macroPoint -> new Object[]{UUID.randomUUID(), macroPoint.value(), macroPoint.date()}
+                macroPoint -> new Object[]{
+                        UUID.randomUUID(), macroPoint.value(), macroPoint.date()
+                }
         );
     }
 
@@ -61,7 +63,9 @@ class MacroPointUpsert {
                 dslContext,
                 upsert,
                 macroPoints,
-                macroPoint -> new Object[]{UUID.randomUUID(), seriesName, macroPoint.value(), macroPoint.date()}
+                macroPoint -> new Object[]{
+                        UUID.randomUUID(), seriesName, macroPoint.value(), macroPoint.date()
+                }
         );
     }
 

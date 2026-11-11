@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-// On the shared stack, where nothing scrapes regional statistics, parliament or elections, and the chart series asked
-// for here is one no journey scrapes
+// On the shared stack, where nothing scrapes regional statistics, parliament or elections, and the
+// chart series asked for here is one no journey scrapes
 class FreshSystemAcceptanceTest {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
@@ -29,7 +29,8 @@ class FreshSystemAcceptanceTest {
         // when
         final var series = jsonFrom("/macro-analyzer/series-config");
         final var chart = gateway.postJson("/macro-analyzer/chart-data", """
-                {"strategy":"DAY","timeFrame":"ALL","chartSeriesParams":[{"name":"DebtPcGdpSk"}]}""");
+                {"strategy":"DAY","timeFrame":"ALL",\
+                "chartSeriesParams":[{"name":"DebtPcGdpSk"}]}""");
 
         // then
         assertEquals(108, series.size());
@@ -38,7 +39,9 @@ class FreshSystemAcceptanceTest {
         assertEquals("DebtPcGdpSk", series.get(107).get("name").asString());
         assertEquals(
                 Set.of("Räntor", "Statsobligationer", "Statsskuld", "Valuta", "Nyckeltal USA"),
-                series.valueStream().map(config -> config.get("category").asString()).collect(Collectors.toSet()));
+                series.valueStream()
+                        .map(config -> config.get("category").asString())
+                        .collect(Collectors.toSet()));
         assertEquals(204, chart.statusCode());
     }
 
@@ -46,7 +49,8 @@ class FreshSystemAcceptanceTest {
     void everyIndicatorIsListedAndNoneHasValuesYet() {
         // when
         final var indicators = jsonFrom("/macro-analyzer/regional-statistics/indicators");
-        final var values = gateway.get("/macro-analyzer/regional-statistics/values?indicator=households&level=RegSO");
+        final var values = gateway.get(
+                "/macro-analyzer/regional-statistics/values?indicator=households&level=RegSO");
 
         // then
         assertEquals(26, indicators.size());
@@ -71,7 +75,8 @@ class FreshSystemAcceptanceTest {
                 parties.valueStream().map(party -> party.get("code").asString()).toList());
         assertEquals(
                 JSON.readTree("""
-                        {"code":"S","name":"Socialdemokraterna","color":"#EE2020","ideology":"Social Democracy","active":true}"""),
+                        {"code":"S","name":"Socialdemokraterna","color":"#EE2020",\
+                        "ideology":"Social Democracy","active":true}"""),
                 parties.get(0));
     }
 
@@ -101,7 +106,8 @@ class FreshSystemAcceptanceTest {
     void parliamentHasNoMembersYet() {
         assertEquals(204, gateway.get("/macro-analyzer/parliament/composition").statusCode());
         assertEquals(204, gateway.get("/macro-analyzer/parliament/members").statusCode());
-        assertEquals(404, gateway.get("/macro-analyzer/parliament/members/0123456789").statusCode());
+        assertEquals(404, gateway.get(
+                "/macro-analyzer/parliament/members/0123456789").statusCode());
     }
 
     @Test
@@ -116,8 +122,10 @@ class FreshSystemAcceptanceTest {
     @ParameterizedTest
     @CsvSource({"municipalities,0180", "regions,01", "constituencies,01"})
     void localElectionsHaveNoResultsYet(String areaType, String code) {
-        assertEquals(204, gateway.get("/macro-analyzer/%s/elections".formatted(areaType)).statusCode());
-        assertEquals(404, gateway.get("/macro-analyzer/%s/%s".formatted(areaType, code)).statusCode());
+        assertEquals(204, gateway.get(
+                "/macro-analyzer/%s/elections".formatted(areaType)).statusCode());
+        assertEquals(404, gateway.get(
+                "/macro-analyzer/%s/%s".formatted(areaType, code)).statusCode());
     }
 
     private static JsonNode jsonFrom(String path) {

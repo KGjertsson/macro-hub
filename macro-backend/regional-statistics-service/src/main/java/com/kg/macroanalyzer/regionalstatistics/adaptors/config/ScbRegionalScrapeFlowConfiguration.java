@@ -28,7 +28,9 @@ import org.springframework.context.annotation.Configuration;
 public class ScbRegionalScrapeFlowConfiguration {
 
     @Bean("existingScbTableFinder")
-    public ExistingFinder<SeriesConfig, ConfigWithScbIndicators> finder(RegionalStatisticsRepositoryPort repositoryPort) {
+    public ExistingFinder<SeriesConfig, ConfigWithScbIndicators> finder(
+            RegionalStatisticsRepositoryPort repositoryPort
+    ) {
         return new ExistingScbTableFinder(repositoryPort);
     }
 
@@ -37,27 +39,38 @@ public class ScbRegionalScrapeFlowConfiguration {
             WebPort<ScbMetadataRequest, ScbTableMetadata> scbMetadataWebPort,
             WebPort<ScbDataRequest, ScbTableValues> scbDataWebPort
     ) {
-        return new ScbRegionalScraper(scbMetadataWebPort, scbDataWebPort, ScbRegionalScraper.SCB_MAX_CELLS);
+        return new ScbRegionalScraper(
+                scbMetadataWebPort,
+                scbDataWebPort,
+                ScbRegionalScraper.SCB_MAX_CELLS
+        );
     }
 
     @Bean("scbRegionalPersister")
-    public Persister<ConfigWithScbIndicators> persister(RegionalStatisticsRepositoryPort repositoryPort, ScrapeQueuePort scrapeQueuePort) {
+    public Persister<ConfigWithScbIndicators> persister(
+            RegionalStatisticsRepositoryPort repositoryPort,
+            ScrapeQueuePort scrapeQueuePort
+    ) {
         return new ScbRegionalPersister(repositoryPort, scrapeQueuePort);
     }
 
     @Bean("scbRegionalScrapeFlow")
     public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
-            @Qualifier("existingScbTableFinder") ExistingFinder<SeriesConfig, ConfigWithScbIndicators> finder,
+            @Qualifier("existingScbTableFinder")
+            ExistingFinder<SeriesConfig, ConfigWithScbIndicators> finder,
             @Qualifier("scbRegionalScraper") Scraper<ConfigWithScbIndicators> scraper,
             @Qualifier("scbRegionalPersister") Persister<ConfigWithScbIndicators> persister
     ) {
-        return RegisteredScrapeFlow.of(RegionalStatisticsScrapeFlows.SCB_REGIONAL, new ScrapeFlow<>(
-                preparer,
-                finder,
-                scraper,
-                persister
-        ));
+        return RegisteredScrapeFlow.of(
+                RegionalStatisticsScrapeFlows.SCB_REGIONAL,
+                new ScrapeFlow<>(
+                        preparer,
+                        finder,
+                        scraper,
+                        persister
+                )
+        );
     }
 
 }

@@ -23,7 +23,9 @@ public class ParliamentPartiesClient implements AutoCloseable {
 
     private static final String PARTIES_PATH = "/macro-analyzer/parliament/parties";
 
-    private final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .build();
     private final ExecutorService exchanges = Executors.newThreadPerTaskExecutor(
             Thread.ofPlatform().name("party-list-fetch").daemon().factory()
     );
@@ -31,7 +33,12 @@ public class ParliamentPartiesClient implements AutoCloseable {
     private final JsonMapper jsonMapper;
     private final Duration timeout;
 
-    public ParliamentPartiesClient(RestClient.Builder restClientBuilder, String parliamentUrl, Duration timeout, JsonMapper jsonMapper) {
+    public ParliamentPartiesClient(
+            RestClient.Builder restClientBuilder,
+            String parliamentUrl,
+            Duration timeout,
+            JsonMapper jsonMapper
+    ) {
         this.restClient = restClientBuilder
                 .baseUrl(parliamentUrl.replaceAll("/+$", ""))
                 .requestFactory(new JdkClientHttpRequestFactory(httpClient))
@@ -40,8 +47,10 @@ public class ParliamentPartiesClient implements AutoCloseable {
         this.timeout = timeout;
     }
 
-    public Map<String, String> fetchPartyColors() throws IOException, InterruptedException, TimeoutException {
-        // The deadline is on the future, as no client timeout covers a body that stalls after the headers
+    public Map<String, String> fetchPartyColors()
+            throws IOException, InterruptedException, TimeoutException {
+        // The deadline is on the future, as no client timeout covers a body that stalls after the
+        // headers
         final var exchange = exchanges.submit(this::exchange);
         try {
             return exchange.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
@@ -53,11 +62,14 @@ public class ParliamentPartiesClient implements AutoCloseable {
     }
 
     private Map<String, String> exchange() {
-        return restClient.get().uri(PARTIES_PATH).exchange((request, response) -> switch (response.getStatusCode().value()) {
-            case 200 -> parse(new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8));
-            case 204 -> Map.of();
-            default -> throw new IOException("HTTP " + response.getStatusCode().value());
-        });
+        return restClient.get().uri(PARTIES_PATH).exchange(
+                (request, response) -> switch (response.getStatusCode().value()) {
+                    case 200 -> parse(
+                            new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8));
+                    case 204 -> Map.of();
+                    default -> throw new IOException(
+                            "HTTP " + response.getStatusCode().value());
+                });
     }
 
     private Map<String, String> parse(String body) throws IOException {

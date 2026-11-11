@@ -30,7 +30,9 @@ class JsonStat2 {
 
             return root;
         } catch (JacksonException e) {
-            throw new ScrapeException("Failed to parse SCB response for %s: %s".formatted(source, e.getMessage()));
+            throw new ScrapeException(
+                    "Failed to parse SCB response for %s: %s".formatted(source, e.getMessage())
+            );
         }
     }
 
@@ -38,7 +40,10 @@ class JsonStat2 {
         final var codes = new LinkedHashMap<String, List<String>>();
         root.path("id").valueStream()
                 .map(JsonNode::asString)
-                .forEach(dimension -> codes.put(dimension, dimensionCodes(root.path("dimension").path(dimension))));
+                .forEach(dimension -> codes.put(
+                        dimension,
+                        dimensionCodes(root.path("dimension").path(dimension))
+                ));
 
         return Collections.unmodifiableMap(codes);
     }

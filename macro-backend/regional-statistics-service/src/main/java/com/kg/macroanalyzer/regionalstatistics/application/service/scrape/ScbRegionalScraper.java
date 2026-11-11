@@ -29,8 +29,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// A failed indicator is skipped and the table that failed is reported, so the persister can drop its stamp and the
-// indicator is fetched again next time
+// A failed indicator is skipped and the table that failed is reported, so the persister can drop
+// its stamp and the indicator is fetched again next time
 @Slf4j
 public record ScbRegionalScraper(
         WebPort<ScbMetadataRequest, ScbTableMetadata> metadataWebPort,
@@ -42,7 +42,8 @@ public record ScbRegionalScraper(
 
     @Override
     public Optional<ConfigWithScbIndicators> scrape(ConfigWithScbIndicators config) {
-        final var run = new Run(config.seriesConfig().scrapeUrl(), sharedSources(config.indicators()));
+        final var run =
+                new Run(config.seriesConfig().scrapeUrl(), sharedSources(config.indicators()));
         final var results = new ArrayList<ScbIndicatorResult>();
         final var failedTables = new HashSet<String>();
         for (final var indicator : config.indicators()) {
@@ -55,12 +56,19 @@ public record ScbRegionalScraper(
                 results.add(ScbIndicatorResult.builder()
                         .indicator(indicator)
                         .tableStamps(metadata.values().stream()
-                                .collect(Collectors.toMap(ScbTableMetadata::table, ScbTableMetadata::updated)))
+                                .collect(Collectors.toMap(
+                                        ScbTableMetadata::table,
+                                        ScbTableMetadata::updated
+                                )))
                         .values(ScbValues.toAreaValues(run.values(indicator, metadata)))
                         .build());
                 log.info("Fetched SCB indicator {}", indicator.id());
             } catch (TableException e) {
-                log.error("Caught ScrapeException for SCB indicator {}: {}", indicator.id(), e.getMessage());
+                log.error(
+                        "Caught ScrapeException for SCB indicator {}: {}",
+                        indicator.id(),
+                        e.getMessage()
+                );
                 failedTables.add(e.table());
             }
         }
@@ -84,10 +92,12 @@ public record ScbRegionalScraper(
                 .allMatch(m -> m.updated().equals(config.tableStamps().get(m.table())));
     }
 
-    // Sources used by more than one indicator (e.g. the total population as denominator) are kept for the whole run
+    // Sources used by more than one indicator (e.g. the total population as denominator) are kept
+    // for the whole run
     private static Set<ScbSource> sharedSources(List<ScbIndicator> indicators) {
         return indicators.stream()
-                .flatMap(i -> Stream.concat(i.numerator().stream(), i.denominator().stream()).distinct())
+                .flatMap(i -> Stream.concat(i.numerator().stream(), i.denominator().stream())
+                        .distinct())
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet().stream()
                 .filter(e -> e.getValue() > 1)
@@ -120,7 +130,8 @@ public record ScbRegionalScraper(
         private final Set<ScbSource> sharedSources;
         private final Map<String, ScbTableMetadata> metadataByTable = new HashMap<>();
         private final Set<String> failedMetadata = new HashSet<>();
-        private final Map<SourceVersion, Map<ScbSlice, Map<String, Double>>> sharedValues = new HashMap<>();
+        private final Map<SourceVersion, Map<ScbSlice, Map<String, Double>>> sharedValues =
+                new HashMap<>();
 
         private Run(String baseUrl, Set<ScbSource> sharedSources) {
             this.baseUrl = baseUrl;
@@ -139,7 +150,10 @@ public record ScbRegionalScraper(
         // A table whose metadata could not be fetched is not asked for again in the same run
         private ScbTableMetadata metadata(String table) throws TableException {
             if (failedMetadata.contains(table)) {
-                throw new TableException(table, "Metadata for %s could not be fetched earlier in this run".formatted(table));
+                throw new TableException(
+                        table,
+                        "Metadata for %s could not be fetched earlier in this run".formatted(table)
+                );
             }
             final var cached = metadataByTable.get(table);
             if (cached != null) {
@@ -164,7 +178,8 @@ public record ScbRegionalScraper(
             if (indicator.denominator().isEmpty()) {
                 return ScbValues.scale(numerator, indicator.multiplier());
             }
-            final var denominator = merge(indicator.denominator(), indicator.geoVersions(), metadata);
+            final var denominator =
+                    merge(indicator.denominator(), indicator.geoVersions(), metadata);
 
             return ScbValues.ratio(numerator, denominator, indicator.multiplier());
         }
@@ -218,7 +233,13 @@ public record ScbRegionalScraper(
                     .count();
             final var cellsPerYear = regionCount * source.cellsPerAreaAndYear();
             for (final var years : ScbValues.yearChunks(metadata.years(), cellsPerYear, maxCells)) {
-                final var request = new ScbDataRequest(baseUrl, source.table(), version.wildcard(), years, source.selection());
+                final var request = new ScbDataRequest(
+                        baseUrl,
+                        source.table(),
+                        version.wildcard(),
+                        years,
+                        source.selection()
+                );
                 ScbValues.slices(fetchData(request)).forEach((slice, byArea) -> {
                     if (slice.geoVersion() == version) {
                         values.put(slice, byArea);
@@ -237,25 +258,42 @@ public record ScbRegionalScraper(
             }
         }
 
-        // An unselected dimension would fall back to SCB's default code, so a selection must name every dimension
-        private static void validateSelection(ScbSource source, ScbTableMetadata metadata) throws TableException {
+        // An unselected dimension would fall back to SCB's default code, so a selection must name
+        // every dimension
+        private static void validateSelection(
+                ScbSource source,
+                ScbTableMetadata metadata
+        ) throws TableException {
             for (final var entry : metadata.codes().entrySet()) {
                 final var dimension = entry.getKey();
-                if (dimension.equals(ScbTableMetadata.REGION) || dimension.equals(ScbTableMetadata.TIME)) {
+                if (dimension.equals(ScbTableMetadata.REGION)
+                        || dimension.equals(ScbTableMetadata.TIME)) {
                     continue;
                 }
                 final var selected = source.selection().get(dimension);
                 if (selected == null || selected.isEmpty()) {
-                    throw new TableException(source.table(), "%s: no codes selected for %s".formatted(source.table(), dimension));
+                    throw new TableException(
+                            source.table(),
+                            "%s: no codes selected for %s".formatted(source.table(), dimension)
+                    );
                 }
-                final var unknown = selected.stream().filter(code -> !entry.getValue().contains(code)).toList();
+                final var unknown = selected.stream()
+                        .filter(code -> !entry.getValue().contains(code))
+                        .toList();
                 if (!unknown.isEmpty()) {
-                    throw new TableException(source.table(), "%s: unknown %s codes %s".formatted(source.table(), dimension, unknown));
+                    throw new TableException(
+                            source.table(),
+                            "%s: unknown %s codes %s"
+                                    .formatted(source.table(), dimension, unknown)
+                    );
                 }
             }
             for (final var dimension : source.selection().keySet()) {
                 if (!metadata.codes().containsKey(dimension)) {
-                    throw new TableException(source.table(), "%s has no dimension %s".formatted(source.table(), dimension));
+                    throw new TableException(
+                            source.table(),
+                            "%s has no dimension %s".formatted(source.table(), dimension)
+                    );
                 }
             }
         }

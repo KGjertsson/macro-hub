@@ -27,7 +27,8 @@ public class ValmyndighetenResultResponseParserTest {
     @Test
     void shouldParseVotesSeatsAndElectedMembers() throws ScrapeException {
         // given
-        final var response = new TestJsonReader().readResource("json/valmyndigheten/mandatfordelning_1281_KF_sample.json");
+        final var response = new TestJsonReader()
+                .readResource("json/valmyndigheten/mandatfordelning_1281_KF_sample.json");
 
         // when
         final var results = parser.parse(response);
@@ -45,12 +46,17 @@ public class ValmyndighetenResultResponseParserTest {
         assertEquals(105382, result.eligibleVoters());
         assertEquals(89426, result.totalVotes());
         assertEquals(List.of(
-                new LocalPartyResult("0001", "M", "Moderaterna", "#66BEE6", 16996, new BigDecimal("19.23"), 13),
-                new LocalPartyResult("0002", "S", "Arbetarepartiet-Socialdemokraterna", result.parties().get(1).color(), 22102, new BigDecimal("25.0"), 16)
+                new LocalPartyResult(
+                        "0001", "M", "Moderaterna", "#66BEE6", 16996, new BigDecimal("19.23"), 13),
+                new LocalPartyResult(
+                        "0002", "S", "Arbetarepartiet-Socialdemokraterna",
+                        result.parties().get(1).color(), 22102, new BigDecimal("25.0"), 16)
         ), result.parties());
         assertEquals(List.of(
-                new ElectedMember("Rasmus Törnblom", "0001", "M", 1, "Ledamoten är vald på personröster"),
-                new ElectedMember("Anders Roger Almgren", "0002", "S", 1, "Ledamoten är vald på personröster")
+                new ElectedMember(
+                        "Rasmus Törnblom", "0001", "M", 1, "Ledamoten är vald på personröster"),
+                new ElectedMember(
+                        "Anders Roger Almgren", "0002", "S", 1, "Ledamoten är vald på personröster")
         ), result.elected());
     }
 
@@ -68,8 +74,12 @@ public class ValmyndighetenResultResponseParserTest {
                     "rostfordelning": {
                       "rosterPaverkaMandat": {
                         "partiRoster": [
-                          {"partikod": "0002", "partiforkortning": "S", "partibeteckning": "Socialdemokraterna", "fargkod": "#E8112D", "antalRoster": 10, "andelRoster": 100.0},
-                          {"partikod": "9999", "partiforkortning": "X", "partibeteckning": "Tomma listan", "fargkod": "#000000", "antalRoster": 0, "andelRoster": 0.0}
+                          {"partikod": "0002", "partiforkortning": "S",
+                           "partibeteckning": "Socialdemokraterna", "fargkod": "#E8112D",
+                           "antalRoster": 10, "andelRoster": 100.0},
+                          {"partikod": "9999", "partiforkortning": "X",
+                           "partibeteckning": "Tomma listan", "fargkod": "#000000",
+                           "antalRoster": 0, "andelRoster": 0.0}
                         ]
                       }
                     },
@@ -92,7 +102,8 @@ public class ValmyndighetenResultResponseParserTest {
     @Test
     void shouldParseEveryValkrets_whenRiksdagFile() throws ScrapeException {
         // given
-        final var response = new TestJsonReader().readResource("json/valmyndigheten/mandatfordelning_00_RD_sample.json");
+        final var response = new TestJsonReader()
+                .readResource("json/valmyndigheten/mandatfordelning_00_RD_sample.json");
 
         // when
         final var results = parser.parse(response);
@@ -111,12 +122,18 @@ public class ValmyndighetenResultResponseParserTest {
         assertEquals(765741, stockholm.eligibleVoters());
         assertEquals(657346, stockholm.totalVotes());
         assertEquals(List.of(
-                new LocalPartyResult("0001", "M", "Moderaterna", "#66BEE6", 124639, new BigDecimal("19.1"), 6),
-                new LocalPartyResult("0002", "S", "Arbetarepartiet-Socialdemokraterna", "#FF0000", 171898, new BigDecimal("26.34"), 9)
+                new LocalPartyResult(
+                        "0001", "M", "Moderaterna", "#66BEE6", 124639, new BigDecimal("19.1"), 6),
+                new LocalPartyResult(
+                        "0002", "S", "Arbetarepartiet-Socialdemokraterna", "#FF0000", 171898,
+                        new BigDecimal("26.34"), 9)
         ), stockholm.parties());
         assertEquals(List.of(
-                new ElectedMember("Carl Nordblom", "0001", "M", 1, "Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"),
-                new ElectedMember("Anders Ygeman", "0002", "S", 1, "Ledamoten är vald på personröster")
+                new ElectedMember(
+                        "Carl Nordblom", "0001", "M", 1,
+                        "Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"),
+                new ElectedMember(
+                        "Anders Ygeman", "0002", "S", 1, "Ledamoten är vald på personröster")
         ), stockholm.elected());
 
         final var gotland = results.get(1);

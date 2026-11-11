@@ -18,10 +18,14 @@ class ConstantBackoffStrategyTest {
         final var now = Instant.parse("2026-11-05T22:00:00Z");
 
         // when
-        final var dates = IntStream.range(0, 3).mapToObj(position -> strategy.scrapeDate(now, position)).toList();
+        final var dates = IntStream.range(0, 3)
+                .mapToObj(position -> strategy.scrapeDate(now, position))
+                .toList();
 
         // then
-        assertEquals(List.of(now, now.plus(Duration.ofMinutes(5)), now.plus(Duration.ofMinutes(10))), dates);
+        assertEquals(
+                List.of(now, now.plus(Duration.ofMinutes(5)), now.plus(Duration.ofMinutes(10))),
+                dates);
     }
 
     @Test

@@ -14,7 +14,8 @@ public class AdminPromotion {
     private final AuthRepositoryPort repository;
     private final String adminEmail;
 
-    public AdminPromotion(AuthRepositoryPort repository, @Value("${auth.admin-email}") String adminEmail) {
+    public AdminPromotion(
+            AuthRepositoryPort repository, @Value("${auth.admin-email}") String adminEmail) {
         this.repository = repository;
         this.adminEmail = adminEmail.strip().toLowerCase(Locale.ROOT);
     }

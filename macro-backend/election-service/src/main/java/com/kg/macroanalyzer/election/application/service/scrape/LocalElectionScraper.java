@@ -21,18 +21,20 @@ public record LocalElectionScraper(
         long delayBetweenFilesMs
 ) implements Scraper<ConfigWithLocalElections> {
 
-    // A failed file takes all its attempts and back-off, so an outage after the index fetch would otherwise hold
-    // ScrapeService's scrapeLock for hours
+    // A failed file takes all its attempts and back-off, so an outage after the index fetch would
+    // otherwise hold ScrapeService's scrapeLock for hours
     private static final int MAX_CONSECUTIVE_FAILURES = 5;
 
     @Override
     public Optional<ConfigWithLocalElections> scrape(ConfigWithLocalElections input) {
-        final var request = new LocalElectionIndexRequest(input.seriesConfig().scrapeUrl(), input.type());
+        final var request =
+                new LocalElectionIndexRequest(input.seriesConfig().scrapeUrl(), input.type());
         final List<LocalElectionFile> files;
         try {
             files = indexWebPort.fetch(request);
         } catch (ScrapeException e) {
-            log.error("Caught ScrapeException for index of {}: {}", request.baseUrl(), e.getMessage());
+            log.error("Caught ScrapeException for index of {}: {}",
+                    request.baseUrl(), e.getMessage());
 
             return Optional.empty();
         }
@@ -42,7 +44,8 @@ public record LocalElectionScraper(
         final var changedFiles = files.stream()
                 .filter(f -> !input.existingMd5s().contains(f.md5()))
                 .toList();
-        log.info("Fetching {} of {} {} result files", changedFiles.size(), files.size(), input.type());
+        log.info("Fetching {} of {} {} result files",
+                changedFiles.size(), files.size(), input.type());
 
         return fetchResults(changedFiles)
                 .filter(fetched -> changedFiles.isEmpty() || !fetched.results().isEmpty())
@@ -57,10 +60,11 @@ public record LocalElectionScraper(
         var anyFailed = false;
         var consecutiveFailures = 0;
         for (final var file : files) {
-            // pause and ValmyndighetenRetry restore the flag, so their sleeps would now throw at once and the loop
-            // would call a rate limiting server without any delay
+            // pause and ValmyndighetenRetry restore the flag, so their sleeps would now throw at
+            // once and the loop would call a rate limiting server without any delay
             if (Thread.currentThread().isInterrupted()) {
-                log.warn("Interrupted before fetching area={}, abandoning the run", file.areaCode());
+                log.warn("Interrupted before fetching area={}, abandoning the run",
+                        file.areaCode());
 
                 return Optional.empty();
             }
@@ -68,7 +72,8 @@ public record LocalElectionScraper(
                 results.addAll(resultWebPort.fetch(file));
                 consecutiveFailures = 0;
             } catch (ScrapeException e) {
-                log.error("Caught ScrapeException for area={}: {}", file.areaCode(), e.getMessage());
+                log.error("Caught ScrapeException for area={}: {}",
+                        file.areaCode(), e.getMessage());
                 anyFailed = true;
                 consecutiveFailures++;
                 if (consecutiveFailures == MAX_CONSECUTIVE_FAILURES) {

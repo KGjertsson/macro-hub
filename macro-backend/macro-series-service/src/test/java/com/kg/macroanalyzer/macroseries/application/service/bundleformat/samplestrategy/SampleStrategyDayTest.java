@@ -30,7 +30,8 @@ public class SampleStrategyDayTest {
 
         // then
         assertTrue(sampledBundle.isPresent());
-        sampledBundle.ifPresent(b -> assertEquals(3, b.macroSeries().getFirst().macroPoints().size()));
+        sampledBundle.ifPresent(b ->
+                assertEquals(3, b.macroSeries().getFirst().macroPoints().size()));
     }
 
 }

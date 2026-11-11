@@ -9,6 +9,10 @@ public interface ElectionQueries {
 
     List<LocalElectionSummaryDto> getLocalElectionResults(LocalElectionType type, Integer year);
 
-    Optional<LocalElectionDetailDto> getLocalElectionResult(LocalElectionType type, Integer year, String areaCode);
+    Optional<LocalElectionDetailDto> getLocalElectionResult(
+            LocalElectionType type,
+            Integer year,
+            String areaCode
+    );
 
 }

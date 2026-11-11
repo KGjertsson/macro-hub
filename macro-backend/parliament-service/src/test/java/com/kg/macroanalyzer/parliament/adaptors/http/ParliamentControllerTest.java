@@ -31,7 +31,8 @@ public class ParliamentControllerTest {
     @Test
     public void shouldReturnOk_whenMembersFoundForYear() {
         // given
-        final var member = MemberSummaryDto.builder().id("1").name("Anna Andersson").party("S").build();
+        final var member =
+                MemberSummaryDto.builder().id("1").name("Anna Andersson").party("S").build();
 
         // when
         when(parliamentQueries.getMembersOfParliament(2026)).thenReturn(List.of(member));
@@ -55,8 +56,16 @@ public class ParliamentControllerTest {
     @Test
     public void shouldReturnOk_whenMemberFound() {
         // given
-        final var summary = MemberSummaryDto.builder().id("0123456789").name("Anna Andersson").party("S").build();
-        final var member = MemberDetailDto.builder().summary(summary).birthYear(1970).speechCount(12).build();
+        final var summary = MemberSummaryDto.builder()
+                .id("0123456789")
+                .name("Anna Andersson")
+                .party("S")
+                .build();
+        final var member = MemberDetailDto.builder()
+                .summary(summary)
+                .birthYear(1970)
+                .speechCount(12)
+                .build();
 
         // when
         when(parliamentQueries.getMemberOfParliament("0123456789")).thenReturn(Optional.of(member));
@@ -80,7 +89,10 @@ public class ParliamentControllerTest {
     @Test
     public void shouldReturnComposition_whenServingMembersFound() {
         // given
-        final var composition = new CompositionDto("2026-10-25", List.of(new PartySeats("S", "Socialdemokraterna", "#E8112d", 98)));
+        final var composition = new CompositionDto(
+                "2026-10-25",
+                List.of(new PartySeats("S", "Socialdemokraterna", "#E8112d", 98))
+        );
 
         // when
         when(parliamentQueries.getComposition()).thenReturn(composition);
@@ -94,7 +106,8 @@ public class ParliamentControllerTest {
     @Test
     public void shouldReturnNoContent_whenNoServingMembers() {
         // when
-        when(parliamentQueries.getComposition()).thenReturn(new CompositionDto("2026-10-25", List.of()));
+        when(parliamentQueries.getComposition())
+                .thenReturn(new CompositionDto("2026-10-25", List.of()));
         final var response = parliamentController.getComposition();
 
         // then
@@ -104,7 +117,8 @@ public class ParliamentControllerTest {
     @Test
     public void shouldReturnParties() {
         // given
-        final var party = new PartyDto("S", "Socialdemokraterna", "#E8112d", "Social Democracy", true);
+        final var party =
+                new PartyDto("S", "Socialdemokraterna", "#E8112d", "Social Democracy", true);
 
         // when
         when(parliamentQueries.getParties()).thenReturn(List.of(party));

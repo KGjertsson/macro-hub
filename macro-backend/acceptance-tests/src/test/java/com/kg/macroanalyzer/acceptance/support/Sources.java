@@ -68,7 +68,8 @@ public record Sources(Gateway wireMockAdmin) {
     }
 
     public int requestCount(String path, Map<String, String> query) {
-        final var response = wireMockAdmin.postJson("/__admin/requests/count", JSON.writeValueAsString(request(path, query)));
+        final var response = wireMockAdmin.postJson(
+                "/__admin/requests/count", JSON.writeValueAsString(request(path, query)));
 
         return JSON.readTree(response.body()).get("count").asInt();
     }
@@ -87,7 +88,8 @@ public record Sources(Gateway wireMockAdmin) {
     }
 
     private void postMapping(Map<String, Object> mapping) {
-        final var answer = wireMockAdmin.postJson("/__admin/mappings", JSON.writeValueAsString(mapping));
+        final var answer = wireMockAdmin.postJson(
+                "/__admin/mappings", JSON.writeValueAsString(mapping));
         if (answer.statusCode() != 201) {
             throw new IllegalStateException("WireMock refused the stub: " + answer.body());
         }
@@ -95,7 +97,9 @@ public record Sources(Gateway wireMockAdmin) {
 
     private Map<String, Object> request(String path, Map<String, String> query) {
         final var queryParameters = query.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, parameter -> Map.of("equalTo", parameter.getValue())));
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        parameter -> Map.of("equalTo", parameter.getValue())));
 
         return Map.of("method", "GET", "urlPath", path, "queryParameters", queryParameters);
     }

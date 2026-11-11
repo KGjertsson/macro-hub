@@ -20,9 +20,10 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// Composition and member lists are answers about all of parliament, so these journeys don't use the shared stack, where
-// another journey's scrape would change them. The re-scrape journey starts a stack of its own for the same reason.
-// The stack runs no other service, so it also shows what the gateway answers for the routes of services that aren't running
+// Composition and member lists are answers about all of parliament, so these journeys don't use the
+// shared stack, where another journey's scrape would change them. The re-scrape journey starts a
+// stack of its own for the same reason. The stack runs no other service, so it also shows what the
+// gateway answers for the routes of services that aren't running
 class ParliamentAcceptanceTest {
 
     private static final String MEMBERS = "/personlista/";
@@ -30,7 +31,8 @@ class ParliamentAcceptanceTest {
     private static final String SPEECHES = "/anforandelista/";
     private static final String MOTIONS = "/dokumentlista/";
 
-    private static final Map<String, String> ALL_MEMBERS_REQUEST = Map.of("rdlstatus", "samtliga", "utformat", "json");
+    private static final Map<String, String> ALL_MEMBERS_REQUEST =
+            Map.of("rdlstatus", "samtliga", "utformat", "json");
 
     private static final String NO_VOTES = "{\"voteringlista\":{\"@antal\":\"0\"}}";
     private static final String NO_SPEECHES = "{\"anforandelista\":{\"@antal\":\"0\"}}";
@@ -50,7 +52,8 @@ class ParliamentAcceptanceTest {
     private static final String HANS = "0100000000008";
     private static final String INGRID = "0100000000009";
 
-    private static final MemberRow ANNA_ROW = new MemberRow("Anna Andersson", "S", "Stockholms län", SERVING, 94.0);
+    private static final MemberRow ANNA_ROW =
+            new MemberRow("Anna Andersson", "S", "Stockholms län", SERVING, 94.0);
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
@@ -106,7 +109,8 @@ class ParliamentAcceptanceTest {
                 ANNA_ROW,
                 new MemberRow("Bertil Berg", "S", "Södermanlands län", SERVING, 96.0),
                 new MemberRow("Cecilia Carlsson", "S", "Örebro län", SERVING_SUBSTITUTE, null),
-                new MemberRow("David Dahl", "M", "Västra Götalands läns västra", "Förste vice talman (tjänstgörande riksdagsledamot)", 66.7),
+                new MemberRow("David Dahl", "M", "Västra Götalands läns västra",
+                        "Förste vice talman (tjänstgörande riksdagsledamot)", 66.7),
                 new MemberRow("Eva Ek", "M", "Skåne läns södra", SERVING, 100.0),
                 new MemberRow("Fredrik Falk", "SD", "Jönköpings län", SERVING, 80.0),
                 new MemberRow("Greta Gran", "V", "Gotlands län", "Tjänstledig", 82.0)
@@ -141,7 +145,9 @@ class ParliamentAcceptanceTest {
         final var ingrid = jsonFrom(gateway, "/macro-analyzer/parliament/members?year=2014").get(0);
 
         // then
-        assertEquals(List.of(new MemberRow("Ingrid Isaksson", "L", "Uppsala län", FORMER, null)), members);
+        assertEquals(
+                List.of(new MemberRow("Ingrid Isaksson", "L", "Uppsala län", FORMER, null)),
+                members);
         assertTrue(ingrid.get("votes").isNull());
         assertTrue(ingrid.get("speechCount").isNull());
         assertTrue(ingrid.get("motionCount").isNull());
@@ -149,13 +155,21 @@ class ParliamentAcceptanceTest {
 
     @Test
     void theActivityScrapeAsksForEachMemberOfTheLatestTwoTermsOnce() {
-        final var expectedMembers = List.of(ANNA, BERTIL, CECILIA, DAVID, EVA, FREDRIK, GRETA, HANS);
+        final var expectedMembers =
+                List.of(ANNA, BERTIL, CECILIA, DAVID, EVA, FREDRIK, GRETA, HANS);
 
         assertEquals(1, sources.requestCount(MEMBERS, ALL_MEMBERS_REQUEST));
         expectedMembers.forEach(member -> {
-            assertEquals(1, sources.requestCount(VOTES, votesRequest(member)), "votes of " + member);
-            assertEquals(1, sources.requestCount(SPEECHES, speechesRequest(member)), "speeches of " + member);
-            assertEquals(1, sources.requestCount(MOTIONS, motionsRequest(member)), "motions of " + member);
+            assertEquals(
+                    1, sources.requestCount(VOTES, votesRequest(member)), "votes of " + member);
+            assertEquals(
+                    1,
+                    sources.requestCount(SPEECHES, speechesRequest(member)),
+                    "speeches of " + member);
+            assertEquals(
+                    1,
+                    sources.requestCount(MOTIONS, motionsRequest(member)),
+                    "motions of " + member);
         });
         assertEquals(expectedMembers.size(), sources.requestCount(VOTES));
         assertEquals(expectedMembers.size(), sources.requestCount(SPEECHES));
@@ -165,11 +179,13 @@ class ParliamentAcceptanceTest {
     @Test
     void aMembersDetailShowsWhatRiksdagenSaysAboutThem() {
         // when
-        final var detail = (ObjectNode) jsonFrom(gateway, "/macro-analyzer/parliament/members/" + ANNA);
+        final var detail =
+                (ObjectNode) jsonFrom(gateway, "/macro-analyzer/parliament/members/" + ANNA);
 
         // then
         ((ObjectNode) detail.get("summary")).remove("yearsInParliament");
-        detail.get("assignments").forEach(assignment -> ((ObjectNode) assignment).remove("current"));
+        detail.get("assignments")
+                .forEach(assignment -> ((ObjectNode) assignment).remove("current"));
         assertEquals(json("""
                 {
                   "summary": {
@@ -196,11 +212,18 @@ class ParliamentAcceptanceTest {
                     "website": "https://www.example.se/anna"
                   },
                   "assignments": [
-                    {"type":"uppdrag","organCode":"FiU","organName":"Finansutskottet","role":"Ordförande","status":null,"from":"2026-10-06","to":"2999-12-31"},
-                    {"type":"kammaruppdrag","organCode":"kam","organName":"Kammaren","role":"Riksdagsledamot","status":"Tjänstgörande","from":"2026-09-28","to":"2030-09-23"},
-                    {"type":"partiuppdrag","organCode":"S","organName":"Socialdemokraterna","role":"Ledamot","status":null,"from":"2023-04-01","to":"2999-12-31"},
-                    {"type":"uppdrag","organCode":"AU","organName":"Arbetsmarknadsutskottet","role":"Suppleant","status":null,"from":"2022-10-04","to":"2026-09-27"},
-                    {"type":"kammaruppdrag","organCode":"kam","organName":"Kammaren","role":"Riksdagsledamot","status":"Tjänstgörande","from":"2022-09-26","to":"2026-09-27"}
+                    {"type":"uppdrag","organCode":"FiU","organName":"Finansutskottet",\
+                "role":"Ordförande","status":null,"from":"2026-10-06","to":"2999-12-31"},
+                    {"type":"kammaruppdrag","organCode":"kam","organName":"Kammaren",\
+                "role":"Riksdagsledamot","status":"Tjänstgörande","from":"2026-09-28",\
+                "to":"2030-09-23"},
+                    {"type":"partiuppdrag","organCode":"S","organName":"Socialdemokraterna",\
+                "role":"Ledamot","status":null,"from":"2023-04-01","to":"2999-12-31"},
+                    {"type":"uppdrag","organCode":"AU","organName":"Arbetsmarknadsutskottet",\
+                "role":"Suppleant","status":null,"from":"2022-10-04","to":"2026-09-27"},
+                    {"type":"kammaruppdrag","organCode":"kam","organName":"Kammaren",\
+                "role":"Riksdagsledamot","status":"Tjänstgörande","from":"2022-09-26",\
+                "to":"2026-09-27"}
                   ],
                   "biography": [
                     {"label":"Yrken","text":"Nationalekonom\\nUtredare"},
@@ -214,22 +237,30 @@ class ParliamentAcceptanceTest {
                   "speechCount": 6,
                   "motionCount": 12,
                   "recentSpeeches": [
-                    {"title":"Statens budget: Utgiftsområde 2","date":"2026-10-28","url":"https://www.example.se/protokoll/6"},
-                    {"title":"Frågestund","date":"2026-10-22","url":"https://www.example.se/protokoll/5"},
-                    {"title":"Ekonomisk politik","date":"2026-10-15","url":"https://www.example.se/protokoll/4"},
-                    {"title":"Skatter: Moms","date":"2026-05-20","url":"https://www.example.se/protokoll/3"},
-                    {"title":"Vårpropositionen","date":"2026-04-21","url":"https://www.example.se/protokoll/2"}
+                    {"title":"Statens budget: Utgiftsområde 2","date":"2026-10-28",\
+                "url":"https://www.example.se/protokoll/6"},
+                    {"title":"Frågestund","date":"2026-10-22",\
+                "url":"https://www.example.se/protokoll/5"},
+                    {"title":"Ekonomisk politik","date":"2026-10-15",\
+                "url":"https://www.example.se/protokoll/4"},
+                    {"title":"Skatter: Moms","date":"2026-05-20",\
+                "url":"https://www.example.se/protokoll/3"},
+                    {"title":"Vårpropositionen","date":"2026-04-21",\
+                "url":"https://www.example.se/protokoll/2"}
                   ],
                   "recentMotions": [
-                    {"title":"En tryggare välfärd","date":"2026-10-05","url":"https://data.riksdagen.se/dokument/HD023"},
-                    {"title":"Lägre skatt på arbete","date":"2026-09-30","url":"https://data.riksdagen.se/dokument/HD012"}
+                    {"title":"En tryggare välfärd","date":"2026-10-05",\
+                "url":"https://data.riksdagen.se/dokument/HD023"},
+                    {"title":"Lägre skatt på arbete","date":"2026-09-30",\
+                "url":"https://data.riksdagen.se/dokument/HD012"}
                   ]
                 }"""), detail);
     }
 
     @Test
     void anUnknownMemberIsNotFound() {
-        assertEquals(404, gateway.get("/macro-analyzer/parliament/members/0999999999999").statusCode());
+        assertEquals(404, gateway.get(
+                "/macro-analyzer/parliament/members/0999999999999").statusCode());
     }
 
     @ParameterizedTest
@@ -260,7 +291,8 @@ class ParliamentAcceptanceTest {
         try (var ownStack = AcceptanceStack.startWith(List.of(BackendService.PARLIAMENT))) {
             final var ownGateway = ownStack.gateway();
             final var ownSources = ownStack.sources();
-            ownSources.serveJson(MEMBERS, ALL_MEMBERS_REQUEST, "riksdagen/personlista-before-changes.json");
+            ownSources.serveJson(
+                    MEMBERS, ALL_MEMBERS_REQUEST, "riksdagen/personlista-before-changes.json");
             serveVotesWithoutOtherActivity(ownSources, karin, votesOfOneSession(45, 0, 5, 0));
             serveVotesWithoutOtherActivity(ownSources, lars, votesOfOneSession(25, 0, 25, 0));
             serveVotesWithoutOtherActivity(ownSources, maria, votesOfOneSession(50, 0, 0, 0));
@@ -277,7 +309,8 @@ class ParliamentAcceptanceTest {
             ), memberRows(ownGateway, ""));
 
             // given
-            ownSources.serveJson(MEMBERS, ALL_MEMBERS_REQUEST, "riksdagen/personlista-after-changes.json");
+            ownSources.serveJson(
+                    MEMBERS, ALL_MEMBERS_REQUEST, "riksdagen/personlista-after-changes.json");
             serveVotesWithoutOtherActivity(ownSources, karin, votesOfOneSession(70, 0, 30, 0));
             serveVotesWithoutOtherActivity(ownSources, nils, votesOfOneSession(15, 0, 5, 0));
 
@@ -292,7 +325,8 @@ class ParliamentAcceptanceTest {
                     new MemberRow("Maria Moberg", "C", "Dalarnas län", SERVING, 100.0),
                     new MemberRow("Nils Norén", "S", "Västerbottens län", SERVING_SUBSTITUTE, 75.0)
             ), memberRows(ownGateway, ""));
-            final var larsDetail = jsonFrom(ownGateway, "/macro-analyzer/parliament/members/" + lars);
+            final var larsDetail =
+                    jsonFrom(ownGateway, "/macro-analyzer/parliament/members/" + lars);
             assertEquals("2026-10-31", larsDetail.get("assignments").get(0).get("to").asString());
             assertEquals(2, ownSources.requestCount(MEMBERS, ALL_MEMBERS_REQUEST));
             assertEquals(2, ownSources.requestCount(VOTES, votesRequest(karin)));
@@ -306,11 +340,14 @@ class ParliamentAcceptanceTest {
     }
 
     private static void scrape(Gateway gateway, String series) {
-        assertEquals(202, gateway.post("/macro-analyzer/scrape/parliament/enqueue?name=" + series).statusCode());
-        assertEquals(200, gateway.post("/macro-analyzer/scrape/parliament/scrape-from-queue").statusCode());
+        assertEquals(202, gateway.post(
+                "/macro-analyzer/scrape/parliament/enqueue?name=" + series).statusCode());
+        assertEquals(200, gateway.post(
+                "/macro-analyzer/scrape/parliament/scrape-from-queue").statusCode());
     }
 
-    private static void serveVotesWithoutOtherActivity(Sources sources, String member, String votes) {
+    private static void serveVotesWithoutOtherActivity(
+            Sources sources, String member, String votes) {
         sources.serveJsonBody(VOTES, votesRequest(member), votes);
         sources.serveJsonBody(SPEECHES, speechesRequest(member), NO_SPEECHES);
         sources.serveJsonBody(MOTIONS, motionsRequest(member), NO_MOTIONS);
@@ -319,7 +356,8 @@ class ParliamentAcceptanceTest {
     // Riksdagen answers a single row as an object rather than a list of one
     private static String votesOfOneSession(int yes, int no, int absent, int abstain) {
         return """
-                {"voteringlista":{"votering":{"rm":"2026/27","Ja":"%d","Nej":"%d","Frånvarande":"%d","Avstår":"%d"}}}"""
+                {"voteringlista":{"votering":{"rm":"2026/27","Ja":"%d","Nej":"%d",\
+                "Frånvarande":"%d","Avstår":"%d"}}}"""
                 .formatted(yes, no, absent, abstain);
     }
 
@@ -336,8 +374,12 @@ class ParliamentAcceptanceTest {
     }
 
     private static Map<String, Integer> seatsPerParty(Gateway gateway) {
-        return jsonFrom(gateway, "/macro-analyzer/parliament/composition").get("parties").valueStream()
-                .collect(Collectors.toMap(party -> party.get("code").asString(), party -> party.get("seats").asInt()));
+        return jsonFrom(gateway, "/macro-analyzer/parliament/composition")
+                .get("parties")
+                .valueStream()
+                .collect(Collectors.toMap(
+                        party -> party.get("code").asString(),
+                        party -> party.get("seats").asInt()));
     }
 
     private static List<MemberRow> memberRows(Gateway gateway, String query) {
@@ -347,7 +389,9 @@ class ParliamentAcceptanceTest {
                         member.get("party").asString(),
                         member.get("constituency").asString(),
                         member.get("status").asString(),
-                        member.get("attendancePct").isNull() ? null : member.get("attendancePct").asDouble()))
+                        member.get("attendancePct").isNull()
+                                ? null
+                                : member.get("attendancePct").asDouble()))
                 .toList();
     }
 
@@ -362,7 +406,8 @@ class ParliamentAcceptanceTest {
         return JSON.readTree(text);
     }
 
-    private record MemberRow(String name, String party, String constituency, String status, Double attendancePct) {
+    private record MemberRow(
+            String name, String party, String constituency, String status, Double attendancePct) {
     }
 
 }

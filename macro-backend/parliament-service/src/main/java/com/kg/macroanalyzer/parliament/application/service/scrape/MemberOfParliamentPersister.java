@@ -8,7 +8,10 @@ import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public record MemberOfParliamentPersister(ParliamentRepositoryPort repositoryPort, ScrapeQueuePort scrapeQueuePort) implements Persister<ConfigWithMemberOfParliament> {
+public record MemberOfParliamentPersister(
+        ParliamentRepositoryPort repositoryPort,
+        ScrapeQueuePort scrapeQueuePort
+) implements Persister<ConfigWithMemberOfParliament> {
 
     @Override
     public ScrapeResult persist(ConfigWithMemberOfParliament configWithMemberOfParliament) {

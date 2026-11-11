@@ -41,16 +41,25 @@ public class ScbValuesTest {
     @Test
     void shouldRecogniseEachVersion_fromTheRegionCode() {
         assertEquals(GeoVersion.DESO_2018, GeoVersion.fromRegionCode("0180C1010").orElseThrow());
-        assertEquals(GeoVersion.DESO_2025, GeoVersion.fromRegionCode("0180C1010_DeSO2025").orElseThrow());
+        assertEquals(
+                GeoVersion.DESO_2025,
+                GeoVersion.fromRegionCode("0180C1010_DeSO2025").orElseThrow()
+        );
         assertEquals(GeoVersion.REGSO_2020, GeoVersion.fromRegionCode("0180R001").orElseThrow());
-        assertEquals(GeoVersion.REGSO_2025, GeoVersion.fromRegionCode("0180R001_RegSO2025").orElseThrow());
+        assertEquals(
+                GeoVersion.REGSO_2025,
+                GeoVersion.fromRegionCode("0180R001_RegSO2025").orElseThrow()
+        );
         assertTrue(GeoVersion.fromRegionCode("0180").isEmpty());
         assertTrue(GeoVersion.fromRegionCode("01").isEmpty());
         assertEquals("0180R001", GeoVersion.REGSO_2025.areaCode("0180R001_RegSO2025"));
         assertEquals("0180C1010", GeoVersion.DESO_2018.areaCode("0180C1010"));
         assertTrue(GeoVersion.DESO_2018.matchesWildcard("0180C1010"));
         assertTrue(GeoVersion.REGSO_2025.matchesWildcard("0180R001_RegSO2025"));
-        assertEquals(List.of(GeoVersion.REGSO_2020, GeoVersion.REGSO_2025), ScbLevel.REGSO.versions());
+        assertEquals(
+                List.of(GeoVersion.REGSO_2020, GeoVersion.REGSO_2025),
+                ScbLevel.REGSO.versions()
+        );
     }
 
     @Test

@@ -50,17 +50,22 @@ public class AuthPostgresAdaptor implements AuthRepositoryPort {
                 .from(APP_USER)
                 .join(PASSWORD_CREDENTIAL).on(PASSWORD_CREDENTIAL.USER_ID.eq(APP_USER.ID))
                 .where(APP_USER.EMAIL.eq(email))
-                .fetchOptional(row -> new UserCredential(user(row), row.get(PASSWORD_CREDENTIAL.PASSWORD_HASH)));
+                .fetchOptional(row -> new UserCredential(
+                        user(row), row.get(PASSWORD_CREDENTIAL.PASSWORD_HASH)));
     }
 
     @Override
     public boolean saveEmailTokenUnlessIssuedSince(NewEmailToken token, Instant issuedSince) {
-        final var sameRecipient = EMAIL_TOKEN.EMAIL.eq(token.email()).and(EMAIL_TOKEN.PURPOSE.eq(token.purpose().name()));
+        final var sameRecipient = EMAIL_TOKEN.EMAIL.eq(token.email())
+                .and(EMAIL_TOKEN.PURPOSE.eq(token.purpose().name()));
 
         return dsl.transactionResult(configuration -> {
             final var transaction = DSL.using(configuration);
-            transaction.deleteFrom(EMAIL_TOKEN).where(EMAIL_TOKEN.EXPIRES_AT.le(utc(token.created()))).execute();
-            if (transaction.fetchExists(EMAIL_TOKEN, sameRecipient.and(EMAIL_TOKEN.CREATED.gt(utc(issuedSince))))) {
+            transaction.deleteFrom(EMAIL_TOKEN)
+                    .where(EMAIL_TOKEN.EXPIRES_AT.le(utc(token.created())))
+                    .execute();
+            if (transaction.fetchExists(
+                    EMAIL_TOKEN, sameRecipient.and(EMAIL_TOKEN.CREATED.gt(utc(issuedSince))))) {
                 return false;
             }
             transaction.deleteFrom(EMAIL_TOKEN).where(sameRecipient).execute();
@@ -77,12 +82,15 @@ public class AuthPostgresAdaptor implements AuthRepositoryPort {
     }
 
     @Override
-    public boolean registerWithToken(String tokenHash, Instant now, NewAccount account, Function<String, Role> roleOfEmail) {
+    public boolean registerWithToken(
+            String tokenHash, Instant now, NewAccount account, Function<String, Role> roleOfEmail) {
         try {
             return dsl.transactionResult(configuration -> {
                 final var transaction = DSL.using(configuration);
-                final var email = consumeToken(transaction, tokenHash, EmailTokenPurpose.REGISTER, now);
-                if (email.isEmpty() || transaction.fetchExists(APP_USER, APP_USER.EMAIL.eq(email.get()))) {
+                final var email =
+                        consumeToken(transaction, tokenHash, EmailTokenPurpose.REGISTER, now);
+                if (email.isEmpty()
+                        || transaction.fetchExists(APP_USER, APP_USER.EMAIL.eq(email.get()))) {
                     return false;
                 }
                 if (transaction.fetchExists(APP_USER, displayNameIs(account.displayName()))) {
@@ -112,8 +120,11 @@ public class AuthPostgresAdaptor implements AuthRepositoryPort {
     public boolean resetPasswordWithToken(String tokenHash, Instant now, String passwordHash) {
         return dsl.transactionResult(configuration -> {
             final var transaction = DSL.using(configuration);
-            final var userId = consumeToken(transaction, tokenHash, EmailTokenPurpose.PASSWORD_RESET, now)
-                    .flatMap(email -> transaction.select(APP_USER.ID).from(APP_USER).where(APP_USER.EMAIL.eq(email))
+            final var userId = consumeToken(
+                            transaction, tokenHash, EmailTokenPurpose.PASSWORD_RESET, now)
+                    .flatMap(email -> transaction.select(APP_USER.ID)
+                            .from(APP_USER)
+                            .where(APP_USER.EMAIL.eq(email))
                             .fetchOptional(APP_USER.ID));
             if (userId.isEmpty()) {
                 return false;
@@ -123,7 +134,9 @@ public class AuthPostgresAdaptor implements AuthRepositoryPort {
                     .set(PASSWORD_CREDENTIAL.UPDATED, utc(now))
                     .where(PASSWORD_CREDENTIAL.USER_ID.eq(userId.get()))
                     .execute();
-            transaction.deleteFrom(USER_SESSION).where(USER_SESSION.USER_ID.eq(userId.get())).execute();
+            transaction.deleteFrom(USER_SESSION)
+                    .where(USER_SESSION.USER_ID.eq(userId.get()))
+                    .execute();
 
             return true;
         });
@@ -133,7 +146,9 @@ public class AuthPostgresAdaptor implements AuthRepositoryPort {
     public void saveSession(String tokenHash, UUID userId, Instant now, Instant expiresAt) {
         dsl.transaction(configuration -> {
             final var transaction = DSL.using(configuration);
-            transaction.deleteFrom(USER_SESSION).where(USER_SESSION.EXPIRES_AT.le(utc(now))).execute();
+            transaction.deleteFrom(USER_SESSION)
+                    .where(USER_SESSION.EXPIRES_AT.le(utc(now)))
+                    .execute();
             transaction.insertInto(USER_SESSION)
                     .set(USER_SESSION.TOKEN_HASH, tokenHash)
                     .set(USER_SESSION.USER_ID, userId)
@@ -160,12 +175,18 @@ public class AuthPostgresAdaptor implements AuthRepositoryPort {
 
     @Override
     public void promoteToAdmin(String email) {
-        dsl.update(APP_USER).set(APP_USER.ROLE, Role.ADMIN.name()).where(APP_USER.EMAIL.eq(email)).execute();
+        dsl.update(APP_USER)
+                .set(APP_USER.ROLE, Role.ADMIN.name())
+                .where(APP_USER.EMAIL.eq(email))
+                .execute();
     }
 
     @Override
     public List<String> signingKeysNewestFirst() {
-        return dsl.select(SIGNING_KEY.PRIVATE_JWK).from(SIGNING_KEY).orderBy(SIGNING_KEY.CREATED.desc()).fetch(SIGNING_KEY.PRIVATE_JWK);
+        return dsl.select(SIGNING_KEY.PRIVATE_JWK)
+                .from(SIGNING_KEY)
+                .orderBy(SIGNING_KEY.CREATED.desc())
+                .fetch(SIGNING_KEY.PRIVATE_JWK);
     }
 
     @Override
@@ -177,7 +198,8 @@ public class AuthPostgresAdaptor implements AuthRepositoryPort {
                 .execute();
     }
 
-    private static Optional<String> consumeToken(DSLContext transaction, String tokenHash, EmailTokenPurpose purpose, Instant now) {
+    private static Optional<String> consumeToken(
+            DSLContext transaction, String tokenHash, EmailTokenPurpose purpose, Instant now) {
         return transaction.deleteFrom(EMAIL_TOKEN)
                 .where(EMAIL_TOKEN.TOKEN_HASH.eq(tokenHash))
                 .and(EMAIL_TOKEN.PURPOSE.eq(purpose.name()))
@@ -191,7 +213,11 @@ public class AuthPostgresAdaptor implements AuthRepositoryPort {
     }
 
     private static User user(Record row) {
-        return new User(row.get(APP_USER.ID), row.get(APP_USER.EMAIL), row.get(APP_USER.DISPLAY_NAME), Role.valueOf(row.get(APP_USER.ROLE)));
+        return new User(
+                row.get(APP_USER.ID),
+                row.get(APP_USER.EMAIL),
+                row.get(APP_USER.DISPLAY_NAME),
+                Role.valueOf(row.get(APP_USER.ROLE)));
     }
 
     private static OffsetDateTime utc(Instant instant) {

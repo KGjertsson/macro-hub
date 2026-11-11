@@ -26,34 +26,45 @@ public class ValmyndighetenIndexResponseParserTest {
     @Test
     void shouldKeepFinalMunicipalFiles_only() throws ScrapeException {
         // when
-        final var files = new ValmyndighetenIndexResponseParser(BASE_URL, LocalElectionType.KF).parse(INDEX);
+        final var files = new ValmyndighetenIndexResponseParser(BASE_URL, LocalElectionType.KF)
+                .parse(INDEX);
 
         // then
         assertEquals(List.of(
-                new LocalElectionFile("0180", BASE_URL + "/s/kf/Val_2026_slutlig_0180_KF.zip", "6bc39a6c9e5a9ecc4eb4f82080abff28"),
-                new LocalElectionFile("1281", BASE_URL + "/s/kf/Val_2026_slutlig_1281_KF.zip", "c47e5b211e79c7c4544ea3742248a5b1")
+                new LocalElectionFile(
+                        "0180", BASE_URL + "/s/kf/Val_2026_slutlig_0180_KF.zip",
+                        "6bc39a6c9e5a9ecc4eb4f82080abff28"),
+                new LocalElectionFile(
+                        "1281", BASE_URL + "/s/kf/Val_2026_slutlig_1281_KF.zip",
+                        "c47e5b211e79c7c4544ea3742248a5b1")
         ), files);
     }
 
     @Test
     void shouldKeepFinalRegionFiles_only() throws ScrapeException {
         // when
-        final var files = new ValmyndighetenIndexResponseParser(BASE_URL, LocalElectionType.RF).parse(INDEX);
+        final var files = new ValmyndighetenIndexResponseParser(BASE_URL, LocalElectionType.RF)
+                .parse(INDEX);
 
         // then
         assertEquals(List.of(
-                new LocalElectionFile("12", BASE_URL + "/s/rf/Val_2026_slutlig_12_RF.zip", "9ff3844df68b368a1c7afbb1e484f5c3")
+                new LocalElectionFile(
+                        "12", BASE_URL + "/s/rf/Val_2026_slutlig_12_RF.zip",
+                        "9ff3844df68b368a1c7afbb1e484f5c3")
         ), files);
     }
 
     @Test
     void shouldKeepFinalRiksdagFile_only() throws ScrapeException {
         // when
-        final var files = new ValmyndighetenIndexResponseParser(BASE_URL, LocalElectionType.RD).parse(INDEX);
+        final var files = new ValmyndighetenIndexResponseParser(BASE_URL, LocalElectionType.RD)
+                .parse(INDEX);
 
         // then
         assertEquals(List.of(
-                new LocalElectionFile("00", BASE_URL + "/s/rd/Val_2026_slutlig_00_RD.zip", "8162d2cd73ecd0a24ef21632f272dfb2")
+                new LocalElectionFile(
+                        "00", BASE_URL + "/s/rd/Val_2026_slutlig_00_RD.zip",
+                        "8162d2cd73ecd0a24ef21632f272dfb2")
         ), files);
     }
 

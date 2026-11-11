@@ -40,7 +40,8 @@ public class LocalElectionPersisterTest {
 
         // when
         when(repositoryPort.writeLocalElectionResults(results)).thenReturn(1);
-        final var scrapeResult = new LocalElectionPersister(repositoryPort, scrapeQueuePort).persist(input(config, results));
+        final var scrapeResult = new LocalElectionPersister(repositoryPort, scrapeQueuePort)
+                .persist(input(config, results));
 
         // then
         assertEquals(ScrapeResult.SUCCESS, scrapeResult);
@@ -57,7 +58,8 @@ public class LocalElectionPersisterTest {
         final var persister = new LocalElectionPersister(repositoryPort, scrapeQueuePort);
 
         // when
-        when(repositoryPort.writeLocalElectionResults(results)).thenThrow(new RuntimeException("connection reset"));
+        when(repositoryPort.writeLocalElectionResults(results))
+                .thenThrow(new RuntimeException("connection reset"));
 
         // then
         assertThrows(RuntimeException.class, () -> persister.persist(input(config, results)));
@@ -70,7 +72,8 @@ public class LocalElectionPersisterTest {
         final var config = SeriesConfig.builder().name("MunicipalElections").build();
 
         // when
-        final var scrapeResult = new LocalElectionPersister(repositoryPort, scrapeQueuePort).persist(input(config, List.of()));
+        final var scrapeResult = new LocalElectionPersister(repositoryPort, scrapeQueuePort)
+                .persist(input(config, List.of()));
 
         // then
         assertEquals(ScrapeResult.EMPTY, scrapeResult);
@@ -87,7 +90,8 @@ public class LocalElectionPersisterTest {
 
         // when
         when(repositoryPort.writeLocalElectionResults(results)).thenReturn(1);
-        final var scrapeResult = new LocalElectionPersister(repositoryPort, scrapeQueuePort).persist(input);
+        final var scrapeResult =
+                new LocalElectionPersister(repositoryPort, scrapeQueuePort).persist(input);
 
         // then
         assertEquals(ScrapeResult.FAILED, scrapeResult);
@@ -102,7 +106,8 @@ public class LocalElectionPersisterTest {
         final var input = input(config, List.of()).toBuilder().partialFailure(true).build();
 
         // when
-        final var scrapeResult = new LocalElectionPersister(repositoryPort, scrapeQueuePort).persist(input);
+        final var scrapeResult =
+                new LocalElectionPersister(repositoryPort, scrapeQueuePort).persist(input);
 
         // then
         assertEquals(ScrapeResult.FAILED, scrapeResult);
@@ -110,8 +115,12 @@ public class LocalElectionPersisterTest {
         verify(scrapeQueuePort, never()).markAsDone(any());
     }
 
-    private static ConfigWithLocalElections input(SeriesConfig config, List<LocalElectionResult> results) {
-        return new ConfigWithLocalElections(config, LocalElectionType.KF, Set.of(), results, false);
+    private static ConfigWithLocalElections input(
+            SeriesConfig config,
+            List<LocalElectionResult> results
+    ) {
+        return new ConfigWithLocalElections(
+                config, LocalElectionType.KF, Set.of(), results, false);
     }
 
 }

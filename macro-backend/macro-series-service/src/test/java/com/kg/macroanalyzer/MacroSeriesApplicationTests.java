@@ -45,14 +45,18 @@ class MacroSeriesApplicationTests {
 
         // then
         assertEquals(108, configs.size());
-        configs.forEach(c -> assertEquals(MacroSeriesScrapeFlows.MACRO_POINT, c.scrapeFlow(), c.name()));
+        configs.forEach(c ->
+                assertEquals(MacroSeriesScrapeFlows.MACRO_POINT, c.scrapeFlow(), c.name()));
     }
 
-    // /series-config lists the configs in id order, and /chart-data picks a series' colour from its place in that order
+    // /series-config lists the configs in id order, and /chart-data picks a series' colour from its
+    // place in that order
     @Test
     void shouldKeepTheCopiedConfigOrder_andIds() {
         // when
-        final var names = seriesConfigPort.readSeriesConfigList().stream().map(SeriesConfig::name).toList();
+        final var names = seriesConfigPort.readSeriesConfigList().stream()
+                .map(SeriesConfig::name)
+                .toList();
         final var ids = dslContext.select(SERIES_CONFIGURATION.ID)
                 .from(SERIES_CONFIGURATION)
                 .orderBy(SERIES_CONFIGURATION.ID)
@@ -75,7 +79,9 @@ class MacroSeriesApplicationTests {
                 .set(SERIES_CONFIGURATION.SCRAPE_FLOW, "NEW")
                 .returning(SERIES_CONFIGURATION.ID)
                 .fetchSingle(SERIES_CONFIGURATION.ID);
-        dslContext.deleteFrom(SERIES_CONFIGURATION).where(SERIES_CONFIGURATION.ID.eq(newId)).execute();
+        dslContext.deleteFrom(SERIES_CONFIGURATION)
+                .where(SERIES_CONFIGURATION.ID.eq(newId))
+                .execute();
 
         // then
         assertTrue(newId > 110, () -> "new id " + newId);
@@ -83,7 +89,8 @@ class MacroSeriesApplicationTests {
 
     private List<String> successfulVersions(String historyTable) {
         return dslContext.fetch(
-                "select version from %s where success order by installed_rank".formatted(historyTable)
+                "select version from %s where success order by installed_rank"
+                        .formatted(historyTable)
         ).map(r -> r.get(0, String.class));
     }
 

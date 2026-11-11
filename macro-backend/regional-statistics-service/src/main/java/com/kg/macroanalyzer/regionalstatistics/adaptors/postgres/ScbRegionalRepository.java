@@ -62,7 +62,10 @@ public class ScbRegionalRepository {
         return dslContext.selectFrom(SCB_TABLE_STATE)
                 .fetch()
                 .stream()
-                .collect(Collectors.toUnmodifiableMap(r -> r.getTableId(), r -> r.getUpdated().toInstant()));
+                .collect(Collectors.toUnmodifiableMap(
+                        r -> r.getTableId(),
+                        r -> r.getUpdated().toInstant()
+                ));
     }
 
     public Set<String> readIndicatorsWithData() {
@@ -71,8 +74,9 @@ public class ScbRegionalRepository {
                 .fetch(SCB_AVAILABILITY.INDICATOR_ID));
     }
 
-    // The indicator is replaced as a whole, so a failed write leaves the old values. scb_availability is replaced in the
-    // same transaction, so it always lists exactly the (geo version, year) pairs that have values
+    // The indicator is replaced as a whole, so a failed write leaves the old values.
+    // scb_availability is replaced in the same transaction, so it always lists exactly the (geo
+    // version, year) pairs that have values
     public Integer writeIndicatorResult(ScbIndicatorResult result) {
         final var indicatorId = result.indicator().id();
         dslContext.transaction(configuration -> {
@@ -82,7 +86,11 @@ public class ScbRegionalRepository {
                     .execute();
             final var values = result.values();
             for (int i = 0; i < values.size(); i += INSERT_BATCH_SIZE) {
-                insertValues(tx, indicatorId, values.subList(i, Math.min(values.size(), i + INSERT_BATCH_SIZE)));
+                insertValues(
+                        tx,
+                        indicatorId,
+                        values.subList(i, Math.min(values.size(), i + INSERT_BATCH_SIZE))
+                );
             }
             replaceAvailability(tx, indicatorId, values);
         });
@@ -108,7 +116,11 @@ public class ScbRegionalRepository {
         });
     }
 
-    private static void insertValues(DSLContext tx, String indicatorId, List<ScbAreaValue> values) {
+    private static void insertValues(
+            DSLContext tx,
+            String indicatorId,
+            List<ScbAreaValue> values
+    ) {
         var insert = tx.insertInto(
                 SCB_AREA_VALUE,
                 SCB_AREA_VALUE.INDICATOR_ID,
@@ -129,7 +141,11 @@ public class ScbRegionalRepository {
         insert.execute();
     }
 
-    private static void replaceAvailability(DSLContext tx, String indicatorId, List<ScbAreaValue> values) {
+    private static void replaceAvailability(
+            DSLContext tx,
+            String indicatorId,
+            List<ScbAreaValue> values
+    ) {
         tx.deleteFrom(SCB_AVAILABILITY)
                 .where(SCB_AVAILABILITY.INDICATOR_ID.eq(indicatorId))
                 .execute();
@@ -147,7 +163,11 @@ public class ScbRegionalRepository {
                 SCB_AVAILABILITY.YEAR
         );
         for (final var availability : available) {
-            insert = insert.values(indicatorId, availability.geoVersion().code(), (short) availability.year());
+            insert = insert.values(
+                    indicatorId,
+                    availability.geoVersion().code(),
+                    (short) availability.year()
+            );
         }
         insert.execute();
     }
@@ -161,7 +181,11 @@ public class ScbRegionalRepository {
     }
 
     private List<ScbAvailability> readAvailability(Condition condition) {
-        return dslContext.select(SCB_AVAILABILITY.INDICATOR_ID, SCB_AVAILABILITY.GEO_VERSION, SCB_AVAILABILITY.YEAR)
+        return dslContext.select(
+                        SCB_AVAILABILITY.INDICATOR_ID,
+                        SCB_AVAILABILITY.GEO_VERSION,
+                        SCB_AVAILABILITY.YEAR
+                )
                 .from(SCB_AVAILABILITY)
                 .where(condition)
                 .fetch()
@@ -200,7 +224,9 @@ public class ScbRegionalRepository {
                 .decimals(r.getDecimals())
                 .levels(Arrays.stream(r.getLevels())
                         .map(level -> ScbLevel.fromLabel(level).orElseThrow(
-                                () -> new IllegalStateException("Unknown level %s for %s".formatted(level, r.getId()))))
+                                () -> new IllegalStateException(
+                                        "Unknown level %s for %s".formatted(level, r.getId())
+                                )))
                         .toList())
                 .numerator(toSources(r.getNumerator()))
                 .denominator(toSources(r.getDenominator()))

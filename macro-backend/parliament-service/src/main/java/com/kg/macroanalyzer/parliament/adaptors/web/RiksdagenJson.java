@@ -21,7 +21,8 @@ class RiksdagenJson {
         try {
             return JSON_MAPPER.readTree(response);
         } catch (JacksonException e) {
-            throw new ScrapeException("Failed to parse Riksdagen %s response: %s".formatted(source, e.getMessage()));
+            throw new ScrapeException(
+                    "Failed to parse Riksdagen %s response: %s".formatted(source, e.getMessage()));
         }
     }
 

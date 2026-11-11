@@ -44,14 +44,16 @@ public class ScbRegionalPersisterTest {
 
         // when
         when(repositoryPort.writeScbIndicatorResult(any())).thenReturn(1);
-        final var scrapeResult = new ScbRegionalPersister(repositoryPort, scrapeQueuePort).persist(input(config, List.of(population, households)));
+        final var scrapeResult = new ScbRegionalPersister(repositoryPort, scrapeQueuePort)
+                .persist(input(config, List.of(population, households)));
 
         // then
         assertEquals(ScrapeResult.SUCCESS, scrapeResult);
         verify(scrapeQueuePort).markAsDone(config);
         verify(repositoryPort).writeScbIndicatorResult(population);
         verify(repositoryPort).writeScbIndicatorResult(households);
-        verify(repositoryPort).writeScbTableStamps(Map.of("TAB6574", UPDATED, "TAB6568", UPDATED), Set.of());
+        verify(repositoryPort)
+                .writeScbTableStamps(Map.of("TAB6574", UPDATED, "TAB6568", UPDATED), Set.of());
     }
 
     @Test
@@ -65,16 +67,23 @@ public class ScbRegionalPersisterTest {
 
         // when
         when(repositoryPort.writeScbIndicatorResult(population)).thenReturn(1);
-        when(repositoryPort.writeScbIndicatorResult(share65)).thenThrow(new RuntimeException("connection reset"));
+        when(repositoryPort.writeScbIndicatorResult(share65))
+                .thenThrow(new RuntimeException("connection reset"));
         when(repositoryPort.writeScbIndicatorResult(households)).thenReturn(1);
         final var scrapeResult = new ScbRegionalPersister(repositoryPort, scrapeQueuePort)
-                .persist(input(config, List.of(population, share65, households), Set.of("TAB6589")));
+                .persist(input(
+                        config,
+                        List.of(population, share65, households),
+                        Set.of("TAB6589")
+                ));
 
         // then
         assertEquals(ScrapeResult.SUCCESS, scrapeResult);
         order.verify(repositoryPort).writeScbIndicatorResult(households);
-        // TAB6574 is shared with the failed share_65_plus, so population's new stamp for it is not stored either
-        order.verify(repositoryPort).writeScbTableStamps(Map.of("TAB6568", UPDATED), Set.of("TAB6574", "TAB6589"));
+        // TAB6574 is shared with the failed share_65_plus, so population's new stamp for it is not
+        // stored either
+        order.verify(repositoryPort)
+                .writeScbTableStamps(Map.of("TAB6568", UPDATED), Set.of("TAB6574", "TAB6589"));
         order.verify(scrapeQueuePort).markAsDone(config);
     }
 
@@ -85,8 +94,10 @@ public class ScbRegionalPersisterTest {
         final var population = result("population", "TAB6574");
 
         // when
-        when(repositoryPort.writeScbIndicatorResult(population)).thenThrow(new RuntimeException("connection reset"));
-        final var scrapeResult = new ScbRegionalPersister(repositoryPort, scrapeQueuePort).persist(input(config, List.of(population)));
+        when(repositoryPort.writeScbIndicatorResult(population))
+                .thenThrow(new RuntimeException("connection reset"));
+        final var scrapeResult = new ScbRegionalPersister(repositoryPort, scrapeQueuePort)
+                .persist(input(config, List.of(population)));
 
         // then
         assertEquals(ScrapeResult.FAILED, scrapeResult);
@@ -100,7 +111,8 @@ public class ScbRegionalPersisterTest {
         final var config = SeriesConfig.builder().name("ScbRegionalStatistics").build();
 
         // when
-        final var scrapeResult = new ScbRegionalPersister(repositoryPort, scrapeQueuePort).persist(input(config, List.of()));
+        final var scrapeResult = new ScbRegionalPersister(repositoryPort, scrapeQueuePort)
+                .persist(input(config, List.of()));
 
         // then
         assertEquals(ScrapeResult.EMPTY, scrapeResult);
@@ -113,13 +125,20 @@ public class ScbRegionalPersisterTest {
         final var source = new ScbSource(table, Map.of());
 
         return ScbIndicatorResult.builder()
-                .indicator(ScbIndicator.builder().id(id).numerator(List.of(source)).denominator(List.of()).build())
+                .indicator(ScbIndicator.builder()
+                        .id(id)
+                        .numerator(List.of(source))
+                        .denominator(List.of())
+                        .build())
                 .tableStamps(Map.of(table, UPDATED))
                 .values(List.of())
                 .build();
     }
 
-    private static ConfigWithScbIndicators input(SeriesConfig config, List<ScbIndicatorResult> results) {
+    private static ConfigWithScbIndicators input(
+            SeriesConfig config,
+            List<ScbIndicatorResult> results
+    ) {
         return input(config, results, Set.of());
     }
 
@@ -128,7 +147,9 @@ public class ScbRegionalPersisterTest {
             List<ScbIndicatorResult> results,
             Set<String> failedTables
     ) {
-        return new ConfigWithScbIndicators(config, List.of(), Map.of(), Set.of(), results, failedTables);
+        return new ConfigWithScbIndicators(
+                config, List.of(), Map.of(), Set.of(), results, failedTables
+        );
     }
 
 }

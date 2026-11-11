@@ -22,7 +22,8 @@ public record MacroPointScraper(
             final var config = configWithMacroPoints.seriesConfig();
             final var existingMacroPoints = configWithMacroPoints.macroPoints();
             final var scrapedMacroPoints = webPort.fetch(config);
-            // Compares value and date, so a revised value passes and the upsert replaces the stored one
+            // Compares value and date, so a revised value passes and the upsert replaces the stored
+            // one
             final var novelScraped = scrapedMacroPoints
                     .filter(i -> !existingMacroPoints.contains(i))
                     .toList();
@@ -33,7 +34,10 @@ public record MacroPointScraper(
                             .build()
             );
         } catch (ScrapeException scrapeException) {
-            log.error("Caught ScrapeException for config={}", configWithMacroPoints.seriesConfig());
+            log.error(
+                    "Caught ScrapeException for config={}",
+                    configWithMacroPoints.seriesConfig()
+            );
 
             return Optional.empty();
         }

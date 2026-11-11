@@ -37,8 +37,10 @@ class UntracedObservationHandlerTest {
             }
         };
         registry.observationConfig()
-                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(new UntracedObservationHandler(), tracingHandler))
-                .observationHandler(new TracingAwareMeterObservationHandler<>(new DefaultMeterObservationHandler(meters), Tracer.NOOP));
+                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(
+                        new UntracedObservationHandler(), tracingHandler))
+                .observationHandler(new TracingAwareMeterObservationHandler<>(
+                        new DefaultMeterObservationHandler(meters), Tracer.NOOP));
     }
 
     @Test
@@ -92,7 +94,8 @@ class UntracedObservationHandlerTest {
     }
 
     private ServerRequestObservationContext serverContext(String path) {
-        return new ServerRequestObservationContext(new MockHttpServletRequest("GET", path), new MockHttpServletResponse());
+        return new ServerRequestObservationContext(
+                new MockHttpServletRequest("GET", path), new MockHttpServletResponse());
     }
 
 }

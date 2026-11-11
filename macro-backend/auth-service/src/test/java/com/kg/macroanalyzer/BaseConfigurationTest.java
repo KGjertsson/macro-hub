@@ -13,10 +13,13 @@ class BaseConfigurationTest {
     @Test
     void shouldDefaultToTheComposePostgres_andTheServicesOwnRole() throws IOException {
         // when
-        final var properties = PropertiesLoaderUtils.loadProperties(new ClassPathResource("application.properties"));
+        final var properties = PropertiesLoaderUtils.loadProperties(
+                new ClassPathResource("application.properties"));
 
         // then
-        assertEquals("jdbc:postgresql://localhost:5432/auth", properties.getProperty("spring.datasource.url"));
+        assertEquals(
+                "jdbc:postgresql://localhost:5432/auth",
+                properties.getProperty("spring.datasource.url"));
         assertEquals("auth", properties.getProperty("spring.datasource.username"));
     }
 

@@ -7,8 +7,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-// Parsing every member's JSON takes about half a second per request, and only a members scrape changes them.
-// load and write exclude each other, so a load that read the old rows can't store them after a write has cleared them.
+// Parsing every member's JSON takes about half a second per request, and only a members scrape
+// changes them.
+// load and write exclude each other, so a load that read the old rows can't store them after a
+// write has cleared them.
 @Component
 public class CachedMembers {
 

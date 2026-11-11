@@ -49,11 +49,22 @@ public class ActuatorExposureHttpTest {
         final var metrics = get("/actuator/prometheus").body();
 
         // then
-        assertTrue(metrics.contains("macro_scrape_items_total{application=\"macro-series\",flow=\"MACRO_POINT\",result=\"failed\"} 0"), metrics);
-        assertTrue(metrics.contains("macro_scrape_items_total{application=\"macro-series\",flow=\"MACRO_POINT\",result=\"success\"} 0"), metrics);
-        assertTrue(metrics.contains("macro_scrape_items_total{application=\"macro-series\",flow=\"unknown\",result=\"failed\"} 0"), metrics);
-        assertTrue(metrics.contains("macro_scrape_item_duration_seconds_bucket{application=\"macro-series\",flow=\"MACRO_POINT\",le=\"1800.0\"} 0"), metrics);
-        assertTrue(metrics.contains("macro_scrape_queue_pending{application=\"macro-series\"}"), metrics);
+        assertTrue(metrics.contains(
+                "macro_scrape_items_total{application=\"macro-series\",flow=\"MACRO_POINT\","
+                        + "result=\"failed\"} 0"), metrics);
+        assertTrue(metrics.contains(
+                "macro_scrape_items_total{application=\"macro-series\",flow=\"MACRO_POINT\","
+                        + "result=\"success\"} 0"), metrics);
+        assertTrue(metrics.contains(
+                "macro_scrape_items_total{application=\"macro-series\",flow=\"unknown\","
+                        + "result=\"failed\"} 0"), metrics);
+        assertTrue(metrics.contains(
+                "macro_scrape_item_duration_seconds_bucket{application=\"macro-series\","
+                        + "flow=\"MACRO_POINT\",le=\"1800.0\"} 0"), metrics);
+        assertTrue(
+                metrics.contains("macro_scrape_queue_pending{application=\"macro-series\"}"),
+                metrics
+        );
     }
 
     @Test
@@ -66,7 +77,9 @@ public class ActuatorExposureHttpTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"env", "beans", "configprops", "metrics", "loggers", "heapdump", "threaddump"})
+    @ValueSource(strings = {
+            "env", "beans", "configprops", "metrics", "loggers", "heapdump", "threaddump"
+    })
     void shouldNotExpose_otherEndpoints(String endpoint) throws Exception {
         // when
         final var response = get("/actuator/" + endpoint);

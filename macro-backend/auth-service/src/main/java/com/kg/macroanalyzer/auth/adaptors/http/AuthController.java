@@ -34,7 +34,8 @@ public class AuthController {
     private final AuthCommands auth;
     private final boolean secureCookie;
 
-    public AuthController(AuthCommands auth, @Value("${auth.cookie.secure}") boolean secureCookie) {
+    public AuthController(
+            AuthCommands auth, @Value("${auth.cookie.secure}") boolean secureCookie) {
         this.auth = auth;
         this.secureCookie = secureCookie;
     }
@@ -47,7 +48,8 @@ public class AuthController {
     }
 
     @PostMapping("/register/complete")
-    public ResponseEntity<Void> completeRegistration(@RequestBody CompleteRegistrationRequest request) {
+    public ResponseEntity<Void> completeRegistration(
+            @RequestBody CompleteRegistrationRequest request) {
         auth.completeRegistration(request.token(), request.displayName(), request.password());
 
         return ResponseEntity.noContent().build();
@@ -61,7 +63,8 @@ public class AuthController {
     }
 
     @PostMapping("/password-reset/complete")
-    public ResponseEntity<Void> completePasswordReset(@RequestBody CompletePasswordResetRequest request) {
+    public ResponseEntity<Void> completePasswordReset(
+            @RequestBody CompletePasswordResetRequest request) {
         auth.completePasswordReset(request.token(), request.password());
 
         return ResponseEntity.noContent().build();
@@ -73,19 +76,23 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
-                .header(HttpHeaders.SET_COOKIE, sessionCookie(login.sessionToken(), login.sessionTtl()).toString())
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        sessionCookie(login.sessionToken(), login.sessionTtl()).toString())
                 .body(response(login.authenticated()));
     }
 
     @PostMapping("/token")
-    public ResponseEntity<AuthenticatedResponse> token(@CookieValue(name = SESSION_COOKIE, required = false) String sessionToken) {
+    public ResponseEntity<AuthenticatedResponse> token(
+            @CookieValue(name = SESSION_COOKIE, required = false) String sessionToken) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(response(auth.refresh(sessionToken)));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(name = SESSION_COOKIE, required = false) String sessionToken) {
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = SESSION_COOKIE, required = false) String sessionToken) {
         auth.logout(sessionToken);
 
         return ResponseEntity.noContent()
@@ -110,12 +117,14 @@ public class AuthController {
 
     @ExceptionHandler(DisplayNameTakenException.class)
     ResponseEntity<ErrorResponse> displayNameTaken() {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("display_name_taken"));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("display_name_taken"));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     ResponseEntity<ErrorResponse> invalidCredentials() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("invalid_credentials"));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("invalid_credentials"));
     }
 
     @ExceptionHandler(InvalidSessionException.class)
@@ -126,7 +135,8 @@ public class AuthController {
     }
 
     private ResponseCookie sessionCookie(String value, Duration maxAge) {
-        // Strict: only requests from the app's own pages carry it, which is what stands in for a CSRF token on /token and /logout
+        // Strict: only requests from the app's own pages carry it, which is what stands in for a
+        // CSRF token on /token and /logout
         return ResponseCookie.from(SESSION_COOKIE, value)
                 .httpOnly(true)
                 .secure(secureCookie)
@@ -142,7 +152,8 @@ public class AuthController {
         return new AuthenticatedResponse(
                 authenticated.accessToken().value(),
                 authenticated.accessToken().expiresIn().toSeconds(),
-                new AuthenticatedResponse.UserResponse(user.id(), user.email(), user.displayName(), user.role()));
+                new AuthenticatedResponse.UserResponse(
+                        user.id(), user.email(), user.displayName(), user.role()));
     }
 
 }

@@ -29,7 +29,8 @@ public record ZipEntryGetter(String entryMarker) implements Getter<HttpURLConnec
                 connection.disconnect();
             }
 
-            throw new ScrapeException("No zip entry containing '%s' in %s".formatted(entryMarker, connection.getURL()));
+            throw new ScrapeException("No zip entry containing '%s' in %s"
+                    .formatted(entryMarker, connection.getURL()));
         } catch (IOException exception) {
             throw new ScrapeException(exception.getMessage());
         }

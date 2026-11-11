@@ -10,7 +10,8 @@ import com.kg.macroanalyzer.shared.web.ZipEntryGetter;
 import java.util.List;
 
 // Each zip also holds a much larger per-district vote file, which is skipped
-public class ValmyndighetenWebAdaptor implements WebPort<LocalElectionFile, List<LocalElectionResult>> {
+public class ValmyndighetenWebAdaptor
+        implements WebPort<LocalElectionFile, List<LocalElectionResult>> {
 
     private final WebAdaptorFlow<String, List<LocalElectionResult>> flow = new WebAdaptorFlow<>(
             new ValmyndighetenConnectionBuilder(),

@@ -41,7 +41,8 @@ public class HttpGetterTest {
     void shouldReturnResponseString_whenResponseIsSuccessful() throws IOException, ScrapeException {
         // given
         String expectedResponse = "success response";
-        InputStream inputStream = new ByteArrayInputStream(expectedResponse.getBytes(StandardCharsets.UTF_8));
+        InputStream inputStream =
+                new ByteArrayInputStream(expectedResponse.getBytes(StandardCharsets.UTF_8));
 
         when(mockConnection.getResponseCode()).thenReturn(200);
         when(mockConnection.getInputStream()).thenReturn(inputStream);
@@ -80,13 +81,15 @@ public class HttpGetterTest {
     void shouldThrowScrapeException_whenResponseIsError() throws IOException {
         // given
         String errorResponse = "error occurred";
-        InputStream errorStream = new ByteArrayInputStream(errorResponse.getBytes(StandardCharsets.UTF_8));
+        InputStream errorStream =
+                new ByteArrayInputStream(errorResponse.getBytes(StandardCharsets.UTF_8));
 
         when(mockConnection.getResponseCode()).thenReturn(404);
         when(mockConnection.getErrorStream()).thenReturn(errorStream);
 
         // when && then
-        ScrapeException exception = assertThrows(ScrapeException.class, () -> httpGetter.get(mockConnection));
+        ScrapeException exception =
+                assertThrows(ScrapeException.class, () -> httpGetter.get(mockConnection));
         assertEquals("HTTP 404 from upstream: " + errorResponse + "\n", exception.getMessage());
         verify(mockConnection).disconnect();
     }
@@ -95,14 +98,16 @@ public class HttpGetterTest {
     void shouldFallbackToInputStream_whenErrorStreamIsNull() throws IOException {
         // given
         String errorResponse = "error fallback";
-        InputStream inputStream = new ByteArrayInputStream(errorResponse.getBytes(StandardCharsets.UTF_8));
+        InputStream inputStream =
+                new ByteArrayInputStream(errorResponse.getBytes(StandardCharsets.UTF_8));
 
         when(mockConnection.getResponseCode()).thenReturn(500);
         when(mockConnection.getErrorStream()).thenReturn(null);
         when(mockConnection.getInputStream()).thenReturn(inputStream);
 
         // when && then
-        ScrapeException exception = assertThrows(ScrapeException.class, () -> httpGetter.get(mockConnection));
+        ScrapeException exception =
+                assertThrows(ScrapeException.class, () -> httpGetter.get(mockConnection));
         assertEquals("HTTP 500 from upstream: " + errorResponse + "\n", exception.getMessage());
         verify(mockConnection).disconnect();
     }
@@ -111,7 +116,8 @@ public class HttpGetterTest {
     void shouldApplySSLTrustAll_whenConnectionIsHttps() throws IOException, ScrapeException {
         // given
         String expectedResponse = "https success";
-        InputStream inputStream = new ByteArrayInputStream(expectedResponse.getBytes(StandardCharsets.UTF_8));
+        InputStream inputStream =
+                new ByteArrayInputStream(expectedResponse.getBytes(StandardCharsets.UTF_8));
 
         when(mockHttpsConnection.getResponseCode()).thenReturn(200);
         when(mockHttpsConnection.getInputStream()).thenReturn(inputStream);
@@ -132,7 +138,8 @@ public class HttpGetterTest {
         when(mockConnection.getResponseCode()).thenThrow(new IOException("Connection failed"));
 
         // when && then
-        ScrapeException exception = assertThrows(ScrapeException.class, () -> httpGetter.get(mockConnection));
+        ScrapeException exception =
+                assertThrows(ScrapeException.class, () -> httpGetter.get(mockConnection));
         assertEquals("Connection failed", exception.getMessage());
     }
 }

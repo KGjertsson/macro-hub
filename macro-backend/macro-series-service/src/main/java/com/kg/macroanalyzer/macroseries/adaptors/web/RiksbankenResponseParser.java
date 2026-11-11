@@ -25,7 +25,8 @@ public record RiksbankenResponseParser() implements ResponseParser<String, Strea
             final var objectMapper = createObjectMapper();
             JavaType collectionType = objectMapper.getTypeFactory()
                     .constructCollectionType(List.class, ScrapedResponse.class);
-            final List<ScrapedResponse> resultList = objectMapper.readValue(response, collectionType);
+            final List<ScrapedResponse> resultList =
+                    objectMapper.readValue(response, collectionType);
 
             return resultList.stream()
                     .map(ScrapedResponse::toMacroPoint);

@@ -41,7 +41,10 @@ public class ChartSeriesConfigIntegrationTest {
                 .collect(Collectors.toSet());
 
         // then
-        assertEquals(Set.of("Räntor", "Statsobligationer", "Statsskuld", "Valuta", "Nyckeltal USA"), categories);
+        assertEquals(
+                Set.of("Räntor", "Statsobligationer", "Statsskuld", "Valuta", "Nyckeltal USA"),
+                categories
+        );
     }
 
     @Test
@@ -83,7 +86,8 @@ public class ChartSeriesConfigIntegrationTest {
     void shouldHaveMaturity_forEveryRateWithATerm() {
         // when
         final var termRates = macroSeriesQueries.getChartSeriesConfigList().stream()
-                .filter(c -> Set.of("Euromarknadsränta", "Statsobligation", "Statsskuldväxel").contains(c.subcategory()))
+                .filter(c -> Set.of("Euromarknadsränta", "Statsobligation", "Statsskuldväxel")
+                        .contains(c.subcategory()))
                 .toList();
 
         // then
@@ -131,7 +135,10 @@ public class ChartSeriesConfigIntegrationTest {
         assertEquals("Statsskuld i % av BNP, USA", pctGdp.displayName());
         assertEquals("Nyckeltal USA", deficit.category());
         assertEquals("Budgetsaldo", deficit.subcategory());
-        assertEquals(2 * 30, chartSeries.stream().filter(c -> c.category().equals("Statsskuld")).count());
+        assertEquals(
+                2 * 30,
+                chartSeries.stream().filter(c -> c.category().equals("Statsskuld")).count()
+        );
     }
 
     @Test
@@ -147,7 +154,8 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldSerializeTheMetadata_inCamelCase() {
         // given
-        final var bond = find(seriesConfigPort.readSeriesConfigList(), "GovernmentBondSweden10Year");
+        final var bond =
+                find(seriesConfigPort.readSeriesConfigList(), "GovernmentBondSweden10Year");
 
         // when
         final var json = jsonMapper.writeValueAsString(SeriesConfigResponse.from(bond));
@@ -178,10 +186,14 @@ public class ChartSeriesConfigIntegrationTest {
     @Test
     void shouldScrapeTheSixMonthSeries_forJapanSixMonth() {
         // when
-        final var japan6Month = find(seriesConfigPort.readSeriesConfigList(), "EuroMarketRateJapan6Month");
+        final var japan6Month =
+                find(seriesConfigPort.readSeriesConfigList(), "EuroMarketRateJapan6Month");
 
         // then
-        assertEquals("https://api.riksbank.se/swea/v1/Observations/EUDP6MJPY/1979-11-29", japan6Month.scrapeUrl());
+        assertEquals(
+                "https://api.riksbank.se/swea/v1/Observations/EUDP6MJPY/1979-11-29",
+                japan6Month.scrapeUrl()
+        );
     }
 
     @Test
@@ -206,12 +218,18 @@ public class ChartSeriesConfigIntegrationTest {
                 .toList();
 
         // then
-        assertEquals(Set.of("Euroområdet"), euroArea.stream().map(SeriesConfig::country).collect(Collectors.toSet()));
+        assertEquals(
+                Set.of("Euroområdet"),
+                euroArea.stream().map(SeriesConfig::country).collect(Collectors.toSet())
+        );
         assertEquals(
                 Set.of("Räntor", "Statsobligationer", "Statsskuld"),
                 euroArea.stream().map(SeriesConfig::category).collect(Collectors.toSet())
         );
-        assertEquals("Statsskuld i % av BNP, Euroområdet (EA20)", find(euroArea, "DebtPcGdpEa20").displayName());
+        assertEquals(
+                "Statsskuld i % av BNP, Euroområdet (EA20)",
+                find(euroArea, "DebtPcGdpEa20").displayName()
+        );
     }
 
     @Test
@@ -257,7 +275,8 @@ public class ChartSeriesConfigIntegrationTest {
         // then
         assertEquals(2 * countryByGeo.size(), debt.size());
         debt.forEach(c -> {
-            final var geo = c.scrapeUrl().substring(c.scrapeUrl().indexOf("&geo=") + "&geo=".length());
+            final var geo = c.scrapeUrl()
+                    .substring(c.scrapeUrl().indexOf("&geo=") + "&geo=".length());
             assertEquals(countryByGeo.get(geo), c.country(), c.name());
         });
     }

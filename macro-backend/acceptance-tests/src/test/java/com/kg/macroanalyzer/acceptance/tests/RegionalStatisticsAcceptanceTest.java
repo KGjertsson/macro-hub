@@ -18,10 +18,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// A scrape walks all 26 indicators, and a table that answers an error costs 25 s of retries. So every table except
-// households' answers metadata without the dimensions its indicators select, which fails them at once, and only households
-// is asserted. Its table has no other indicator, so their failures don't drop its stamp. A corrected table starts a stack
-// of its own, because the other journeys read the values it replaces
+// A scrape walks all 26 indicators, and a table that answers an error costs 25 s of retries. So
+// every table except households' answers metadata without the dimensions its indicators select,
+// which fails them at once, and only households is asserted. Its table has no other indicator, so
+// their failures don't drop its stamp. A corrected table starts a stack of its own, because the
+// other journeys read the values it replaces
 class RegionalStatisticsAcceptanceTest {
 
     private static final String SERIES = "ScbRegionalStatistics";
@@ -99,12 +100,14 @@ class RegionalStatisticsAcceptanceTest {
         // then
         assertEquals(json("""
                 {
-                  "indicator": "households", "level": "DeSO", "year": 2024, "geoVersion": "DeSO2025",
+                  "indicator": "households", "level": "DeSO", "year": 2024, \
+                "geoVersion": "DeSO2025",
                   "values": {"0114A0010": 421.0, "0114C1050": 615.0}
                 }"""), deso);
         assertEquals(json("""
                 {
-                  "indicator": "households", "level": "RegSO", "year": 2024, "geoVersion": "RegSO2025",
+                  "indicator": "households", "level": "RegSO", "year": 2024, \
+                "geoVersion": "RegSO2025",
                   "values": {"0114R001": 1235.0, "0114R003": 1400.0}
                 }"""), regso);
     }
@@ -119,17 +122,20 @@ class RegionalStatisticsAcceptanceTest {
         // then
         assertEquals(json("""
                 {
-                  "indicator": "households", "level": "DeSO", "year": 2023, "geoVersion": "DeSO2018",
+                  "indicator": "households", "level": "DeSO", "year": 2023, \
+                "geoVersion": "DeSO2018",
                   "values": {"0114A0010": 415.0, "0114A0020": 0.0, "0114C1010": 530.0}
                 }"""), deso2023);
         assertEquals(json("""
                 {
-                  "indicator": "households", "level": "DeSO", "year": 2022, "geoVersion": "DeSO2018",
+                  "indicator": "households", "level": "DeSO", "year": 2022, \
+                "geoVersion": "DeSO2018",
                   "values": {"0114A0010": 410.0, "0114A0020": 520.0}
                 }"""), deso2022);
         assertEquals(json("""
                 {
-                  "indicator": "households", "level": "RegSO", "year": 2021, "geoVersion": "RegSO2020",
+                  "indicator": "households", "level": "RegSO", "year": 2021, \
+                "geoVersion": "RegSO2020",
                   "values": {"0114R001": 1200.0, "0114R002": 1300.0}
                 }"""), regso2021);
     }
@@ -143,7 +149,8 @@ class RegionalStatisticsAcceptanceTest {
     void aYearOrIndicatorWithoutDataHasNothingToShow(String indicator, String level, int year) {
         // when
         final var response = gateway.get(
-                "/macro-analyzer/regional-statistics/values?indicator=%s&level=%s&year=%d".formatted(indicator, level, year));
+                "/macro-analyzer/regional-statistics/values?indicator=%s&level=%s&year=%d"
+                        .formatted(indicator, level, year));
 
         // then
         assertEquals(204, response.statusCode());
@@ -152,14 +159,15 @@ class RegionalStatisticsAcceptanceTest {
     @Test
     void aLevelThatDoesNotExistIsABadRequest() {
         // when
-        final var response = gateway.get("/macro-analyzer/regional-statistics/values?indicator=households&level=Kommun");
+        final var response = gateway.get(
+                "/macro-analyzer/regional-statistics/values?indicator=households&level=Kommun");
 
         // then
         assertEquals(400, response.statusCode());
     }
 
-    // The other indicators fail again and nothing is written, so this queue item stays pending. It is the last drain on
-    // this stack, so nothing retries it
+    // The other indicators fail again and nothing is written, so this queue item stays pending. It
+    // is the last drain on this stack, so nothing retries it
     @Test
     void aScrapeOfAnUnchangedTableFetchesItsMetadataButNoData() {
         // given
@@ -172,7 +180,8 @@ class RegionalStatisticsAcceptanceTest {
         // then
         assertEquals(metadataFetches + 1, sources.requestCount(HOUSEHOLDS_METADATA));
         List.of(DESO_2018, DESO_2025, REGSO_2020, REGSO_2025)
-                .forEach(query -> assertEquals(1, sources.requestCount(HOUSEHOLDS_DATA, query), query.toString()));
+                .forEach(query -> assertEquals(
+                        1, sources.requestCount(HOUSEHOLDS_DATA, query), query.toString()));
         assertEquals(before, valuesFrom(gateway, "DeSO", ""));
     }
 
@@ -184,21 +193,26 @@ class RegionalStatisticsAcceptanceTest {
             final var ownSources = ownStack.sources();
             publishHouseholds(ownSources);
             scrape(ownGateway);
-            assertEquals(421.0, valuesFrom(ownGateway, "DeSO", "").get("values").get("0114A0010").asDouble());
+            assertEquals(
+                    421.0,
+                    valuesFrom(ownGateway, "DeSO", "").get("values").get("0114A0010").asDouble());
 
             // when
-            ownSources.serveJson(HOUSEHOLDS_METADATA, Map.of("lang", "sv"), "scb/TAB6568-metadata-updated.json");
+            ownSources.serveJson(
+                    HOUSEHOLDS_METADATA, Map.of("lang", "sv"), "scb/TAB6568-metadata-updated.json");
             ownSources.serveJson(HOUSEHOLDS_DATA, DESO_2025, "scb/TAB6568-DeSO2025-revised.json");
             scrape(ownGateway);
 
             // then
             assertEquals(json("""
                     {
-                      "indicator": "households", "level": "DeSO", "year": 2024, "geoVersion": "DeSO2025",
+                      "indicator": "households", "level": "DeSO", "year": 2024, \
+                    "geoVersion": "DeSO2025",
                       "values": {"0114A0010": 433.0, "0114C1050": 615.0}
                     }"""), valuesFrom(ownGateway, "DeSO", ""));
             List.of(DESO_2018, DESO_2025, REGSO_2020, REGSO_2025)
-                    .forEach(query -> assertEquals(2, ownSources.requestCount(HOUSEHOLDS_DATA, query), query.toString()));
+                    .forEach(query -> assertEquals(
+                            2, ownSources.requestCount(HOUSEHOLDS_DATA, query), query.toString()));
         }
     }
 
@@ -207,7 +221,8 @@ class RegionalStatisticsAcceptanceTest {
     }
 
     private static void publishHouseholds(Sources sources) {
-        sources.serveJsonForOtherPathsMatching("/api/v2/tables/[^/]+/metadata", "scb/another-table-metadata.json");
+        sources.serveJsonForOtherPathsMatching(
+                "/api/v2/tables/[^/]+/metadata", "scb/another-table-metadata.json");
         sources.serveJson(HOUSEHOLDS_METADATA, Map.of("lang", "sv"), "scb/TAB6568-metadata.json");
         sources.serveJson(HOUSEHOLDS_DATA, DESO_2018, "scb/TAB6568-DeSO2018.json");
         sources.serveJson(HOUSEHOLDS_DATA, DESO_2025, "scb/TAB6568-DeSO2025.json");
@@ -227,12 +242,17 @@ class RegionalStatisticsAcceptanceTest {
     }
 
     private static void scrape(Gateway gateway) {
-        assertEquals(202, gateway.post("/macro-analyzer/scrape/regional-statistics/enqueue?name=" + SERIES).statusCode());
-        assertEquals(200, gateway.post("/macro-analyzer/scrape/regional-statistics/scrape-from-queue").statusCode());
+        assertEquals(202, gateway.post(
+                "/macro-analyzer/scrape/regional-statistics/enqueue?name=" + SERIES).statusCode());
+        assertEquals(200, gateway.post(
+                "/macro-analyzer/scrape/regional-statistics/scrape-from-queue").statusCode());
     }
 
     private static JsonNode valuesFrom(Gateway gateway, String level, String year) {
-        return jsonFrom(gateway, "/macro-analyzer/regional-statistics/values?indicator=households&level=%s%s".formatted(level, year));
+        return jsonFrom(
+                gateway,
+                "/macro-analyzer/regional-statistics/values?indicator=households&level=%s%s"
+                        .formatted(level, year));
     }
 
     private static JsonNode jsonFrom(Gateway gateway, String path) {

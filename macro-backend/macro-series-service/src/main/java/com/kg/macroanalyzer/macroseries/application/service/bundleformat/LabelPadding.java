@@ -40,7 +40,10 @@ public class LabelPadding {
                 .toList();
     }
 
-    private static MacroSeries emptyOnLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
+    private static MacroSeries emptyOnLabels(
+            MacroSeries macroSeries,
+            List<LocalDate> paddedLabels
+    ) {
         final var newPoints = paddedLabels.stream()
                 .map(label -> MacroPoint.builder().date(label).build())
                 .toList();
@@ -50,13 +53,17 @@ public class LabelPadding {
                 .build();
     }
 
-    private static MacroSeries alignToLabels(MacroSeries macroSeries, List<LocalDate> paddedLabels) {
+    private static MacroSeries alignToLabels(
+            MacroSeries macroSeries,
+            List<LocalDate> paddedLabels
+    ) {
         final var macroPoints = macroSeries.macroPoints();
         final var startDate = LocalDate.from(macroPoints.getFirst().date());
         final var startDateIndexInFull = paddedLabels.indexOf(startDate);
 
         final var newPoints = IntStream.range(0, paddedLabels.size())
-                .mapToObj(index -> pointFromLabel(index, startDateIndexInFull, paddedLabels, macroPoints))
+                .mapToObj(index ->
+                        pointFromLabel(index, startDateIndexInFull, paddedLabels, macroPoints))
                 .toList();
 
         return MacroSeries.builder()

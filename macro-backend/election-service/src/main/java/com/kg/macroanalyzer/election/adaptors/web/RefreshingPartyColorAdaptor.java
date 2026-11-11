@@ -11,8 +11,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-// Not on @Scheduled, which scheduler.enabled turns off along with the scrapes: without a refresh, election would stay
-// on Valmyndigheten's colours
+// Not on @Scheduled, which scheduler.enabled turns off along with the scrapes: without a refresh,
+// election would stay on Valmyndigheten's colours
 @Slf4j
 public class RefreshingPartyColorAdaptor implements PartyColorPort, AutoCloseable {
 
@@ -25,7 +25,11 @@ public class RefreshingPartyColorAdaptor implements PartyColorPort, AutoCloseabl
 
     private volatile Map<String, String> colors = Map.of();
 
-    public RefreshingPartyColorAdaptor(ParliamentPartiesClient client, Duration refreshInterval, Duration retryInterval) {
+    public RefreshingPartyColorAdaptor(
+            ParliamentPartiesClient client,
+            Duration refreshInterval,
+            Duration retryInterval
+    ) {
         if (!refreshInterval.isPositive() || !retryInterval.isPositive()) {
             throw new IllegalArgumentException("The refresh and retry intervals must be positive");
         }
@@ -62,7 +66,8 @@ public class RefreshingPartyColorAdaptor implements PartyColorPort, AutoCloseabl
         try {
             final var fetched = client.fetchPartyColors();
             if (fetched.isEmpty()) {
-                log.warn("Parliament has no party list, keeping the {} party colours held", colors.size());
+                log.warn("Parliament has no party list, keeping the {} party colours held",
+                        colors.size());
             } else {
                 colors = fetched;
                 log.info("Loaded {} party colours", fetched.size());
@@ -70,7 +75,8 @@ public class RefreshingPartyColorAdaptor implements PartyColorPort, AutoCloseabl
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
-            log.warn("Could not refresh the party colours, keeping the {} held: {}", colors.size(), e.toString());
+            log.warn("Could not refresh the party colours, keeping the {} held: {}",
+                    colors.size(), e.toString());
         }
     }
 

@@ -18,20 +18,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 // KF and RF files hold one area; the Riksdag file holds every valkrets under valkretsLista
-public record ValmyndighetenResultResponseParser() implements ResponseParser<String, List<LocalElectionResult>> {
+public record ValmyndighetenResultResponseParser()
+        implements ResponseParser<String, List<LocalElectionResult>> {
 
     private static final JsonMapper JSON_MAPPER = JsonMapper.builder().build();
 
-    // Valkretsar 01-02 split Stockholms län, 11-14 Skåne and 16-20 Västra Götaland; the others are whole län
+    // Valkretsar 01-02 split Stockholms län, 11-14 Skåne and 16-20 Västra Götaland; the others are
+    // whole län
     private static final Map<String, String> VALKRETS_LAN = Map.ofEntries(
-            Map.entry("01", "01"), Map.entry("02", "01"), Map.entry("03", "03"), Map.entry("04", "04"),
-            Map.entry("05", "05"), Map.entry("06", "06"), Map.entry("07", "07"), Map.entry("08", "08"),
-            Map.entry("09", "09"), Map.entry("10", "10"), Map.entry("11", "12"), Map.entry("12", "12"),
-            Map.entry("13", "12"), Map.entry("14", "12"), Map.entry("15", "13"), Map.entry("16", "14"),
-            Map.entry("17", "14"), Map.entry("18", "14"), Map.entry("19", "14"), Map.entry("20", "14"),
-            Map.entry("21", "17"), Map.entry("22", "18"), Map.entry("23", "19"), Map.entry("24", "20"),
-            Map.entry("25", "21"), Map.entry("26", "22"), Map.entry("27", "23"), Map.entry("28", "24"),
-            Map.entry("29", "25")
+            Map.entry("01", "01"), Map.entry("02", "01"), Map.entry("03", "03"),
+            Map.entry("04", "04"), Map.entry("05", "05"), Map.entry("06", "06"),
+            Map.entry("07", "07"), Map.entry("08", "08"), Map.entry("09", "09"),
+            Map.entry("10", "10"), Map.entry("11", "12"), Map.entry("12", "12"),
+            Map.entry("13", "12"), Map.entry("14", "12"), Map.entry("15", "13"),
+            Map.entry("16", "14"), Map.entry("17", "14"), Map.entry("18", "14"),
+            Map.entry("19", "14"), Map.entry("20", "14"), Map.entry("21", "17"),
+            Map.entry("22", "18"), Map.entry("23", "19"), Map.entry("24", "20"),
+            Map.entry("25", "21"), Map.entry("26", "22"), Map.entry("27", "23"),
+            Map.entry("28", "24"), Map.entry("29", "25")
     );
 
     @Override
@@ -63,7 +67,8 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
                 .build());
     }
 
-    private static List<LocalElectionResult> constituencies(int year, JsonNode area) throws ScrapeException {
+    private static List<LocalElectionResult> constituencies(int year, JsonNode area)
+            throws ScrapeException {
         final var valkretsar = area.path("valkretsLista").valueStream().toList();
         if (valkretsar.isEmpty()) {
             throw new ScrapeException("Valmyndigheten RD result file holds no valkretsar");
@@ -76,16 +81,19 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
         return Collections.unmodifiableList(results);
     }
 
-    // A valkrets only states its fixed seats, so the total is summed from the parties' seats, which include
-    // the utjämningsmandat that were assigned to the valkrets
-    private static LocalElectionResult constituency(int year, JsonNode valkrets) throws ScrapeException {
+    // A valkrets only states its fixed seats, so the total is summed from the parties' seats, which
+    // include the utjämningsmandat that were assigned to the valkrets
+    private static LocalElectionResult constituency(int year, JsonNode valkrets)
+            throws ScrapeException {
         final var code = areaCode(valkrets);
 
         return result(year, LocalElectionType.RD, valkrets)
                 .areaCode(code)
                 .areaName(valkrets.path("namnValkrets").asString())
                 .lanCode(VALKRETS_LAN.getOrDefault(code, code))
-                .totalSeats(seatsByParty(valkrets).values().stream().mapToInt(Integer::intValue).sum())
+                .totalSeats(seatsByParty(valkrets).values().stream()
+                        .mapToInt(Integer::intValue)
+                        .sum())
                 .build();
     }
 
@@ -98,7 +106,11 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
         return code;
     }
 
-    private static LocalElectionResult.LocalElectionResultBuilder result(int year, LocalElectionType type, JsonNode area) {
+    private static LocalElectionResult.LocalElectionResultBuilder result(
+            int year,
+            LocalElectionType type,
+            JsonNode area
+    ) {
         return LocalElectionResult.builder()
                 .year(year)
                 .type(type)
@@ -119,8 +131,12 @@ public record ValmyndighetenResultResponseParser() implements ResponseParser<Str
     }
 
     // Every registered party is listed, so those without votes are dropped
-    private static List<LocalPartyResult> parties(JsonNode area, Map<String, Integer> seatsByParty) {
-        return area.path("rostfordelning").path("rosterPaverkaMandat").path("partiRoster").valueStream()
+    private static List<LocalPartyResult> parties(
+            JsonNode area,
+            Map<String, Integer> seatsByParty
+    ) {
+        return area.path("rostfordelning").path("rosterPaverkaMandat").path("partiRoster")
+                .valueStream()
                 .filter(p -> p.path("antalRoster").asInt() > 0)
                 .map(p -> LocalPartyResult.builder()
                         .code(p.path("partikod").asString())

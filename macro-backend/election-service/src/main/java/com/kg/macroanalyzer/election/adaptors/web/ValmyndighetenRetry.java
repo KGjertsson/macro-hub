@@ -5,7 +5,8 @@ import com.kg.macroanalyzer.shared.web.WebAdaptorFlow;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-// resultat.val.se answers 429 when called too often, so failed calls back off a little longer each attempt
+// resultat.val.se answers 429 when called too often, so failed calls back off a little longer each
+// attempt
 @Slf4j
 @UtilityClass
 class ValmyndighetenRetry {

@@ -39,14 +39,18 @@ public class MemberOfParliamentScrapeFlowConfiguration {
     }
 
     @Bean("memberPersister")
-    public Persister<ConfigWithMemberOfParliament> persister(ParliamentRepositoryPort repositoryPort, ScrapeQueuePort scrapeQueuePort) {
+    public Persister<ConfigWithMemberOfParliament> persister(
+            ParliamentRepositoryPort repositoryPort,
+            ScrapeQueuePort scrapeQueuePort
+    ) {
         return new MemberOfParliamentPersister(repositoryPort, scrapeQueuePort);
     }
 
     @Bean("memberScrapeFlow")
     public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
-            @Qualifier("existingMemberFinder") ExistingFinder<SeriesConfig, ConfigWithMemberOfParliament> finder,
+            @Qualifier("existingMemberFinder")
+            ExistingFinder<SeriesConfig, ConfigWithMemberOfParliament> finder,
             @Qualifier("memberScraper") Scraper<ConfigWithMemberOfParliament> scraper,
             @Qualifier("memberPersister") Persister<ConfigWithMemberOfParliament> persister
     ) {

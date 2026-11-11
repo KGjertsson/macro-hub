@@ -9,6 +9,10 @@ public interface RegionalStatisticsQueries {
 
     List<RegionalIndicatorDto> getRegionalIndicators();
 
-    Optional<RegionalValuesDto> getRegionalValues(String indicatorId, ScbLevel level, Integer year);
+    Optional<RegionalValuesDto> getRegionalValues(
+            String indicatorId,
+            ScbLevel level,
+            Integer year
+    );
 
 }

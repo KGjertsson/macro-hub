@@ -8,7 +8,10 @@ import com.kg.macroanalyzer.scrape.domain.ScrapeResult;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public record MacroPointPersister(MacroSeriesRepositoryPort repositoryPort, ScrapeQueuePort scrapeQueuePort) implements Persister<ConfigWithMacroPoints> {
+public record MacroPointPersister(
+        MacroSeriesRepositoryPort repositoryPort,
+        ScrapeQueuePort scrapeQueuePort
+) implements Persister<ConfigWithMacroPoints> {
 
     @Override
     public ScrapeResult persist(ConfigWithMacroPoints configWithMacroPoints) {

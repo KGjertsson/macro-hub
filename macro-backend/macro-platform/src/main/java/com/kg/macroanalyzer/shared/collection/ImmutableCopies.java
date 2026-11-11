@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// List.copyOf and Map.copyOf reject nulls, which parsed sources and SCB's suppressed cells hold, and Map.copyOf drops
-// the iteration order that the JSON answers and JSON-stat's dimensions depend on. A null collection stays null, because
-// the JSON answers tell an absent list from an empty one
+// List.copyOf and Map.copyOf reject nulls, which parsed sources and SCB's suppressed cells hold,
+// and Map.copyOf drops the iteration order that the JSON answers and JSON-stat's dimensions depend
+// on. A null collection stays null, because the JSON answers tell an absent list from an empty one
 @UtilityClass
 public class ImmutableCopies {
 
@@ -28,7 +28,8 @@ public class ImmutableCopies {
         return map == null ? null : Collections.unmodifiableMap(new LinkedHashMap<>(map));
     }
 
-    public static <K, V> Map<K, List<V>> mapOfLists(Map<? extends K, ? extends List<? extends V>> map) {
+    public static <K, V> Map<K, List<V>> mapOfLists(
+            Map<? extends K, ? extends List<? extends V>> map) {
         if (map == null) {
             return null;
         }
@@ -38,7 +39,8 @@ public class ImmutableCopies {
         return Collections.unmodifiableMap(copy);
     }
 
-    public static <K, K2, V> Map<K, Map<K2, V>> mapOfMaps(Map<? extends K, ? extends Map<? extends K2, ? extends V>> map) {
+    public static <K, K2, V> Map<K, Map<K2, V>> mapOfMaps(
+            Map<? extends K, ? extends Map<? extends K2, ? extends V>> map) {
         if (map == null) {
             return null;
         }

@@ -47,7 +47,9 @@ public class ParliamentPostgresAdaptor implements ParliamentRepositoryPort {
     }
 
     @Override
-    public Map<String, Integer> countMembersByPartyWhereStatusContainsIgnoringCase(String statusFragment) {
+    public Map<String, Integer> countMembersByPartyWhereStatusContainsIgnoringCase(
+            String statusFragment
+    ) {
         return sweParMemberRepository.countMembersByParty(statusFragment);
     }
 

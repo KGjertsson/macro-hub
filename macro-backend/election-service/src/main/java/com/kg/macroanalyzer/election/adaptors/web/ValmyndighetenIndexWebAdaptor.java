@@ -9,10 +9,12 @@ import com.kg.macroanalyzer.shared.web.WebPort;
 
 import java.util.List;
 
-public class ValmyndighetenIndexWebAdaptor implements WebPort<LocalElectionIndexRequest, List<LocalElectionFile>> {
+public class ValmyndighetenIndexWebAdaptor
+        implements WebPort<LocalElectionIndexRequest, List<LocalElectionFile>> {
 
     @Override
-    public List<LocalElectionFile> fetch(LocalElectionIndexRequest request) throws ScrapeException {
+    public List<LocalElectionFile> fetch(LocalElectionIndexRequest request)
+            throws ScrapeException {
         final var flow = new WebAdaptorFlow<>(
                 new ValmyndighetenConnectionBuilder(),
                 new HttpGetter(),

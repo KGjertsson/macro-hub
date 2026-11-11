@@ -26,7 +26,10 @@ public class MacroSeriesController {
     private final ColorSelectionStrategy colorSelectionStrategy;
 
     @Autowired
-    public MacroSeriesController(MacroSeriesQueries macroSeriesQueries, ColorSelectionStrategy colorSelectionStrategy) {
+    public MacroSeriesController(
+            MacroSeriesQueries macroSeriesQueries,
+            ColorSelectionStrategy colorSelectionStrategy
+    ) {
         this.macroSeriesQueries = macroSeriesQueries;
         this.colorSelectionStrategy = colorSelectionStrategy;
     }
@@ -60,7 +63,10 @@ public class MacroSeriesController {
     }
 
     private void logBuildChartDataRequest(BuildChartDataParams params) {
-        log.info("Received POST macro-analyzer/chart-data request with chartSeriesParams={}", params);
+        log.info(
+                "Received POST macro-analyzer/chart-data request with chartSeriesParams={}",
+                params
+        );
     }
 
     private boolean invalidRequest(BuildChartDataParams params) {

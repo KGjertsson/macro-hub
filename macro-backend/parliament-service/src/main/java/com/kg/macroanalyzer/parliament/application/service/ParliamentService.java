@@ -18,14 +18,17 @@ import java.util.stream.Collectors;
 @Service
 public class ParliamentService implements ParliamentQueries {
 
-    // Matches e.g. "Tjänstgörande ersättare" and "Förste vice talman (tjänstgörande riksdagsledamot)", but not "Tjänstledig"
+    // Matches e.g. "Tjänstgörande ersättare" and
+    // "Förste vice talman (tjänstgörande riksdagsledamot)", but not "Tjänstledig"
     private static final String SERVING_STATUS_MARKER = "tjänstgörande";
     private static final String SERVING_ASSIGNMENT_STATUS = "Tjänstgörande";
     private static final String UNKNOWN_PARTY_COLOR = "#9CA3AF";
-    private static final List<String> PARTIES_LEFT_TO_RIGHT = List.of("V", "S", "MP", "C", "L", "M", "KD", "SD");
+    private static final List<String> PARTIES_LEFT_TO_RIGHT =
+            List.of("V", "S", "MP", "C", "L", "M", "KD", "SD");
     private static final String COMMITTEE_MEMBER_ROLE = "Ledamot";
     private static final Set<String> CHAIR_ROLES = Set.of(
-            "Ordförande", "Vice ordförande", "Förste vice ordförande", "Andre vice ordförande", "Tredje vice ordförande"
+            "Ordförande", "Vice ordförande", "Förste vice ordförande", "Andre vice ordförande",
+            "Tredje vice ordförande"
     );
 
     private final ParliamentRepositoryPort repositoryPort;
@@ -70,7 +73,8 @@ public class ParliamentService implements ParliamentQueries {
 
     @Override
     public CompositionDto getComposition() {
-        final var seats = repositoryPort.countMembersByPartyWhereStatusContainsIgnoringCase(SERVING_STATUS_MARKER);
+        final var seats = repositoryPort
+                .countMembersByPartyWhereStatusContainsIgnoringCase(SERVING_STATUS_MARKER);
 
         return CompositionDto.builder()
                 .asOf(today().toString())
@@ -92,7 +96,8 @@ public class ParliamentService implements ParliamentQueries {
 
         return repositoryPort.readMembersOfParliament().stream()
                 .filter(m -> m.satInChamberDuring(term.termStart(), term.termEnd()))
-                .sorted(Comparator.comparing(m -> Objects.requireNonNullElse(m.sorteringsnamn(), "")))
+                .sorted(Comparator.comparing(
+                        m -> Objects.requireNonNullElse(m.sorteringsnamn(), "")))
                 .map(m -> toSummary(m, context))
                 .toList();
     }
@@ -112,9 +117,13 @@ public class ParliamentService implements ParliamentQueries {
                 .birthYear(parseInt(member.fodd_ar()))
                 .gender(member.kon())
                 .residence(blankToNull(member.iort()))
-                .runningNextElection(detail(member, "KandiderarINastaVal").map(Boolean::parseBoolean).orElse(null))
+                .runningNextElection(detail(member, "KandiderarINastaVal")
+                        .map(Boolean::parseBoolean)
+                        .orElse(null))
                 .contact(ContactDto.builder()
-                        .email(detail(member, "Officiell e-postadress").map(e -> e.replace("[på]", "@")).orElse(null))
+                        .email(detail(member, "Officiell e-postadress")
+                                .map(e -> e.replace("[på]", "@"))
+                                .orElse(null))
                         .phone(detail(member, "Tjänstetelefon").orElse(null))
                         .website(detail(member, "Webbsida").orElse(null))
                         .build())
@@ -153,7 +162,12 @@ public class ParliamentService implements ParliamentQueries {
     }
 
     private static VotesDto toVotes(MemberActivity activity) {
-        return new VotesDto(activity.votesYes(), activity.votesNo(), activity.votesAbsent(), activity.votesAbstain());
+        return new VotesDto(
+                activity.votesYes(),
+                activity.votesNo(),
+                activity.votesAbsent(),
+                activity.votesAbstain()
+        );
     }
 
     private List<AssignmentDto> toAssignments(MemberOfParliament member, Context context) {
@@ -185,7 +199,8 @@ public class ParliamentService implements ParliamentQueries {
                         u -> "%s, %s".formatted(u.roll_kod(), organName(u, context))))
                 .or(() -> firstOf(active, "partiuppdrag", u -> true,
                         u -> "%s (%s)".formatted(u.roll_kod(), u.organ_kod())))
-                .or(() -> firstOf(active, "uppdrag", u -> COMMITTEE_MEMBER_ROLE.equals(u.roll_kod()),
+                .or(() -> firstOf(active, "uppdrag",
+                        u -> COMMITTEE_MEMBER_ROLE.equals(u.roll_kod()),
                         u -> "%s, %s".formatted(u.roll_kod(), organName(u, context))))
                 .orElse(member.status());
     }
@@ -209,7 +224,10 @@ public class ParliamentService implements ParliamentQueries {
         final var intervals = member.chamberAssignments().stream()
                 .filter(u -> SERVING_ASSIGNMENT_STATUS.equals(u.status()))
                 .filter(u -> u.fromDate().isBefore(today))
-                .map(u -> new LocalDate[]{u.fromDate(), u.tomDate().isAfter(today) ? today : u.tomDate()})
+                .map(u -> new LocalDate[]{
+                        u.fromDate(),
+                        u.tomDate().isAfter(today) ? today : u.tomDate()
+                })
                 .sorted(Comparator.comparing(i -> i[0]))
                 .toList();
         long days = 0;
@@ -242,7 +260,10 @@ public class ParliamentService implements ParliamentQueries {
         return context.organNames().getOrDefault(code, code);
     }
 
-    private static List<PartySeats> toPartySeats(Map<String, Integer> seatsByParty, Map<String, Party> parties) {
+    private static List<PartySeats> toPartySeats(
+            Map<String, Integer> seatsByParty,
+            Map<String, Party> parties
+    ) {
         return seatsByParty.entrySet().stream()
                 .map(e -> {
                     final var party = parties.get(e.getKey());
@@ -303,7 +324,11 @@ public class ParliamentService implements ParliamentQueries {
 
     private Context buildContext() {
         final var activity = repositoryPort.readMemberActivity().stream()
-                .collect(Collectors.toMap(MemberActivity::intressentId, Function.identity(), (a, b) -> a));
+                .collect(Collectors.toMap(
+                        MemberActivity::intressentId,
+                        Function.identity(),
+                        (a, b) -> a
+                ));
 
         return new Context(partiesByCode(), repositoryPort.readOrganNames(), activity);
     }

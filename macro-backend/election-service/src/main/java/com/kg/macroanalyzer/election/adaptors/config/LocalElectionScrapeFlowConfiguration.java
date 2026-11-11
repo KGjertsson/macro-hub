@@ -30,7 +30,9 @@ import java.util.List;
 public class LocalElectionScrapeFlowConfiguration {
 
     @Bean("existingLocalElectionFinder")
-    public ExistingFinder<SeriesConfig, ConfigWithLocalElections> finder(ElectionRepositoryPort repositoryPort) {
+    public ExistingFinder<SeriesConfig, ConfigWithLocalElections> finder(
+            ElectionRepositoryPort repositoryPort
+    ) {
         return new ExistingLocalElectionFinder(repositoryPort);
     }
 
@@ -44,14 +46,18 @@ public class LocalElectionScrapeFlowConfiguration {
     }
 
     @Bean("localElectionPersister")
-    public Persister<ConfigWithLocalElections> persister(ElectionRepositoryPort repositoryPort, ScrapeQueuePort scrapeQueuePort) {
+    public Persister<ConfigWithLocalElections> persister(
+            ElectionRepositoryPort repositoryPort,
+            ScrapeQueuePort scrapeQueuePort
+    ) {
         return new LocalElectionPersister(repositoryPort, scrapeQueuePort);
     }
 
     @Bean("localElectionScrapeFlow")
     public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
-            @Qualifier("existingLocalElectionFinder") ExistingFinder<SeriesConfig, ConfigWithLocalElections> finder,
+            @Qualifier("existingLocalElectionFinder")
+            ExistingFinder<SeriesConfig, ConfigWithLocalElections> finder,
             @Qualifier("localElectionScraper") Scraper<ConfigWithLocalElections> scraper,
             @Qualifier("localElectionPersister") Persister<ConfigWithLocalElections> persister
     ) {

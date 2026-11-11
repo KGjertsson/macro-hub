@@ -14,7 +14,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-public class UniqueMacroPointCollector implements Collector<MacroPoint, Map<Temporal, MacroPoint>, List<MacroPoint>> {
+public class UniqueMacroPointCollector
+        implements Collector<MacroPoint, Map<Temporal, MacroPoint>, List<MacroPoint>> {
 
     @Override
     public Supplier<Map<Temporal, MacroPoint>> supplier() {
@@ -23,13 +24,15 @@ public class UniqueMacroPointCollector implements Collector<MacroPoint, Map<Temp
 
     @Override
     public BiConsumer<Map<Temporal, MacroPoint>, MacroPoint> accumulator() {
-        return (acc, element) -> acc.merge(element.date(), element, UniqueMacroPointCollector::pick);
+        return (acc, element) ->
+                acc.merge(element.date(), element, UniqueMacroPointCollector::pick);
     }
 
     @Override
     public BinaryOperator<Map<Temporal, MacroPoint>> combiner() {
         return (left, right) -> {
-            right.forEach((date, point) -> left.merge(date, point, UniqueMacroPointCollector::pick));
+            right.forEach((date, point) ->
+                    left.merge(date, point, UniqueMacroPointCollector::pick));
             return left;
         };
     }
@@ -44,9 +47,11 @@ public class UniqueMacroPointCollector implements Collector<MacroPoint, Map<Temp
         return Collections.emptySet();
     }
 
-    // Replacing a value in a LinkedHashMap keeps the key's position, so the earlier point's slot is reused
+    // Replacing a value in a LinkedHashMap keeps the key's position, so the earlier point's slot
+    // is reused
     private static MacroPoint pick(MacroPoint existing, MacroPoint incoming) {
-        // A period where the series starts part-way through takes its first observation, not the padding
+        // A period where the series starts part-way through takes its first observation, not the
+        // padding
         return existing.value() == null && incoming.value() != null
                 ? incoming
                 : existing;

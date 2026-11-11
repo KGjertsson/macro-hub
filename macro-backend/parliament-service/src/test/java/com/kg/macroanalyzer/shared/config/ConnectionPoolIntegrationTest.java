@@ -33,7 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * On its own container, because dropping every connection on the test profile's shared one would hit the other cached
+ * On its own container, because dropping every connection on the test profile's shared one would
+ * hit the other cached
  * contexts too. Stopped by Testcontainers' Ryuk, when the JVM exits.
  */
 @SpringBootTest(properties = "scheduler.enabled=false")
@@ -80,14 +81,17 @@ class ConnectionPoolIntegrationTest {
 
         // when
         final var dropped = dropTheServicesConnections();
-        // A connection used in the last 500 ms is handed out unchecked. After that the pool tests it, and replaces a dead one
+        // A connection used in the last 500 ms is handed out unchecked. After that the pool tests
+        // it, and replaces a dead one
         TimeUnit.SECONDS.sleep(1);
 
         // then: the first calls already work, with new connections
         assertFalse(dropped.isEmpty());
-        assertFalse(dropped.contains(dslContext.fetchSingle("select pg_backend_pid()").get(0, Integer.class)));
+        assertFalse(dropped.contains(
+                dslContext.fetchSingle("select pg_backend_pid()").get(0, Integer.class)));
         assertFalse(seriesConfigPort.readSeriesConfigList().isEmpty());
-        assertTrue(dslContext.transactionResult(configuration -> DSL.using(configuration).fetchCount(SERIES_CONFIGURATION)) > 0);
+        assertTrue(dslContext.transactionResult(
+                configuration -> DSL.using(configuration).fetchCount(SERIES_CONFIGURATION)) > 0);
         assertTrue(pool.getHikariPoolMXBean().getTotalConnections() <= 8);
     }
 
@@ -99,8 +103,13 @@ class ConnectionPoolIntegrationTest {
             DSL.using(configuration).update(SERIES_CONFIGURATION)
                     .set(SERIES_CONFIGURATION.CATEGORY, MARKER)
                     .execute();
-            assertEquals(0, CompletableFuture.supplyAsync(this::rowsWithTheMarker).get(10, TimeUnit.SECONDS));
-            assertTrue(DSL.using(configuration).fetchCount(SERIES_CONFIGURATION, SERIES_CONFIGURATION.CATEGORY.eq(MARKER)) > 0);
+            assertEquals(
+                    0,
+                    CompletableFuture.supplyAsync(this::rowsWithTheMarker).get(10, TimeUnit.SECONDS)
+            );
+            assertTrue(DSL.using(configuration)
+                    .fetchCount(
+                            SERIES_CONFIGURATION, SERIES_CONFIGURATION.CATEGORY.eq(MARKER)) > 0);
 
             throw new IllegalStateException("roll back");
         }));
@@ -109,7 +118,8 @@ class ConnectionPoolIntegrationTest {
         assertEquals(0, rowsWithTheMarker());
     }
 
-    // Port 1: nothing listens there. The arguments replace the test profile's and application.properties' database
+    // Port 1: nothing listens there. The arguments replace the test profile's and
+    // application.properties' database
     @Test
     void shouldFailAtStartUp_whenTheDatabaseIsUnreachable() {
         assertThatThrownBy(() -> new SpringApplicationBuilder(ParliamentApplication.class).run(
@@ -120,13 +130,15 @@ class ConnectionPoolIntegrationTest {
     }
 
     private int rowsWithTheMarker() {
-        return dslContext.fetchCount(SERIES_CONFIGURATION, SERIES_CONFIGURATION.CATEGORY.eq(MARKER));
+        return dslContext
+                .fetchCount(SERIES_CONFIGURATION, SERIES_CONFIGURATION.CATEGORY.eq(MARKER));
     }
 
     // As the container's superuser, on its own connection, so this one survives
     private static List<Integer> dropTheServicesConnections() throws SQLException {
         final var dropped = new ArrayList<Integer>();
-        try (final var connection = DriverManager.getConnection(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
+        try (final var connection = DriverManager.getConnection(
+                POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
              final var statement = connection.createStatement();
              final var result = statement.executeQuery("""
                      select pid, pg_terminate_backend(pid)

@@ -92,7 +92,9 @@ class AuthFlowHttpTest {
         postJson(PATH + "/register", emailBody(email));
 
         // then
-        assertTrue(mailedBody(email).contains("http://localhost:8081/konto/registrera#token="), mailedBody(email));
+        assertTrue(
+                mailedBody(email).contains("http://localhost:8081/konto/registrera#token="),
+                mailedBody(email));
     }
 
     @Test
@@ -202,7 +204,8 @@ class AuthFlowHttpTest {
 
         // then
         assertEquals(400, again.statusCode());
-        assertEquals("invalid_or_expired_token", JSON.readTree(again.body()).get("error").asString());
+        assertEquals(
+                "invalid_or_expired_token", JSON.readTree(again.body()).get("error").asString());
     }
 
     @Test
@@ -227,7 +230,8 @@ class AuthFlowHttpTest {
     void shouldRejectAShortPassword() throws Exception {
         // when
         final var response = postJson(PATH + "/register/complete",
-                JSON.writeValueAsString(new CompleteRegistrationRequest("token", uniqueName(), "short")));
+                JSON.writeValueAsString(
+                        new CompleteRegistrationRequest("token", uniqueName(), "short")));
 
         // then
         assertEquals(400, response.statusCode());
@@ -245,7 +249,8 @@ class AuthFlowHttpTest {
 
         // when
         final var reset = postJson(PATH + "/password-reset/complete",
-                JSON.writeValueAsString(new CompletePasswordResetRequest(mailedToken(email), OTHER_PASSWORD)));
+                JSON.writeValueAsString(
+                        new CompletePasswordResetRequest(mailedToken(email), OTHER_PASSWORD)));
 
         // then
         assertEquals(204, reset.statusCode());
@@ -262,7 +267,8 @@ class AuthFlowHttpTest {
 
         // when
         final var response = postJson(PATH + "/password-reset/complete",
-                JSON.writeValueAsString(new CompletePasswordResetRequest(mailedToken(email), OTHER_PASSWORD)));
+                JSON.writeValueAsString(
+                        new CompletePasswordResetRequest(mailedToken(email), OTHER_PASSWORD)));
 
         // then
         assertEquals(400, response.statusCode());
@@ -275,11 +281,13 @@ class AuthFlowHttpTest {
 
     private HttpResponse<String> complete(String token, String displayName) throws Exception {
         return postJson(PATH + "/register/complete",
-                JSON.writeValueAsString(new CompleteRegistrationRequest(token, displayName, PASSWORD)));
+                JSON.writeValueAsString(
+                        new CompleteRegistrationRequest(token, displayName, PASSWORD)));
     }
 
     private HttpResponse<String> login(String email, String password) throws Exception {
-        return postJson(PATH + "/login", JSON.writeValueAsString(new LoginRequest(email, password)));
+        return postJson(
+                PATH + "/login", JSON.writeValueAsString(new LoginRequest(email, password)));
     }
 
     private String emailBody(String email) {
@@ -310,7 +318,9 @@ class AuthFlowHttpTest {
     }
 
     private HttpResponse<String> get(String path) throws Exception {
-        return httpClient.send(HttpRequest.newBuilder(uri(path)).GET().build(), HttpResponse.BodyHandlers.ofString());
+        return httpClient.send(
+                HttpRequest.newBuilder(uri(path)).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
     }
 
     private HttpResponse<String> postJson(String path, String body) throws Exception {

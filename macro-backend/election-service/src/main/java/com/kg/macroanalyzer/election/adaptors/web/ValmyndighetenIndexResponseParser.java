@@ -8,8 +8,8 @@ import com.kg.macroanalyzer.shared.web.ScrapeException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-// index.md5 lists every result zip as "<md5>  ./<path>"; only final (slutlig) per-area files are kept,
-// which leaves out preliminary counts and the nationwide summaries (area code "OS").
+// index.md5 lists every result zip as "<md5>  ./<path>"; only final (slutlig) per-area files are
+// kept, which leaves out preliminary counts and the nationwide summaries (area code "OS").
 // The Riksdag has a single file (area code "00") that holds every valkrets
 public record ValmyndighetenIndexResponseParser(
         String baseUrl,
@@ -30,7 +30,11 @@ public record ValmyndighetenIndexResponseParser(
                 .map(String::strip)
                 .map(pattern::matcher)
                 .filter(m -> m.matches())
-                .map(m -> new LocalElectionFile(m.group(3), "%s/%s".formatted(baseUrl, m.group(2)), m.group(1)))
+                .map(m -> new LocalElectionFile(
+                        m.group(3),
+                        "%s/%s".formatted(baseUrl, m.group(2)),
+                        m.group(1)
+                ))
                 .toList();
     }
 

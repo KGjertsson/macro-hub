@@ -53,7 +53,9 @@ public class EnqueueService {
                 .toList();
 
         IntStream.range(0, toEnqueue.size())
-                .mapToObj(position -> ScrapeQueueItem.of(toEnqueue.get(position), queueTimeStrategy.scrapeDate(now, position)))
+                .mapToObj(position -> ScrapeQueueItem.of(
+                        toEnqueue.get(position),
+                        queueTimeStrategy.scrapeDate(now, position)))
                 .forEach(scrapeQueuePort::persistScrapeQueueItem);
     }
 

@@ -5,7 +5,8 @@ import com.kg.macroanalyzer.shared.web.ScrapeException;
 
 import java.net.HttpURLConnection;
 
-public record RiksdagenUrlConnectionBuilder() implements ConnectionBuilder<String, HttpURLConnection> {
+public record RiksdagenUrlConnectionBuilder()
+        implements ConnectionBuilder<String, HttpURLConnection> {
 
     @Override
     public HttpURLConnection buildConnection(String url) throws ScrapeException {

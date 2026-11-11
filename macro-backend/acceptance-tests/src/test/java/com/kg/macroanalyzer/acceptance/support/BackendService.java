@@ -78,14 +78,16 @@ public record BackendService(
             false
     );
 
-    public static final List<BackendService> ALL = List.of(REGIONAL_STATISTICS, MACRO_SERIES, PARLIAMENT, ELECTION, AUTH);
+    public static final List<BackendService> ALL =
+            List.of(REGIONAL_STATISTICS, MACRO_SERIES, PARLIAMENT, ELECTION, AUTH);
 
     public BackendService withEnvironment(Map<String, String> added) {
         final var merged = new HashMap<>(environment);
         merged.putAll(added);
 
         return new BackendService(
-                networkAlias, imageProperty, defaultImage, port, database, databasePassword, gatewayUrlVariable, Map.copyOf(merged), scrapes);
+                networkAlias, imageProperty, defaultImage, port, database, databasePassword,
+                gatewayUrlVariable, Map.copyOf(merged), scrapes);
     }
 
     public String image() {

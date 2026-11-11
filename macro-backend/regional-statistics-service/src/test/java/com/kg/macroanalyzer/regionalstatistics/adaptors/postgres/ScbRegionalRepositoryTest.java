@@ -49,19 +49,40 @@ public class ScbRegionalRepositoryTest {
         final var indicators = repository.readIndicators();
 
         // then
-        assertEquals("https://statistikdatabasen.scb.se/api/v2", config.map(SeriesConfig::scrapeUrl).orElseThrow());
+        assertEquals(
+                "https://statistikdatabasen.scb.se/api/v2",
+                config.map(SeriesConfig::scrapeUrl).orElseThrow()
+        );
         assertEquals("SCB", config.map(SeriesConfig::category).orElseThrow());
         assertEquals(26, indicators.size());
-        final var share65 = indicators.stream().filter(i -> i.id().equals("share_65_plus")).findFirst().orElseThrow();
+        final var share65 = indicators.stream()
+                .filter(i -> i.id().equals("share_65_plus"))
+                .findFirst()
+                .orElseThrow();
         assertEquals(List.of(ScbLevel.DESO, ScbLevel.REGSO), share65.levels());
-        assertEquals(List.of("000007Y7"), share65.numerator().getFirst().selection().get("ContentsCode"));
-        assertEquals(List.of("65-69", "70-74", "75-79", "80-"), share65.numerator().getFirst().selection().get("Alder"));
+        assertEquals(
+                List.of("000007Y7"),
+                share65.numerator().getFirst().selection().get("ContentsCode")
+        );
+        assertEquals(
+                List.of("65-69", "70-74", "75-79", "80-"),
+                share65.numerator().getFirst().selection().get("Alder")
+        );
         assertEquals(List.of("totalt"), share65.denominator().getFirst().selection().get("Alder"));
         assertEquals(100.0, share65.multiplier());
-        final var cars = indicators.stream().filter(i -> i.id().equals("cars_per_1000")).findFirst().orElseThrow();
+        final var cars = indicators.stream()
+                .filter(i -> i.id().equals("cars_per_1000"))
+                .findFirst()
+                .orElseThrow();
         assertEquals(Set.of("TAB6091", "TAB6589", "TAB6574"), cars.tables());
-        final var migration = indicators.stream().filter(i -> i.id().equals("net_migration")).findFirst().orElseThrow();
-        assertEquals(List.of("000004V8", "000004V9"), migration.numerator().getFirst().selection().get("ContentsCode"));
+        final var migration = indicators.stream()
+                .filter(i -> i.id().equals("net_migration"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(
+                List.of("000004V8", "000004V9"),
+                migration.numerator().getFirst().selection().get("ContentsCode")
+        );
         assertEquals(List.of(ScbLevel.REGSO), migration.levels());
         indicators.forEach(i -> assertFalse(i.numerator().isEmpty(), i.id()));
     }
@@ -69,7 +90,10 @@ public class ScbRegionalRepositoryTest {
     @Test
     void shouldUpsertStamps_andDropTheGivenTables() {
         // when
-        repository.writeTableStamps(Map.of("TAB0001", Instant.parse("2025-01-01T00:00:00Z"), "TAB0002", UPDATED), Set.of());
+        repository.writeTableStamps(
+                Map.of("TAB0001", Instant.parse("2025-01-01T00:00:00Z"), "TAB0002", UPDATED),
+                Set.of()
+        );
         repository.writeTableStamps(Map.of("TAB0001", UPDATED), Set.of("TAB0002"));
 
         // then
@@ -83,7 +107,9 @@ public class ScbRegionalRepositoryTest {
         // given
         final var indicator = indicator("households");
         final var many = IntStream.range(0, 12_000)
-                .mapToObj(i -> new ScbAreaValue(2023, GeoVersion.DESO_2018, "A%05d".formatted(i), i))
+                .mapToObj(i -> new ScbAreaValue(
+                        2023, GeoVersion.DESO_2018, "A%05d".formatted(i), i
+                ))
                 .toList();
         final var replacement = List.of(
                 new ScbAreaValue(2024, GeoVersion.DESO_2025, "0114A0010", 12.5),
@@ -91,12 +117,19 @@ public class ScbRegionalRepositoryTest {
         );
 
         // when
-        repository.writeIndicatorResult(result(indicator, many, Map.of("TAB6568", Instant.parse("2025-01-01T00:00:00Z"))));
+        repository.writeIndicatorResult(result(
+                indicator, many, Map.of("TAB6568", Instant.parse("2025-01-01T00:00:00Z"))
+        ));
         final var firstAvailability = repository.readAvailability("households");
-        repository.writeIndicatorResult(result(indicator, replacement, Map.of("TAB6568", UPDATED)));
+        repository.writeIndicatorResult(
+                result(indicator, replacement, Map.of("TAB6568", UPDATED))
+        );
 
         // then
-        assertEquals(List.of(new ScbAvailability("households", GeoVersion.DESO_2018, 2023)), firstAvailability);
+        assertEquals(
+                List.of(new ScbAvailability("households", GeoVersion.DESO_2018, 2023)),
+                firstAvailability
+        );
         assertEquals(
                 Set.of(
                         new ScbAvailability("households", GeoVersion.DESO_2025, 2024),
@@ -104,9 +137,17 @@ public class ScbRegionalRepositoryTest {
                 ),
                 new HashSet<>(repository.readAvailability("households"))
         );
-        assertTrue(repository.readAvailability().containsAll(repository.readAvailability("households")));
-        assertEquals(Map.of("0114A0010", 12.5), repository.readValues("households", GeoVersion.DESO_2025, 2024));
-        assertEquals(Map.of("0114R001", 0.0), repository.readValues("households", GeoVersion.REGSO_2025, 2024));
+        assertTrue(
+                repository.readAvailability().containsAll(repository.readAvailability("households"))
+        );
+        assertEquals(
+                Map.of("0114A0010", 12.5),
+                repository.readValues("households", GeoVersion.DESO_2025, 2024)
+        );
+        assertEquals(
+                Map.of("0114R001", 0.0),
+                repository.readValues("households", GeoVersion.REGSO_2025, 2024)
+        );
         assertEquals(Map.of(), repository.readValues("households", GeoVersion.DESO_2018, 2023));
         // Stamps are written separately, once every indicator of the run is stored
         assertFalse(repository.readTableStamps().containsKey("TAB6568"));
@@ -132,10 +173,17 @@ public class ScbRegionalRepositoryTest {
 
         // when
         repository.writeIndicatorResult(result(rental, rentalValues, Map.of()));
-        repository.writeIndicatorResult(result(index, List.of(new ScbAreaValue(2021, GeoVersion.REGSO_2020, "0114R001", 1.5)), Map.of()));
+        repository.writeIndicatorResult(result(
+                index,
+                List.of(new ScbAreaValue(2021, GeoVersion.REGSO_2020, "0114R001", 1.5)),
+                Map.of()
+        ));
         repository.writeIndicatorResult(result(index, List.of(), Map.of()));
         // the value insert fails, so the transaction rolls back the availability as well
-        assertThrows(RuntimeException.class, () -> repository.writeIndicatorResult(result(rental, duplicateKey, Map.of())));
+        assertThrows(
+                RuntimeException.class,
+                () -> repository.writeIndicatorResult(result(rental, duplicateKey, Map.of()))
+        );
 
         // then
         assertEquals(
@@ -150,9 +198,17 @@ public class ScbRegionalRepositoryTest {
         assertTrue(repository.readIndicatorsWithData().contains("share_rental"));
         assertFalse(repository.readIndicatorsWithData().contains("socioeconomic_index"));
         final var distinctValues = dslContext
-                .selectDistinct(SCB_AREA_VALUE.INDICATOR_ID, SCB_AREA_VALUE.GEO_VERSION, SCB_AREA_VALUE.YEAR)
+                .selectDistinct(
+                        SCB_AREA_VALUE.INDICATOR_ID,
+                        SCB_AREA_VALUE.GEO_VERSION,
+                        SCB_AREA_VALUE.YEAR
+                )
                 .from(SCB_AREA_VALUE)
-                .fetchSet(r -> new ScbAvailability(r.value1(), GeoVersion.fromCode(r.value2()).orElseThrow(), r.value3()));
+                .fetchSet(r -> new ScbAvailability(
+                        r.value1(),
+                        GeoVersion.fromCode(r.value2()).orElseThrow(),
+                        r.value3()
+                ));
         assertEquals(distinctValues, new HashSet<>(repository.readAvailability()));
     }
 

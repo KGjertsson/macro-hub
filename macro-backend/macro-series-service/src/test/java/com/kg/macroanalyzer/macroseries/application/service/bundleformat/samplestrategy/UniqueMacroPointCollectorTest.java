@@ -130,7 +130,10 @@ public class UniqueMacroPointCollectorTest {
     public void shouldMatchSequentialResult_whenCollectedInParallel() {
         // given
         final var points = IntStream.range(0, 20_000)
-                .mapToObj(i -> point(DAY_1.plusDays(i % 5_000), i < 5_000 && i % 3 == 0 ? null : (double) i))
+                .mapToObj(i -> point(
+                        DAY_1.plusDays(i % 5_000),
+                        i < 5_000 && i % 3 == 0 ? null : (double) i
+                ))
                 .toList();
 
         // when

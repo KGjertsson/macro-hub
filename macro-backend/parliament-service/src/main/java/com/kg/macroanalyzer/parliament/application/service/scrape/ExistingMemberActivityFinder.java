@@ -10,7 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Optional;
 
-// Activity is only fetched for members of the latest terms to keep the number of Riksdagen calls bounded
+// Activity is only fetched for members of the latest terms to keep the number of Riksdagen
+// calls bounded
 @Slf4j
 public record ExistingMemberActivityFinder(
         ParliamentRepositoryPort repositoryPort,
@@ -29,7 +30,8 @@ public record ExistingMemberActivityFinder(
                 .limit(termCount)
                 .toList();
         final var intressentIds = members.stream()
-                .filter(m -> terms.stream().anyMatch(t -> m.satInChamberDuring(t.termStart(), t.termEnd())))
+                .filter(m -> terms.stream()
+                        .anyMatch(t -> m.satInChamberDuring(t.termStart(), t.termEnd())))
                 .map(MemberOfParliament::intressent_id)
                 .distinct()
                 .toList();

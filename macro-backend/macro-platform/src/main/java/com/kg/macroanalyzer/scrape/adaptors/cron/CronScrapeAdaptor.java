@@ -30,7 +30,8 @@ public class CronScrapeAdaptor {
 
             switch (inPort.scrapeFromQueue(timeStamp)) {
                 case ScrapeRun.Completed completed -> log.info("Scrape completed");
-                case ScrapeRun.AlreadyRunning() -> log.info("Cron: scrape already in progress, skipping this run");
+                case ScrapeRun.AlreadyRunning() ->
+                        log.info("Cron: scrape already in progress, skipping this run");
             }
         } catch (Throwable t) {
             log.error("Received unexpected error when attempting to scrape items from queue", t);

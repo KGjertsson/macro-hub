@@ -8,7 +8,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public record ValmyndighetenConnectionBuilder() implements ConnectionBuilder<String, HttpURLConnection> {
+public record ValmyndighetenConnectionBuilder()
+        implements ConnectionBuilder<String, HttpURLConnection> {
 
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 120_000;
@@ -24,7 +25,8 @@ public record ValmyndighetenConnectionBuilder() implements ConnectionBuilder<Str
 
             return connection;
         } catch (IOException | URISyntaxException | IllegalArgumentException e) {
-            throw new ScrapeException("Failed to build Valmyndigheten connection: " + e.getMessage());
+            throw new ScrapeException(
+                    "Failed to build Valmyndigheten connection: " + e.getMessage());
         }
     }
 

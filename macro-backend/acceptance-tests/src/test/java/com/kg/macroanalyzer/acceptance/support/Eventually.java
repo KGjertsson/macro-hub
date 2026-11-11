@@ -19,7 +19,8 @@ public class Eventually {
             } catch (AssertionError lastFailure) {
                 if (Instant.now().isAfter(deadline)) {
                     throw new AssertionError(
-                            "%s, not within %s. Last try: %s".formatted(expectation, timeout, lastFailure.getMessage()),
+                            "%s, not within %s. Last try: %s"
+                                    .formatted(expectation, timeout, lastFailure.getMessage()),
                             lastFailure);
                 }
             }

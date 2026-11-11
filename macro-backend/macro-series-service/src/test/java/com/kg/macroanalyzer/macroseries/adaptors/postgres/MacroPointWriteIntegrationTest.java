@@ -86,8 +86,14 @@ class MacroPointWriteIntegrationTest {
         write(debt, point(DAY_1, 3.0));
 
         // then
-        assertEquals(List.of(point(DAY_1, 3.0)), repositoryPort.readMacroSeries(debt).macroPoints());
-        assertEquals(List.of(point(DAY_1, 2.0)), repositoryPort.readMacroSeries(surplus).macroPoints());
+        assertEquals(
+                List.of(point(DAY_1, 3.0)),
+                repositoryPort.readMacroSeries(debt).macroPoints()
+        );
+        assertEquals(
+                List.of(point(DAY_1, 2.0)),
+                repositoryPort.readMacroSeries(surplus).macroPoints()
+        );
     }
 
     @Test
@@ -108,9 +114,16 @@ class MacroPointWriteIntegrationTest {
         final var revisedAfter = after.getFirst();
         assertEquals(9.0, revisedAfter.getValue(FED_SERIES.VALUE));
         assertEquals(revisedBefore.getValue(FED_SERIES.ID), revisedAfter.getValue(FED_SERIES.ID));
-        assertEquals(revisedBefore.getValue(FED_SERIES.GLOBAL_ID), revisedAfter.getValue(FED_SERIES.GLOBAL_ID));
-        assertEquals(revisedBefore.getValue(FED_SERIES.CREATED), revisedAfter.getValue(FED_SERIES.CREATED));
-        assertTrue(revisedAfter.getValue(FED_SERIES.UPDATED).isAfter(revisedBefore.getValue(FED_SERIES.UPDATED)));
+        assertEquals(
+                revisedBefore.getValue(FED_SERIES.GLOBAL_ID),
+                revisedAfter.getValue(FED_SERIES.GLOBAL_ID)
+        );
+        assertEquals(
+                revisedBefore.getValue(FED_SERIES.CREATED),
+                revisedAfter.getValue(FED_SERIES.CREATED)
+        );
+        assertTrue(revisedAfter.getValue(FED_SERIES.UPDATED)
+                .isAfter(revisedBefore.getValue(FED_SERIES.UPDATED)));
         assertEquals(before.getLast(), after.getLast());
     }
 
@@ -140,7 +153,10 @@ class MacroPointWriteIntegrationTest {
         scrape(config, point(DAY_1, 1.0));
 
         // then
-        assertEquals(List.of(point(DAY_1, 1.0)), repositoryPort.readMacroSeries(config).macroPoints());
+        assertEquals(
+                List.of(point(DAY_1, 1.0)),
+                repositoryPort.readMacroSeries(config).macroPoints()
+        );
     }
 
     @Test
@@ -167,7 +183,10 @@ class MacroPointWriteIntegrationTest {
         write(config, point(DAY_1, 1.0), point(DAY_1, 2.0));
 
         // then
-        assertEquals(List.of(point(DAY_1, 2.0)), repositoryPort.readMacroSeries(config).macroPoints());
+        assertEquals(
+                List.of(point(DAY_1, 2.0)),
+                repositoryPort.readMacroSeries(config).macroPoints()
+        );
     }
 
     @Test
@@ -186,8 +205,14 @@ class MacroPointWriteIntegrationTest {
         });
 
         // then
-        assertEquals(points, repositoryPort.readMacroSeries(fed).macroPoints().stream().sorted().toList());
-        assertEquals(points, repositoryPort.readMacroSeries(bond).macroPoints().stream().sorted().toList());
+        assertEquals(
+                points,
+                repositoryPort.readMacroSeries(fed).macroPoints().stream().sorted().toList()
+        );
+        assertEquals(
+                points,
+                repositoryPort.readMacroSeries(bond).macroPoints().stream().sorted().toList()
+        );
     }
 
     @Test
@@ -216,7 +241,8 @@ class MacroPointWriteIntegrationTest {
 
         // then
         assertThrows(DuplicateKeyException.class, () -> dslContext.insertInto(
-                FED_SERIES, FED_SERIES.GLOBAL_ID, FED_SERIES.SERIES_NAME, FED_SERIES.VALUE, FED_SERIES.DATE
+                FED_SERIES,
+                FED_SERIES.GLOBAL_ID, FED_SERIES.SERIES_NAME, FED_SERIES.VALUE, FED_SERIES.DATE
         ).values(UUID.randomUUID(), FED_NAME, 2.0, DAY_1).execute());
         assertThrows(DuplicateKeyException.class, () -> dslContext.insertInto(
                 INT_GOV_BOND_10_YEAR_USA,
@@ -232,8 +258,10 @@ class MacroPointWriteIntegrationTest {
 
     private ScrapeResult scrape(SeriesConfig config, MacroPoint... scraped) throws Exception {
         final var scraper = new MacroPointScraper(ignored -> Stream.of(scraped));
-        final var persister = new MacroPointPersister(repositoryPort, Mockito.mock(ScrapeQueuePort.class));
-        final var existing = new ExistingMacroPointFinder(repositoryPort).findExisting(config).orElseThrow();
+        final var persister =
+                new MacroPointPersister(repositoryPort, Mockito.mock(ScrapeQueuePort.class));
+        final var existing =
+                new ExistingMacroPointFinder(repositoryPort).findExisting(config).orElseThrow();
 
         return persister.persist(scraper.scrape(existing).orElseThrow());
     }

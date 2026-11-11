@@ -40,7 +40,8 @@ class ManualScrapePathsHttpTest {
     @Test
     void shouldAcceptEnqueue_onTheServicesOwnPrefix() throws Exception {
         // An unknown name is accepted and ignored, so this doesn't queue a real scrape
-        assertEquals(202, post("/macro-analyzer/scrape/election/enqueue?name=unknown", ADMIN_TOKEN));
+        assertEquals(
+                202, post("/macro-analyzer/scrape/election/enqueue?name=unknown", ADMIN_TOKEN));
     }
 
     @Test
@@ -55,15 +56,18 @@ class ManualScrapePathsHttpTest {
 
     @Test
     void shouldReject_anInvalidToken() throws Exception {
-        assertEquals(401, post("/macro-analyzer/scrape/election/enqueue?name=unknown", "not-a-token"));
+        assertEquals(
+                401, post("/macro-analyzer/scrape/election/enqueue?name=unknown", "not-a-token"));
     }
 
     @Test
     void shouldForbid_aUserWhoIsNotAnAdmin() throws Exception {
-        assertEquals(403, post("/macro-analyzer/scrape/election/enqueue?name=unknown", USER_TOKEN));
+        assertEquals(
+                403, post("/macro-analyzer/scrape/election/enqueue?name=unknown", USER_TOKEN));
     }
 
-    // Spring's routing ignores a ;parameter, so it must not be a way around the path match of the filter chain
+    // Spring's routing ignores a ;parameter, so it must not be a way around the path match of the
+    // filter chain
     @Test
     void shouldNotAccept_aPathParameter() throws Exception {
         assertEquals(400, post("/macro-analyzer/scrape/election/enqueue;x=1?name=unknown", null));
@@ -72,7 +76,8 @@ class ManualScrapePathsHttpTest {
     @Test
     void shouldAnswerAPreflight_withoutAToken() throws Exception {
         // given
-        final var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/macro-analyzer/scrape/election/enqueue"))
+        final var request = HttpRequest.newBuilder(URI.create(
+                        "http://localhost:" + port + "/macro-analyzer/scrape/election/enqueue"))
                 .method("OPTIONS", HttpRequest.BodyPublishers.noBody())
                 .header("Origin", "http://example.test")
                 .header("Access-Control-Request-Method", "POST")
@@ -84,7 +89,9 @@ class ManualScrapePathsHttpTest {
 
         // then
         assertEquals(200, response.statusCode());
-        assertEquals("*", response.headers().firstValue("Access-Control-Allow-Origin").orElseThrow());
+        assertEquals(
+                "*",
+                response.headers().firstValue("Access-Control-Allow-Origin").orElseThrow());
     }
 
     @BeforeEach
@@ -95,7 +102,11 @@ class ManualScrapePathsHttpTest {
     }
 
     private static Jwt tokenWithRole(String role) {
-        return Jwt.withTokenValue("token").header("alg", "ES256").subject("user").claim("roles", List.of(role)).build();
+        return Jwt.withTokenValue("token")
+                .header("alg", "ES256")
+                .subject("user")
+                .claim("roles", List.of(role))
+                .build();
     }
 
     private int post(String path, String token) throws IOException, InterruptedException {
@@ -105,7 +116,8 @@ class ManualScrapePathsHttpTest {
             request.header("Authorization", "Bearer " + token);
         }
 
-        return httpClient.send(request.build(), HttpResponse.BodyHandlers.discarding()).statusCode();
+        return httpClient.send(request.build(), HttpResponse.BodyHandlers.discarding())
+                .statusCode();
     }
 
 }

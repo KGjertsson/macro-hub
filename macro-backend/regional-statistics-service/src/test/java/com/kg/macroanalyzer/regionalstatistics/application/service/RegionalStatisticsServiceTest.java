@@ -51,10 +51,12 @@ public class RegionalStatisticsServiceTest {
     void shouldListIndicators_withAvailabilityPerLevel_newestYearFirst() {
         // given
         final var population = ScbIndicator.builder()
-                .id("population").label("Folkmängd").description("d").category("Befolkning").unit("antal").decimals(0)
+                .id("population").label("Folkmängd").description("d").category("Befolkning")
+                .unit("antal").decimals(0)
                 .build();
         final var turnout = ScbIndicator.builder()
-                .id("turnout_riksdag").label("Valdeltagande").description("d").category("Val").unit("%").decimals(1)
+                .id("turnout_riksdag").label("Valdeltagande").description("d").category("Val")
+                .unit("%").decimals(1)
                 .build();
 
         // when
@@ -63,7 +65,10 @@ public class RegionalStatisticsServiceTest {
         final var indicators = service.getRegionalIndicators();
 
         // then
-        assertEquals(List.of("population", "turnout_riksdag"), indicators.stream().map(i -> i.id()).toList());
+        assertEquals(
+                List.of("population", "turnout_riksdag"),
+                indicators.stream().map(i -> i.id()).toList()
+        );
         assertEquals(
                 Map.of(
                         "DeSO", List.of(
@@ -75,16 +80,24 @@ public class RegionalStatisticsServiceTest {
                 ),
                 indicators.getFirst().availability()
         );
-        assertEquals(Map.of("DeSO", List.of(), "RegSO", List.of()), indicators.get(1).availability());
-        assertEquals(List.of("DeSO", "RegSO"), List.copyOf(indicators.getFirst().availability().keySet()));
+        assertEquals(
+                Map.of("DeSO", List.of(), "RegSO", List.of()),
+                indicators.get(1).availability()
+        );
+        assertEquals(
+                List.of("DeSO", "RegSO"),
+                List.copyOf(indicators.getFirst().availability().keySet())
+        );
     }
 
     @Test
     void shouldUseTheLatestYear_andTheNewerVersion_whenNoYearIsGiven() {
         // when
         when(repositoryPort.readScbAvailability("population")).thenReturn(POPULATION);
-        when(repositoryPort.readScbValues("population", GeoVersion.DESO_2025, 2025)).thenReturn(Map.of("0114A0010", 1565.0));
-        final var values = service.getRegionalValues("population", ScbLevel.DESO, null).orElseThrow();
+        when(repositoryPort.readScbValues("population", GeoVersion.DESO_2025, 2025))
+                .thenReturn(Map.of("0114A0010", 1565.0));
+        final var values =
+                service.getRegionalValues("population", ScbLevel.DESO, null).orElseThrow();
 
         // then
         assertEquals("population", values.indicator());
@@ -98,8 +111,10 @@ public class RegionalStatisticsServiceTest {
     void shouldUseTheVersionOfTheRequestedYear() {
         // when
         when(repositoryPort.readScbAvailability("population")).thenReturn(POPULATION);
-        when(repositoryPort.readScbValues("population", GeoVersion.DESO_2018, 2023)).thenReturn(Map.of("0114A0010", 1500.0));
-        final var values = service.getRegionalValues("population", ScbLevel.DESO, 2023).orElseThrow();
+        when(repositoryPort.readScbValues("population", GeoVersion.DESO_2018, 2023))
+                .thenReturn(Map.of("0114A0010", 1500.0));
+        final var values =
+                service.getRegionalValues("population", ScbLevel.DESO, 2023).orElseThrow();
 
         // then
         assertEquals("DeSO2018", values.geoVersion());

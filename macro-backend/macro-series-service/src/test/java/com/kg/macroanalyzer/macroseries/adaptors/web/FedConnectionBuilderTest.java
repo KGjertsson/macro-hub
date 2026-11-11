@@ -39,7 +39,10 @@ class FedConnectionBuilderTest {
         final var builder = new FedConnectionBuilder("key");
 
         // when && then
-        final var exception = assertThrows(ScrapeException.class, () -> builder.buildConnection(seriesConfig));
+        final var exception = assertThrows(
+                ScrapeException.class,
+                () -> builder.buildConnection(seriesConfig)
+        );
         assertTrue(exception.getMessage().contains("Failed to build Fed connection"));
     }
 

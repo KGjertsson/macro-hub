@@ -38,17 +38,24 @@ class AuthServiceTest {
         when(hasher.hash(anyString())).thenReturn(HASH_OF_NO_PASSWORD);
         service = new AuthService(repository, hasher, mock(AccessTokenPort.class), mail,
                 Clock.fixed(Instant.parse("2026-11-09T12:00:00Z"), ZoneOffset.UTC),
-                Duration.ofDays(30), Duration.ofHours(1), Duration.ofMinutes(1), "http://localhost:8081/", "");
+                Duration.ofDays(30),
+                Duration.ofHours(1),
+                Duration.ofMinutes(1),
+                "http://localhost:8081/",
+                "");
     }
 
-    // Skipping the hash would make an unknown address answer much faster, which tells a caller which addresses have accounts
+    // Skipping the hash would make an unknown address answer much faster, which tells a
+    // caller which addresses have accounts
     @Test
     void shouldStillHash_whenTheAddressHasNoAccount() {
         // given
         when(repository.findCredential("anna@example.se")).thenReturn(Optional.empty());
 
         // when, then
-        assertThrows(InvalidCredentialsException.class, () -> service.login("anna@example.se", "a-long-enough-password"));
+        assertThrows(
+                InvalidCredentialsException.class,
+                () -> service.login("anna@example.se", "a-long-enough-password"));
         verify(hasher).matches("a-long-enough-password", HASH_OF_NO_PASSWORD);
     }
 
@@ -56,7 +63,8 @@ class AuthServiceTest {
     void shouldNotMail_whenTheThrottleRefusesTheToken() {
         // given
         when(repository.userExists("anna@example.se")).thenReturn(false);
-        when(repository.saveEmailTokenUnlessIssuedSince(any(), eq(Instant.parse("2026-11-09T11:59:00Z")))).thenReturn(false);
+        when(repository.saveEmailTokenUnlessIssuedSince(
+                any(), eq(Instant.parse("2026-11-09T11:59:00Z")))).thenReturn(false);
 
         // when
         service.requestRegistration("anna@example.se");

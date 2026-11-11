@@ -46,17 +46,22 @@ public class ZipEntryGetterTest {
         when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(zip));
 
         // then
-        assertThrows(ScrapeException.class, () -> new ZipEntryGetter("mandatfordelning").get(connection));
+        assertThrows(
+                ScrapeException.class,
+                () -> new ZipEntryGetter("mandatfordelning").get(connection));
     }
 
     @Test
     void shouldThrow_whenUpstreamRateLimits() throws Exception {
         // given
         when(connection.getResponseCode()).thenReturn(429);
-        when(connection.getErrorStream()).thenReturn(new ByteArrayInputStream("slow down".getBytes(StandardCharsets.UTF_8)));
+        when(connection.getErrorStream())
+                .thenReturn(new ByteArrayInputStream("slow down".getBytes(StandardCharsets.UTF_8)));
 
         // then
-        final var exception = assertThrows(ScrapeException.class, () -> new ZipEntryGetter("mandatfordelning").get(connection));
+        final var exception = assertThrows(
+                ScrapeException.class,
+                () -> new ZipEntryGetter("mandatfordelning").get(connection));
         assertEquals("HTTP 429 from upstream: slow down\n", exception.getMessage());
     }
 

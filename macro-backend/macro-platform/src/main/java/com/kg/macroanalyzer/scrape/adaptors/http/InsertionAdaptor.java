@@ -18,7 +18,8 @@ import java.util.List;
 
 @Slf4j
 @RestController
-// Every service sets its own prefix for the gateway to route on. There is no default: a service without one doesn't start
+// Every service sets its own prefix for the gateway to route on. There is no default: a service
+// without one doesn't start
 @RequestMapping("${macro.scrape.path-prefix}")
 public class InsertionAdaptor {
 
