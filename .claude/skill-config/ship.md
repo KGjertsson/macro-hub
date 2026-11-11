@@ -13,10 +13,10 @@ Read by the `ship` skill. Everything here applies only to this repository.
 
 ## Checks before every push
 
-Run the checks for what you changed:
+Run the checks for what you changed. They all fit in the 600000 ms foreground timeout.
 
 - Backend: `JAVA_HOME=~/.sdkman/candidates/java/current mvn test` from `macro-backend/`, with Docker running.
-- Backend Java: follow the `immutable-java` skill (`~/.claude/skills/immutable-java/SKILL.md`) while writing it, and run its check from the root of your worktree: `python3 -I ~/.claude/skills/immutable-java/check.py $(git diff --name-only origin/main...HEAD)`. It must report no errors.
+- Backend Java: follow the `immutable-java` skill (`~/.claude/skills/immutable-java/SKILL.md`) while writing it, and run its check from the root of your worktree: `python3 -I ~/.claude/skills/immutable-java/check.py $(git diff --name-only origin/main...HEAD)`. It must report no errors. If that path is missing, the skill isn't linked: link it as the agentic-skills README says, rather than skip the check.
 - Frontend: `PATH=~/.nvm/versions/node/v22.22.1/bin:$PATH npm run build` and `npm run lint` from `macro-frontend/`. Lint must exit 0, as CI enforces.
 
 ## Extra checks
