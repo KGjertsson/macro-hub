@@ -1,28 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import type { ExpressionSpecification, GeoJSONSource, LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import type { ExpressionSpecification, GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import type { BBox } from 'geojson';
 import { Loader2 } from 'lucide-react';
 import { AreaGeometry } from '@/api/regionalStatistics';
 import { RegionalIndicator } from '@/models/RegionalStatistics';
+import { applySwedishPlaceNames, createAreaPopup, createSwedenMap, fitArea, popupContent, whenState } from '@/components/maplibre/swedenMap';
 import { borderColor, Classification, formatValue, NO_DATA_COLOR } from './classification';
 
-// Bundling moves the library away from its worker file, so point it at the copy Vite emits
-maplibregl.setWorkerUrl(workerUrl);
-
-const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
-const SWEDEN_BOUNDS: LngLatBoundsLike = [[10.5, 55.0], [24.3, 69.1]];
 const SOURCE = 'areas';
 const FILL_LAYER = 'areas-fill';
 const BORDER_LAYER = 'areas-border';
 const HOVER_LAYER = 'areas-hover';
 const SELECTED_CASING_LAYER = 'areas-selected-casing';
 const SELECTED_LAYER = 'areas-selected';
-// Highlights use feature state; changing a layer filter would make MapLibre re-parse the whole source
-const whenState = (flag: string): ExpressionSpecification => ['case', ['boolean', ['feature-state', flag], false], 1, 0];
-
 // A new object moves the map even when it points at the same place again
 export type MapFocus =
   | { kind: 'bounds'; bbox: BBox }
@@ -46,19 +37,6 @@ interface RegionalMapProps {
   ariaLabel: string;
 }
 
-const popupContent = (name: string, value: string) => {
-  const root = document.createElement('div');
-  // The popup is white, so it needs dark ink regardless of the page's text colour
-  root.className = 'text-sm text-neutral-900';
-  const title = document.createElement('div');
-  title.className = 'font-semibold';
-  title.textContent = name;
-  const body = document.createElement('div');
-  body.textContent = value;
-  root.append(title, body);
-  return root;
-};
-
 const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ariaLabel }: RegionalMapProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -74,18 +52,10 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
   selectedRef.current = selectedCode;
 
   useEffect(() => {
-    const map = new maplibregl.Map({
-      container: containerRef.current as HTMLDivElement,
-      style: STYLE_URL,
-      bounds: SWEDEN_BOUNDS,
-      fitBoundsOptions: { padding: 16 },
-      attributionControl: {
-        customAttribution: '<a href="https://www.scb.se/" target="_blank" rel="noopener">SCB</a>',
-      },
-    });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-    map.dragRotate.disable();
-    map.touchZoomRotate.disableRotation();
+    const map = createSwedenMap(
+      containerRef.current as HTMLDivElement,
+      '<a href="https://www.scb.se/" target="_blank" rel="noopener">SCB</a>',
+    );
     mapRef.current = map;
 
     const setHovered = (code: string | null) => {
@@ -101,17 +71,11 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
       hoveredRef.current = code;
     };
 
-    const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 8, className: 'regional-map-popup' });
+    const popup = createAreaPopup();
     popupRef.current = popup;
 
     map.on('load', () => {
-      const layers = map.getStyle().layers;
-      // The style labels places with their English names ("Sweden"); prefer the Swedish ones
-      layers
-        .filter(layer => layer.type === 'symbol' && JSON.stringify(layer.layout?.['text-field'] ?? '').includes('name_en'))
-        .forEach(layer => map.setLayoutProperty(layer.id, 'text-field', ['coalesce', ['get', 'name:sv'], ['get', 'name:latin'], ['get', 'name']]));
-      // Areas go under the basemap's labels so place names stay readable
-      const firstLabel = layers.find(layer => layer.type === 'symbol')?.id;
+      const firstLabel = applySwedishPlaceNames(map);
       map.addSource(SOURCE, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
@@ -266,8 +230,7 @@ const RegionalMap = ({ data, loading, selectedCode, onSelect, focus, marker, ari
       return;
     }
     if (focus.kind === 'bounds') {
-      const [minX, minY, maxX, maxY] = focus.bbox;
-      map.fitBounds([[minX, minY], [maxX, maxY]], { padding: 60, maxZoom: 14 });
+      fitArea(map, focus.bbox, 14);
     } else {
       map.flyTo({ center: focus.lngLat, zoom: 14 });
     }
