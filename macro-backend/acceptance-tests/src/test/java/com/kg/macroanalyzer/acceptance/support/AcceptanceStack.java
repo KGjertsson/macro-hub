@@ -27,7 +27,7 @@ public final class AcceptanceStack implements AutoCloseable {
     private static final String POSTGRES_ALIAS = "postgres";
     private static final String POSTGRES_SUPERUSER = "macrouser";
     private static final String POSTGRES_INIT_PROPERTY = "acceptance.postgres-init";
-    private static final String POSTGRES_INIT_DEFAULT = "../macro-infra/docker/postgres-init";
+    private static final String POSTGRES_INIT_DEFAULT = "../../macro-infra/docker/postgres-init";
 
     private static final String WIREMOCK_IMAGE = "wiremock/wiremock:3.13.2";
     private static final String SOURCES_ALIAS = "sources";
@@ -264,7 +264,7 @@ public final class AcceptanceStack implements AutoCloseable {
             return image;
         } catch (NotFoundException e) {
             throw new IllegalStateException(
-                    "No image %s. Build it with macro-backend/macro-infra/scripts/acceptance-test.sh".formatted(image), e);
+                    "No image %s. Build it with macro-infra/scripts/acceptance-test.sh".formatted(image), e);
         }
     }
 

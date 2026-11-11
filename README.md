@@ -59,8 +59,8 @@ The backend is five services and a shared library, in `macro-backend/`, and the 
 
 1. `cp macro-backend/macro-series-service/.env.example macro-backend/macro-series-service/.env`. The keys in it are only needed to scrape Riksbanken and Fed series
 2. Build the backend images: `(cd macro-backend && ./mvnw clean package && docker build -t regional-statistics-service regional-statistics-service && docker build -t macro-series-service macro-series-service && docker build -t parliament-service parliament-service && docker build -t election-service election-service && docker build -t auth-service auth-service)`
-3. Start everything: `docker compose --env-file macro-backend/macro-series-service/.env -f macro-backend/macro-infra/docker/docker-compose-all.yml up -d --build`, and open `http://localhost:8081`
-4. Run `macro-backend/macro-infra/scripts/scrape-all.sh` to populate the databases, which takes about 8 minutes
+3. Start everything: `docker compose --env-file macro-backend/macro-series-service/.env -f macro-infra/docker/docker-compose-all.yml up -d --build`, and open `http://localhost:8081`
+4. Run `macro-infra/scripts/scrape-all.sh` to populate the databases, which takes about 8 minutes
 
 `docs/adrs/` records the larger decisions, and `docs/adding-a-service.md` says how to add a service.
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 # One database and role per service. Mounted into /docker-entrypoint-initdb.d, which Postgres only runs on an
 # empty data volume. For an existing volume, run it by hand. It can be re-run, and picks up a changed password:
-#   docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/01-service-databases.sh
+#   docker exec -i macrohub-postgres sh -s < macro-infra/docker/postgres-init/01-service-databases.sh
 set -eu
 
 run_psql() {

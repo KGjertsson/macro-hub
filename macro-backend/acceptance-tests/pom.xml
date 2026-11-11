@@ -76,7 +76,7 @@
                     </includes>
                     <failIfNoTests>true</failIfNoTests>
                     <systemPropertyVariables>
-                        <acceptance.postgres-init>${project.basedir}/../macro-infra/docker/postgres-init</acceptance.postgres-init>
+                        <acceptance.postgres-init>${project.basedir}/../../macro-infra/docker/postgres-init</acceptance.postgres-init>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

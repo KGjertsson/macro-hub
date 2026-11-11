@@ -4,7 +4,7 @@
 # Usage: acceptance-test.sh [maven arguments], for example -Dit.test=MacroSeriesAcceptanceTest
 set -eu
 
-backend="$(cd "$(dirname "$0")/../.." && pwd)"
+backend="$(cd "$(dirname "$0")/../../macro-backend" && pwd)"
 cd "$backend"
 
 # Pulled while the images build, so the test classes don't all wait on the same pull when they start. Testcontainers

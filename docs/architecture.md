@@ -1,7 +1,7 @@
 # Architecture diagram
 
 The components that run, and how they connect. It is what Docker Compose starts
-(`macro-backend/macro-infra/docker/docker-compose-all.yml`).
+(`macro-infra/docker/docker-compose-all.yml`).
 
 ```
   +---------------------+     direct from the browser, not through the gateway:

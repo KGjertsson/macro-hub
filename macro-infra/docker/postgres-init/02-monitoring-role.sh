@@ -1,7 +1,7 @@
 #!/bin/sh
 # For postgres_exporter. Postgres only runs this on an empty data volume. For an existing volume, run it by hand. It can
 # be re-run, and picks up a changed password:
-#   docker exec -i macrohub-postgres sh -s < macro-backend/macro-infra/docker/postgres-init/02-monitoring-role.sh
+#   docker exec -i macrohub-postgres sh -s < macro-infra/docker/postgres-init/02-monitoring-role.sh
 set -eu
 
 # \getenv keeps the password off psql's command line. If a statement fails, neither the server log nor psql's message
