@@ -17,8 +17,10 @@ java=$(git diff --cached --name-only --diff-filter=ACMR -- 'macro-backend/*.java
 if [ -n "$java" ]; then
   # Checkstyle reads the files on disk, so unstaged changes to a staged file are checked too.
   # shellcheck disable=SC2086
-  if ! macro-infra/scripts/checkstyle.sh $java; then
-    echo "pre-commit: Checkstyle violations above (macro-backend/checkstyle.xml)" >&2
-    exit 1
-  fi
+  macro-infra/scripts/checkstyle.sh $java
+  case $? in
+    0) ;;
+    1) echo "pre-commit: Checkstyle violations above (macro-backend/checkstyle.xml)" >&2; exit 1 ;;
+    *) echo "pre-commit: Checkstyle could not run, see Maven's output above" >&2; exit 1 ;;
+  esac
 fi

@@ -2,6 +2,7 @@
 # Usage: macro-infra/scripts/checkstyle.sh [file...]
 # Checks the given Java files against macro-backend/checkstyle.xml, or the whole backend without
 # arguments, and prints each violation as <path from the repo root>:<line>: <message>.
+# Exits 1 on violations, and 3 when Maven fails for another reason.
 set -eu
 
 root=$(cd "$(dirname "$0")/../.." && pwd)
@@ -37,7 +38,7 @@ for module in $modules; do
       "s#^\[ERROR\] \(src/[^:]*\.java\):\[\([0-9]*\)[^]]*\] ([a-z]*) \(.*\)#macro-backend/$module/\1:\2: \3#p")
     if [ -z "$found" ]; then
       printf '%s\n' "$output" >&2
-      exit 1
+      exit 3
     fi
     violations="$violations$found
 "

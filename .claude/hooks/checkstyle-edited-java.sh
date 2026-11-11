@@ -13,8 +13,17 @@ checkout=$(git -C "$(dirname "$file")" rev-parse --show-toplevel 2>/dev/null) ||
 script="$checkout/macro-infra/scripts/checkstyle.sh"
 [ -x "$script" ] || exit 0
 
-if ! violations=$("$script" "$file" 2>&1); then
-  echo "Checkstyle (macro-backend/checkstyle.xml) rejects $file, fix it:" >&2
-  printf '%s\n' "$violations" | sed 's/^/  /' >&2
-  exit 2
-fi
+output=$("$script" "$file" 2>&1)
+case $? in
+  0) ;;
+  1)
+    echo "Checkstyle (macro-backend/checkstyle.xml) rejects $file, fix it:" >&2
+    printf '%s\n' "$output" | sed 's/^/  /' >&2
+    exit 2
+    ;;
+  *)
+    echo "Checkstyle could not run on $file:" >&2
+    printf '%s\n' "$output" | tail -20 >&2
+    exit 1
+    ;;
+esac
