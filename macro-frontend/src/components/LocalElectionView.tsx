@@ -118,17 +118,17 @@ const ResultPanel = ({ summary }: { summary: LocalElectionSummary }) => {
         <h2 className="text-2xl font-bold text-foreground">{summary.name}</h2>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 text-center">
+      <div className="grid grid-cols-3 gap-3 lg:max-xl:gap-2 text-center">
         <div>
-          <div className="text-xl font-bold text-foreground">{summary.largestParty ?? '–'}</div>
+          <div className="text-xl lg:max-xl:text-lg font-bold text-foreground">{summary.largestParty ?? '–'}</div>
           <div className="text-xs text-muted-foreground">Största parti</div>
         </div>
         <div>
-          <div className="text-xl font-bold text-foreground">{summary.totalSeats}</div>
+          <div className="text-xl lg:max-xl:text-lg font-bold text-foreground">{summary.totalSeats}</div>
           <div className="text-xs text-muted-foreground">Mandat</div>
         </div>
         <div>
-          <div className="text-xl font-bold text-foreground">
+          <div className="text-xl lg:max-xl:text-lg font-bold text-foreground">
             {summary.turnout !== null ? formatPercent(summary.turnout) : '–'}
           </div>
           <div className="text-xs text-muted-foreground">Valdeltagande</div>
@@ -176,7 +176,7 @@ const GovernanceSection = ({ detail, title }: { detail: LocalElectionDetail; tit
   };
 
   return (
-    <div className="mt-12 bg-card rounded-2xl border border-border p-6 shadow-lg">
+    <div className="bg-card rounded-2xl border border-border p-6 shadow-lg">
       <div className="flex items-center gap-3 mb-4">
         <Users className="h-6 w-6 text-primary" />
         <h2 className="text-2xl font-bold text-foreground">{title}</h2>
@@ -218,7 +218,7 @@ const ElectedSection = ({ detail }: { detail: LocalElectionDetail }) => {
   }
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="mt-8 bg-card rounded-2xl border border-border p-6 shadow-lg">
+    <Collapsible open={open} onOpenChange={setOpen} className="bg-card rounded-2xl border border-border p-6 shadow-lg">
       <CollapsibleTrigger asChild>
         <button className="flex w-full items-center justify-between text-left">
           <span className="text-2xl font-bold text-foreground">Valda ledamöter ({total})</span>
@@ -323,10 +323,15 @@ const LocalElectionView = ({ kind, topoUrl, objectName, icon, labels }: LocalEle
   }
 
   return (
-    <>
-      <div className="grid lg:grid-cols-2 gap-8 items-start">
-        <div className="bg-card rounded-2xl border border-border p-6 shadow-lg space-y-4">
+    <div className="space-y-6">
+      <div className="bg-card rounded-2xl border border-border p-4 shadow-lg">
+        <div className="max-w-md">
           <AreaSearch areas={areas ?? []} selectedCode={selectedCode} onSelect={selectFromSearch} labels={labels} />
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-2 bg-card rounded-2xl border border-border shadow-lg overflow-hidden">
           <div className="h-[60vh] sm:h-[70vh] min-h-[360px] sm:min-h-[420px]">
             <ElectionMap
               topoUrl={topoUrl}
@@ -361,7 +366,7 @@ const LocalElectionView = ({ kind, topoUrl, objectName, icon, labels }: LocalEle
           <ElectedSection key={selected.code} detail={detail} />
         </>
       )}
-    </>
+    </div>
   );
 };
 

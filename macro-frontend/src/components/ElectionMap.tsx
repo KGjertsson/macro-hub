@@ -223,7 +223,7 @@ const ElectionMap = ({ topoUrl, objectName, colorByCode, labelByCode, selectedCo
 
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full rounded-xl overflow-hidden" role="region" aria-label={ariaLabel} />
+      <div ref={containerRef} className="h-full w-full" role="region" aria-label={ariaLabel} />
       {isError ? (
         <div className="absolute inset-0 flex items-center justify-center bg-background/80 text-sm text-muted-foreground">
           Kartan kunde inte laddas.
