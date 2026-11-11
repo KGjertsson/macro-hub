@@ -9,7 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public record EuroStatConnectionBuilder() implements ConnectionBuilder<SeriesConfig, HttpURLConnection> {
+public record EuroStatConnectionBuilder()
+        implements ConnectionBuilder<SeriesConfig, HttpURLConnection> {
 
     @Override
     public HttpURLConnection buildConnection(SeriesConfig seriesConfig) throws ScrapeException {
@@ -26,7 +27,8 @@ public record EuroStatConnectionBuilder() implements ConnectionBuilder<SeriesCon
             // Align Accept with explicit format parameter to avoid 400/406 from gateway
             final String lower = endpointUrl.toLowerCase();
             if (lower.contains("format=tsv")) {
-                // Be liberal: many Eurostat gateways use text/plain for TSV, others use text/tab-separated-values
+                // Be liberal: many Eurostat gateways use text/plain for TSV, others use
+                // text/tab-separated-values
                 // Provide a weighted list to avoid 400/406 due to strict matching
                 connection.setRequestProperty(
                         "Accept",

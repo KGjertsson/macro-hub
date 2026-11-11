@@ -18,7 +18,8 @@ public record ConfigWithScbIndicators(
         Map<String, Instant> tableStamps,
         Set<String> indicatorsWithData,
         List<ScbIndicatorResult> results,
-        // Tables whose fetch failed in this run; their stored stamps are dropped so dependent indicators are re-fetched
+        // Tables whose fetch failed in this run; their stored stamps are dropped so dependent
+        // indicators are re-fetched
         Set<String> failedTables
 ) {
 

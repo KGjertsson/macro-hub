@@ -22,9 +22,12 @@ public class RiksdagenActivityWebAdaptor implements WebPort<MemberActivityReques
     private static final int ATTEMPTS = 2;
     private static final long RETRY_DELAY_MS = 1_000;
 
-    private final WebAdaptorFlow<String, VoteTotals> voteFlow = flow(new RiksdagenVoteResponseParser());
-    private final WebAdaptorFlow<String, DocumentPage> speechFlow = flow(new RiksdagenSpeechResponseParser(RECENT_COUNT));
-    private final WebAdaptorFlow<String, DocumentPage> motionFlow = flow(new RiksdagenMotionResponseParser());
+    private final WebAdaptorFlow<String, VoteTotals> voteFlow =
+            flow(new RiksdagenVoteResponseParser());
+    private final WebAdaptorFlow<String, DocumentPage> speechFlow =
+            flow(new RiksdagenSpeechResponseParser(RECENT_COUNT));
+    private final WebAdaptorFlow<String, DocumentPage> motionFlow =
+            flow(new RiksdagenMotionResponseParser());
 
     @Override
     public MemberActivity fetch(MemberActivityRequest request) throws ScrapeException {
@@ -54,7 +57,10 @@ public class RiksdagenActivityWebAdaptor implements WebPort<MemberActivityReques
     }
 
     // Riksdagen occasionally resets connections, so each call gets one retry
-    private static <T> T fetchWithRetry(WebAdaptorFlow<String, T> flow, String url) throws ScrapeException {
+    private static <T> T fetchWithRetry(
+            WebAdaptorFlow<String, T> flow,
+            String url
+    ) throws ScrapeException {
         ScrapeException lastException = null;
         for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
             try {

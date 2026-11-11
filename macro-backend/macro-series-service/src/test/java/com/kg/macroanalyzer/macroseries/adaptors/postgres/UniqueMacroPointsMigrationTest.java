@@ -54,25 +54,37 @@ class UniqueMacroPointsMigrationTest {
                             Map.of("series_name", "B", "date", "2020-01-01", "value", 8.0)
                     ),
                     jdbc.queryForList(
-                            "SELECT series_name, date::text AS date, value FROM fed_series ORDER BY series_name, date"
+                            "SELECT series_name, date::text AS date, value FROM fed_series "
+                                    + "ORDER BY series_name, date"
                     )
             );
             assertEquals(
                     List.of(Map.of("series_name", "A", "date", "2020-01-01", "value", 2.0)),
                     jdbc.queryForList(
-                            "SELECT series_name, date::text AS date, value FROM eurostat_national_debt_series"
+                            "SELECT series_name, date::text AS date, value "
+                                    + "FROM eurostat_national_debt_series"
                     )
             );
-            assertEquals(List.of(2.0), jdbc.queryForList("SELECT value FROM int_gov_bond_10_year_usa", Double.class));
-            assertEquals(List.of(2.0), jdbc.queryForList("SELECT policy_rate FROM policy_rate_sweden", Double.class));
-            assertEquals(List.of(2.0), jdbc.queryForList("SELECT usd_sek FROM exchange_usd_sek", Double.class));
+            assertEquals(
+                    List.of(2.0),
+                    jdbc.queryForList("SELECT value FROM int_gov_bond_10_year_usa", Double.class)
+            );
+            assertEquals(
+                    List.of(2.0),
+                    jdbc.queryForList("SELECT policy_rate FROM policy_rate_sweden", Double.class)
+            );
+            assertEquals(
+                    List.of(2.0),
+                    jdbc.queryForList("SELECT usd_sek FROM exchange_usd_sek", Double.class)
+            );
             assertEquals(
                     List.of(Map.of("definition", "UNIQUE (date)", "tables", 37L),
                             Map.of("definition", "UNIQUE (policy_rate_date)", "tables", 1L),
                             Map.of("definition", "UNIQUE (series_name, date)", "tables", 2L),
                             Map.of("definition", "UNIQUE (usd_sek_date)", "tables", 1L)),
                     jdbc.queryForList("""
-                            SELECT pg_get_constraintdef(constraint_row.oid) AS definition, count(*) AS tables
+                            SELECT pg_get_constraintdef(constraint_row.oid) AS definition, \
+                            count(*) AS tables
                             FROM pg_constraint constraint_row
                             JOIN information_schema.columns point_column
                               ON point_column.table_schema = 'public'
@@ -112,7 +124,8 @@ class UniqueMacroPointsMigrationTest {
                 (50, %1$s, 'B', 8.0, '2020-01-01', %2$s)
                 """.formatted(UUID, early, early2, late));
         jdbc.execute("""
-                INSERT INTO eurostat_national_debt_series (id, global_id, series_name, value, date, created) VALUES
+                INSERT INTO eurostat_national_debt_series \
+                (id, global_id, series_name, value, date, created) VALUES
                 (1, %1$s, 'A', 1.0, '2020-01-01', %2$s),
                 (2, %1$s, 'A', 2.0, '2020-01-01', %3$s)
                 """.formatted(UUID, early, late));
@@ -122,7 +135,8 @@ class UniqueMacroPointsMigrationTest {
                 (2, %1$s, 2.0, '2020-01-01', %3$s)
                 """.formatted(UUID, early, late));
         jdbc.execute("""
-                INSERT INTO policy_rate_sweden (id, global_id, policy_rate, policy_rate_date, created) VALUES
+                INSERT INTO policy_rate_sweden \
+                (id, global_id, policy_rate, policy_rate_date, created) VALUES
                 (1, %1$s, 1.0, '2020-01-01', %2$s),
                 (2, %1$s, 2.0, '2020-01-01', %3$s)
                 """.formatted(UUID, early, late));

@@ -22,11 +22,12 @@ final class SecretTokens {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    // Stored instead of the token, so a read of the database can't be replayed as a session or a reset link. The tokens
-    // are 256 random bits, so a fast hash is enough, unlike for passwords
+    // Stored instead of the token, so a read of the database can't be replayed as a session or a
+    // reset link. The tokens are 256 random bits, so a fast hash is enough, unlike for passwords
     static String hash(String token) {
         try {
-            final var digest = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
+            final var digest = MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8));
 
             return HexFormat.of().formatHex(digest);
         } catch (NoSuchAlgorithmException e) {

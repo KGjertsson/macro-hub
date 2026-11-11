@@ -9,7 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public record RiksdagenConnectionBuilder() implements ConnectionBuilder<SeriesConfig, HttpURLConnection> {
+public record RiksdagenConnectionBuilder()
+        implements ConnectionBuilder<SeriesConfig, HttpURLConnection> {
 
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 120_000;
@@ -27,7 +28,9 @@ public record RiksdagenConnectionBuilder() implements ConnectionBuilder<SeriesCo
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
             connection.setReadTimeout(READ_TIMEOUT_MS);
-            connection.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8");
+            connection.setRequestProperty("Accept",
+                    "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                            + "image/avif,image/webp,image/apng,*/*;q=0.8");
             connection.setRequestProperty("Accept-Language", "en-US,en;q=0.7");
             connection.setRequestProperty("Connection", "keep-alive");
             connection.setRequestProperty("Referer", "https://data.riksdagen.se/personlista/");
@@ -37,8 +40,11 @@ public record RiksdagenConnectionBuilder() implements ConnectionBuilder<SeriesCo
             connection.setRequestProperty("Sec-Fetch-User", "?1");
             connection.setRequestProperty("Sec-GPC", "1");
             connection.setRequestProperty("Upgrade-Insecure-Requests", "1");
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36");
-            connection.setRequestProperty("sec-ch-ua", "\"Chromium\";v=\"142\", \"Brave\";v=\"142\", \"Not_A Brand\";v=\"99\"");
+            connection.setRequestProperty("User-Agent",
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                            + "(KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36");
+            connection.setRequestProperty("sec-ch-ua",
+                    "\"Chromium\";v=\"142\", \"Brave\";v=\"142\", \"Not_A Brand\";v=\"99\"");
             connection.setRequestProperty("sec-ch-ua-mobile", "?0");
             connection.setRequestProperty("sec-ch-ua-platform", "\"macOS\"");
 

@@ -40,7 +40,8 @@ public class MemberActivityPersisterTest {
         final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
 
         // when
-        final var result = persister.persist(new ConfigWithMemberActivity(seriesConfig, List.of(), List.of()));
+        final var result =
+                persister.persist(new ConfigWithMemberActivity(seriesConfig, List.of(), List.of()));
 
         // then
         assertEquals(ScrapeResult.EMPTY, result);
@@ -52,11 +53,13 @@ public class MemberActivityPersisterTest {
     void shouldUpsertActivity_whenActivityScraped() {
         // given
         final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
-        final var activity = List.of(MemberActivity.builder().intressentId("1").votesYes(10).build());
+        final var activity =
+                List.of(MemberActivity.builder().intressentId("1").votesYes(10).build());
 
         // when
         when(repositoryPort.writeMemberActivity(activity)).thenReturn(1);
-        final var result = persister.persist(new ConfigWithMemberActivity(seriesConfig, List.of("1"), activity));
+        final var result = persister
+                .persist(new ConfigWithMemberActivity(seriesConfig, List.of("1"), activity));
 
         // then
         assertEquals(ScrapeResult.SUCCESS, result);
@@ -69,11 +72,13 @@ public class MemberActivityPersisterTest {
     void shouldNotMarkAsDone_whenWriteThrows() {
         // given
         final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
-        final var activity = List.of(MemberActivity.builder().intressentId("1").votesYes(10).build());
+        final var activity =
+                List.of(MemberActivity.builder().intressentId("1").votesYes(10).build());
         final var input = new ConfigWithMemberActivity(seriesConfig, List.of("1"), activity);
 
         // when
-        when(repositoryPort.writeMemberActivity(activity)).thenThrow(new RuntimeException("connection reset"));
+        when(repositoryPort.writeMemberActivity(activity))
+                .thenThrow(new RuntimeException("connection reset"));
 
         // then
         assertThrows(RuntimeException.class, () -> persister.persist(input));

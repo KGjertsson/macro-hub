@@ -61,10 +61,14 @@ class ElectionApplicationTests {
     @Test
     void shouldKeepTheConfigs_inTheirIdOrder() {
         // when
-        final var names = seriesConfigPort.readSeriesConfigList().stream().map(SeriesConfig::name).toList();
+        final var names = seriesConfigPort.readSeriesConfigList().stream()
+                .map(SeriesConfig::name)
+                .toList();
 
         // then
-        assertEquals(List.of("MunicipalElections", "RegionElections", "ParliamentElections"), names);
+        assertEquals(
+                List.of("MunicipalElections", "RegionElections", "ParliamentElections"),
+                names);
     }
 
     @Test
@@ -93,7 +97,9 @@ class ElectionApplicationTests {
                 .set(SERIES_CONFIGURATION.SCRAPE_FLOW, "NEW")
                 .returning(SERIES_CONFIGURATION.ID)
                 .fetchSingle(SERIES_CONFIGURATION.ID);
-        dslContext.deleteFrom(SERIES_CONFIGURATION).where(SERIES_CONFIGURATION.ID.eq(newId)).execute();
+        dslContext.deleteFrom(SERIES_CONFIGURATION)
+                .where(SERIES_CONFIGURATION.ID.eq(newId))
+                .execute();
 
         // then
         assertTrue(newId > 115, () -> "new id " + newId);
@@ -109,7 +115,8 @@ class ElectionApplicationTests {
 
     private List<String> successfulVersions(String historyTable) {
         return dslContext.fetch(
-                "select version from %s where success order by installed_rank".formatted(historyTable)
+                "select version from %s where success order by installed_rank"
+                        .formatted(historyTable)
         ).map(r -> r.get(0, String.class));
     }
 

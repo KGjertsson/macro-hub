@@ -18,7 +18,9 @@ public record MemberActivityScraper(
 ) implements Scraper<ConfigWithMemberActivity> {
 
     @Override
-    public Optional<ConfigWithMemberActivity> scrape(ConfigWithMemberActivity configWithMemberActivity) {
+    public Optional<ConfigWithMemberActivity> scrape(
+            ConfigWithMemberActivity configWithMemberActivity
+    ) {
         final var baseUrl = configWithMemberActivity.seriesConfig().scrapeUrl();
         final var ids = configWithMemberActivity.intressentIds();
         final var activityList = new ArrayList<MemberActivity>();

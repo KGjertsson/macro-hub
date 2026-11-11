@@ -17,7 +17,8 @@ public interface AuthRepositoryPort {
 
     boolean saveEmailTokenUnlessIssuedSince(NewEmailToken token, Instant issuedSince);
 
-    boolean registerWithToken(String tokenHash, Instant now, NewAccount account, Function<String, Role> roleOfEmail);
+    boolean registerWithToken(
+            String tokenHash, Instant now, NewAccount account, Function<String, Role> roleOfEmail);
 
     boolean resetPasswordWithToken(String tokenHash, Instant now, String passwordHash);
 

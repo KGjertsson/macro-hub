@@ -21,12 +21,16 @@ public class ScbWebAdaptorConfiguration {
     }
 
     @Bean("scbMetadataWebAdaptor")
-    public WebPort<ScbMetadataRequest, ScbTableMetadata> scbMetadataWebAdaptor(ScbRateLimiter scbRateLimiter) {
+    public WebPort<ScbMetadataRequest, ScbTableMetadata> scbMetadataWebAdaptor(
+            ScbRateLimiter scbRateLimiter
+    ) {
         return new ScbMetadataWebAdaptor(scbRateLimiter);
     }
 
     @Bean("scbDataWebAdaptor")
-    public WebPort<ScbDataRequest, ScbTableValues> scbDataWebAdaptor(ScbRateLimiter scbRateLimiter) {
+    public WebPort<ScbDataRequest, ScbTableValues> scbDataWebAdaptor(
+            ScbRateLimiter scbRateLimiter
+    ) {
         return new ScbDataWebAdaptor(scbRateLimiter);
     }
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Block commits that stage .env files (secrets). .env.example is allowed.
+# Blocks commits that stage .env files (secrets; .env.example is allowed) or Java that fails Checkstyle.
 # Enable with: git config core.hooksPath .githooks
 
 blocked=$(git diff --cached --name-only --diff-filter=ACMR \
@@ -11,4 +11,14 @@ if [ -n "$blocked" ]; then
   echo "$blocked" | sed 's/^/  /' >&2
   echo "Unstage with: git restore --staged <file>" >&2
   exit 1
+fi
+
+java=$(git diff --cached --name-only --diff-filter=ACMR -- 'macro-backend/*.java')
+if [ -n "$java" ]; then
+  # Checkstyle reads the files on disk, so unstaged changes to a staged file are checked too.
+  # shellcheck disable=SC2086
+  if ! macro-infra/scripts/checkstyle.sh $java; then
+    echo "pre-commit: Checkstyle violations above (macro-backend/checkstyle.xml)" >&2
+    exit 1
+  fi
 fi

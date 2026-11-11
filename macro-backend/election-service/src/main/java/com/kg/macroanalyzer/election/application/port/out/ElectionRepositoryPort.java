@@ -18,7 +18,11 @@ public interface ElectionRepositoryPort {
 
     List<LocalElectionResult> readLocalElectionResults(LocalElectionType type, int year);
 
-    Optional<LocalElectionResult> readLocalElectionResult(LocalElectionType type, int year, String areaCode);
+    Optional<LocalElectionResult> readLocalElectionResult(
+            LocalElectionType type,
+            int year,
+            String areaCode
+    );
 
     Optional<Governance> readGovernance(LocalElectionType type, int year, String areaCode);
 

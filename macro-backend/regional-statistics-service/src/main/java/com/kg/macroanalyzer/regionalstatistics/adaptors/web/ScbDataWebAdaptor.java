@@ -32,10 +32,14 @@ public class ScbDataWebAdaptor implements WebPort<ScbDataRequest, ScbTableValues
         return retry.fetch(flow, url(request));
     }
 
-    // Codes such as "1+2", "ÄG/ANDEL" and the "?" wildcard must be encoded; the commas between codes must not
+    // Codes such as "1+2", "ÄG/ANDEL" and the "?" wildcard must be encoded; the commas between
+    // codes must not
     static String url(ScbDataRequest request) {
-        final var url = new StringBuilder("%s/tables/%s/data?lang=sv&outputFormat=json-stat2".formatted(
-                request.baseUrl(), request.table()));
+        final var url = new StringBuilder(
+                "%s/tables/%s/data?lang=sv&outputFormat=json-stat2".formatted(
+                        request.baseUrl(), request.table()
+                )
+        );
         appendValueCodes(url, ScbTableMetadata.REGION, List.of(request.regionCodes()));
         appendValueCodes(url, ScbTableMetadata.TIME, request.years());
         request.selection().forEach((dimension, codes) -> appendValueCodes(url, dimension, codes));
@@ -45,7 +49,9 @@ public class ScbDataWebAdaptor implements WebPort<ScbDataRequest, ScbTableValues
 
     private static void appendValueCodes(StringBuilder url, String dimension, List<String> codes) {
         url.append("&").append(encode("valueCodes[" + dimension + "]")).append("=")
-                .append(codes.stream().map(ScbDataWebAdaptor::encode).collect(Collectors.joining(",")));
+                .append(codes.stream()
+                        .map(ScbDataWebAdaptor::encode)
+                        .collect(Collectors.joining(",")));
     }
 
     private static String encode(String value) {

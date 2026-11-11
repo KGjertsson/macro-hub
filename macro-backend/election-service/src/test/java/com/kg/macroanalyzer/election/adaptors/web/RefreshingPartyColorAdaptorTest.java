@@ -123,7 +123,8 @@ class RefreshingPartyColorAdaptorTest {
         adaptor.start();
 
         // then
-        await().atMost(Duration.ofSeconds(5)).until(() -> "#000000".equals(adaptor.partyColors().get("SD")));
+        await().atMost(Duration.ofSeconds(5))
+                .until(() -> "#000000".equals(adaptor.partyColors().get("SD")));
     }
 
     @Test
@@ -138,7 +139,8 @@ class RefreshingPartyColorAdaptorTest {
 
         // when
         adaptor.start();
-        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> verify(client, atLeast(5)).fetchPartyColors());
+        await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> verify(client, atLeast(5)).fetchPartyColors());
 
         // then
         assertEquals(COLORS, adaptor.partyColors());

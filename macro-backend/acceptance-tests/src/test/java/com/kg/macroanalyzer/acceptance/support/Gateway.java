@@ -47,11 +47,14 @@ public record Gateway(String baseUrl) {
     private HttpRequest.Builder request(String path) {
         final var request = anonymousRequest(path);
 
-        return path.startsWith(SCRAPE_PATHS) ? request.header("Authorization", "Bearer " + AdminToken.value()) : request;
+        return path.startsWith(SCRAPE_PATHS)
+                ? request.header("Authorization", "Bearer " + AdminToken.value())
+                : request;
     }
 
     private HttpRequest.Builder anonymousRequest(String path) {
-        return HttpRequest.newBuilder(URI.create(baseUrl + path)).timeout(SCRAPE_MAY_TAKE_THIS_LONG);
+        return HttpRequest.newBuilder(URI.create(baseUrl + path))
+                .timeout(SCRAPE_MAY_TAKE_THIS_LONG);
     }
 
     private HttpResponse<String> send(HttpRequest.Builder request) {

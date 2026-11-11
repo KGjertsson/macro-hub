@@ -87,10 +87,20 @@ public class MacroSeriesServiceTest {
     @Test
     void shouldKeepConfigsOfOtherScrapeFlowsOutOfChartList() {
         // given
-        final var rate = SeriesConfig.builder().name("PolicyRateSweden").scrapeFlow(MacroSeriesScrapeFlows.MACRO_POINT).build();
-        final var members = SeriesConfig.builder().name("MembersOfParliament").scrapeFlow("MEMBER_OF_PARLIAMENT").build();
-        final var elections = SeriesConfig.builder().name("MunicipalElections").scrapeFlow("LOCAL_ELECTION").build();
-        final var service = new MacroSeriesService(repositoryPort, List.of(rate, members, elections));
+        final var rate = SeriesConfig.builder()
+                .name("PolicyRateSweden")
+                .scrapeFlow(MacroSeriesScrapeFlows.MACRO_POINT)
+                .build();
+        final var members = SeriesConfig.builder()
+                .name("MembersOfParliament")
+                .scrapeFlow("MEMBER_OF_PARLIAMENT")
+                .build();
+        final var elections = SeriesConfig.builder()
+                .name("MunicipalElections")
+                .scrapeFlow("LOCAL_ELECTION")
+                .build();
+        final var service =
+                new MacroSeriesService(repositoryPort, List.of(rate, members, elections));
 
         // when
         final var chartList = service.getChartSeriesConfigList();

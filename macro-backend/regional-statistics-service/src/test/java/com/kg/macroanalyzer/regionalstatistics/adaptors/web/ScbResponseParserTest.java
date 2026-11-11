@@ -27,9 +27,15 @@ public class ScbResponseParserTest {
         // then
         assertEquals("TAB6574", metadata.table());
         assertEquals(Instant.parse("2026-03-24T07:00:00Z"), metadata.updated());
-        assertEquals(List.of("Region", "Alder", "ContentsCode", "Tid"), List.copyOf(metadata.codes().keySet()));
         assertEquals(
-                List.of("0114", "0114A0010", "0114A0020", "0114A0010_DeSO2025", "0114A0020_DeSO2025", "0114R001"),
+                List.of("Region", "Alder", "ContentsCode", "Tid"),
+                List.copyOf(metadata.codes().keySet())
+        );
+        assertEquals(
+                List.of(
+                        "0114", "0114A0010", "0114A0020", "0114A0010_DeSO2025",
+                        "0114A0020_DeSO2025", "0114R001"
+                ),
                 metadata.regionCodes()
         );
         assertEquals(List.of("totalt", "65-69", "70-74"), metadata.codes().get("Alder"));
@@ -77,12 +83,23 @@ public class ScbResponseParserTest {
 
         // then
         assertThrows(ScrapeException.class, () -> parser.parse(""));
-        assertThrows(ScrapeException.class, () -> parser.parse("{\"title\":\"Non-existent table\",\"status\":404}"));
-        assertThrows(ScrapeException.class, () -> new ScbMetadataResponseParser("TAB6574").parse("not json"));
+        assertThrows(
+                ScrapeException.class,
+                () -> parser.parse("{\"title\":\"Non-existent table\",\"status\":404}")
+        );
+        assertThrows(
+                ScrapeException.class,
+                () -> new ScbMetadataResponseParser("TAB6574").parse("not json")
+        );
     }
 
     // Map.of does not allow the null that marks a missing cell
-    private static Map<Integer, Double> yearValues(int firstYear, Double first, int secondYear, Double second) {
+    private static Map<Integer, Double> yearValues(
+            int firstYear,
+            Double first,
+            int secondYear,
+            Double second
+    ) {
         final var values = new HashMap<Integer, Double>();
         values.put(firstYear, first);
         values.put(secondYear, second);

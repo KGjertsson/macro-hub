@@ -17,7 +17,9 @@ public final class QuerySpanListener implements ExecuteListener {
     private static final String SCRAPE_PATH = "/macro-analyzer/scrape/";
     private static final Pattern OPERATION = Pattern.compile("^\\s*(\\w+)");
     // The lookahead skips a column, as in extract(year from "public"."t"."date")
-    private static final Pattern TABLE = Pattern.compile("\\b(?:from|into|update)\\s+(?:\"[^\"]+\"\\.)?\"([^\"]+)\"(?!\\.)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern TABLE = Pattern.compile(
+            "\\b(?:from|into|update)\\s+(?:\"[^\"]+\"\\.)?\"([^\"]+)\"(?!\\.)",
+            Pattern.CASE_INSENSITIVE);
 
     private final Tracer tracer;
 
@@ -27,10 +29,14 @@ public final class QuerySpanListener implements ExecuteListener {
 
     @Override
     public void start(ExecuteContext context) {
-        // Without a parent a span starts a new trace, which every query of a cron run would then be
+        // Without a parent a span starts a new trace, which every query of a cron
+        // run would then be
         final var parent = tracer.currentSpan();
         if (parent != null && !isManualScrape()) {
-            context.data(SPAN, tracer.spanBuilder().setParent(parent.context()).kind(Span.Kind.CLIENT).start());
+            context.data(SPAN, tracer.spanBuilder()
+                    .setParent(parent.context())
+                    .kind(Span.Kind.CLIENT)
+                    .start());
         }
     }
 
@@ -50,9 +56,11 @@ public final class QuerySpanListener implements ExecuteListener {
         span.end();
     }
 
-    // A scrape can run a very large number of statements under its one request, more than a trace can usefully show
+    // A scrape can run a very large number of statements under its one request, more than a trace
+    // can usefully show
     private boolean isManualScrape() {
-        return RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes
+        return RequestContextHolder.getRequestAttributes()
+                        instanceof ServletRequestAttributes attributes
                 && attributes.getRequest().getRequestURI().startsWith(SCRAPE_PATH);
     }
 
@@ -65,10 +73,13 @@ public final class QuerySpanListener implements ExecuteListener {
             return DEFAULT_NAME;
         }
         final var table = TABLE.matcher(sql);
-        return table.find() ? operation.group(1).toLowerCase() + " " + table.group(1) : operation.group(1).toLowerCase();
+        return table.find()
+                ? operation.group(1).toLowerCase() + " " + table.group(1)
+                : operation.group(1).toLowerCase();
     }
 
-    // In place of the real exception, whose message can repeat a bound value: Postgres's "Key (email)=(...) already exists"
+    // In place of the real exception, whose message can repeat a bound value: Postgres's
+    // "Key (email)=(...) already exists"
     private static final class QueryFailed extends RuntimeException {
 
         private QueryFailed(String exceptionType) {

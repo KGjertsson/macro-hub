@@ -84,7 +84,9 @@ class ParliamentApplicationTests {
                 .set(SERIES_CONFIGURATION.SCRAPE_FLOW, "NEW")
                 .returning(SERIES_CONFIGURATION.ID)
                 .fetchSingle(SERIES_CONFIGURATION.ID);
-        dslContext.deleteFrom(SERIES_CONFIGURATION).where(SERIES_CONFIGURATION.ID.eq(newId)).execute();
+        dslContext.deleteFrom(SERIES_CONFIGURATION)
+                .where(SERIES_CONFIGURATION.ID.eq(newId))
+                .execute();
 
         // then
         assertTrue(newId > 112, () -> "new id " + newId);
@@ -99,11 +101,13 @@ class ParliamentApplicationTests {
         assertEquals(43, dslContext.fetchCount(RIKSDAG_ORGAN));
     }
 
-    // /parliament/parties answers in the table's order, with SD last, which V2 keeps by updating every row in one statement
+    // /parliament/parties answers in the table's order, with SD last, which V2 keeps by updating
+    // every row in one statement
     @Test
     void shouldKeepThePartiesInTheirOrder_whenTheColoursAreUpdated() {
         // when
-        final var codes = dslContext.select(RIKSDAG_PARTY.CODE).from(RIKSDAG_PARTY).fetch(RIKSDAG_PARTY.CODE);
+        final var codes =
+                dslContext.select(RIKSDAG_PARTY.CODE).from(RIKSDAG_PARTY).fetch(RIKSDAG_PARTY.CODE);
         final var sdColor = dslContext.select(RIKSDAG_PARTY.COLOR)
                 .from(RIKSDAG_PARTY)
                 .where(RIKSDAG_PARTY.CODE.eq("SD"))
@@ -116,7 +120,8 @@ class ParliamentApplicationTests {
 
     private List<String> successfulVersions(String historyTable) {
         return dslContext.fetch(
-                "select version from %s where success order by installed_rank".formatted(historyTable)
+                "select version from %s where success order by installed_rank"
+                        .formatted(historyTable)
         ).map(r -> r.get(0, String.class));
     }
 

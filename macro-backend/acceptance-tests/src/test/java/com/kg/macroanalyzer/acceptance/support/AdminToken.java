@@ -16,8 +16,9 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
-// Most journeys scrape to set up their data, and booting auth-service in each of their stacks would be most of their time.
-// They get a token signed here, and their services read this key from the stub. AuthAcceptanceTest uses the real auth-service
+// Most journeys scrape to set up their data, and booting auth-service in each of their stacks would
+// be most of their time. They get a token signed here, and their services read this key from the
+// stub. AuthAcceptanceTest uses the real auth-service
 public final class AdminToken {
 
     public static final String KEYS_PATH = "/test-auth/jwks.json";
@@ -55,7 +56,8 @@ public final class AdminToken {
                 .expirationTime(Date.from(now.plus(LONGER_THAN_THE_SUITE)))
                 .claim("roles", List.of("ADMIN"))
                 .build();
-        final var jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.ES256).keyID(KEY.getKeyID()).build(), claims);
+        final var jwt = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.ES256).keyID(KEY.getKeyID()).build(), claims);
         try {
             jwt.sign(new ECDSASigner(KEY));
         } catch (JOSEException e) {

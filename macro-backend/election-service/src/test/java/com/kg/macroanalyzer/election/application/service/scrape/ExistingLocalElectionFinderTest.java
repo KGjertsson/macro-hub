@@ -27,7 +27,8 @@ public class ExistingLocalElectionFinderTest {
         final var config = SeriesConfig.builder().name("RegionElections").build();
 
         // when
-        when(repositoryPort.readLocalElectionSourceMd5s(LocalElectionType.RF)).thenReturn(Set.of("md5"));
+        when(repositoryPort.readLocalElectionSourceMd5s(LocalElectionType.RF))
+                .thenReturn(Set.of("md5"));
         final var result = new ExistingLocalElectionFinder(repositoryPort).findExisting(config);
 
         // then

@@ -27,7 +27,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * Goes through the real HTTP layer, to pin what the frontend relies on: the wire format of the
- * MVC message converter and the CORS headers. The controller's own logic is in MacroSeriesControllerTest.
+ * MVC message converter and the CORS headers. The controller's own logic is in
+ * MacroSeriesControllerTest.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -57,7 +58,8 @@ public class MacroSeriesControllerHttpTest {
         assertEquals(200, response.statusCode());
         assertEquals(
                 """
-                {"labels":[[1994,6],[1994,7]],"chartData":[{"values":[1.0,2.0],"name":"seriesA","color":"rgb(207,82,48)"}]}""",
+                {"labels":[[1994,6],[1994,7]],"chartData":[{"values":[1.0,2.0],\
+                "name":"seriesA","color":"rgb(207,82,48)"}]}""",
                 response.body()
         );
     }
@@ -74,7 +76,8 @@ public class MacroSeriesControllerHttpTest {
         assertEquals(200, response.statusCode());
         assertEquals(
                 """
-                {"labels":[[1994,6,1],[1994,6,2]],"chartData":[{"values":[1.0,2.0],"name":"seriesA","color":"rgb(207,82,48)"}]}""",
+                {"labels":[[1994,6,1],[1994,6,2]],"chartData":[{"values":[1.0,2.0],\
+                "name":"seriesA","color":"rgb(207,82,48)"}]}""",
                 response.body()
         );
     }
@@ -89,7 +92,10 @@ public class MacroSeriesControllerHttpTest {
 
         // then
         assertEquals(200, response.statusCode());
-        assertEquals(Optional.of("*"), response.headers().firstValue("Access-Control-Allow-Origin"));
+        assertEquals(
+                Optional.of("*"),
+                response.headers().firstValue("Access-Control-Allow-Origin")
+        );
     }
 
     @Test
@@ -109,12 +115,21 @@ public class MacroSeriesControllerHttpTest {
         final var headers = response.headers();
         assertEquals(200, response.statusCode());
         assertEquals(Optional.of("*"), headers.firstValue("Access-Control-Allow-Origin"));
-        assertEquals(Optional.of("GET,POST,PUT,DELETE"), headers.firstValue("Access-Control-Allow-Methods"));
-        assertEquals(Optional.of("content-type"), headers.firstValue("Access-Control-Allow-Headers"));
+        assertEquals(
+                Optional.of("GET,POST,PUT,DELETE"),
+                headers.firstValue("Access-Control-Allow-Methods")
+        );
+        assertEquals(
+                Optional.of("content-type"),
+                headers.firstValue("Access-Control-Allow-Headers")
+        );
     }
 
     private void givenChartDataWithLabels(Temporal first, Temporal second) {
-        final var series = new MacroSeries("seriesA", List.of(new MacroPoint(1.0, first), new MacroPoint(2.0, second)));
+        final var series = new MacroSeries(
+                "seriesA",
+                List.of(new MacroPoint(1.0, first), new MacroPoint(2.0, second))
+        );
         final var bundle = AlignedBundle.builder()
                 .labels(List.of(first, second))
                 .macroSeries(List.of(series))
@@ -130,7 +145,8 @@ public class MacroSeriesControllerHttpTest {
                 .build());
     }
 
-    private HttpResponse<String> send(HttpRequest request) throws IOException, InterruptedException {
+    private HttpResponse<String> send(HttpRequest request)
+            throws IOException, InterruptedException {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 

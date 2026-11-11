@@ -27,24 +27,32 @@ import java.util.stream.Stream;
 public class MacroPointScrapeFlowConfiguration {
 
     @Bean("existingMacroPointFinder")
-    public ExistingFinder<SeriesConfig, ConfigWithMacroPoints> finder(MacroSeriesRepositoryPort repositoryPort) {
+    public ExistingFinder<SeriesConfig, ConfigWithMacroPoints> finder(
+            MacroSeriesRepositoryPort repositoryPort
+    ) {
         return new ExistingMacroPointFinder(repositoryPort);
     }
 
     @Bean("macroPointScraper")
-    public Scraper<ConfigWithMacroPoints> scraper(WebPort<SeriesConfig, Stream<MacroPoint>> webAdaptorFlowPort) {
+    public Scraper<ConfigWithMacroPoints> scraper(
+            WebPort<SeriesConfig, Stream<MacroPoint>> webAdaptorFlowPort
+    ) {
         return new MacroPointScraper(webAdaptorFlowPort);
     }
 
     @Bean("macroPointPersister")
-    public Persister<ConfigWithMacroPoints> persister(MacroSeriesRepositoryPort repositoryPort, ScrapeQueuePort scrapeQueuePort) {
+    public Persister<ConfigWithMacroPoints> persister(
+            MacroSeriesRepositoryPort repositoryPort,
+            ScrapeQueuePort scrapeQueuePort
+    ) {
         return new MacroPointPersister(repositoryPort, scrapeQueuePort);
     }
 
     @Bean("macroPointScrapeFlow")
     public RegisteredScrapeFlow scrapeFlow(
             Preparer<ScrapeQueueItem, SeriesConfig> preparer,
-            @Qualifier("existingMacroPointFinder") ExistingFinder<SeriesConfig, ConfigWithMacroPoints> finder,
+            @Qualifier("existingMacroPointFinder")
+            ExistingFinder<SeriesConfig, ConfigWithMacroPoints> finder,
             @Qualifier("macroPointScraper") Scraper<ConfigWithMacroPoints> scraper,
             @Qualifier("macroPointPersister") Persister<ConfigWithMacroPoints> persister
     ) {

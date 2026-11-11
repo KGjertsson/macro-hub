@@ -13,10 +13,15 @@ class BaseConfigurationTest {
     @Test
     void shouldDefaultToTheComposePostgres_andTheServicesOwnRole() throws IOException {
         // when
-        final var properties = PropertiesLoaderUtils.loadProperties(new ClassPathResource("application.properties"));
+        final var properties = PropertiesLoaderUtils.loadProperties(
+                new ClassPathResource("application.properties")
+        );
 
         // then
-        assertEquals("jdbc:postgresql://localhost:5432/macro_series", properties.getProperty("spring.datasource.url"));
+        assertEquals(
+                "jdbc:postgresql://localhost:5432/macro_series",
+                properties.getProperty("spring.datasource.url")
+        );
         assertEquals("macro_series", properties.getProperty("spring.datasource.username"));
     }
 

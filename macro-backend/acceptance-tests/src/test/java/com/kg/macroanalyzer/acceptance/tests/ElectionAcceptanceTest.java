@@ -20,83 +20,111 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// The lists are answers about every area, so these journeys don't use the shared stack, where another journey's scrape
-// would change them. The corrected file starts a stack of its own for the same reason. A Riksdag party's colour depends
-// on the link to parliament, so colours are only asserted for a party outside the Riksdag
+// The lists are answers about every area, so these journeys don't use the shared stack, where
+// another journey's scrape would change them. The corrected file starts a stack of its own for the
+// same reason. A Riksdag party's colour depends on the link to parliament, so colours are only
+// asserted for a party outside the Riksdag
 class ElectionAcceptanceTest {
 
     private static final String MUNICIPAL = "MunicipalElections";
     private static final String REGIONAL = "RegionElections";
     private static final String PARLIAMENTARY = "ParliamentElections";
 
-    private static final ResultFile LUND = ResultFile.of("KF", "1281", "valmyndigheten/mandatfordelning-1281-KF.json");
-    private static final ResultFile LUND_CORRECTED = ResultFile.of("KF", "1281", "valmyndigheten/mandatfordelning-1281-KF-corrected.json");
-    private static final ResultFile KIRUNA = ResultFile.of("KF", "2584", "valmyndigheten/mandatfordelning-2584-KF.json");
-    private static final ResultFile SKANE = ResultFile.of("RF", "12", "valmyndigheten/mandatfordelning-12-RF.json");
-    private static final ResultFile NORRBOTTEN = ResultFile.of("RF", "25", "valmyndigheten/mandatfordelning-25-RF.json");
-    private static final ResultFile VALKRETSAR = ResultFile.of("RD", "00", "valmyndigheten/mandatfordelning-00-RD.json");
+    private static final ResultFile LUND =
+            ResultFile.of("KF", "1281", "valmyndigheten/mandatfordelning-1281-KF.json");
+    private static final ResultFile LUND_CORRECTED =
+            ResultFile.of("KF", "1281", "valmyndigheten/mandatfordelning-1281-KF-corrected.json");
+    private static final ResultFile KIRUNA =
+            ResultFile.of("KF", "2584", "valmyndigheten/mandatfordelning-2584-KF.json");
+    private static final ResultFile SKANE =
+            ResultFile.of("RF", "12", "valmyndigheten/mandatfordelning-12-RF.json");
+    private static final ResultFile NORRBOTTEN =
+            ResultFile.of("RF", "25", "valmyndigheten/mandatfordelning-25-RF.json");
+    private static final ResultFile VALKRETSAR =
+            ResultFile.of("RD", "00", "valmyndigheten/mandatfordelning-00-RD.json");
 
     private static final String LUND_SUMMARY = """
             {
-              "year": 2026, "code": "1281", "name": "Lund", "lanCode": "12", "totalSeats": 65, "turnout": 84.86,
+              "year": 2026, "code": "1281", "name": "Lund", "lanCode": "12", "totalSeats": 65, \
+            "turnout": 84.86,
               "largestParty": "S",
               "parties": [
-                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna","votes":22102,"voteShare":56.53,"seats":37},
-                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":16996,"voteShare":43.47,"seats":28}
+                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna",\
+            "votes":22102,"voteShare":56.53,"seats":37},
+                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":16996,\
+            "voteShare":43.47,"seats":28}
               ]
             }""";
     private static final String KIRUNA_SUMMARY = """
             {
-              "year": 2026, "code": "2584", "name": "Kiruna", "lanCode": "25", "totalSeats": 41, "turnout": 78.5,
+              "year": 2026, "code": "2584", "name": "Kiruna", "lanCode": "25", "totalSeats": 41, \
+            "turnout": 78.5,
               "largestParty": "KP",
               "parties": [
-                {"code":"3101","abbreviation":"KP","name":"Kirunapartiet","votes":8000,"voteShare":57.14,"seats":24},
-                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna","votes":6000,"voteShare":42.86,"seats":17}
+                {"code":"3101","abbreviation":"KP","name":"Kirunapartiet","votes":8000,\
+            "voteShare":57.14,"seats":24},
+                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna",\
+            "votes":6000,"voteShare":42.86,"seats":17}
               ]
             }""";
     private static final String SKANE_SUMMARY = """
             {
-              "year": 2026, "code": "12", "name": "Skåne län", "lanCode": "12", "totalSeats": 149, "turnout": 81.2,
+              "year": 2026, "code": "12", "name": "Skåne län", "lanCode": "12", "totalSeats": 149, \
+            "turnout": 81.2,
               "largestParty": "M",
               "parties": [
-                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":360000,"voteShare":54.55,"seats":81},
-                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna","votes":300000,"voteShare":45.45,"seats":68}
+                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":360000,\
+            "voteShare":54.55,"seats":81},
+                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna",\
+            "votes":300000,"voteShare":45.45,"seats":68}
               ]
             }""";
     private static final String NORRBOTTEN_SUMMARY = """
             {
-              "year": 2026, "code": "25", "name": "Norrbottens län", "lanCode": "25", "totalSeats": 71, "turnout": 79.3,
+              "year": 2026, "code": "25", "name": "Norrbottens län", "lanCode": "25", \
+            "totalSeats": 71, "turnout": 79.3,
               "largestParty": "S",
               "parties": [
-                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna","votes":60000,"voteShare":60.0,"seats":43},
-                {"code":"0004","abbreviation":"V","name":"Vänsterpartiet","votes":40000,"voteShare":40.0,"seats":28}
+                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna",\
+            "votes":60000,"voteShare":60.0,"seats":43},
+                {"code":"0004","abbreviation":"V","name":"Vänsterpartiet","votes":40000,\
+            "voteShare":40.0,"seats":28}
               ]
             }""";
     private static final String STOCKHOLM_SUMMARY = """
             {
-              "year": 2026, "code": "01", "name": "Stockholms kommun", "lanCode": "01", "totalSeats": 30, "turnout": 85.84,
+              "year": 2026, "code": "01", "name": "Stockholms kommun", "lanCode": "01", \
+            "totalSeats": 30, "turnout": 85.84,
               "largestParty": "S",
               "parties": [
-                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna","votes":180000,"voteShare":56.25,"seats":16},
-                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":140000,"voteShare":43.75,"seats":14}
+                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna",\
+            "votes":180000,"voteShare":56.25,"seats":16},
+                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":140000,\
+            "voteShare":43.75,"seats":14}
               ]
             }""";
     private static final String GOTLAND_SUMMARY = """
             {
-              "year": 2026, "code": "09", "name": "Gotlands län", "lanCode": "09", "totalSeats": 2, "turnout": 83.0,
+              "year": 2026, "code": "09", "name": "Gotlands län", "lanCode": "09", "totalSeats": \
+            2, "turnout": 83.0,
               "largestParty": "S",
               "parties": [
-                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna","votes":22000,"voteShare":55.0,"seats":1},
-                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":18000,"voteShare":45.0,"seats":1}
+                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna",\
+            "votes":22000,"voteShare":55.0,"seats":1},
+                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":18000,\
+            "voteShare":45.0,"seats":1}
               ]
             }""";
     private static final String MALMO_SUMMARY = """
             {
-              "year": 2026, "code": "11", "name": "Malmö kommun", "lanCode": "12", "totalSeats": 10, "turnout": 81.0,
+              "year": 2026, "code": "11", "name": "Malmö kommun", "lanCode": "12", \
+            "totalSeats": 10, "turnout": 81.0,
               "largestParty": "M",
               "parties": [
-                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":50000,"voteShare":55.56,"seats":6},
-                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna","votes":40000,"voteShare":44.44,"seats":4}
+                {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":50000,\
+            "voteShare":55.56,"seats":6},
+                {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna",\
+            "votes":40000,"voteShare":44.44,"seats":4}
               ]
             }""";
 
@@ -135,16 +163,21 @@ class ElectionAcceptanceTest {
                   "summary": %s,
                   "elected": [
                     {
-                      "partyCode": "0002", "abbreviation": "S", "name": "Arbetarepartiet-Socialdemokraterna",
+                      "partyCode": "0002", "abbreviation": "S", \
+                "name": "Arbetarepartiet-Socialdemokraterna",
                       "members": [
-                        {"name":"Sven Sandberg","order":1,"electedOn":"Ledamoten är vald på personröster"},
-                        {"name":"Stina Sandell","order":2,"electedOn":"Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"}
+                        {"name":"Sven Sandberg","order":1,\
+                "electedOn":"Ledamoten är vald på personröster"},
+                        {"name":"Stina Sandell","order":2,\
+                "electedOn":"Ledamoten är vald som listtrogen efterträdare till \
+                dubbelvalsavvecklad"}
                       ]
                     },
                     {
                       "partyCode": "0001", "abbreviation": "M", "name": "Moderaterna",
                       "members": [
-                        {"name":"Maja Malm","order":1,"electedOn":"Ledamoten är vald på personröster"}
+                        {"name":"Maja Malm","order":1,\
+                "electedOn":"Ledamoten är vald på personröster"}
                       ]
                     }
                   ],
@@ -160,7 +193,8 @@ class ElectionAcceptanceTest {
         final var detail = jsonFrom(gateway, "/macro-analyzer/regions/12" + query);
 
         // then
-        assertEquals(json("[%s,%s]".formatted(NORRBOTTEN_SUMMARY, SKANE_SUMMARY)), withoutColours(list));
+        assertEquals(
+                json("[%s,%s]".formatted(NORRBOTTEN_SUMMARY, SKANE_SUMMARY)), withoutColours(list));
         assertEquals(json("""
                 {
                   "summary": %s,
@@ -168,14 +202,19 @@ class ElectionAcceptanceTest {
                     {
                       "partyCode": "0001", "abbreviation": "M", "name": "Moderaterna",
                       "members": [
-                        {"name":"Magnus Månsson","order":1,"electedOn":"Ledamoten är vald på personröster"},
-                        {"name":"Märta Malmberg","order":2,"electedOn":"Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"}
+                        {"name":"Magnus Månsson","order":1,\
+                "electedOn":"Ledamoten är vald på personröster"},
+                        {"name":"Märta Malmberg","order":2,\
+                "electedOn":"Ledamoten är vald som listtrogen efterträdare till \
+                dubbelvalsavvecklad"}
                       ]
                     },
                     {
-                      "partyCode": "0002", "abbreviation": "S", "name": "Arbetarepartiet-Socialdemokraterna",
+                      "partyCode": "0002", "abbreviation": "S", \
+                "name": "Arbetarepartiet-Socialdemokraterna",
                       "members": [
-                        {"name":"Sofia Svensson","order":1,"electedOn":"Ledamoten är vald på personröster"}
+                        {"name":"Sofia Svensson","order":1,\
+                "electedOn":"Ledamoten är vald på personröster"}
                       ]
                     }
                   ],
@@ -199,16 +238,21 @@ class ElectionAcceptanceTest {
                   "summary": %s,
                   "elected": [
                     {
-                      "partyCode": "0002", "abbreviation": "S", "name": "Arbetarepartiet-Socialdemokraterna",
+                      "partyCode": "0002", "abbreviation": "S", \
+                "name": "Arbetarepartiet-Socialdemokraterna",
                       "members": [
-                        {"name":"Saga Nyström","order":1,"electedOn":"Ledamoten är vald på personröster"},
-                        {"name":"Simon Ek","order":2,"electedOn":"Ledamoten är vald som listtrogen efterträdare till dubbelvalsavvecklad"}
+                        {"name":"Saga Nyström","order":1,\
+                "electedOn":"Ledamoten är vald på personröster"},
+                        {"name":"Simon Ek","order":2,\
+                "electedOn":"Ledamoten är vald som listtrogen efterträdare till \
+                dubbelvalsavvecklad"}
                       ]
                     },
                     {
                       "partyCode": "0001", "abbreviation": "M", "name": "Moderaterna",
                       "members": [
-                        {"name":"Mats Lindgren","order":1,"electedOn":"Ledamoten är vald på personröster"}
+                        {"name":"Mats Lindgren","order":1,\
+                "electedOn":"Ledamoten är vald på personröster"}
                       ]
                     }
                   ],
@@ -229,20 +273,23 @@ class ElectionAcceptanceTest {
     @ParameterizedTest
     @CsvSource({"municipalities,9999", "regions,99", "constituencies,99"})
     void anUnknownAreaIsNotFound(String areaType, String unknownCode) {
-        assertEquals(404, gateway.get("/macro-analyzer/%s/%s".formatted(areaType, unknownCode)).statusCode());
+        assertEquals(404, gateway.get(
+                "/macro-analyzer/%s/%s".formatted(areaType, unknownCode)).statusCode());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"municipalities", "regions", "constituencies"})
     void aYearWithoutResultsHasNothingToShow(String areaType) {
-        assertEquals(204, gateway.get("/macro-analyzer/%s/elections?year=2022".formatted(areaType)).statusCode());
+        assertEquals(204, gateway.get(
+                "/macro-analyzer/%s/elections?year=2022".formatted(areaType)).statusCode());
     }
 
     @Test
     void aScrapeOfAnUnchangedIndexFetchesTheIndexAgainButNoFile() {
         // given
         final var indexFetches = sources.requestCount(Valmyndigheten.INDEX);
-        final var lundBefore = withoutColours(jsonFrom(gateway, "/macro-analyzer/municipalities/1281"));
+        final var lundBefore =
+                withoutColours(jsonFrom(gateway, "/macro-analyzer/municipalities/1281"));
 
         // when
         scrape(gateway, MUNICIPAL);
@@ -253,7 +300,9 @@ class ElectionAcceptanceTest {
         assertEquals(indexFetches + 3, sources.requestCount(Valmyndigheten.INDEX));
         List.of(LUND, KIRUNA, SKANE, NORRBOTTEN, VALKRETSAR)
                 .forEach(file -> assertEquals(1, sources.requestCount(file.url()), file.url()));
-        assertEquals(lundBefore, withoutColours(jsonFrom(gateway, "/macro-analyzer/municipalities/1281")));
+        assertEquals(
+                lundBefore,
+                withoutColours(jsonFrom(gateway, "/macro-analyzer/municipalities/1281")));
     }
 
     @Test
@@ -264,7 +313,11 @@ class ElectionAcceptanceTest {
             final var ownSources = ownStack.sources();
             Valmyndigheten.publish(ownSources, LUND, KIRUNA);
             scrape(ownGateway, MUNICIPAL);
-            assertEquals(json(LUND_SUMMARY), withoutColours(jsonFrom(ownGateway, "/macro-analyzer/municipalities/1281").get("summary")));
+            assertEquals(
+                    json(LUND_SUMMARY),
+                    withoutColours(
+                            jsonFrom(ownGateway, "/macro-analyzer/municipalities/1281")
+                                    .get("summary")));
 
             // when
             Valmyndigheten.publish(ownSources, LUND_CORRECTED, KIRUNA);
@@ -273,30 +326,40 @@ class ElectionAcceptanceTest {
             // then
             final var corrected = """
                     {
-                      "year": 2026, "code": "1281", "name": "Lund", "lanCode": "12", "totalSeats": 65, "turnout": 85.01,
+                      "year": 2026, "code": "1281", "name": "Lund", "lanCode": "12", \
+                    "totalSeats": 65, "turnout": 85.01,
                       "largestParty": "M",
                       "parties": [
-                        {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":19998,"voteShare":51.15,"seats":33},
-                        {"code":"0002","abbreviation":"S","name":"Arbetarepartiet-Socialdemokraterna","votes":19100,"voteShare":48.85,"seats":32}
+                        {"code":"0001","abbreviation":"M","name":"Moderaterna","votes":19998,\
+                    "voteShare":51.15,"seats":33},
+                        {"code":"0002","abbreviation":"S",\
+                    "name":"Arbetarepartiet-Socialdemokraterna","votes":19100,"voteShare":48.85,\
+                    "seats":32}
                       ]
                     }""";
             assertEquals(
                     json("[%s,%s]".formatted(KIRUNA_SUMMARY, corrected)),
-                    withoutColours(jsonFrom(ownGateway, "/macro-analyzer/municipalities/elections")));
-            final var elected = withoutColours(jsonFrom(ownGateway, "/macro-analyzer/municipalities/1281")).get("elected");
+                    withoutColours(jsonFrom(
+                            ownGateway, "/macro-analyzer/municipalities/elections")));
+            final var elected = withoutColours(
+                    jsonFrom(ownGateway, "/macro-analyzer/municipalities/1281")).get("elected");
             assertEquals(json("""
                     [
                       {
                         "partyCode": "0001", "abbreviation": "M", "name": "Moderaterna",
                         "members": [
-                          {"name":"Maja Malm","order":1,"electedOn":"Ledamoten är vald på personröster"},
-                          {"name":"Mikael Mattsson","order":2,"electedOn":"Ledamoten är vald på personröster"}
+                          {"name":"Maja Malm","order":1,\
+                    "electedOn":"Ledamoten är vald på personröster"},
+                          {"name":"Mikael Mattsson","order":2,\
+                    "electedOn":"Ledamoten är vald på personröster"}
                         ]
                       },
                       {
-                        "partyCode": "0002", "abbreviation": "S", "name": "Arbetarepartiet-Socialdemokraterna",
+                        "partyCode": "0002", "abbreviation": "S", \
+                    "name": "Arbetarepartiet-Socialdemokraterna",
                         "members": [
-                          {"name":"Sven Sandberg","order":1,"electedOn":"Ledamoten är vald på personröster"}
+                          {"name":"Sven Sandberg","order":1,\
+                    "electedOn":"Ledamoten är vald på personröster"}
                         ]
                       }
                     ]"""), elected);
@@ -306,8 +369,10 @@ class ElectionAcceptanceTest {
     }
 
     private static void scrape(Gateway gateway, String series) {
-        assertEquals(202, gateway.post("/macro-analyzer/scrape/election/enqueue?name=" + series).statusCode());
-        assertEquals(200, gateway.post("/macro-analyzer/scrape/election/scrape-from-queue").statusCode());
+        assertEquals(202, gateway.post(
+                "/macro-analyzer/scrape/election/enqueue?name=" + series).statusCode());
+        assertEquals(200, gateway.post(
+                "/macro-analyzer/scrape/election/scrape-from-queue").statusCode());
     }
 
     private static JsonNode withoutColours(JsonNode answer) {

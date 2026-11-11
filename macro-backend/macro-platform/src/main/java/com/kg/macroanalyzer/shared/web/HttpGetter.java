@@ -9,7 +9,8 @@ public class HttpGetter implements Getter<HttpURLConnection, String> {
     public String get(HttpURLConnection connection) throws ScrapeException {
         try {
             final int status = HttpResponses.connect(connection);
-            final String response = HttpResponses.readText(HttpResponses.getInputStream(status, connection));
+            final String response =
+                    HttpResponses.readText(HttpResponses.getInputStream(status, connection));
 
             connection.disconnect();
 

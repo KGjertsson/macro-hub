@@ -38,7 +38,8 @@ public class ScbRateLimiterTest {
         limiter.acquire();
 
         // then
-        // The first call goes at once, the second waits the remaining 250 ms, the third is already late enough
+        // The first call goes at once, the second waits the remaining 250 ms, the third is already
+        // late enough
         assertEquals(List.of(250L), sleeps);
     }
 

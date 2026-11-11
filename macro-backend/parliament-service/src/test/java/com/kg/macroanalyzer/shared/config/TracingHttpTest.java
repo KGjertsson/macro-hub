@@ -54,7 +54,8 @@ class TracingHttpTest {
     private static final String SERVICE_NAME = "parliament";
     private static final String QUERY_PATH = "/tracing-test/query";
     private static final String FAILING_QUERY_PATH = "/tracing-test/failing-query";
-    private static final String SCRAPE_QUERY_PATH = "/macro-analyzer/scrape/parliament/tracing-test";
+    private static final String SCRAPE_QUERY_PATH =
+            "/macro-analyzer/scrape/parliament/tracing-test";
     private static final String QUERY_VALUE = "value-that-must-not-reach-a-span";
 
     @Autowired
@@ -86,10 +87,14 @@ class TracingHttpTest {
         final var span = awaitServerSpanOfTrace(traceId);
         assertEquals(PARENT_SPAN_ID, span.getParentSpanId());
         assertEquals(SpanKind.SERVER, span.getKind());
-        assertEquals(SERVICE_NAME, span.getResource().getAttribute(AttributeKey.stringKey("service.name")));
+        assertEquals(
+                SERVICE_NAME,
+                span.getResource().getAttribute(AttributeKey.stringKey("service.name"))
+        );
     }
 
-    // ECS logging writes the MDC's traceId into every line; only the first context of a JVM decides the log format
+    // ECS logging writes the MDC's traceId into every line; only the first context of a JVM decides
+    // the log format
     @Test
     void shouldPutTheTraceId_inTheLoggingContextOfTheRequest() throws Exception {
         // given
@@ -116,8 +121,12 @@ class TracingHttpTest {
 
         // then
         assertEquals(200, response.statusCode());
-        assertTrue(finishedSpans().stream().noneMatch(span -> span.getTraceId().equals(actuatorTrace)), () -> "Spans: " + finishedSpans());
-        assertTrue(get("/actuator/prometheus", traceparent(newTraceId())).body().contains("uri=\"" + path + "\""));
+        assertTrue(
+                finishedSpans().stream().noneMatch(span -> span.getTraceId().equals(actuatorTrace)),
+                () -> "Spans: " + finishedSpans()
+        );
+        assertTrue(get("/actuator/prometheus", traceparent(newTraceId()))
+                .body().contains("uri=\"" + path + "\""));
     }
 
     @Test
@@ -134,7 +143,10 @@ class TracingHttpTest {
         final var text = query.getAttributes().get(AttributeKey.stringKey("db.query.text"));
         assertEquals("select series_configuration", query.getName());
         assertEquals(server.getSpanId(), query.getParentSpanId());
-        assertEquals("postgresql", query.getAttributes().get(AttributeKey.stringKey("db.system.name")));
+        assertEquals(
+                "postgresql",
+                query.getAttributes().get(AttributeKey.stringKey("db.system.name"))
+        );
         assertTrue(text.contains("?"), text);
         assertFalse(text.contains(QUERY_VALUE), text);
     }
@@ -153,8 +165,14 @@ class TracingHttpTest {
         final var query = querySpanOfTrace(traceId);
         assertEquals("select no_such_table", query.getName());
         assertEquals(StatusCode.ERROR, query.getStatus().getStatusCode());
-        assertFalse(query.getStatus().getDescription().contains("no_such_table"), query.getStatus().getDescription());
-        assertFalse(query.getEvents().toString().contains("no_such_table"), () -> query.getEvents().toString());
+        assertFalse(
+                query.getStatus().getDescription().contains("no_such_table"),
+                query.getStatus().getDescription()
+        );
+        assertFalse(
+                query.getEvents().toString().contains("no_such_table"),
+                () -> query.getEvents().toString()
+        );
     }
 
     @Test
@@ -180,7 +198,9 @@ class TracingHttpTest {
         dsl.fetchCount(DSL.table(DSL.name("public", "series_configuration")).as(marker));
 
         // then
-        assertTrue(finishedSpans().stream().noneMatch(span -> String.valueOf(span.getAttributes().get(AttributeKey.stringKey("db.query.text"))).contains(marker)));
+        assertTrue(finishedSpans().stream().noneMatch(span -> String.valueOf(
+                span.getAttributes().get(AttributeKey.stringKey("db.query.text"))
+        ).contains(marker)));
     }
 
     private String traceparent(String traceId) {
@@ -194,7 +214,9 @@ class TracingHttpTest {
     private SpanData awaitServerSpanOfTrace(String traceId) throws InterruptedException {
         final var deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
         while (System.nanoTime() < deadline) {
-            final var match = spansOfTrace(traceId).stream().filter(span -> span.getKind() == SpanKind.SERVER).findFirst();
+            final var match = spansOfTrace(traceId).stream()
+                    .filter(span -> span.getKind() == SpanKind.SERVER)
+                    .findFirst();
             if (match.isPresent()) {
                 return match.get();
             }
@@ -208,8 +230,11 @@ class TracingHttpTest {
     }
 
     private SpanData querySpanOfTrace(String traceId) {
-        return spansOfTrace(traceId).stream().filter(span -> span.getKind() == SpanKind.CLIENT).findFirst()
-                .orElseThrow(() -> new AssertionError("No query span of trace " + traceId + ": " + finishedSpans()));
+        return spansOfTrace(traceId).stream()
+                .filter(span -> span.getKind() == SpanKind.CLIENT)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "No query span of trace " + traceId + ": " + finishedSpans()));
     }
 
     private List<SpanData> finishedSpans() {
@@ -218,7 +243,11 @@ class TracingHttpTest {
     }
 
     private HttpResponse<String> getAsAdmin(String path, String traceparent) throws Exception {
-        when(jwtDecoder.decode(ADMIN_TOKEN)).thenReturn(Jwt.withTokenValue(ADMIN_TOKEN).header("alg", "ES256").subject("admin").claim("roles", List.of("ADMIN")).build());
+        when(jwtDecoder.decode(ADMIN_TOKEN)).thenReturn(Jwt.withTokenValue(ADMIN_TOKEN)
+                .header("alg", "ES256")
+                .subject("admin")
+                .claim("roles", List.of("ADMIN"))
+                .build());
         final var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                 .header("traceparent", traceparent)
                 .header("Authorization", "Bearer " + ADMIN_TOKEN)
@@ -282,7 +311,10 @@ class TracingHttpTest {
         }
 
         private int countSeriesConfigurations() {
-            return dsl.fetchCount(DSL.table(DSL.name("public", "series_configuration")), DSL.field(DSL.name("name"), String.class).eq(QUERY_VALUE));
+            return dsl.fetchCount(
+                    DSL.table(DSL.name("public", "series_configuration")),
+                    DSL.field(DSL.name("name"), String.class).eq(QUERY_VALUE)
+            );
         }
 
         @GetMapping("/tracing-test")

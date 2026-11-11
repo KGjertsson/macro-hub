@@ -26,7 +26,8 @@ class GatewayRoutingAcceptanceTest {
 
     @Test
     void chartSeriesAreAnsweredByMacroSeries() {
-        assertTrue(listedValues("/macro-analyzer/series-config", "name").contains("PolicyRateSweden"));
+        assertTrue(
+                listedValues("/macro-analyzer/series-config", "name").contains("PolicyRateSweden"));
     }
 
     @Test
@@ -36,14 +37,17 @@ class GatewayRoutingAcceptanceTest {
 
     @Test
     void indicatorsAreAnsweredByRegionalStatistics() {
-        assertTrue(listedValues("/macro-analyzer/regional-statistics/indicators", "id").contains("households"));
+        assertTrue(
+                listedValues("/macro-analyzer/regional-statistics/indicators", "id")
+                        .contains("households"));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"municipalities", "regions", "constituencies"})
     void electionResultsAreAnsweredByElection(String areaType) {
         // when
-        final var response = gateway.get("/macro-analyzer/%s/elections?year=%s".formatted(areaType, YEAR_WITHOUT_ELECTIONS));
+        final var response = gateway.get(
+                "/macro-analyzer/%s/elections?year=%s".formatted(areaType, YEAR_WITHOUT_ELECTIONS));
 
         // then
         assertEquals(204, response.statusCode());
@@ -63,14 +67,18 @@ class GatewayRoutingAcceptanceTest {
     @ValueSource(strings = {"regional-statistics", "macro-series", "parliament", "election"})
     void everyServiceAcceptsAScrapeRequestThroughTheGateway(String service) {
         // when
-        final var response = gateway.post("/macro-analyzer/scrape/%s/enqueue?name=unknown".formatted(service));
+        final var response =
+                gateway.post("/macro-analyzer/scrape/%s/enqueue?name=unknown".formatted(service));
 
         // then
         assertEquals(202, response.statusCode());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/macro-analyzer", "/macro-analyzer/unknown", "/macro-analyzer/scrape/unknown/enqueue-all"})
+    @ValueSource(strings = {
+            "/macro-analyzer",
+            "/macro-analyzer/unknown",
+            "/macro-analyzer/scrape/unknown/enqueue-all"})
     void anUnknownApiPathIsNotFoundRatherThanTheFrontendsPage(String path) {
         // when
         final var get = gateway.get(path);
@@ -147,7 +155,8 @@ class GatewayRoutingAcceptanceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/parliament", "/konto/logga-in", "/konto/registrera", "/konto/aterstall-losenord"})
+    @ValueSource(strings = {
+            "/parliament", "/konto/logga-in", "/konto/registrera", "/konto/aterstall-losenord"})
     void aPageOfTheDashboardGetsTheFrontend(String page) {
         // when
         final var response = gateway.get(page);

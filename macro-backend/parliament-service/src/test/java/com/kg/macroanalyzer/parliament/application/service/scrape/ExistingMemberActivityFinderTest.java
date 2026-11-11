@@ -43,9 +43,12 @@ public class ExistingMemberActivityFinderTest {
                 election(2018, "2018-09-24", "2022-09-25")
         );
         final var members = List.of(
-                member("new", "S", "Tjänstgörande riksdagsledamot", List.of(chamberSeat("2026-09-28", "2030-09-23"))),
-                member("previous", "M", "Tidigare riksdagsledamot", List.of(chamberSeat("2022-09-26", "2026-09-28"))),
-                member("old", "C", "Tidigare riksdagsledamot", List.of(chamberSeat("2018-09-24", "2022-09-26")))
+                member("new", "S", "Tjänstgörande riksdagsledamot",
+                        List.of(chamberSeat("2026-09-28", "2030-09-23"))),
+                member("previous", "M", "Tidigare riksdagsledamot",
+                        List.of(chamberSeat("2022-09-26", "2026-09-28"))),
+                member("old", "C", "Tidigare riksdagsledamot",
+                        List.of(chamberSeat("2018-09-24", "2022-09-26")))
         );
 
         // when

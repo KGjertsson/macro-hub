@@ -23,10 +23,12 @@ import static com.kg.macroanalyzer.parliament.jooq.generated.Tables.SWEDISH_MEMB
 public class SweParActivityRepository {
 
     private static final JsonMapper JSON_MAPPER = JsonMapper.builder().build();
-    private static final TypeReference<List<ParliamentDocument>> DOCUMENT_LIST = new TypeReference<>() {
-    };
-    private static final TypeReference<List<SessionVotes>> SESSION_VOTES_LIST = new TypeReference<>() {
-    };
+    private static final TypeReference<List<ParliamentDocument>> DOCUMENT_LIST =
+            new TypeReference<>() {
+            };
+    private static final TypeReference<List<SessionVotes>> SESSION_VOTES_LIST =
+            new TypeReference<>() {
+            };
 
     private final DSLContext dslContext;
 
@@ -90,11 +92,20 @@ public class SweParActivityRepository {
                 .votesNo(r.getValue(SWEDISH_MEMBER_ACTIVITY.VOTES_NO))
                 .votesAbsent(r.getValue(SWEDISH_MEMBER_ACTIVITY.VOTES_ABSENT))
                 .votesAbstain(r.getValue(SWEDISH_MEMBER_ACTIVITY.VOTES_ABSTAIN))
-                .votesBySession(fromJsonb(r.getValue(SWEDISH_MEMBER_ACTIVITY.VOTES_BY_SESSION), SESSION_VOTES_LIST))
+                .votesBySession(fromJsonb(
+                        r.getValue(SWEDISH_MEMBER_ACTIVITY.VOTES_BY_SESSION),
+                        SESSION_VOTES_LIST
+                ))
                 .speechCount(r.getValue(SWEDISH_MEMBER_ACTIVITY.SPEECH_COUNT))
                 .motionCount(r.getValue(SWEDISH_MEMBER_ACTIVITY.MOTION_COUNT))
-                .recentSpeeches(fromJsonb(r.getValue(SWEDISH_MEMBER_ACTIVITY.RECENT_SPEECHES), DOCUMENT_LIST))
-                .recentMotions(fromJsonb(r.getValue(SWEDISH_MEMBER_ACTIVITY.RECENT_MOTIONS), DOCUMENT_LIST))
+                .recentSpeeches(fromJsonb(
+                        r.getValue(SWEDISH_MEMBER_ACTIVITY.RECENT_SPEECHES),
+                        DOCUMENT_LIST
+                ))
+                .recentMotions(fromJsonb(
+                        r.getValue(SWEDISH_MEMBER_ACTIVITY.RECENT_MOTIONS),
+                        DOCUMENT_LIST
+                ))
                 .build();
     }
 

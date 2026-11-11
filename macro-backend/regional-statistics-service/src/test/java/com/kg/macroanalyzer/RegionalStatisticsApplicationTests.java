@@ -61,17 +61,23 @@ class RegionalStatisticsApplicationTests {
                 .set(SERIES_CONFIGURATION.SCRAPE_FLOW, "NEW")
                 .returning(SERIES_CONFIGURATION.ID)
                 .fetchSingle(SERIES_CONFIGURATION.ID);
-        dslContext.deleteFrom(SERIES_CONFIGURATION).where(SERIES_CONFIGURATION.ID.eq(newId)).execute();
+        dslContext.deleteFrom(SERIES_CONFIGURATION)
+                .where(SERIES_CONFIGURATION.ID.eq(newId))
+                .execute();
 
         // then
         assertEquals(116, copied.getId());
-        assertEquals(UUID.fromString("1644ab25-28f8-4ef6-910f-ff69bf4469d2"), copied.getGlobalId());
+        assertEquals(
+                UUID.fromString("1644ab25-28f8-4ef6-910f-ff69bf4469d2"),
+                copied.getGlobalId()
+        );
         assertTrue(newId > copied.getId(), () -> "new id " + newId);
     }
 
     private List<String> successfulVersions(String historyTable) {
         return dslContext.fetch(
-                "select version from %s where success order by installed_rank".formatted(historyTable)
+                "select version from %s where success order by installed_rank"
+                        .formatted(historyTable)
         ).map(r -> r.get(0, String.class));
     }
 

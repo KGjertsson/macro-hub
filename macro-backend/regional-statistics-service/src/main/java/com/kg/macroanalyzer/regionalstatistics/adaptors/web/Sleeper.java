@@ -10,7 +10,8 @@ interface Sleeper {
 
     void sleep(long millis) throws InterruptedException;
 
-    // An interrupt (e.g. shutdown) keeps the thread's interrupt flag and ends the scrape instead of being swallowed
+    // An interrupt (e.g. shutdown) keeps the thread's interrupt flag and ends the scrape instead of
+    // being swallowed
     static void sleepOrStop(Sleeper sleeper, long millis) throws ScrapeException {
         try {
             sleeper.sleep(millis);

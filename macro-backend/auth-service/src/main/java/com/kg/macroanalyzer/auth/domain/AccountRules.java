@@ -10,7 +10,8 @@ public final class AccountRules {
     // Hashing cost is fixed per call, and this keeps what a caller can hand to it bounded
     private static final int MAX_PASSWORD_LENGTH = 128;
     private static final Pattern EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
-    private static final Pattern DISPLAY_NAME = Pattern.compile("^[\\p{L}\\p{N}][\\p{L}\\p{N} _-]{1,28}[\\p{L}\\p{N}]$");
+    private static final Pattern DISPLAY_NAME = Pattern.compile(
+            "^[\\p{L}\\p{N}][\\p{L}\\p{N} _-]{1,28}[\\p{L}\\p{N}]$");
 
     private AccountRules() {
     }
@@ -28,7 +29,9 @@ public final class AccountRules {
     }
 
     public static String validPassword(String password) {
-        if (password == null || password.length() < MIN_PASSWORD_LENGTH || password.length() > MAX_PASSWORD_LENGTH) {
+        if (password == null
+                || password.length() < MIN_PASSWORD_LENGTH
+                || password.length() > MAX_PASSWORD_LENGTH) {
             throw new InvalidInputException("password");
         }
 

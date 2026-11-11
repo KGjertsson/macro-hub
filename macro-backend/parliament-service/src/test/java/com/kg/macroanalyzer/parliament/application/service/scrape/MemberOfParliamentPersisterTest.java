@@ -40,7 +40,8 @@ public class MemberOfParliamentPersisterTest {
         final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
 
         // when
-        final var result = persister.persist(new ConfigWithMemberOfParliament(seriesConfig, List.of()));
+        final var result =
+                persister.persist(new ConfigWithMemberOfParliament(seriesConfig, List.of()));
 
         // then
         assertEquals(ScrapeResult.EMPTY, result);
@@ -56,7 +57,8 @@ public class MemberOfParliamentPersisterTest {
 
         // when
         when(repositoryPort.writeMembersOfParliament(members)).thenReturn(1);
-        final var result = persister.persist(new ConfigWithMemberOfParliament(seriesConfig, members));
+        final var result =
+                persister.persist(new ConfigWithMemberOfParliament(seriesConfig, members));
 
         // then
         assertEquals(ScrapeResult.SUCCESS, result);
@@ -73,7 +75,8 @@ public class MemberOfParliamentPersisterTest {
         final var input = new ConfigWithMemberOfParliament(seriesConfig, members);
 
         // when
-        when(repositoryPort.writeMembersOfParliament(members)).thenThrow(new RuntimeException("connection reset"));
+        when(repositoryPort.writeMembersOfParliament(members))
+                .thenThrow(new RuntimeException("connection reset"));
 
         // then
         assertThrows(RuntimeException.class, () -> persister.persist(input));

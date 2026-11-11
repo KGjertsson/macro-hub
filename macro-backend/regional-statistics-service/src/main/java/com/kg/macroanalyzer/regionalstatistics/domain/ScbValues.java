@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// SCB fills the years a version has no data for with 0 or null,
-// so a version's year is only kept when some value in it is neither null nor 0. Within a kept year a null
-// (suppressed) value is dropped and a real 0 is kept. The maps are wrapped rather than copied, because a full scrape
+// SCB fills the years a version has no data for with 0 or null, so a version's year is only kept
+// when some value in it is neither null nor 0. Within a kept year a null (suppressed) value is
+// dropped and a real 0 is kept. The maps are wrapped rather than copied, because a full scrape
 // passes about 2.4 M values through here
 @UtilityClass
 public class ScbValues {
@@ -44,7 +44,10 @@ public class ScbValues {
         return Collections.unmodifiableMap(kept);
     }
 
-    public static Map<ScbSlice, Map<String, Double>> scale(Map<ScbSlice, Map<String, Double>> values, double multiplier) {
+    public static Map<ScbSlice, Map<String, Double>> scale(
+            Map<ScbSlice, Map<String, Double>> values,
+            double multiplier
+    ) {
         final var scaled = new HashMap<ScbSlice, Map<String, Double>>();
         values.forEach((slice, byArea) -> {
             final var scaledByArea = new HashMap<String, Double>();
@@ -89,7 +92,11 @@ public class ScbValues {
         return Collections.unmodifiableList(areaValues);
     }
 
-    public static List<List<String>> yearChunks(List<String> years, long cellsPerYear, long maxCells) {
+    public static List<List<String>> yearChunks(
+            List<String> years,
+            long cellsPerYear,
+            long maxCells
+    ) {
         final var yearsPerChunk = (int) Math.max(1, maxCells / Math.max(1, cellsPerYear));
         final var chunks = new ArrayList<List<String>>();
         for (int i = 0; i < years.size(); i += yearsPerChunk) {

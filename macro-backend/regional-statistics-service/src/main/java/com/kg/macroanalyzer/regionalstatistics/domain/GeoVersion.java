@@ -5,13 +5,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-// One SCB table holds every version of an area division; the version is only visible in the region code.
-// The 2025 versions carry a suffix that the boundary files do not, so it is stripped before storing.
+// One SCB table holds every version of an area division; the version is only visible in the region
+// code. The 2025 versions carry a suffix that the boundary files do not, so it is stripped before
+// storing.
 public enum GeoVersion {
     DESO_2018("DeSO2018", ScbLevel.DESO, "\\d{4}[ABC]\\d{4}", "", "?????????"),
     DESO_2025("DeSO2025", ScbLevel.DESO, "\\d{4}[ABC]\\d{4}_DeSO2025", "_DeSO2025", "*_DeSO2025"),
     REGSO_2020("RegSO2020", ScbLevel.REGSO, "\\d{4}R\\d{3}", "", "????????"),
-    REGSO_2025("RegSO2025", ScbLevel.REGSO, "\\d{4}R\\d{3}_RegSO2025", "_RegSO2025", "*_RegSO2025");
+    REGSO_2025(
+            "RegSO2025", ScbLevel.REGSO, "\\d{4}R\\d{3}_RegSO2025", "_RegSO2025", "*_RegSO2025"
+    );
 
     private final String code;
     private final ScbLevel level;

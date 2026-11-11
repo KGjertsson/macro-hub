@@ -61,7 +61,10 @@ class SweParMemberRepositoryTest {
     @Test
     void shouldReadOneMember_byItsId() {
         // given
-        repository.upsertMembers(List.of(member("1", "S", "Tidigare riksdagsledamot"), member("2", "M", "Tidigare riksdagsledamot")));
+        repository.upsertMembers(List.of(
+                member("1", "S", "Tidigare riksdagsledamot"),
+                member("2", "M", "Tidigare riksdagsledamot")
+        ));
 
         // when
         final var result = repository.readMember("2");

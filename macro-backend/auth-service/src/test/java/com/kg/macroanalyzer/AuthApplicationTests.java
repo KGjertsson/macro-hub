@@ -21,7 +21,9 @@ class AuthApplicationTests {
     @Test
     void shouldHaveAppliedItsOwnMigrations() {
         // when
-        final var versions = dslContext.resultQuery("select version from flyway_schema_history where success order by installed_rank")
+        final var versions = dslContext.resultQuery(
+                        "select version from flyway_schema_history where success "
+                                + "order by installed_rank")
                 .fetch(0, String.class);
 
         // then
@@ -31,7 +33,9 @@ class AuthApplicationTests {
     @Test
     void shouldHaveNoScrapeTables_becauseItDoesNotScrape() {
         // when
-        final var tables = dslContext.resultQuery("select table_name from information_schema.tables where table_schema = 'public'")
+        final var tables = dslContext.resultQuery(
+                        "select table_name from information_schema.tables "
+                                + "where table_schema = 'public'")
                 .fetch(0, String.class);
 
         // then

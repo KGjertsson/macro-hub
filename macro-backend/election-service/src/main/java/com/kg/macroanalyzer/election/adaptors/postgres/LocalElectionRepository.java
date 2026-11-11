@@ -44,15 +44,17 @@ public class LocalElectionRepository {
     }
 
     public Set<String> readSourceMd5s(LocalElectionType type) {
-        return Collections.unmodifiableSet(new HashSet<>(dslContext.select(LOCAL_ELECTION_AREA.SOURCE_MD5)
+        return Collections.unmodifiableSet(new HashSet<>(dslContext
+                .select(LOCAL_ELECTION_AREA.SOURCE_MD5)
                 .from(LOCAL_ELECTION_AREA)
                 .where(LOCAL_ELECTION_AREA.ELECTION_TYPE.eq(type.name()))
                 .fetch(LOCAL_ELECTION_AREA.SOURCE_MD5)));
     }
 
-    // Each area is replaced as a whole so parties that lost all votes in a corrected file disappear.
-    // All areas are written in one transaction: the Riksdag file's 29 valkretsar share one md5, so a partial
-    // write would leave that md5 stored and the missing valkretsar would never be re-fetched
+    // Each area is replaced as a whole so parties that lost all votes in a corrected file
+    // disappear. All areas are written in one transaction: the Riksdag file's 29 valkretsar share
+    // one md5, so a partial write would leave that md5 stored and the missing valkretsar would
+    // never be re-fetched
     public Integer writeResults(List<LocalElectionResult> results) {
         dslContext.transaction(configuration -> {
             final var tx = DSL.using(configuration);
@@ -65,7 +67,11 @@ public class LocalElectionRepository {
     private static void writeResult(DSLContext tx, LocalElectionResult result) {
         tx.insertInto(LOCAL_ELECTION_AREA)
                 .set(areaRecord(result))
-                .onConflict(LOCAL_ELECTION_AREA.ELECTION_YEAR, LOCAL_ELECTION_AREA.ELECTION_TYPE, LOCAL_ELECTION_AREA.AREA_CODE)
+                .onConflict(
+                        LOCAL_ELECTION_AREA.ELECTION_YEAR,
+                        LOCAL_ELECTION_AREA.ELECTION_TYPE,
+                        LOCAL_ELECTION_AREA.AREA_CODE
+                )
                 .doUpdate()
                 .set(areaRecord(result))
                 .execute();
@@ -106,7 +112,10 @@ public class LocalElectionRepository {
                 .stream()
                 .collect(Collectors.groupingBy(
                         LocalElectionPartyResultRecord::getAreaCode,
-                        Collectors.mapping(LocalElectionRepository::toPartyResult, Collectors.toList())
+                        Collectors.mapping(
+                                LocalElectionRepository::toPartyResult,
+                                Collectors.toList()
+                        )
                 ));
 
         return dslContext.selectFrom(LOCAL_ELECTION_AREA)
@@ -114,10 +123,18 @@ public class LocalElectionRepository {
                 .and(LOCAL_ELECTION_AREA.ELECTION_YEAR.eq(year))
                 .orderBy(LOCAL_ELECTION_AREA.AREA_NAME)
                 .fetch()
-                .map(r -> toResult(r, partiesByArea.getOrDefault(r.getAreaCode(), List.of()), List.of()));
+                .map(r -> toResult(
+                        r,
+                        partiesByArea.getOrDefault(r.getAreaCode(), List.of()),
+                        List.of()
+                ));
     }
 
-    public Optional<LocalElectionResult> readResult(LocalElectionType type, int year, String areaCode) {
+    public Optional<LocalElectionResult> readResult(
+            LocalElectionType type,
+            int year,
+            String areaCode
+    ) {
         final var parties = dslContext.selectFrom(LOCAL_ELECTION_PARTY_RESULT)
                 .where(areaCondition(year, type, areaCode))
                 .orderBy(LOCAL_ELECTION_PARTY_RESULT.VOTES.desc())
@@ -173,7 +190,10 @@ public class LocalElectionRepository {
         return record;
     }
 
-    private static LocalElectionPartyResultRecord partyRecord(LocalElectionResult result, LocalPartyResult party) {
+    private static LocalElectionPartyResultRecord partyRecord(
+            LocalElectionResult result,
+            LocalPartyResult party
+    ) {
         return new LocalElectionPartyResultRecord(
                 result.year(),
                 result.type().name(),
@@ -222,7 +242,8 @@ public class LocalElectionRepository {
     }
 
     private static JSONB toJsonb(List<ElectedMember> members) {
-        return JSONB.valueOf(JSON_MAPPER.writeValueAsString(members == null ? List.of() : members));
+        return JSONB.valueOf(
+                JSON_MAPPER.writeValueAsString(members == null ? List.of() : members));
     }
 
     private static List<ElectedMember> fromJsonb(JSONB jsonb) {

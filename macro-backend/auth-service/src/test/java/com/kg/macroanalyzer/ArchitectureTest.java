@@ -21,7 +21,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@AnalyzeClasses(packages = ArchitectureTest.ROOT, importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(
+        packages = ArchitectureTest.ROOT, importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
     static final String ROOT = "com.kg.macroanalyzer";
@@ -31,21 +32,28 @@ class ArchitectureTest {
     private static final String SHARED = ROOT + ".shared";
     private static final String PLATFORM_JOOQ = ROOT + ".platform.jooq.generated";
 
-    // The rules below hold for classes they see, so a macro-platform missing from the import would pass them silently
+    // The rules below hold for classes they see, so a macro-platform missing from the import would
+    // pass them silently
     @ArchTest
     static void importIncludesMacroPlatform(JavaClasses classes) {
         Stream.of(WebPort.class, DefaultCatalog.class).forEach(platformClass ->
-                assertTrue(classes.contain(platformClass), platformClass.getName() + " is not among the imported classes"));
+                assertTrue(
+                        classes.contain(platformClass),
+                        platformClass.getName() + " is not among the imported classes"));
     }
 
     @ArchTest
-    static final ArchRule everyClassResidesInAModule = classes().that().resideInAPackage(ROOT + "..")
+    static final ArchRule everyClassResidesInAModule = classes()
+            .that().resideInAPackage(ROOT + "..")
             .and().doNotHaveFullyQualifiedName(AuthApplication.class.getName())
-            .should().resideInAnyPackage(MODULE + "..", SCRAPE + "..", SHARED + "..", PLATFORM_JOOQ + "..")
-            .as("every class except the application class resides in a module or in the platform's generated code");
+            .should().resideInAnyPackage(
+                    MODULE + "..", SCRAPE + "..", SHARED + "..", PLATFORM_JOOQ + "..")
+            .as("every class except the application class resides in a module or in the platform's "
+                    + "generated code");
 
     @ArchTest
-    static final ArchRule moduleOnlyDependsOnItselfAndThePlatformCore = classes().that().resideInAPackage(MODULE + "..")
+    static final ArchRule moduleOnlyDependsOnItselfAndThePlatformCore = classes()
+            .that().resideInAPackage(MODULE + "..")
             .should().onlyDependOnClassesThat(resideOutsideOfPackage(ROOT + "..")
                     .or(resideInAnyPackage(MODULE + "..", SHARED + "..")))
             .as("auth only depends on itself and shared: it has no scraping");
@@ -65,30 +73,37 @@ class ArchitectureTest {
     @ArchTest
     static final ArchRule onlyPostgresAdaptorsUseTheJooqModel = noClasses()
             .that().resideInAPackage(MODULE + "..")
-            .and().resideOutsideOfPackages(MODULE + ".adaptors.postgres..", MODULE + ".jooq.generated..")
+            .and().resideOutsideOfPackages(
+                    MODULE + ".adaptors.postgres..", MODULE + ".jooq.generated..")
             .should().dependOnClassesThat().resideInAPackage(MODULE + ".jooq.generated..")
             .as("only auth's postgres adaptors use its jOOQ model");
 
-    // Ports are the contract the services implement and use, so they only refer to domain and port types
+    // Ports are the contract the services implement and use, so they only refer to domain and port
+    // types
     @ArchTest
-    static final ArchRule portsDoNotDependOnServices = noClasses().that().resideInAPackage(ROOT + "..application.port..")
+    static final ArchRule portsDoNotDependOnServices = noClasses()
+            .that().resideInAPackage(ROOT + "..application.port..")
             .should().dependOnClassesThat().resideInAPackage(ROOT + "..application.service..")
             .as("no port depends on a service");
 
     private static final Set<String> MUTABLE_FIELDS = Set.of();
 
     // Lombok's builders are the one place where a field is meant to be assigned more than once
-    private static final DescribedPredicate<JavaClass> LOMBOK_BUILDERS = DescribedPredicate.describe("Lombok builders",
+    private static final DescribedPredicate<JavaClass> LOMBOK_BUILDERS =
+            DescribedPredicate.describe("Lombok builders",
             javaClass -> javaClass.getEnclosingClass()
-                    .map(enclosing -> javaClass.getSimpleName().equals(enclosing.getSimpleName() + "Builder"))
+                    .map(enclosing -> javaClass.getSimpleName()
+                            .equals(enclosing.getSimpleName() + "Builder"))
                     .orElse(false));
 
     @ArchTest
-    static final ArchRule fieldsAreFinal = fields().that().areDeclaredInClassesThat().resideInAnyPackage(MODULE + "..")
+    static final ArchRule fieldsAreFinal = fields()
+            .that().areDeclaredInClassesThat().resideInAnyPackage(MODULE + "..")
             .and().areDeclaredInClassesThat().resideOutsideOfPackage(MODULE + ".jooq.generated..")
             .and().areDeclaredInClassesThat(DescribedPredicate.not(LOMBOK_BUILDERS))
             .and(DescribedPredicate.describe("not allowed to change",
-                    (JavaField field) -> !MUTABLE_FIELDS.contains(field.getOwner().getName() + "." + field.getName())))
+                    (JavaField field) -> !MUTABLE_FIELDS.contains(
+                            field.getOwner().getName() + "." + field.getName())))
             .should().beFinal()
             .as("fields in auth are final, except the listed ones");
 

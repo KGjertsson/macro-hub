@@ -33,7 +33,8 @@ public class ExistingScbTableFinderTest {
         when(repositoryPort.readScbIndicators()).thenReturn(List.of(indicator));
         when(repositoryPort.readScbTableStamps()).thenReturn(stamps);
         when(repositoryPort.readScbIndicatorsWithData()).thenReturn(Set.of("population"));
-        final var result = new ExistingScbTableFinder(repositoryPort).findExisting(config).orElseThrow();
+        final var result =
+                new ExistingScbTableFinder(repositoryPort).findExisting(config).orElseThrow();
 
         // then
         assertEquals(config, result.seriesConfig());

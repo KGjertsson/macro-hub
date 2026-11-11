@@ -15,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ScbRetryTest {
 
-    private static final String URL = "https://statistikdatabasen.scb.se/api/v2/tables/TAB6574/metadata?lang=sv";
+    private static final String URL =
+            "https://statistikdatabasen.scb.se/api/v2/tables/TAB6574/metadata?lang=sv";
 
     private final List<Long> sleeps = new ArrayList<>();
     private final AtomicInteger calls = new AtomicInteger();
@@ -60,7 +61,10 @@ public class ScbRetryTest {
         final var retry = new ScbRetry(noLimit, sleeps::add);
 
         // when
-        final var exception = assertThrows(ScrapeException.class, () -> retry.fetch(flow("HTTP 500 from upstream: ", 100), URL));
+        final var exception = assertThrows(
+                ScrapeException.class,
+                () -> retry.fetch(flow("HTTP 500 from upstream: ", 100), URL)
+        );
 
         // then
         assertEquals("HTTP 500 from upstream: ", exception.getMessage());
@@ -76,7 +80,10 @@ public class ScbRetryTest {
         });
 
         // when
-        assertThrows(ScrapeException.class, () -> retry.fetch(flow("HTTP 404 from upstream: ", 100), URL));
+        assertThrows(
+                ScrapeException.class,
+                () -> retry.fetch(flow("HTTP 404 from upstream: ", 100), URL)
+        );
 
         // then
         assertEquals(1, calls.get());

@@ -62,20 +62,29 @@ public class ScrapeMetricsMicrometerAdaptor implements ScrapeMetricsPort {
             new AtomicReference<>(new PendingReading(Instant.MIN, Double.NaN));
 
     @Autowired
-    public ScrapeMetricsMicrometerAdaptor(MeterRegistry meterRegistry, ScrapeQueuePort scrapeQueuePort) {
+    public ScrapeMetricsMicrometerAdaptor(
+            MeterRegistry meterRegistry,
+            ScrapeQueuePort scrapeQueuePort
+    ) {
         this(meterRegistry, scrapeQueuePort, InstantSource.system());
     }
 
-    ScrapeMetricsMicrometerAdaptor(MeterRegistry meterRegistry, ScrapeQueuePort scrapeQueuePort, InstantSource clock) {
+    ScrapeMetricsMicrometerAdaptor(
+            MeterRegistry meterRegistry,
+            ScrapeQueuePort scrapeQueuePort,
+            InstantSource clock
+    ) {
         this.meterRegistry = meterRegistry;
         this.scrapeQueuePort = scrapeQueuePort;
         this.clock = clock;
         Gauge.builder(QUEUE_PENDING, this, ScrapeMetricsMicrometerAdaptor::pendingItems)
-                .description("Queue items not done yet, read from the database at most every 30 seconds")
+                .description(
+                        "Queue items not done yet, read from the database at most every 30 seconds")
                 .register(meterRegistry);
     }
 
-    // A counter that first appears with the value 1 shows no increase in Prometheus, so every series starts at 0
+    // A counter that first appears with the value 1 shows no increase in Prometheus, so every
+    // series starts at 0
     @Override
     public void registerFlows(Collection<String> flowIds) {
         flowIds.forEach(flowId -> {
@@ -112,8 +121,9 @@ public class ScrapeMetricsMicrometerAdaptor implements ScrapeMetricsPort {
                 .register(meterRegistry);
     }
 
-    // In memory, because the queue table doesn't say when an item was done, so a flow has no series until its first
-    // success after a start. The Scrapes dashboard bridges that with last_over_time
+    // In memory, because the queue table doesn't say when an item was done, so a flow has no
+    // series until its first success after a start. The Scrapes dashboard bridges that with
+    // last_over_time
     private AtomicLong lastSuccessGauge(String flowId) {
         return lastSuccessMillis.computeIfAbsent(flowId, id -> {
             final var millis = new AtomicLong();
@@ -125,7 +135,8 @@ public class ScrapeMetricsMicrometerAdaptor implements ScrapeMetricsPort {
         });
     }
 
-    // A failed read is remembered too: a Prometheus scrape must not wait out the pool's connection timeout every time
+    // A failed read is remembered too: a Prometheus scrape must not wait out the pool's connection
+    // timeout every time
     private double pendingItems() {
         final var now = clock.instant();
         final var cached = pendingReading.get();

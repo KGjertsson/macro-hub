@@ -45,7 +45,8 @@ class HttpResponses {
 
     static String readText(InputStream is) throws IOException {
         StringBuilder responseBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 responseBuilder.append(line).append('\n');

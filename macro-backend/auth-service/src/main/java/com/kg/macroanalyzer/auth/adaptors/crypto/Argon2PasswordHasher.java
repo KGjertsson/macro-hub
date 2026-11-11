@@ -14,7 +14,8 @@ public class Argon2PasswordHasher implements PasswordHasherPort {
     private static final int PARALLELISM = 1;
     private static final int MEMORY_KIB = 19_456;
     private static final int ITERATIONS = 2;
-    // 19 MiB per hash and 200 request threads: without a limit, a burst of logins could take most of a small machine's memory
+    // 19 MiB per hash and 200 request threads: without a limit, a burst of logins could take
+    // most of a small machine's memory
     private static final int CONCURRENT_HASHES = 4;
 
     private final Argon2PasswordEncoder encoder =

@@ -24,7 +24,8 @@ class MacroSeriesAcceptanceTest {
 
     private static final String RIKSBANKEN_OBSERVATIONS = "/swea/v1/Observations/";
     private static final String FED_OBSERVATIONS = "/fred/series/observations";
-    private static final String EUROSTAT_GOVERNMENT_DEBT = "/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1";
+    private static final String EUROSTAT_GOVERNMENT_DEBT =
+            "/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1";
 
     private static final String FIRST_COLOR = "rgb(207,82,48)";
     private static final String SECOND_COLOR = "rgb(245,154,68)";
@@ -48,7 +49,9 @@ class MacroSeriesAcceptanceTest {
 
         // then
         final var chart = chart("DAY", "ALL", series);
-        assertEquals(json("[[2024,5,16],[2024,5,17],[2024,5,18],[2024,5,19],[2024,5,20]]"), chart.get("labels"));
+        assertEquals(
+                json("[[2024,5,16],[2024,5,17],[2024,5,18],[2024,5,19],[2024,5,20]]"),
+                chart.get("labels"));
         assertEquals(1, chart.get("chartData").size());
         assertSeries(chart, 0, series, "[4.0,3.75,3.75,3.75,3.5]");
         assertEquals(1, sources.requestCount(sourcePath));
@@ -131,8 +134,12 @@ class MacroSeriesAcceptanceTest {
         // given
         final var shortRate = "EuroMarketRateUsa3Month";
         final var longRate = "IntGovBondsUsa10Year";
-        sources.serveJson(RIKSBANKEN_OBSERVATIONS + "EUDP3MUSD/1979-11-28", "riksbanken/euro-market-rate-usa-3-month.json");
-        sources.serveJson(RIKSBANKEN_OBSERVATIONS + "USGVB10Y/1991-01-02", "riksbanken/gov-bond-usa-10-year.json");
+        sources.serveJson(
+                RIKSBANKEN_OBSERVATIONS + "EUDP3MUSD/1979-11-28",
+                "riksbanken/euro-market-rate-usa-3-month.json");
+        sources.serveJson(
+                RIKSBANKEN_OBSERVATIONS + "USGVB10Y/1991-01-02",
+                "riksbanken/gov-bond-usa-10-year.json");
 
         // when
         scrape(shortRate);
@@ -140,7 +147,9 @@ class MacroSeriesAcceptanceTest {
 
         // then
         final var perDay = chart("DAY", "ALL", longRate, shortRate);
-        assertEquals(json("[[2024,1,30],[2024,1,31],[2024,2,1],[2024,2,2],[2024,2,3]]"), perDay.get("labels"));
+        assertEquals(
+                json("[[2024,1,30],[2024,1,31],[2024,2,1],[2024,2,2],[2024,2,3]]"),
+                perDay.get("labels"));
         assertEquals(2, perDay.get("chartData").size());
         assertSeries(perDay, 0, shortRate, "[5.5,5.5,5.4,5.3,null]");
         assertSeries(perDay, 1, longRate, "[null,4.1,4.1,4.1,4.2]");
@@ -173,7 +182,9 @@ class MacroSeriesAcceptanceTest {
 
         // then
         final var chart = chart("DAY", "ONEYEAR", series);
-        assertEquals(json("[%s,%s]".formatted(dayLabel(recently), dayLabel(dayAfter))), chart.get("labels"));
+        assertEquals(
+                json("[%s,%s]".formatted(dayLabel(recently), dayLabel(dayAfter))),
+                chart.get("labels"));
         assertSeries(chart, 0, series, "[2.0,3.0]");
     }
 
@@ -186,9 +197,11 @@ class MacroSeriesAcceptanceTest {
             """
             {"strategy":"DAY","timeFrame":"ALL"}""",
             """
-            {"strategy":"WEEK","timeFrame":"ALL","chartSeriesParams":[{"name":"PolicyRateSweden"}]}""",
+            {"strategy":"WEEK","timeFrame":"ALL",\
+            "chartSeriesParams":[{"name":"PolicyRateSweden"}]}""",
             """
-            {"strategy":"DAY","timeFrame":"TWOYEAR","chartSeriesParams":[{"name":"PolicyRateSweden"}]}"""
+            {"strategy":"DAY","timeFrame":"TWOYEAR",\
+            "chartSeriesParams":[{"name":"PolicyRateSweden"}]}"""
     })
     void aChartRequestMissingOrMisspellingAChoiceIsRejected(String body) {
         // when
@@ -199,8 +212,10 @@ class MacroSeriesAcceptanceTest {
     }
 
     private void scrape(String series) {
-        assertEquals(202, gateway.post("/macro-analyzer/scrape/macro-series/enqueue?name=" + series).statusCode());
-        assertEquals(200, gateway.post("/macro-analyzer/scrape/macro-series/scrape-from-queue").statusCode());
+        assertEquals(202, gateway.post(
+                "/macro-analyzer/scrape/macro-series/enqueue?name=" + series).statusCode());
+        assertEquals(200, gateway.post(
+                "/macro-analyzer/scrape/macro-series/scrape-from-queue").statusCode());
     }
 
     private JsonNode chart(String strategy, String timeFrame, String... series) {
@@ -216,7 +231,8 @@ class MacroSeriesAcceptanceTest {
                 .collect(Collectors.joining(","));
 
         return gateway.postJson("/macro-analyzer/chart-data", """
-                {"strategy":"%s","timeFrame":"%s","chartSeriesParams":[%s]}""".formatted(strategy, timeFrame, params));
+                {"strategy":"%s","timeFrame":"%s",\
+                "chartSeriesParams":[%s]}""".formatted(strategy, timeFrame, params));
     }
 
     private void assertSeries(JsonNode chart, int position, String name, String values) {

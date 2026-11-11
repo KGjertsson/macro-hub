@@ -52,12 +52,13 @@ public final class AcceptanceStack implements AutoCloseable {
     private static final String HEALTH_PATH = "/actuator/health";
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
 
-    // A boot is CPU-bound, so services starting at once take as long as starting in turn. A journey is too short to gain
-    // from C2 or a concurrent collector, and both spend CPU during the boot
+    // A boot is CPU-bound, so services starting at once take as long as starting in turn. A journey
+    // is too short to gain from C2 or a concurrent collector, and both spend CPU during the boot
     private static final String CHEAP_BOOT_JVM_OPTIONS = "-XX:TieredStopAtLevel=1 -XX:+UseSerialGC";
 
     private static final AtomicInteger STACKS_STARTED = new AtomicInteger();
-    private static final StackWalker CALLER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+    private static final StackWalker CALLER =
+            StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     private final String logTag;
     private final Network network = Network.newNetwork();
@@ -66,9 +67,11 @@ public final class AcceptanceStack implements AutoCloseable {
     private final Gateway gateway;
     private final Sources sources;
 
-    // Testcontainers' Ryuk removes the containers and the network when the test JVM exits, so it is never closed here
+    // Testcontainers' Ryuk removes the containers and the network when the test JVM exits, so it is
+    // never closed here
     private static final class Holder {
-        private static final AcceptanceStack RUNNING = new AcceptanceStack("Shared", BackendService.ALL);
+        private static final AcceptanceStack RUNNING =
+                new AcceptanceStack("Shared", BackendService.ALL);
     }
 
     public static AcceptanceStack running() {
@@ -76,7 +79,9 @@ public final class AcceptanceStack implements AutoCloseable {
     }
 
     public static AcceptanceStack startWith(List<BackendService> services) {
-        return new AcceptanceStack(CALLER.getCallerClass().getSimpleName().replace("AcceptanceTest", ""), services);
+        return new AcceptanceStack(
+                CALLER.getCallerClass().getSimpleName().replace("AcceptanceTest", ""),
+                services);
     }
 
     private AcceptanceStack(String owner, List<BackendService> services) {
@@ -102,7 +107,8 @@ public final class AcceptanceStack implements AutoCloseable {
         startWithSourcesRedirected(service);
     }
 
-    // GenericContainer.stop() would remove the container, and with it the anonymous volume that holds the data
+    // GenericContainer.stop() would remove the container, and with it the anonymous volume that
+    // holds the data
     public void stopPostgres() {
         postgres.getDockerClient().stopContainerCmd(postgres.getContainerId()).exec();
     }
@@ -111,17 +117,21 @@ public final class AcceptanceStack implements AutoCloseable {
         postgres.getDockerClient().startContainerCmd(postgres.getContainerId()).exec();
     }
 
-    // A service that sends mail is started afterwards with startLater, with its SMTP settings pointed at MAILBOX_ALIAS
+    // A service that sends mail is started afterwards with startLater, with its SMTP settings
+    // pointed at MAILBOX_ALIAS
     public Mailbox startMailbox() {
         final GenericContainer<?> mailbox = new GenericContainer<>(MAILBOX_IMAGE)
                 .withNetwork(network)
                 .withNetworkAliases(MAILBOX_ALIAS)
                 .withExposedPorts(MAILBOX_SMTP_PORT, MAILBOX_API_PORT)
-                .waitingFor(Wait.forHttp("/api/v1/info").forPort(MAILBOX_API_PORT).withStartupTimeout(STARTUP_TIMEOUT));
+                .waitingFor(Wait.forHttp("/api/v1/info")
+                        .forPort(MAILBOX_API_PORT)
+                        .withStartupTimeout(STARTUP_TIMEOUT));
         containers.add(mailbox);
         mailbox.start();
 
-        return new Mailbox(new Gateway(baseUrl(mailbox, MAILBOX_API_PORT)), MAILBOX_ALIAS, MAILBOX_SMTP_PORT);
+        return new Mailbox(
+                new Gateway(baseUrl(mailbox, MAILBOX_API_PORT)), MAILBOX_ALIAS, MAILBOX_SMTP_PORT);
     }
 
     public Gateway gateway() {
@@ -148,15 +158,19 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withCopyFileToContainer(
                         MountableFile.forHostPath(postgresInitScripts()),
                         "/docker-entrypoint-initdb.d/")
-                // Twice, because the image's init scripts run on a temporary server that also logs this
-                .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2)
+                // Twice, because the image's init scripts run on a temporary server that also logs
+                // this
+                .waitingFor(Wait.forLogMessage(
+                                ".*database system is ready to accept connections.*", 2)
                         .withStartupTimeout(STARTUP_TIMEOUT));
     }
 
     private Path postgresInitScripts() {
-        final var scripts = Path.of(System.getProperty(POSTGRES_INIT_PROPERTY, POSTGRES_INIT_DEFAULT));
+        final var scripts = Path.of(
+                System.getProperty(POSTGRES_INIT_PROPERTY, POSTGRES_INIT_DEFAULT));
         if (!Files.isDirectory(scripts)) {
-            throw new IllegalStateException("No postgres-init directory at %s. Run from macro-backend/acceptance-tests, or set -D%s"
+            throw new IllegalStateException(("No postgres-init directory at %s. Run from "
+                            + "macro-backend/acceptance-tests, or set -D%s")
                     .formatted(scripts.toAbsolutePath(), POSTGRES_INIT_PROPERTY));
         }
 
@@ -171,7 +185,8 @@ public final class AcceptanceStack implements AutoCloseable {
                 .waitingFor(Wait.forHttp("/__admin/health").withStartupTimeout(STARTUP_TIMEOUT));
     }
 
-    // allOf waits for every start, also after one has failed, so close() can't miss a container that is still starting
+    // allOf waits for every start, also after one has failed, so close() can't miss a container
+    // that is still starting
     private void startAll(List<BackendService> services) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             CompletableFuture.allOf(services.stream()
@@ -202,37 +217,46 @@ public final class AcceptanceStack implements AutoCloseable {
                 .withEnv("AUTH_JWKS_URI", SOURCES_URL + AdminToken.KEYS_PATH)
                 .withEnv(service.environment())
                 .withExposedPorts(service.port())
-                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("%s/%s".formatted(logTag, service.networkAlias()))))
+                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(
+                        "%s/%s".formatted(logTag, service.networkAlias()))))
                 .waitingFor(Wait.forHttp(HEALTH_PATH).withStartupTimeout(STARTUP_TIMEOUT));
 
         return service.scrapes() ? withSourcesRedirected(container) : container;
     }
 
     private GenericContainer<?> withSourcesRedirected(GenericContainer<?> container) {
-        // Flyway seeds series_configuration with the real sources' URLs, and a service reads it once, right after
-        // migrating. A callback in the same run points the rows at the stub before that read
-        // The variable replaces spring.flyway.locations, so it repeats Boot's default, and a service that set its own
-        // locations would need them here too
+        // Flyway seeds series_configuration with the real sources' URLs, and a service reads it
+        // once, right after migrating. A callback in the same run points the rows at the stub
+        // before that read. The variable replaces spring.flyway.locations, so it repeats Boot's
+        // default, and a service that set its own locations would need them here too
         return container
-                .withEnv("SPRING_FLYWAY_LOCATIONS", "classpath:db/migration,filesystem:" + REDIRECT_LOCATION)
-                .withCopyToContainer(Transferable.of(REDIRECT_SOURCES_SQL), REDIRECT_LOCATION + "/afterMigrate.sql");
+                .withEnv(
+                        "SPRING_FLYWAY_LOCATIONS",
+                        "classpath:db/migration,filesystem:" + REDIRECT_LOCATION)
+                .withCopyToContainer(
+                        Transferable.of(REDIRECT_SOURCES_SQL),
+                        REDIRECT_LOCATION + "/afterMigrate.sql");
     }
 
     private void requireNoRealSources(BackendService service) {
         final var stillReal = psql(service.database(), """
-                SELECT count(*) FROM series_configuration WHERE scrape_url !~ '^%s(/|$)'""".formatted(SOURCES_URL));
+                SELECT count(*) FROM series_configuration WHERE scrape_url !~ \
+                '^%s(/|$)'""".formatted(SOURCES_URL));
         if (!"0".equals(stillReal.strip())) {
             throw new IllegalStateException(
-                    "%s configs of %s still point at a real source".formatted(stillReal.strip(), service.database()));
+                    "%s configs of %s still point at a real source"
+                            .formatted(stillReal.strip(), service.database()));
         }
     }
 
     private String psql(String database, String sql) {
         try {
             final var result = postgres.execInContainer(
-                    "psql", "-U", POSTGRES_SUPERUSER, "-d", database, "-v", "ON_ERROR_STOP=1", "-tAc", sql);
+                    "psql", "-U", POSTGRES_SUPERUSER, "-d", database,
+                    "-v", "ON_ERROR_STOP=1", "-tAc", sql);
             if (result.getExitCode() != 0) {
-                throw new IllegalStateException("psql failed on %s: %s".formatted(sql, result.getStderr()));
+                throw new IllegalStateException(
+                        "psql failed on %s: %s".formatted(sql, result.getStderr()));
             }
             return result.getStdout();
         } catch (IOException e) {
@@ -243,15 +267,16 @@ public final class AcceptanceStack implements AutoCloseable {
         }
     }
 
-    // nginx resolves an upstream per request, so the routes of a service that isn't running answer 502, don't stop it
-    // starting, and work once the service has started under its network alias
+    // nginx resolves an upstream per request, so the routes of a service that isn't running answer
+    // 502, don't stop it starting, and work once the service has started under its network alias
     private GenericContainer<?> startGateway() {
         final var image = System.getProperty(GATEWAY_IMAGE_PROPERTY, GATEWAY_DEFAULT_IMAGE);
         final GenericContainer<?> frontend = new GenericContainer<>(requireBuilt(image))
                 .withNetwork(network)
                 .withExposedPorts(GATEWAY_PORT)
                 .waitingFor(Wait.forHttp("/").withStartupTimeout(STARTUP_TIMEOUT));
-        BackendService.ALL.forEach(service -> frontend.withEnv(service.gatewayUrlVariable(), service.internalUrl()));
+        BackendService.ALL.forEach(service ->
+                frontend.withEnv(service.gatewayUrlVariable(), service.internalUrl()));
         containers.add(frontend);
         frontend.start();
 
@@ -264,7 +289,9 @@ public final class AcceptanceStack implements AutoCloseable {
             return image;
         } catch (NotFoundException e) {
             throw new IllegalStateException(
-                    "No image %s. Build it with macro-infra/scripts/acceptance-test.sh".formatted(image), e);
+                    "No image %s. Build it with macro-infra/scripts/acceptance-test.sh"
+                            .formatted(image),
+                    e);
         }
     }
 

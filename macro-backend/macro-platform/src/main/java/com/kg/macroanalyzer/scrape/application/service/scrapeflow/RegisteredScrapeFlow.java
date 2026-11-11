@@ -13,7 +13,8 @@ public interface RegisteredScrapeFlow {
         return new Of(flowId, flow);
     }
 
-    record Of(String flowId, ScrapeFlow<ScrapeQueueItem, ?, ?> flow) implements RegisteredScrapeFlow {
+    record Of(String flowId, ScrapeFlow<ScrapeQueueItem, ?, ?> flow)
+            implements RegisteredScrapeFlow {
 
         @Override
         public ScrapeResult run(ScrapeQueueItem item) {

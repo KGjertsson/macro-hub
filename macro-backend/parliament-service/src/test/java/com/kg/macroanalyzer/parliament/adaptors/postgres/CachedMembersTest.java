@@ -26,8 +26,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CachedMembersTest {
 
-    private static final MemberOfParliament OLD = TestMemberFactory.member("1", "S", "Tidigare riksdagsledamot", List.of());
-    private static final MemberOfParliament NEW = TestMemberFactory.member("1", "M", "Tidigare riksdagsledamot", List.of());
+    private static final MemberOfParliament OLD =
+            TestMemberFactory.member("1", "S", "Tidigare riksdagsledamot", List.of());
+    private static final MemberOfParliament NEW =
+            TestMemberFactory.member("1", "M", "Tidigare riksdagsledamot", List.of());
 
     @Mock
     SweParMemberRepository repository;
@@ -85,7 +87,8 @@ class CachedMembersTest {
     void shouldReadTheDatabaseAgain_afterAFailedWrite() {
         // given
         when(repository.readMembers()).thenReturn(List.of(OLD));
-        when(repository.upsertMembers(List.of(NEW))).thenThrow(new IllegalStateException("database gone"));
+        when(repository.upsertMembers(List.of(NEW)))
+                .thenThrow(new IllegalStateException("database gone"));
         cachedMembers.read();
 
         // when

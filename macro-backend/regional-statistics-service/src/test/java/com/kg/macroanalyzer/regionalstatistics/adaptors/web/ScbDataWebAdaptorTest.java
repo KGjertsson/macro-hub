@@ -20,7 +20,9 @@ public class ScbDataWebAdaptorTest {
         selection.put("ContentsCode", List.of("000007DQ"));
         selection.put("Upplatelseform", List.of("ÄG/ANDEL", "TOTALT"));
         selection.put("Kon", List.of("1+2"));
-        final var request = new ScbDataRequest(BASE_URL, "TAB6253", "????????", List.of("2022", "2023"), selection);
+        final var request = new ScbDataRequest(
+                BASE_URL, "TAB6253", "????????", List.of("2022", "2023"), selection
+        );
 
         // when
         final var url = ScbDataWebAdaptor.url(request);

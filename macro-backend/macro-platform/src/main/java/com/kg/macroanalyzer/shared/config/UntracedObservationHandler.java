@@ -6,10 +6,12 @@ import io.micrometer.tracing.handler.TracingObservationHandler;
 import org.springframework.http.server.observation.ServerRequestObservationContext;
 import org.springframework.scheduling.support.ScheduledTaskObservationContext;
 
-// Prometheus scrapes /actuator/prometheus every 15 seconds and every @Scheduled run starts an observation, so neither may
-// be a span. An ObservationPredicate would also stop their metrics. Nothing may simply skip the tracing handlers either:
-// TracingAwareMeterObservationHandler requires the context this handler leaves in place, or stopping the observation throws
-public final class UntracedObservationHandler implements TracingObservationHandler<Observation.Context> {
+// Prometheus scrapes /actuator/prometheus every 15 seconds and every @Scheduled run starts an
+// observation, so neither may be a span. An ObservationPredicate would also stop their metrics.
+// Nothing may simply skip the tracing handlers either: TracingAwareMeterObservationHandler
+// requires the context this handler leaves in place, or stopping the observation throws
+public final class UntracedObservationHandler
+        implements TracingObservationHandler<Observation.Context> {
 
     private static final String ACTUATOR_PATH = "/actuator";
 
@@ -37,7 +39,8 @@ public final class UntracedObservationHandler implements TracingObservationHandl
     }
 
     private static boolean isActuatorRequest(Observation.Context context) {
-        if (context instanceof ServerRequestObservationContext request && request.getCarrier() != null) {
+        if (context instanceof ServerRequestObservationContext request
+                && request.getCarrier() != null) {
             final var path = request.getCarrier().getRequestURI();
             return path.equals(ACTUATOR_PATH) || path.startsWith(ACTUATOR_PATH + "/");
         }

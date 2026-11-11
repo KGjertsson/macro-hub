@@ -20,7 +20,8 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Pins spring.web.resources.add-mappings=false: with Boot's /** resource handler registered, a file on
+ * Pins spring.web.resources.add-mappings=false: with Boot's /** resource handler registered, a
+ * file on
  * a static location is served and an unknown path answers CORS requests (200 on a preflight, 403 on
  * other methods) instead of 404. The file is what shows that the handler is gone, not merely empty.
  */
@@ -41,7 +42,8 @@ public class NoStaticResourceHandlersHttpTest {
 
     @DynamicPropertySource
     static void useTempDirAsStaticLocation(DynamicPropertyRegistry registry) {
-        registry.add("spring.web.resources.static-locations", () -> staticLocation.toUri().toString());
+        registry.add(
+                "spring.web.resources.static-locations", () -> staticLocation.toUri().toString());
     }
 
     @BeforeAll
@@ -107,7 +109,8 @@ public class NoStaticResourceHandlersHttpTest {
         assertEquals(404, response.statusCode());
     }
 
-    private HttpResponse<String> send(HttpRequest request) throws IOException, InterruptedException {
+    private HttpResponse<String> send(HttpRequest request)
+            throws IOException, InterruptedException {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 

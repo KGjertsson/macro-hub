@@ -30,7 +30,10 @@ public record MemberOfParliamentScraper(
                             .build()
             );
         } catch (ScrapeException scrapeException) {
-            log.error("Caught ScrapeException for config={}", configWithMemberOfParliament.seriesConfig());
+            log.error(
+                    "Caught ScrapeException for config={}",
+                    configWithMemberOfParliament.seriesConfig()
+            );
 
             return Optional.empty();
         }

@@ -47,7 +47,10 @@ public class RiksdagenActivityResponseParserTest {
         final var result = new RiksdagenVoteResponseParser().parse(response);
 
         // then
-        assertEquals(new VoteTotals(0, 1, 0, 0, List.of(new SessionVotes("2026/27", 0, 1, 0, 0))), result);
+        assertEquals(
+                new VoteTotals(0, 1, 0, 0, List.of(new SessionVotes("2026/27", 0, 1, 0, 0))),
+                result
+        );
     }
 
     @Test
@@ -69,9 +72,12 @@ public class RiksdagenActivityResponseParserTest {
         // given
         final var response = """
                 {"anforandelista": {"@antal": "3", "anforande": [
-                  {"avsnittsrubrik": "Allmänpolitisk debatt", "underrubrik": "Näringspolitik", "dok_datum": "2026-10-14", "protokoll_url_www": "https://riksdagen.se/a"},
-                  {"avsnittsrubrik": "Budget", "underrubrik": "", "dok_datum": "2026-10-01", "protokoll_url_www": "https://riksdagen.se/b"},
-                  {"avsnittsrubrik": "Skatter", "underrubrik": "", "dok_datum": "2026-09-30", "protokoll_url_www": "https://riksdagen.se/c"}
+                  {"avsnittsrubrik": "Allmänpolitisk debatt", "underrubrik": "Näringspolitik",
+                   "dok_datum": "2026-10-14", "protokoll_url_www": "https://riksdagen.se/a"},
+                  {"avsnittsrubrik": "Budget", "underrubrik": "", "dok_datum": "2026-10-01",
+                   "protokoll_url_www": "https://riksdagen.se/b"},
+                  {"avsnittsrubrik": "Skatter", "underrubrik": "", "dok_datum": "2026-09-30",
+                   "protokoll_url_www": "https://riksdagen.se/c"}
                 ]}}
                 """;
 
@@ -81,7 +87,9 @@ public class RiksdagenActivityResponseParserTest {
         // then
         assertEquals(3, result.total());
         assertEquals(List.of(
-                new ParliamentDocument("Allmänpolitisk debatt: Näringspolitik", "2026-10-14", "https://riksdagen.se/a"),
+                new ParliamentDocument(
+                        "Allmänpolitisk debatt: Näringspolitik", "2026-10-14",
+                        "https://riksdagen.se/a"),
                 new ParliamentDocument("Budget", "2026-10-01", "https://riksdagen.se/b")
         ), result.recent());
     }
@@ -91,7 +99,8 @@ public class RiksdagenActivityResponseParserTest {
         // given
         final var response = """
                 {"anforandelista": {"@antal": "1", "anforande":
-                  {"avsnittsrubrik": "Budget", "dok_datum": "2026-10-01", "protokoll_url_www": "https://riksdagen.se/b"}
+                  {"avsnittsrubrik": "Budget", "dok_datum": "2026-10-01",
+                   "protokoll_url_www": "https://riksdagen.se/b"}
                 }}
                 """;
 
@@ -107,7 +116,8 @@ public class RiksdagenActivityResponseParserTest {
         // given
         final var response = """
                 {"dokumentlista": {"@traffar": "68", "dokument": [
-                  {"titel": "Samhällsbyggnadsutbildningar", "datum": "2025-10-07", "dokument_url_html": "//data.riksdagen.se/dokument/HD023796.html"}
+                  {"titel": "Samhällsbyggnadsutbildningar", "datum": "2025-10-07",
+                   "dokument_url_html": "//data.riksdagen.se/dokument/HD023796.html"}
                 ]}}
                 """;
 
@@ -116,7 +126,8 @@ public class RiksdagenActivityResponseParserTest {
 
         // then
         assertEquals(new DocumentPage(68, List.of(new ParliamentDocument(
-                "Samhällsbyggnadsutbildningar", "2025-10-07", "https://data.riksdagen.se/dokument/HD023796.html"
+                "Samhällsbyggnadsutbildningar", "2025-10-07",
+                "https://data.riksdagen.se/dokument/HD023796.html"
         ))), result);
     }
 

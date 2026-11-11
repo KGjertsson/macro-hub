@@ -26,7 +26,8 @@ import java.util.stream.Stream;
 @Service
 public class ScrapeService {
 
-    // Serialises the cron job and manual scrapes; a second caller would re-scrape items still pending in the queue
+    // Serialises the cron job and manual scrapes; a second caller would re-scrape items still
+    // pending in the queue
     private final ReentrantLock scrapeLock = new ReentrantLock();
 
     private final ScrapeQueuePort scrapeQueuePort;
@@ -56,11 +57,13 @@ public class ScrapeService {
         final var registry = new HashMap<String, RegisteredScrapeFlow>();
         for (final var scrapeFlow : scrapeFlows) {
             if (scrapeFlow.flowId() == null) {
-                throw new IllegalStateException("Scrape flow %s has no flow id".formatted(scrapeFlow));
+                throw new IllegalStateException(
+                        "Scrape flow %s has no flow id".formatted(scrapeFlow));
             }
             if (registry.putIfAbsent(scrapeFlow.flowId(), scrapeFlow) != null) {
                 throw new IllegalStateException(
-                        "More than one scrape flow registered for flow id %s".formatted(scrapeFlow.flowId())
+                        "More than one scrape flow registered for flow id %s"
+                                .formatted(scrapeFlow.flowId())
                 );
             }
         }
@@ -82,7 +85,8 @@ public class ScrapeService {
         registry.keySet().stream()
                 .filter(flowId -> !usedFlowIds.contains(flowId))
                 .sorted()
-                .forEach(flowId -> log.warn("Scrape flow {} is registered but no series config uses it", flowId));
+                .forEach(flowId -> log.warn(
+                        "Scrape flow {} is registered but no series config uses it", flowId));
 
         return Map.copyOf(registry);
     }
@@ -127,10 +131,12 @@ public class ScrapeService {
         return result;
     }
 
-    // An item without a series config stays pending in the queue, as the flows' own preparer would leave it
+    // An item without a series config stays pending in the queue, as the flows' own preparer would
+    // leave it
     private Optional<String> findFlowId(ScrapeQueueItem scrapeQueueItem) {
         try {
-            final var flowId = seriesConfigPreparer.prepare(scrapeQueueItem).map(SeriesConfig::scrapeFlow);
+            final var flowId = seriesConfigPreparer.prepare(scrapeQueueItem)
+                    .map(SeriesConfig::scrapeFlow);
             if (flowId.isEmpty()) {
                 log.warn("No series config named {}, cannot scrape it", scrapeQueueItem.name());
             }
@@ -143,8 +149,9 @@ public class ScrapeService {
         }
     }
 
-    // One failing item must not stop the rest of the run. It stays pending and is retried on the next queue drain;
-    // items are read oldest first, so an exception escaping here would abort every later run at the same item
+    // One failing item must not stop the rest of the run. It stays pending and is retried on the
+    // next queue drain; items are read oldest first, so an exception escaping here would abort
+    // every later run at the same item
     private ScrapeResult run(String flowId, ScrapeQueueItem scrapeQueueItem) {
         try {
             log.info("Routing {} to scrape flow {}", scrapeQueueItem.name(), flowId);

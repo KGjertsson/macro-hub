@@ -48,9 +48,19 @@ public class SweParMemberRepository {
     }
 
     public Map<String, Integer> countMembersByParty(String statusFragment) {
-        // Inlined: as bind values, the same expression in SELECT and GROUP BY would be two different ones to Postgres
-        final var party = DSL.coalesce(DSL.jsonbGetAttributeAsText(SWEDISH_MEMBERS_OF_PARLIAMENT.MEMBER_DATA, DSL.inline("parti")), DSL.inline(""));
-        final var status = DSL.jsonbGetAttributeAsText(SWEDISH_MEMBERS_OF_PARLIAMENT.MEMBER_DATA, DSL.inline("status"));
+        // Inlined: as bind values, the same expression in SELECT and GROUP BY would be two
+        // different ones to Postgres
+        final var party = DSL.coalesce(
+                DSL.jsonbGetAttributeAsText(
+                        SWEDISH_MEMBERS_OF_PARLIAMENT.MEMBER_DATA,
+                        DSL.inline("parti")
+                ),
+                DSL.inline("")
+        );
+        final var status = DSL.jsonbGetAttributeAsText(
+                SWEDISH_MEMBERS_OF_PARLIAMENT.MEMBER_DATA,
+                DSL.inline("status")
+        );
         final var seats = DSL.count();
 
         return Collections.unmodifiableMap(dslContext.select(party, seats)

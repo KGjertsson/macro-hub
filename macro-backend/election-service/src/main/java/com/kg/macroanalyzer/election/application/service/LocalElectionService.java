@@ -34,13 +34,19 @@ public class LocalElectionService implements ElectionQueries {
     private final PartyColorPort partyColorPort;
 
     @Autowired
-    public LocalElectionService(ElectionRepositoryPort repositoryPort, PartyColorPort partyColorPort) {
+    public LocalElectionService(
+            ElectionRepositoryPort repositoryPort,
+            PartyColorPort partyColorPort
+    ) {
         this.repositoryPort = repositoryPort;
         this.partyColorPort = partyColorPort;
     }
 
     @Override
-    public List<LocalElectionSummaryDto> getLocalElectionResults(LocalElectionType type, Integer year) {
+    public List<LocalElectionSummaryDto> getLocalElectionResults(
+            LocalElectionType type,
+            Integer year
+    ) {
         return resolveYear(type, year)
                 .map(y -> {
                     final var colors = partyColorPort.partyColors();
@@ -52,7 +58,11 @@ public class LocalElectionService implements ElectionQueries {
     }
 
     @Override
-    public Optional<LocalElectionDetailDto> getLocalElectionResult(LocalElectionType type, Integer year, String areaCode) {
+    public Optional<LocalElectionDetailDto> getLocalElectionResult(
+            LocalElectionType type,
+            Integer year,
+            String areaCode
+    ) {
         return resolveYear(type, year)
                 .flatMap(y -> repositoryPort.readLocalElectionResult(type, y, areaCode)
                         .map(result -> {
@@ -73,7 +83,10 @@ public class LocalElectionService implements ElectionQueries {
                 : repositoryPort.readLatestLocalElectionYear(type);
     }
 
-    private static LocalElectionSummaryDto toSummary(LocalElectionResult result, Map<String, String> colors) {
+    private static LocalElectionSummaryDto toSummary(
+            LocalElectionResult result,
+            Map<String, String> colors
+    ) {
         final var parties = result.parties().stream()
                 .sorted(Comparator.comparingInt(LocalPartyResult::votes).reversed())
                 .toList();
@@ -87,7 +100,8 @@ public class LocalElectionService implements ElectionQueries {
                 .totalSeats(result.totalSeats())
                 .turnout(result.turnout())
                 .largestParty(largest.map(LocalPartyResult::abbreviation).orElse(null))
-                .largestPartyColor(largest.map(p -> colorOf(p, colors)).orElse(UNKNOWN_PARTY_COLOR))
+                .largestPartyColor(
+                        largest.map(p -> colorOf(p, colors)).orElse(UNKNOWN_PARTY_COLOR))
                 .parties(parties.stream()
                         .map(p -> LocalPartyResultDto.builder()
                                 .code(p.code())
@@ -102,12 +116,23 @@ public class LocalElectionService implements ElectionQueries {
                 .build();
     }
 
-    private static List<ElectedPartyDto> electedByParty(LocalElectionResult result, Map<String, String> colors) {
+    private static List<ElectedPartyDto> electedByParty(
+            LocalElectionResult result,
+            Map<String, String> colors
+    ) {
         final var partiesByCode = result.parties().stream()
-                .collect(Collectors.toMap(LocalPartyResult::code, Function.identity(), (a, b) -> a));
+                .collect(Collectors.toMap(
+                        LocalPartyResult::code,
+                        Function.identity(),
+                        (a, b) -> a
+                ));
         final var membersByParty = result.elected().stream()
                 .sorted(Comparator.comparingInt(ElectedMember::order))
-                .collect(Collectors.groupingBy(ElectedMember::partyCode, LinkedHashMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(
+                        ElectedMember::partyCode,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
         return membersByParty.entrySet().stream()
                 .map(e -> {
@@ -117,7 +142,8 @@ public class LocalElectionService implements ElectionQueries {
                     return ElectedPartyDto.builder()
                             .partyCode(e.getKey())
                             .abbreviation(first.partyAbbreviation())
-                            .name(party.map(LocalPartyResult::name).orElse(first.partyAbbreviation()))
+                            .name(party.map(LocalPartyResult::name)
+                                    .orElse(first.partyAbbreviation()))
                             .color(party.map(p -> colorOf(p, colors)).orElse(UNKNOWN_PARTY_COLOR))
                             .members(e.getValue().stream()
                                     .map(m -> ElectedMemberDto.builder()
@@ -128,7 +154,9 @@ public class LocalElectionService implements ElectionQueries {
                                     .toList())
                             .build();
                 })
-                .sorted(Comparator.comparingInt((ElectedPartyDto p) -> p.members().size()).reversed())
+                .sorted(Comparator
+                        .comparingInt((ElectedPartyDto p) -> p.members().size())
+                        .reversed())
                 .toList();
     }
 
@@ -148,7 +176,9 @@ public class LocalElectionService implements ElectionQueries {
         if (riksdagColor != null) {
             return riksdagColor;
         }
-        return party.color() == null || party.color().isBlank() ? UNKNOWN_PARTY_COLOR : party.color();
+        return party.color() == null || party.color().isBlank()
+                ? UNKNOWN_PARTY_COLOR
+                : party.color();
     }
 
 }

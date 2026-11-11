@@ -22,7 +22,8 @@ import java.util.List;
 public class ElectionWebAdaptorConfiguration {
 
     @Bean("localElectionIndexWebAdaptor")
-    public WebPort<LocalElectionIndexRequest, List<LocalElectionFile>> localElectionIndexWebAdaptor() {
+    public WebPort<LocalElectionIndexRequest, List<LocalElectionFile>>
+            localElectionIndexWebAdaptor() {
         return new ValmyndighetenIndexWebAdaptor();
     }
 

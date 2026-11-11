@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Slf4j
-public record RiksdagenResponseParser() implements ResponseParser<String, Stream<MemberOfParliament>> {
+public record RiksdagenResponseParser()
+        implements ResponseParser<String, Stream<MemberOfParliament>> {
 
     @Override
     public Stream<MemberOfParliament> parse(String response) throws ScrapeException {
@@ -37,7 +38,8 @@ public record RiksdagenResponseParser() implements ResponseParser<String, Stream
                     .build();
             final var riksdagenResponse = objectMapper.readValue(response, RiksdagenResponse.class);
 
-            if (riksdagenResponse.personlista() == null || riksdagenResponse.personlista().person() == null) {
+            if (riksdagenResponse.personlista() == null
+                    || riksdagenResponse.personlista().person() == null) {
                 return Stream.empty();
             }
 

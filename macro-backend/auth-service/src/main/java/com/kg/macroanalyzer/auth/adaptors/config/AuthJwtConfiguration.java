@@ -35,8 +35,11 @@ public class AuthJwtConfiguration {
     ) throws JOSEException, ParseException {
         final var stored = repository.signingKeysNewestFirst();
         if (stored.isEmpty()) {
-            final var generated = new ECKeyGenerator(Curve.P_256).keyID(UUID.randomUUID().toString()).generate();
-            repository.saveSigningKey(generated.getKeyID(), generated.toJSONString(), clock.instant());
+            final var generated = new ECKeyGenerator(Curve.P_256)
+                    .keyID(UUID.randomUUID().toString())
+                    .generate();
+            repository.saveSigningKey(
+                    generated.getKeyID(), generated.toJSONString(), clock.instant());
 
             return new NimbusAccessTokenAdaptor(generated, List.of(generated), accessTokenTtl);
         }

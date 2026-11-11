@@ -45,7 +45,8 @@ public class ElectionController {
     ) {
         log.info("Received GET macro-analyzer/municipalities/{}?year={}", code, year);
 
-        return detailResponse(electionQueries.getLocalElectionResult(LocalElectionType.KF, year, code));
+        return detailResponse(
+                electionQueries.getLocalElectionResult(LocalElectionType.KF, year, code));
     }
 
     @GetMapping("/regions/elections")
@@ -64,7 +65,8 @@ public class ElectionController {
     ) {
         log.info("Received GET macro-analyzer/regions/{}?year={}", code, year);
 
-        return detailResponse(electionQueries.getLocalElectionResult(LocalElectionType.RF, year, code));
+        return detailResponse(
+                electionQueries.getLocalElectionResult(LocalElectionType.RF, year, code));
     }
 
     @GetMapping("/constituencies/elections")
@@ -83,7 +85,8 @@ public class ElectionController {
     ) {
         log.info("Received GET macro-analyzer/constituencies/{}?year={}", code, year);
 
-        return detailResponse(electionQueries.getLocalElectionResult(LocalElectionType.RD, year, code));
+        return detailResponse(
+                electionQueries.getLocalElectionResult(LocalElectionType.RD, year, code));
     }
 
     private static <T> ResponseEntity<T> detailResponse(Optional<T> detail) {

@@ -61,8 +61,11 @@ public class ScbRegionalScraperTest {
         final var population = indicator("population", List.of(TOTAL), List.of(), ScbLevel.DESO);
 
         // when
-        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6574"))).thenReturn(metadata("TAB6574", UPDATED));
-        final var result = scraper.scrape(input(List.of(population), Map.of("TAB6574", UPDATED), Set.of("population")));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6574")))
+                .thenReturn(metadata("TAB6574", UPDATED));
+        final var result = scraper.scrape(
+                input(List.of(population), Map.of("TAB6574", UPDATED), Set.of("population"))
+        );
 
         // then
         assertTrue(result.isPresent());
@@ -78,11 +81,15 @@ public class ScbRegionalScraperTest {
         // when
         when(metadataWebPort.fetch(any())).thenReturn(metadata("TAB6574", UPDATED));
         when(dataWebPort.fetch(any())).thenReturn(values(Map.of("0114A0010", 1000.0)));
-        final var result = scraper.scrape(input(List.of(population), Map.of("TAB6574", UPDATED), Set.of()));
+        final var result =
+                scraper.scrape(input(List.of(population), Map.of("TAB6574", UPDATED), Set.of()));
 
         // then
         final var indicatorResult = result.orElseThrow().results().getFirst();
-        assertEquals(List.of(new ScbAreaValue(2024, GeoVersion.DESO_2018, "0114A0010", 1000.0)), indicatorResult.values());
+        assertEquals(
+                List.of(new ScbAreaValue(2024, GeoVersion.DESO_2018, "0114A0010", 1000.0)),
+                indicatorResult.values()
+        );
         assertEquals(Map.of("TAB6574", UPDATED), indicatorResult.tableStamps());
     }
 
@@ -90,7 +97,8 @@ public class ScbRegionalScraperTest {
     void shouldFetchEachVersionOnce_andReuseASharedDenominator() throws ScrapeException {
         // given
         final var population = indicator("population", List.of(TOTAL), List.of(), ScbLevel.DESO);
-        final var share65 = indicator("share_65_plus", List.of(OLDER_65), List.of(TOTAL), ScbLevel.DESO);
+        final var share65 =
+                indicator("share_65_plus", List.of(OLDER_65), List.of(TOTAL), ScbLevel.DESO);
 
         // when
         when(metadataWebPort.fetch(any())).thenReturn(metadata("TAB6574", UPDATED));
@@ -101,7 +109,9 @@ public class ScbRegionalScraperTest {
                     ? values(Map.of("0114A0010", older ? 250.0 : 1000.0))
                     : values(Map.of("0114A0010_DeSO2025", older ? 300.0 : 1200.0));
         });
-        final var result = scraper.scrape(input(List.of(population, share65), Map.of("TAB6574", OLD), Set.of("population")));
+        final var result = scraper.scrape(
+                input(List.of(population, share65), Map.of("TAB6574", OLD), Set.of("population"))
+        );
 
         // then
         final var results = result.orElseThrow().results();
@@ -127,8 +137,10 @@ public class ScbRegionalScraperTest {
         scraper = new ScbRegionalScraper(metadataWebPort, dataWebPort, 1);
 
         // when
-        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6091"))).thenReturn(metadata("TAB6091", UPDATED));
-        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6589"))).thenReturn(metadata("TAB6589", UPDATED));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6091")))
+                .thenReturn(metadata("TAB6091", UPDATED));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6589")))
+                .thenReturn(metadata("TAB6589", UPDATED));
         when(dataWebPort.fetch(any())).thenAnswer(invocation -> {
             final ScbDataRequest request = invocation.getArgument(0);
             final var value = request.table().equals("TAB6091") ? 1.0 : 2.0;
@@ -143,7 +155,8 @@ public class ScbRegionalScraperTest {
                 List.of(new ScbAreaValue(2024, GeoVersion.REGSO_2020, "0114R001", 2.0)),
                 result.orElseThrow().results().getFirst().values()
         );
-        // One RegSO 2020 area and a limit of 1 cell: one call per year and table; no RegSO 2025 codes, no call
+        // One RegSO 2020 area and a limit of 1 cell: one call per year and table; no RegSO 2025
+        // codes, no call
         verify(dataWebPort, times(4)).fetch(any());
     }
 
@@ -151,7 +164,8 @@ public class ScbRegionalScraperTest {
     void shouldSkipAFailedIndicator_andReportTheTableThatFailed() throws ScrapeException {
         // given
         final var population = indicator("population", List.of(TOTAL), List.of(), ScbLevel.DESO);
-        final var share65 = indicator("share_65_plus", List.of(OLDER_65), List.of(TOTAL), ScbLevel.DESO);
+        final var share65 =
+                indicator("share_65_plus", List.of(OLDER_65), List.of(TOTAL), ScbLevel.DESO);
 
         // when
         when(metadataWebPort.fetch(any())).thenReturn(metadata("TAB6574", UPDATED));
@@ -175,11 +189,15 @@ public class ScbRegionalScraperTest {
     void shouldReportOnlyTheFailedTable_notEveryTableOfTheFailedIndicator() throws ScrapeException {
         // given
         final var population = indicator("population", List.of(TOTAL), List.of(), ScbLevel.DESO);
-        final var cars = indicator("cars_per_1000", List.of(source("TAB6589", "totalt")), List.of(TOTAL), ScbLevel.DESO);
+        final var cars = indicator(
+                "cars_per_1000", List.of(source("TAB6589", "totalt")), List.of(TOTAL), ScbLevel.DESO
+        );
 
         // when
-        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6574"))).thenReturn(metadata("TAB6574", UPDATED));
-        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6589"))).thenReturn(metadata("TAB6589", UPDATED));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6574")))
+                .thenReturn(metadata("TAB6574", UPDATED));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6589")))
+                .thenReturn(metadata("TAB6589", UPDATED));
         when(dataWebPort.fetch(any())).thenAnswer(invocation -> {
             final ScbDataRequest request = invocation.getArgument(0);
             if (request.table().equals("TAB6589")) {
@@ -190,7 +208,10 @@ public class ScbRegionalScraperTest {
         final var result = scraper.scrape(input(List.of(population, cars), Map.of(), Set.of()));
 
         // then
-        assertEquals(List.of("population"), result.orElseThrow().results().stream().map(r -> r.indicator().id()).toList());
+        assertEquals(
+                List.of("population"),
+                result.orElseThrow().results().stream().map(r -> r.indicator().id()).toList()
+        );
         assertEquals(Set.of("TAB6589"), result.get().failedTables());
         assertEquals(Map.of("TAB6574", UPDATED), result.get().results().getFirst().tableStamps());
     }
@@ -199,11 +220,15 @@ public class ScbRegionalScraperTest {
     void shouldReportTheTable_whoseMetadataFailed() throws ScrapeException {
         // given
         final var population = indicator("population", List.of(TOTAL), List.of(), ScbLevel.DESO);
-        final var cars = indicator("cars_per_1000", List.of(source("TAB6589", "totalt")), List.of(TOTAL), ScbLevel.DESO);
+        final var cars = indicator(
+                "cars_per_1000", List.of(source("TAB6589", "totalt")), List.of(TOTAL), ScbLevel.DESO
+        );
 
         // when
-        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6574"))).thenReturn(metadata("TAB6574", UPDATED));
-        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6589"))).thenThrow(new ScrapeException("HTTP 404"));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6574")))
+                .thenReturn(metadata("TAB6574", UPDATED));
+        when(metadataWebPort.fetch(new ScbMetadataRequest(BASE_URL, "TAB6589")))
+                .thenThrow(new ScrapeException("HTTP 404"));
         when(dataWebPort.fetch(any())).thenReturn(values(Map.of("0114A0010", 1000.0)));
         final var result = scraper.scrape(input(List.of(population, cars), Map.of(), Set.of()));
 
@@ -248,7 +273,12 @@ public class ScbRegionalScraperTest {
         return new ScbSource(table, selection);
     }
 
-    private static ScbIndicator indicator(String id, List<ScbSource> numerator, List<ScbSource> denominator, ScbLevel level) {
+    private static ScbIndicator indicator(
+            String id,
+            List<ScbSource> numerator,
+            List<ScbSource> denominator,
+            ScbLevel level
+    ) {
         return ScbIndicator.builder()
                 .id(id)
                 .levels(List.of(level))
@@ -282,7 +312,10 @@ public class ScbRegionalScraperTest {
             Set<String> indicatorsWithData
     ) {
         return ConfigWithScbIndicators.builder()
-                .seriesConfig(SeriesConfig.builder().name("ScbRegionalStatistics").scrapeUrl(BASE_URL).build())
+                .seriesConfig(SeriesConfig.builder()
+                        .name("ScbRegionalStatistics")
+                        .scrapeUrl(BASE_URL)
+                        .build())
                 .indicators(indicators)
                 .tableStamps(stamps)
                 .indicatorsWithData(indicatorsWithData)

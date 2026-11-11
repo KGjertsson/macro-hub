@@ -22,8 +22,12 @@ public class SeriesConfigRepositoryTest {
     @Test
     void shouldReturnTheConfigs_inIdOrder() {
         // given
-        // An update writes a new row version, so the first seeded row is no longer first in physical order
-        final var firstId = dslContext.select(SERIES_CONFIGURATION.ID.min()).from(SERIES_CONFIGURATION).fetchOne().value1();
+        // An update writes a new row version, so the first seeded row is no longer first in
+        // physical order
+        final var firstId = dslContext.select(SERIES_CONFIGURATION.ID.min())
+                .from(SERIES_CONFIGURATION)
+                .fetchOne()
+                .value1();
         dslContext.update(SERIES_CONFIGURATION)
                 .set(SERIES_CONFIGURATION.DISPLAY_NAME, SERIES_CONFIGURATION.DISPLAY_NAME)
                 .where(SERIES_CONFIGURATION.ID.eq(firstId))

@@ -33,7 +33,8 @@ public class ScrapeSecurityConfiguration {
     private static final String ROLES_CLAIM = "roles";
     private static final int KEY_FETCH_TIMEOUT_MILLIS = 5_000;
 
-    // Only the scrape paths: with no filter chain on the public routes, a stale token in a request can't turn a read into a 401
+    // Only the scrape paths: with no filter chain on the public routes, a stale token in a request
+    // can't turn a read into a 401
     @Bean
     SecurityFilterChain scrapeSecurityFilterChain(
             HttpSecurity http,
@@ -43,13 +44,16 @@ public class ScrapeSecurityConfiguration {
                 .securityMatcher("/" + pathPrefix + "/**")
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests.anyRequest().hasRole("ADMIN"))
-                .oauth2ResourceServer(server -> server.jwt(jwt -> jwt.jwtAuthenticationConverter(rolesAsAuthorities())))
+                .oauth2ResourceServer(server -> server.jwt(
+                        jwt -> jwt.jwtAuthenticationConverter(rolesAsAuthorities())))
                 .build();
     }
 
-    // FilterChainProxy wraps every request, also those no chain matches, so it would add spans to each traced public read
+    // FilterChainProxy wraps every request, also those no chain matches, so it would add spans to
+    // each traced public read
     @Bean
     SecurityObservationSettings noSecurityObservations() {
         return SecurityObservationSettings.noObservations();
@@ -73,7 +77,9 @@ public class ScrapeSecurityConfiguration {
     static OAuth2TokenValidator<Jwt> accessTokenValidator() {
         return new DelegatingOAuth2TokenValidator<>(
                 JwtValidators.createDefaultWithIssuer(ISSUER),
-                new JwtClaimValidator<List<String>>(JwtClaimNames.AUD, audience -> audience != null && audience.contains(AUDIENCE)));
+                new JwtClaimValidator<List<String>>(
+                        JwtClaimNames.AUD,
+                        audience -> audience != null && audience.contains(AUDIENCE)));
     }
 
     private static JwtAuthenticationConverter rolesAsAuthorities() {

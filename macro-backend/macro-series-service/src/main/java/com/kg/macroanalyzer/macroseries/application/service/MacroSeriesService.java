@@ -42,7 +42,8 @@ public class MacroSeriesService implements MacroSeriesQueries {
                 .flatMap(macroSeriesList -> Alignment.align(macroSeriesList, strategy));
     }
 
-    // Only configs scraped by the macro point flow are time series. Today this service holds no others
+    // Only configs scraped by the macro point flow are time series. Today this service holds no
+    // others
     @Override
     public List<SeriesConfig> getChartSeriesConfigList() {
         return seriesConfigList.stream()

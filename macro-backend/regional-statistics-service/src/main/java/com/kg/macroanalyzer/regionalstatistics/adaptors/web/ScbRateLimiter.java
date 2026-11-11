@@ -4,8 +4,8 @@ import com.kg.macroanalyzer.shared.web.ScrapeException;
 
 import java.util.function.LongSupplier;
 
-// SCB's PxWeb API allows 30 calls per 10 seconds. Every call, retries included, waits until delayMs has passed
-// since the previous one; the metadata and data adaptors share one instance
+// SCB's PxWeb API allows 30 calls per 10 seconds. Every call, retries included, waits until delayMs
+// has passed since the previous one; the metadata and data adaptors share one instance
 public class ScbRateLimiter {
 
     private final long delayMs;

@@ -17,7 +17,9 @@ class AccountRulesTest {
 
     @ParameterizedTest
     @NullSource
-    @ValueSource(strings = {"", "anna", "anna@", "@example.se", "anna@example", "a b@example.se", "a@b@example.se"})
+    @ValueSource(strings = {
+            "", "anna", "anna@", "@example.se", "anna@example", "a b@example.se", "a@b@example.se"
+    })
     void shouldRejectAnInvalidEmail(String email) {
         assertThrows(InvalidInputException.class, () -> AccountRules.normalizedEmail(email));
     }
@@ -31,7 +33,8 @@ class AccountRulesTest {
 
     @Test
     void shouldRejectAPasswordBeyondTheLimit() {
-        assertThrows(InvalidInputException.class, () -> AccountRules.validPassword("x".repeat(129)));
+        assertThrows(
+                InvalidInputException.class, () -> AccountRules.validPassword("x".repeat(129)));
     }
 
     @Test
@@ -43,7 +46,8 @@ class AccountRulesTest {
     @NullSource
     @ValueSource(strings = {"", "ab", "<script>", " -start"})
     void shouldRejectAnInvalidDisplayName(String displayName) {
-        assertThrows(InvalidInputException.class, () -> AccountRules.validDisplayName(displayName));
+        assertThrows(
+                InvalidInputException.class, () -> AccountRules.validDisplayName(displayName));
     }
 
 }

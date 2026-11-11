@@ -29,7 +29,8 @@ public record MacroPointAdaptorFlowFactory(
                 return new WebAdaptorFlow<>(connectionBuilder, getter, parser);
             }
             case String name when isRiksbankenConfig(name) -> {
-                final var connectionBuilder = new RiksbankenConnectionBuilder(riksbankenSubscriptionKey);
+                final var connectionBuilder =
+                        new RiksbankenConnectionBuilder(riksbankenSubscriptionKey);
                 final var getter = new HttpGetter();
                 final var parser = new RiksbankenResponseParser();
 

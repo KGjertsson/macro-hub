@@ -114,7 +114,8 @@ public class LocalElectionScraperTest {
     @Test
     void shouldFail_whenEveryChangedFileFails() throws ScrapeException {
         // when
-        when(indexWebPort.fetch(any())).thenReturn(List.of(new LocalElectionFile("0180", BASE_URL + "/a.zip", "md5-a")));
+        when(indexWebPort.fetch(any()))
+                .thenReturn(List.of(new LocalElectionFile("0180", BASE_URL + "/a.zip", "md5-a")));
         when(resultWebPort.fetch(any())).thenThrow(new ScrapeException("429"));
         final var result = scraper.scrape(input(Set.of()));
 
@@ -135,7 +136,8 @@ public class LocalElectionScraperTest {
     }
 
     @Test
-    void shouldStopFetching_afterFiveConsecutiveFailures_andKeepWhatSucceeded() throws ScrapeException {
+    void shouldStopFetching_afterFiveConsecutiveFailures_andKeepWhatSucceeded()
+            throws ScrapeException {
         // given
         final var files = files(8);
         final var lund = LocalElectionResult.builder().areaCode("1281").build();
@@ -231,13 +233,20 @@ public class LocalElectionScraperTest {
 
     private static List<LocalElectionFile> files(int count) {
         return IntStream.range(0, count)
-                .mapToObj(i -> new LocalElectionFile("%04d".formatted(i), BASE_URL + "/%d.zip".formatted(i), "md5-%d".formatted(i)))
+                .mapToObj(i -> new LocalElectionFile(
+                        "%04d".formatted(i),
+                        BASE_URL + "/%d.zip".formatted(i),
+                        "md5-%d".formatted(i)
+                ))
                 .toList();
     }
 
     private static ConfigWithLocalElections input(Set<String> existingMd5s) {
         return ConfigWithLocalElections.builder()
-                .seriesConfig(SeriesConfig.builder().name("MunicipalElections").scrapeUrl(BASE_URL).build())
+                .seriesConfig(SeriesConfig.builder()
+                        .name("MunicipalElections")
+                        .scrapeUrl(BASE_URL)
+                        .build())
                 .type(LocalElectionType.KF)
                 .existingMd5s(existingMd5s)
                 .results(List.of())

@@ -426,6 +426,12 @@ Larger decisions are recorded as ADRs in `docs/adrs/`. The finished [migration g
 
 PRs also get an automatic Claude review comment from `.github/workflows/claude-review.yml` (comment-only, not a required check; a PR that changes that file is skipped, since the action requires it to match `main`). It needs the Claude GitHub App installed on the repo and a `CLAUDE_CODE_OAUTH_TOKEN` repo secret generated with `claude setup-token` (Pro/Max subscription).
 
+## Code style
+
+- Backend Java lines are at most 100 characters, imports and `package` lines excepted. Checkstyle enforces it with the rules in `macro-backend/checkstyle.xml`, on every module's main and test code except the generated jOOQ models. Add a new rule there, not as prose here.
+- Checkstyle runs in Maven's `validate` phase, so `mvn test`, `mvn package` and CI's `backend` job fail on a violation. `macro-infra/scripts/checkstyle.sh [file...]` checks the given files' modules, or the whole backend, in a few seconds, and prints only the given files' violations.
+- `.githooks/pre-commit` runs that script on staged Java files (it reads them from disk, so unstaged edits to them count too). `.claude/settings.json` runs it after every `Edit`/`Write` of a Java file through `.claude/hooks/checkstyle-edited-java.sh`, and hands the violations back to Claude to fix. Wrap long lines the way the surrounding code does, and shorten a name only when it can't fit on a line by itself.
+
 ## Code comments
 
 - No comments that describe what the code does: no restating, and no summaries of classes or methods, including Javadoc/TSDoc and section labels. Express it through names and structure.

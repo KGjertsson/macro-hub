@@ -107,7 +107,9 @@ class ScrapeMetricsMicrometerAdaptorTest {
         adaptor.recordItem(FLOW, ScrapeResult.FAILED, Duration.ofSeconds(1));
 
         // then
-        assertNull(registry.find("macro.scrape.last.success.timestamp").tag("flow", FLOW).timeGauge());
+        assertNull(registry.find("macro.scrape.last.success.timestamp")
+                .tag("flow", FLOW)
+                .timeGauge());
     }
 
     @Test
@@ -187,7 +189,11 @@ class ScrapeMetricsMicrometerAdaptorTest {
     }
 
     private double itemCount(String flow, String result) {
-        return registry.get("macro.scrape.items").tag("flow", flow).tag("result", result).counter().count();
+        return registry.get("macro.scrape.items")
+                .tag("flow", flow)
+                .tag("result", result)
+                .counter()
+                .count();
     }
 
     private TimeGauge lastSuccess(String flow) {

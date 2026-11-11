@@ -40,7 +40,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
 public class ScrapeServiceTest {
 
-    // The ids are opaque to scrape; the tests use the modules' ids so the routing reads like production
+    // The ids are opaque to scrape; the tests use the modules' ids so the routing reads like
+    // production
     private static final String MACRO_POINT = "MACRO_POINT";
     private static final String MEMBER_OF_PARLIAMENT = "MEMBER_OF_PARLIAMENT";
     private static final String MEMBER_ACTIVITY = "MEMBER_ACTIVITY";
@@ -83,16 +84,33 @@ public class ScrapeServiceTest {
         lenient().when(scbRegionalScrapeFlow.flowId()).thenReturn(SCB_REGIONAL);
         scrapeService = scrapeService(allFlows(), SERIES_CONFIGS);
         // Registration reads every flow id; the routing tests only care about run()
-        clearInvocations(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow, scbRegionalScrapeFlow);
+        clearInvocations(
+                macroPointScrapeFlow,
+                memberScrapeFlow,
+                memberActivityScrapeFlow,
+                localElectionScrapeFlow,
+                scbRegionalScrapeFlow);
     }
 
     private List<RegisteredScrapeFlow> allFlows() {
         return List.of(
-                macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow, scbRegionalScrapeFlow);
+                macroPointScrapeFlow,
+                memberScrapeFlow,
+                memberActivityScrapeFlow,
+                localElectionScrapeFlow,
+                scbRegionalScrapeFlow);
     }
 
-    private ScrapeService scrapeService(List<RegisteredScrapeFlow> flows, List<SeriesConfig> configs) {
-        return new ScrapeService(scrapeQueuePort, flows, configs, new SeriesConfigPreparer(configs), scrapeMetricsPort);
+    private ScrapeService scrapeService(
+            List<RegisteredScrapeFlow> flows,
+            List<SeriesConfig> configs
+    ) {
+        return new ScrapeService(
+                scrapeQueuePort,
+                flows,
+                configs,
+                new SeriesConfigPreparer(configs),
+                scrapeMetricsPort);
     }
 
     private static SeriesConfig config(String name, String scrapeFlow) {
@@ -106,10 +124,14 @@ public class ScrapeServiceTest {
         configs.add(config("NewSeries", "NEW_FLOW"));
 
         // when
-        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(allFlows(), configs));
+        final var exception = assertThrows(
+                IllegalStateException.class,
+                () -> scrapeService(allFlows(), configs));
 
         // then
-        assertTrue(exception.getMessage().contains("NewSeries (scrapeFlow=NEW_FLOW)"), exception.getMessage());
+        assertTrue(
+                exception.getMessage().contains("NewSeries (scrapeFlow=NEW_FLOW)"),
+                exception.getMessage());
     }
 
     @Test
@@ -118,10 +140,14 @@ public class ScrapeServiceTest {
         final var configs = List.of(config("test-name", null));
 
         // when
-        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(allFlows(), configs));
+        final var exception = assertThrows(
+                IllegalStateException.class,
+                () -> scrapeService(allFlows(), configs));
 
         // then
-        assertTrue(exception.getMessage().contains("test-name (scrapeFlow=null)"), exception.getMessage());
+        assertTrue(
+                exception.getMessage().contains("test-name (scrapeFlow=null)"),
+                exception.getMessage());
     }
 
     @Test
@@ -133,7 +159,9 @@ public class ScrapeServiceTest {
         flows.add(duplicate);
 
         // when
-        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(flows, SERIES_CONFIGS));
+        final var exception = assertThrows(
+                IllegalStateException.class,
+                () -> scrapeService(flows, SERIES_CONFIGS));
 
         // then
         assertTrue(exception.getMessage().contains("LOCAL_ELECTION"), exception.getMessage());
@@ -148,7 +176,9 @@ public class ScrapeServiceTest {
         flows.add(noId);
 
         // when
-        final var exception = assertThrows(IllegalStateException.class, () -> scrapeService(flows, SERIES_CONFIGS));
+        final var exception = assertThrows(
+                IllegalStateException.class,
+                () -> scrapeService(flows, SERIES_CONFIGS));
 
         // then
         assertTrue(exception.getMessage().contains("has no flow id"), exception.getMessage());
@@ -165,8 +195,14 @@ public class ScrapeServiceTest {
         assertDoesNotThrow(() -> scrapeService(allFlows(), configs));
 
         // then
-        assertTrue(output.getOut().contains("Scrape flow SCB_REGIONAL is registered but no series config uses it"), output.getOut());
-        assertFalse(output.getOut().contains("Scrape flow MACRO_POINT is registered"), output.getOut());
+        assertTrue(
+                output.getOut()
+                        .contains("Scrape flow SCB_REGIONAL is registered "
+                                + "but no series config uses it"),
+                output.getOut());
+        assertFalse(
+                output.getOut().contains("Scrape flow MACRO_POINT is registered"),
+                output.getOut());
     }
 
     @Test
@@ -253,7 +289,8 @@ public class ScrapeServiceTest {
         final var parliament = ScrapeQueueItem.of("ParliamentElections");
 
         // when
-        when(scrapeQueuePort.getItemsToScrape(now)).thenReturn(List.of(municipal, region, parliament));
+        when(scrapeQueuePort.getItemsToScrape(now))
+                .thenReturn(List.of(municipal, region, parliament));
         when(localElectionScrapeFlow.run(municipal)).thenReturn(ScrapeResult.SUCCESS);
         when(localElectionScrapeFlow.run(region)).thenReturn(ScrapeResult.EMPTY);
         when(localElectionScrapeFlow.run(parliament)).thenReturn(ScrapeResult.SUCCESS);
@@ -261,7 +298,9 @@ public class ScrapeServiceTest {
         final var result = completedResults(scrapeService.scrapeFromQueue(now));
 
         // then
-        assertEquals(List.of(ScrapeResult.SUCCESS, ScrapeResult.EMPTY, ScrapeResult.SUCCESS), result);
+        assertEquals(
+                List.of(ScrapeResult.SUCCESS, ScrapeResult.EMPTY, ScrapeResult.SUCCESS),
+                result);
         verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow);
     }
 
@@ -279,7 +318,11 @@ public class ScrapeServiceTest {
 
         // then
         assertEquals(List.of(ScrapeResult.SUCCESS), result);
-        verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow);
+        verifyNoInteractions(
+                macroPointScrapeFlow,
+                memberScrapeFlow,
+                memberActivityScrapeFlow,
+                localElectionScrapeFlow);
     }
 
     @Test
@@ -295,9 +338,16 @@ public class ScrapeServiceTest {
 
         // then
         assertEquals(List.of(ScrapeResult.FAILED), result);
-        assertTrue(output.getOut().contains("No series config named RemovedSeries"), output.getOut());
+        assertTrue(
+                output.getOut().contains("No series config named RemovedSeries"),
+                output.getOut());
         verify(scrapeQueuePort, never()).markAsDone(any());
-        verifyNoInteractions(macroPointScrapeFlow, memberScrapeFlow, memberActivityScrapeFlow, localElectionScrapeFlow, scbRegionalScrapeFlow);
+        verifyNoInteractions(
+                macroPointScrapeFlow,
+                memberScrapeFlow,
+                memberActivityScrapeFlow,
+                localElectionScrapeFlow,
+                scbRegionalScrapeFlow);
     }
 
     @Test
@@ -336,14 +386,17 @@ public class ScrapeServiceTest {
             return ScrapeResult.SUCCESS;
         });
 
-        final var firstScrape = CompletableFuture.supplyAsync(() -> scrapeService.scrapeFromQueue(now));
+        final var firstScrape =
+                CompletableFuture.supplyAsync(() -> scrapeService.scrapeFromQueue(now));
         assertTrue(firstScrapeStarted.await(5, TimeUnit.SECONDS));
         final var concurrentResult = scrapeService.scrapeFromQueue(now);
         releaseFirstScrape.countDown();
 
         // then
         assertEquals(new ScrapeRun.AlreadyRunning(), concurrentResult);
-        assertEquals(new ScrapeRun.Completed(List.of(ScrapeResult.SUCCESS)), firstScrape.get(5, TimeUnit.SECONDS));
+        assertEquals(
+                new ScrapeRun.Completed(List.of(ScrapeResult.SUCCESS)),
+                firstScrape.get(5, TimeUnit.SECONDS));
         verify(scrapeQueuePort, times(1)).getItemsToScrape(now);
         verify(localElectionScrapeFlow, times(1)).run(scrapeQueueItem);
     }
@@ -371,7 +424,12 @@ public class ScrapeServiceTest {
     void shouldRegisterEveryFlow_forItsMetricsToStartAtZero() {
         // then
         verify(scrapeMetricsPort).registerFlows(argThat(flowIds -> flowIds.containsAll(
-                List.of(MACRO_POINT, MEMBER_OF_PARLIAMENT, MEMBER_ACTIVITY, LOCAL_ELECTION, SCB_REGIONAL))));
+                List.of(
+                        MACRO_POINT,
+                        MEMBER_OF_PARLIAMENT,
+                        MEMBER_ACTIVITY,
+                        LOCAL_ELECTION,
+                        SCB_REGIONAL))));
     }
 
     @Test
@@ -386,7 +444,8 @@ public class ScrapeServiceTest {
         scrapeService.scrapeFromQueue(now);
 
         // then
-        verify(scrapeMetricsPort).recordItem(eq(MACRO_POINT), eq(ScrapeResult.SUCCESS), any(Duration.class));
+        verify(scrapeMetricsPort)
+                .recordItem(eq(MACRO_POINT), eq(ScrapeResult.SUCCESS), any(Duration.class));
     }
 
     @Test
@@ -401,7 +460,8 @@ public class ScrapeServiceTest {
         scrapeService.scrapeFromQueue(now);
 
         // then
-        verify(scrapeMetricsPort).recordItem(eq(MACRO_POINT), eq(ScrapeResult.EMPTY), any(Duration.class));
+        verify(scrapeMetricsPort)
+                .recordItem(eq(MACRO_POINT), eq(ScrapeResult.EMPTY), any(Duration.class));
     }
 
     @Test
@@ -417,8 +477,13 @@ public class ScrapeServiceTest {
 
         // then
         assertEquals(List.of(ScrapeResult.FAILED), result);
-        verify(scrapeMetricsPort).recordItem(eq(LOCAL_ELECTION), eq(ScrapeResult.FAILED), any(Duration.class));
-        assertTrue(output.getOut().contains("Scrape item failed: name=MunicipalElections flow=LOCAL_ELECTION"), output.getOut());
+        verify(scrapeMetricsPort)
+                .recordItem(eq(LOCAL_ELECTION), eq(ScrapeResult.FAILED), any(Duration.class));
+        assertTrue(
+                output.getOut()
+                        .contains("Scrape item failed: name=MunicipalElections "
+                                + "flow=LOCAL_ELECTION"),
+                output.getOut());
     }
 
     @Test
@@ -434,8 +499,11 @@ public class ScrapeServiceTest {
 
         // then
         assertEquals(List.of(ScrapeResult.FAILED), result);
-        verify(scrapeMetricsPort).recordItem(eq(MACRO_POINT), eq(ScrapeResult.FAILED), any(Duration.class));
-        assertTrue(output.getOut().contains("Scrape item failed: name=test-name flow=MACRO_POINT"), output.getOut());
+        verify(scrapeMetricsPort)
+                .recordItem(eq(MACRO_POINT), eq(ScrapeResult.FAILED), any(Duration.class));
+        assertTrue(
+                output.getOut().contains("Scrape item failed: name=test-name flow=MACRO_POINT"),
+                output.getOut());
     }
 
     @Test
@@ -450,8 +518,14 @@ public class ScrapeServiceTest {
 
         // then
         assertEquals(List.of(ScrapeResult.FAILED), result);
-        verify(scrapeMetricsPort).recordItem(eq(ScrapeMetricsPort.UNKNOWN_FLOW), eq(ScrapeResult.FAILED), any(Duration.class));
-        assertTrue(output.getOut().contains("Scrape item failed: name=no-such-series flow=unknown"), output.getOut());
+        verify(scrapeMetricsPort)
+                .recordItem(
+                        eq(ScrapeMetricsPort.UNKNOWN_FLOW),
+                        eq(ScrapeResult.FAILED),
+                        any(Duration.class));
+        assertTrue(
+                output.getOut().contains("Scrape item failed: name=no-such-series flow=unknown"),
+                output.getOut());
     }
 
     @Test
@@ -476,7 +550,9 @@ public class ScrapeServiceTest {
     @Test
     void shouldStart_whenRegisteringFlowsWithMetricsFails() {
         // given
-        doThrow(new RuntimeException("registry broken")).when(scrapeMetricsPort).registerFlows(any());
+        doThrow(new RuntimeException("registry broken"))
+                .when(scrapeMetricsPort)
+                .registerFlows(any());
 
         // when / then
         assertDoesNotThrow(() -> scrapeService(allFlows(), SERIES_CONFIGS));

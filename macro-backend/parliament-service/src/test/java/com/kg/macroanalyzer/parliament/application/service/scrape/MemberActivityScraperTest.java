@@ -36,13 +36,15 @@ public class MemberActivityScraperTest {
     void shouldSkipFailedMembers_andKeepTheRest() throws ScrapeException {
         // given
         final var seriesConfig = TestSeriesConfigFactory.buildTestConfig().getFirst();
-        final var input = new ConfigWithMemberActivity(seriesConfig, List.of("ok", "broken"), List.of());
+        final var input =
+                new ConfigWithMemberActivity(seriesConfig, List.of("ok", "broken"), List.of());
         final var activity = MemberActivity.builder().intressentId("ok").build();
         final var baseUrl = seriesConfig.scrapeUrl();
 
         // when
         when(webPort.fetch(new MemberActivityRequest(baseUrl, "ok"))).thenReturn(activity);
-        when(webPort.fetch(new MemberActivityRequest(baseUrl, "broken"))).thenThrow(new ScrapeException("reset"));
+        when(webPort.fetch(new MemberActivityRequest(baseUrl, "broken")))
+                .thenThrow(new ScrapeException("reset"));
         final var result = scraper.scrape(input);
 
         // then

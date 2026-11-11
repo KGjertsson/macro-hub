@@ -97,7 +97,8 @@ public class RiksdagenResponseParserTest {
     @Test
     void shouldParseRealResponse_withAssignmentListAndEmptyAssignments() throws ScrapeException {
         // given
-        final var jsonResponse = new TestJsonReader().readResource("json/riksdagen/personlista_sample.json");
+        final var jsonResponse =
+                new TestJsonReader().readResource("json/riksdagen/personlista_sample.json");
 
         // when
         final var result = parser.parse(jsonResponse).toList();
@@ -123,7 +124,8 @@ public class RiksdagenResponseParserTest {
                       "intressent_id": "123",
                       "unknown_field": "ignored",
                       "personuppdrag": {
-                        "uppdrag": {"typ": "kammaruppdrag", "organ_kod": "kam", "from": "2022-09-26", "tom": ""}
+                        "uppdrag": {"typ": "kammaruppdrag", "organ_kod": "kam",
+                                    "from": "2022-09-26", "tom": ""}
                       },
                       "personuppgift": {
                         "uppgift": {"kod": "HarBild", "uppgift": ["true"], "typ": "bilder"}

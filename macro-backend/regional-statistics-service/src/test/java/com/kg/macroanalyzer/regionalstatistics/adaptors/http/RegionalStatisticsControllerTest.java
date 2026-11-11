@@ -34,7 +34,10 @@ public class RegionalStatisticsControllerTest {
         // given
         final var indicator = RegionalIndicatorDto.builder()
                 .id("population")
-                .availability(Map.of("DeSO", List.of(new AvailabilityDto(2025, "DeSO2025")), "RegSO", List.of()))
+                .availability(Map.of(
+                        "DeSO", List.of(new AvailabilityDto(2025, "DeSO2025")),
+                        "RegSO", List.of()
+                ))
                 .build();
 
         // when
@@ -58,8 +61,10 @@ public class RegionalStatisticsControllerTest {
                 .build();
 
         // when
-        when(regionalStatisticsQueries.getRegionalValues("population", ScbLevel.DESO, null)).thenReturn(Optional.of(values));
-        final var response = regionalStatisticsController.getRegionalValues("population", "DeSO", null);
+        when(regionalStatisticsQueries.getRegionalValues("population", ScbLevel.DESO, null))
+                .thenReturn(Optional.of(values));
+        final var response =
+                regionalStatisticsController.getRegionalValues("population", "DeSO", null);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -69,8 +74,10 @@ public class RegionalStatisticsControllerTest {
     @Test
     public void shouldReturnNoContent_whenNoRegionalValues() {
         // when
-        when(regionalStatisticsQueries.getRegionalValues("population", ScbLevel.REGSO, 2010)).thenReturn(Optional.empty());
-        final var response = regionalStatisticsController.getRegionalValues("population", "RegSO", 2010);
+        when(regionalStatisticsQueries.getRegionalValues("population", ScbLevel.REGSO, 2010))
+                .thenReturn(Optional.empty());
+        final var response =
+                regionalStatisticsController.getRegionalValues("population", "RegSO", 2010);
 
         // then
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
@@ -79,7 +86,8 @@ public class RegionalStatisticsControllerTest {
     @Test
     public void shouldReturnBadRequest_whenLevelUnknown() {
         // when
-        final var response = regionalStatisticsController.getRegionalValues("population", "Kommun", null);
+        final var response =
+                regionalStatisticsController.getRegionalValues("population", "Kommun", null);
 
         // then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());

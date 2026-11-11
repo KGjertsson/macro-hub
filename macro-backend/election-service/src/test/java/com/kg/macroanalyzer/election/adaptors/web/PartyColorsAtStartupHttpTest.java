@@ -40,7 +40,8 @@ class PartyColorsAtStartupHttpTest {
             exchange.close();
         });
         stub.start();
-        registry.add("election.parliament.url", () -> "http://localhost:" + stub.getAddress().getPort());
+        registry.add("election.parliament.url",
+                () -> "http://localhost:" + stub.getAddress().getPort());
     }
 
     @AfterAll
@@ -50,7 +51,8 @@ class PartyColorsAtStartupHttpTest {
 
     @Test
     void shouldLoadTheColors_soonAfterStart() {
-        await().atMost(Duration.ofSeconds(10)).until(() -> Map.of("SD", "#FFCC00").equals(partyColorPort.partyColors()));
+        await().atMost(Duration.ofSeconds(10))
+                .until(() -> Map.of("SD", "#FFCC00").equals(partyColorPort.partyColors()));
     }
 
 }

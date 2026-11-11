@@ -24,12 +24,15 @@ public class Valmyndigheten {
 
     public static void publish(Sources sources, ResultFile... files) {
         Stream.of(files).forEach(file -> sources.serveBytes(file.url(), file.zip()));
-        sources.serveText(INDEX, Stream.of(files).map(ResultFile::indexLine).collect(Collectors.joining("\n", "", "\n")));
+        sources.serveText(INDEX, Stream.of(files)
+                .map(ResultFile::indexLine)
+                .collect(Collectors.joining("\n", "", "\n")));
     }
 
     public record ResultFile(String relativePath, byte[] zip) {
 
-        public static ResultFile of(String electionType, String area, String mandatfordelningFixture) {
+        public static ResultFile of(
+                String electionType, String area, String mandatfordelningFixture) {
             final var file = "Val_2026_slutlig_%s_%s".formatted(area, electionType);
 
             return new ResultFile(
@@ -45,8 +48,9 @@ public class Valmyndigheten {
             return "%s  ./%s".formatted(md5(zip), relativePath);
         }
 
-        // The real zips hold the per-district votes too, and the service has to pick the right entry. They come first here
-        // so that picking the first entry would fail, as this one isn't a result file
+        // The real zips hold the per-district votes too, and the service has to pick the right
+        // entry. They come first here so that picking the first entry would fail, as this one isn't
+        // a result file
         private static byte[] zipOf(String file, String mandatfordelning) {
             final var bytes = new ByteArrayOutputStream();
             try (var zip = new ZipOutputStream(bytes)) {
@@ -59,7 +63,8 @@ public class Valmyndigheten {
             return bytes.toByteArray();
         }
 
-        private static void writeEntry(ZipOutputStream zip, String name, String content) throws IOException {
+        private static void writeEntry(ZipOutputStream zip, String name, String content)
+                throws IOException {
             zip.putNextEntry(new ZipEntry(name));
             zip.write(content.getBytes(StandardCharsets.UTF_8));
             zip.closeEntry();

@@ -44,8 +44,10 @@ public class LocalElectionServiceTest {
     @Test
     void shouldSummariseLatestYear_withLargestPartyByVotes() {
         // when
-        when(repositoryPort.readLatestLocalElectionYear(LocalElectionType.KF)).thenReturn(Optional.of(2026));
-        when(repositoryPort.readLocalElectionResults(LocalElectionType.KF, 2026)).thenReturn(List.of(lund()));
+        when(repositoryPort.readLatestLocalElectionYear(LocalElectionType.KF))
+                .thenReturn(Optional.of(2026));
+        when(repositoryPort.readLocalElectionResults(LocalElectionType.KF, 2026))
+                .thenReturn(List.of(lund()));
         final var summaries = service.getLocalElectionResults(LocalElectionType.KF, null);
 
         // then
@@ -54,7 +56,9 @@ public class LocalElectionServiceTest {
         assertEquals("Lund", summary.name());
         assertEquals("S", summary.largestParty());
         assertEquals("#E8112D", summary.largestPartyColor());
-        assertEquals(List.of("S", "M", "LL"), summary.parties().stream().map(p -> p.abbreviation()).toList());
+        assertEquals(
+                List.of("S", "M", "LL"),
+                summary.parties().stream().map(p -> p.abbreviation()).toList());
         assertEquals("#9CA3AF", summary.parties().get(2).color());
     }
 
@@ -62,7 +66,8 @@ public class LocalElectionServiceTest {
     void shouldUseRiksdagPartyColour_overValmyndighetensColour() {
         // when
         when(partyColorPort.partyColors()).thenReturn(Map.of("M", "#52BDEC"));
-        when(repositoryPort.readLocalElectionResults(LocalElectionType.KF, 2026)).thenReturn(List.of(lund()));
+        when(repositoryPort.readLocalElectionResults(LocalElectionType.KF, 2026))
+                .thenReturn(List.of(lund()));
         final var summary = service.getLocalElectionResults(LocalElectionType.KF, 2026).getFirst();
 
         // then
@@ -74,17 +79,21 @@ public class LocalElectionServiceTest {
     void shouldUseValmyndighetensColourThenGray_whenNoPartyListYet() {
         // when
         when(partyColorPort.partyColors()).thenReturn(Map.of());
-        when(repositoryPort.readLocalElectionResults(LocalElectionType.KF, 2026)).thenReturn(List.of(lund()));
+        when(repositoryPort.readLocalElectionResults(LocalElectionType.KF, 2026))
+                .thenReturn(List.of(lund()));
         final var summary = service.getLocalElectionResults(LocalElectionType.KF, 2026).getFirst();
 
         // then
-        assertEquals(List.of("#E8112D", "#66BEE6", "#9CA3AF"), summary.parties().stream().map(p -> p.color()).toList());
+        assertEquals(
+                List.of("#E8112D", "#66BEE6", "#9CA3AF"),
+                summary.parties().stream().map(p -> p.color()).toList());
     }
 
     @Test
     void shouldReturnEmptyList_whenNothingScraped() {
         // when
-        when(repositoryPort.readLatestLocalElectionYear(LocalElectionType.RF)).thenReturn(Optional.empty());
+        when(repositoryPort.readLatestLocalElectionYear(LocalElectionType.RF))
+                .thenReturn(Optional.empty());
 
         // then
         assertEquals(List.of(), service.getLocalElectionResults(LocalElectionType.RF, null));
@@ -93,8 +102,10 @@ public class LocalElectionServiceTest {
     @Test
     void shouldUseRequestedYear_andGroupElectedMembersBySeats() {
         // when
-        when(repositoryPort.readLocalElectionResult(LocalElectionType.KF, 2022, "1281")).thenReturn(Optional.of(lund()));
-        when(repositoryPort.readGovernance(LocalElectionType.KF, 2022, "1281")).thenReturn(Optional.empty());
+        when(repositoryPort.readLocalElectionResult(LocalElectionType.KF, 2022, "1281"))
+                .thenReturn(Optional.of(lund()));
+        when(repositoryPort.readGovernance(LocalElectionType.KF, 2022, "1281"))
+                .thenReturn(Optional.empty());
         final var detail = service.getLocalElectionResult(LocalElectionType.KF, 2022, "1281");
 
         // then
@@ -112,16 +123,23 @@ public class LocalElectionServiceTest {
     @Test
     void shouldIncludeGovernance_whenCurated() {
         // given
-        final var governance = new Governance(2026, LocalElectionType.KF, "1281", "Lundaalliansen", "M styr", List.of("M"), List.of());
+        final var governance = new Governance(
+                2026, LocalElectionType.KF, "1281", "Lundaalliansen", "M styr",
+                List.of("M"), List.of());
 
         // when
-        when(repositoryPort.readLatestLocalElectionYear(LocalElectionType.KF)).thenReturn(Optional.of(2026));
-        when(repositoryPort.readLocalElectionResult(LocalElectionType.KF, 2026, "1281")).thenReturn(Optional.of(lund()));
-        when(repositoryPort.readGovernance(LocalElectionType.KF, 2026, "1281")).thenReturn(Optional.of(governance));
+        when(repositoryPort.readLatestLocalElectionYear(LocalElectionType.KF))
+                .thenReturn(Optional.of(2026));
+        when(repositoryPort.readLocalElectionResult(LocalElectionType.KF, 2026, "1281"))
+                .thenReturn(Optional.of(lund()));
+        when(repositoryPort.readGovernance(LocalElectionType.KF, 2026, "1281"))
+                .thenReturn(Optional.of(governance));
         final var detail = service.getLocalElectionResult(LocalElectionType.KF, null, "1281");
 
         // then
-        assertEquals(new GovernanceDto("Lundaalliansen", "M styr", List.of("M"), List.of()), detail.orElseThrow().governance());
+        assertEquals(
+                new GovernanceDto("Lundaalliansen", "M styr", List.of("M"), List.of()),
+                detail.orElseThrow().governance());
         verify(repositoryPort).readGovernance(LocalElectionType.KF, 2026, "1281");
     }
 
@@ -134,9 +152,15 @@ public class LocalElectionServiceTest {
                 .lanCode("12")
                 .totalSeats(65)
                 .parties(List.of(
-                        new LocalPartyResult("0001", "M", "Moderaterna", "#66BEE6", 100, new BigDecimal("30.0"), 1),
-                        new LocalPartyResult("0002", "S", "Socialdemokraterna", "#E8112D", 200, new BigDecimal("60.0"), 2),
-                        new LocalPartyResult("1234", "LL", "Lundalistan", null, 30, new BigDecimal("10.0"), 0)
+                        new LocalPartyResult(
+                                "0001", "M", "Moderaterna", "#66BEE6", 100,
+                                new BigDecimal("30.0"), 1),
+                        new LocalPartyResult(
+                                "0002", "S", "Socialdemokraterna", "#E8112D", 200,
+                                new BigDecimal("60.0"), 2),
+                        new LocalPartyResult(
+                                "1234", "LL", "Lundalistan", null, 30,
+                                new BigDecimal("10.0"), 0)
                 ))
                 .elected(List.of(
                         new ElectedMember("Bertil", "0002", "S", 2, null),

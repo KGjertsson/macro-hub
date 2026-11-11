@@ -17,7 +17,8 @@ public class SmtpMailAdaptor implements MailPort {
         this.from = from;
     }
 
-    // On its own thread, so the response time doesn't tell whether a mail was sent, which would show which addresses have accounts
+    // On its own thread, so the response time doesn't tell whether a mail was sent, which would
+    // show which addresses have accounts
     @Override
     public void send(String to, String subject, String body) {
         final var message = new SimpleMailMessage();

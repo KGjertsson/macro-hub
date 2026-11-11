@@ -74,11 +74,16 @@ public class LabelPaddingTest {
     @Test
     public void generateLabels_padsSeriesWithoutPointsWithNull() {
         // given
-        final var withData = series("withData", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 2));
-        final var withoutData = MacroSeries.builder().name("withoutData").macroPoints(List.of()).build();
+        final var withData =
+                series("withData", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 2));
+        final var withoutData = MacroSeries.builder()
+                .name("withoutData")
+                .macroPoints(List.of())
+                .build();
 
         // when
-        final var padded = LabelPadding.padToFullLabels(List.of(withData, withoutData)).orElseThrow();
+        final var padded =
+                LabelPadding.padToFullLabels(List.of(withData, withoutData)).orElseThrow();
 
         // then
         assertEquals(Arrays.asList(null, null), padded.get(1).getValues());

@@ -13,9 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// The values are stored row-major over the dimensions in "id" order, so the last dimension changes fastest. A missing
-// cell makes the whole sum null, because a partial sum would understate the area
-public record ScbDataResponseParser(String table) implements ResponseParser<String, ScbTableValues> {
+// The values are stored row-major over the dimensions in "id" order, so the last dimension changes
+// fastest. A missing cell makes the whole sum null, because a partial sum would understate the area
+public record ScbDataResponseParser(String table)
+        implements ResponseParser<String, ScbTableValues> {
 
     @Override
     public ScbTableValues parse(String response) throws ScrapeException {
@@ -36,7 +37,8 @@ public record ScbDataResponseParser(String table) implements ResponseParser<Stri
                 coordinates[d] = (int) (rest % sizes[d]);
                 rest /= sizes[d];
             }
-            final var region = codes.get(regionDimension).getValue().get(coordinates[regionDimension]);
+            final var region =
+                    codes.get(regionDimension).getValue().get(coordinates[regionDimension]);
             final var year = years.get(coordinates[timeDimension]);
             final var cellValue = cellValue(value, cell);
             final var byYear = sums.computeIfAbsent(region, r -> new HashMap<>());
@@ -51,7 +53,10 @@ public record ScbDataResponseParser(String table) implements ResponseParser<Stri
         return new ScbTableValues(sums);
     }
 
-    private int dimensionPosition(List<Map.Entry<String, List<String>>> codes, String dimension) throws ScrapeException {
+    private int dimensionPosition(
+            List<Map.Entry<String, List<String>>> codes,
+            String dimension
+    ) throws ScrapeException {
         for (int i = 0; i < codes.size(); i++) {
             if (codes.get(i).getKey().equals(dimension)) {
                 return i;
@@ -61,7 +66,8 @@ public record ScbDataResponseParser(String table) implements ResponseParser<Stri
         throw new ScrapeException("No %s dimension in SCB data for %s".formatted(dimension, table));
     }
 
-    // value is an array with nulls, or an object from cell index to value when the response is sparse
+    // value is an array with nulls, or an object from cell index to value when the response is
+    // sparse
     private static Double cellValue(JsonNode value, long cell) {
         final var node = value.isArray() ? value.get((int) cell) : value.get(Long.toString(cell));
 
@@ -75,7 +81,9 @@ public record ScbDataResponseParser(String table) implements ResponseParser<Stri
             try {
                 years.add(Integer.valueOf(code));
             } catch (NumberFormatException e) {
-                throw new ScrapeException("Unexpected period %s in SCB data for %s".formatted(code, table));
+                throw new ScrapeException(
+                        "Unexpected period %s in SCB data for %s".formatted(code, table)
+                );
             }
         }
 

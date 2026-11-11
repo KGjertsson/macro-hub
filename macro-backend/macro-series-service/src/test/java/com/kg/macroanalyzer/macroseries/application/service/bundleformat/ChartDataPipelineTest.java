@@ -48,7 +48,8 @@ public class ChartDataPipelineTest {
             TimeFrame timeFrame
     ) {
         // given
-        final var recent = series("recent", TODAY.minusDays(10), TODAY.minusDays(3), TODAY.minusDays(1));
+        final var recent =
+                series("recent", TODAY.minusDays(10), TODAY.minusDays(3), TODAY.minusDays(1));
         final var old = series("old", TODAY.minusYears(30), TODAY.minusYears(20));
 
         // when
@@ -169,7 +170,8 @@ public class ChartDataPipelineTest {
                 .chartSeriesParams(List.of())
                 .build();
 
-        return new MacroSeriesController(macroSeriesQueries, new ColorSelectionStrategy()).buildChartData(params);
+        return new MacroSeriesController(macroSeriesQueries, new ColorSelectionStrategy())
+                .buildChartData(params);
     }
 
     private static MacroSeries series(String name, LocalDate... dates) {

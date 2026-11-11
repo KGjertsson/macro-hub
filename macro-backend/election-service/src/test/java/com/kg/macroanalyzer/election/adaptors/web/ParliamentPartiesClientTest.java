@@ -42,11 +42,13 @@ class ParliamentPartiesClientTest {
         server.stop(0);
     }
 
-    // The consumer's half of the contract: PartiesContractHttpTest holds parliament to the same file
+    // The consumer's half of the contract: PartiesContractHttpTest holds parliament to the same
+    // file
     @Test
     void shouldReadColors_fromTheContractFile() throws Exception {
         // given
-        try (final var contract = getClass().getResourceAsStream("/contracts/parliament-parties.json")) {
+        try (final var contract =
+                     getClass().getResourceAsStream("/contracts/parliament-parties.json")) {
             stub(200, new String(contract.readAllBytes(), StandardCharsets.UTF_8));
         }
 
@@ -61,11 +63,13 @@ class ParliamentPartiesClientTest {
     void shouldIgnoreFieldsItDoesNotRead_andAcceptATrailingSlashInTheUrl() throws Exception {
         // given
         stub(200, """
-                [{"code":"S","name":"Socialdemokraterna","color":"#E8112d","ideology":"Social Democracy","active":true}]
+                [{"code":"S","name":"Socialdemokraterna","color":"#E8112d",
+                "ideology":"Social Democracy","active":true}]
                 """);
 
         // when
-        try (final var client = new ParliamentPartiesClient(RestClient.builder(), url() + "/", Duration.ofSeconds(5), new JsonMapper())) {
+        try (final var client = new ParliamentPartiesClient(
+                RestClient.builder(), url() + "/", Duration.ofSeconds(5), new JsonMapper())) {
             // then
             assertEquals(Map.of("S", "#E8112d"), client.fetchPartyColors());
         }
@@ -131,7 +135,8 @@ class ParliamentPartiesClientTest {
         server.stop(0);
 
         // when
-        try (final var client = new ParliamentPartiesClient(RestClient.builder(), url, Duration.ofSeconds(5), new JsonMapper())) {
+        try (final var client = new ParliamentPartiesClient(
+                RestClient.builder(), url, Duration.ofSeconds(5), new JsonMapper())) {
             // then
             assertThrows(IOException.class, client::fetchPartyColors);
         }
@@ -143,7 +148,9 @@ class ParliamentPartiesClientTest {
         server.createContext(PATH, exchange -> awaitRelease());
 
         // then
-        assertTimeout(Duration.ofSeconds(3), () -> assertFails(TimeoutException.class, SHORT_TIMEOUT));
+        assertTimeout(
+                Duration.ofSeconds(3),
+                () -> assertFails(TimeoutException.class, SHORT_TIMEOUT));
     }
 
     @Test
@@ -157,7 +164,9 @@ class ParliamentPartiesClientTest {
         });
 
         // then
-        assertTimeout(Duration.ofSeconds(3), () -> assertFails(TimeoutException.class, SHORT_TIMEOUT));
+        assertTimeout(
+                Duration.ofSeconds(3),
+                () -> assertFails(TimeoutException.class, SHORT_TIMEOUT));
     }
 
     private void assertFails(Class<? extends Exception> expected, Duration timeout) {

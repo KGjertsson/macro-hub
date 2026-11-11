@@ -24,7 +24,8 @@ class FailureAndRecoveryAcceptanceTest {
     private static final String POLICY_RATE = "PolicyRateSweden";
     private static final String POLICY_RATE_SOURCE = "/swea/v1/Observations/SECBREPOEFF/1994-06-01";
     private static final String POLICY_RATE_FIXTURE = "riksbanken/policy-rate-sweden.json";
-    private static final String POLICY_RATE_LABELS = "[[2024,5,16],[2024,5,17],[2024,5,18],[2024,5,19],[2024,5,20]]";
+    private static final String POLICY_RATE_LABELS =
+            "[[2024,5,16],[2024,5,17],[2024,5,18],[2024,5,19],[2024,5,20]]";
     private static final String POLICY_RATE_VALUES = "[4.0,3.75,3.75,3.75,3.5]";
 
     private static final String USD_SEK = "UsdSekExchangeRate";
@@ -36,7 +37,8 @@ class FailureAndRecoveryAcceptanceTest {
     private static final String SHORT_RATE = "EuroMarketRateUsa3Month";
     private static final String SHORT_RATE_SOURCE = "/swea/v1/Observations/EUDP3MUSD/1979-11-28";
     private static final String SHORT_RATE_FIXTURE = "riksbanken/euro-market-rate-usa-3-month.json";
-    private static final String SHORT_RATE_LABELS = "[[2024,1,30],[2024,1,31],[2024,2,1],[2024,2,2]]";
+    private static final String SHORT_RATE_LABELS =
+            "[[2024,1,30],[2024,1,31],[2024,2,1],[2024,2,2]]";
     private static final String SHORT_RATE_VALUES = "[5.5,5.5,5.4,5.3]";
 
     private static final String LONG_RATE = "IntGovBondsUsa10Year";
@@ -71,7 +73,8 @@ class FailureAndRecoveryAcceptanceTest {
         enqueue(gateway, POLICY_RATE);
 
         // when
-        // Its answer isn't asserted: a drain answers 200 even when every item failed, so it tells a user nothing
+        // Its answer isn't asserted: a drain answers 200 even when every item failed, so it tells a
+        // user nothing
         gateway.post(DRAIN);
 
         // then
@@ -129,8 +132,8 @@ class FailureAndRecoveryAcceptanceTest {
         assertEquals(1, sources.requestCount(USD_SEK_SOURCE));
     }
 
-    // Tests of a class run in turn, so this one stops Postgres under the class's stack. Its own series keep the other
-    // tests' request counts and charts out of it
+    // Tests of a class run in turn, so this one stops Postgres under the class's stack. Its own
+    // series keep the other tests' request counts and charts out of it
     @Test
     void afterAPostgresRestartTheDataIsStillThereAndAScrapeWorksWithoutRestartingTheService() {
         // given
@@ -144,7 +147,8 @@ class FailureAndRecoveryAcceptanceTest {
         stack.stopPostgres();
 
         // then
-        // The finally keeps a failure here from leaving Postgres stopped for the class's other tests
+        // The finally keeps a failure here from leaving Postgres stopped for the class's other
+        // tests
         try {
             assertEquals(500, chartRequest(gateway, SHORT_RATE).statusCode());
         } finally {
@@ -153,8 +157,10 @@ class FailureAndRecoveryAcceptanceTest {
         }
 
         // then
-        Eventually.assertWithin(BACK_AFTER_POSTGRES, "The chart answers again, with the data from before", () ->
-                assertChart(gateway, SHORT_RATE, SHORT_RATE_LABELS, SHORT_RATE_VALUES));
+        Eventually.assertWithin(
+                BACK_AFTER_POSTGRES,
+                "The chart answers again, with the data from before",
+                () -> assertChart(gateway, SHORT_RATE, SHORT_RATE_LABELS, SHORT_RATE_VALUES));
 
         // when
         enqueue(gateway, LONG_RATE);
@@ -166,12 +172,14 @@ class FailureAndRecoveryAcceptanceTest {
     }
 
     private void enqueue(Gateway target, String series) {
-        assertEquals(202, target.post("/macro-analyzer/scrape/macro-series/enqueue?name=" + series).statusCode());
+        assertEquals(202, target.post(
+                "/macro-analyzer/scrape/macro-series/enqueue?name=" + series).statusCode());
     }
 
     private HttpResponse<String> chartRequest(Gateway target, String series) {
         return target.postJson("/macro-analyzer/chart-data", """
-                {"strategy":"DAY","timeFrame":"ALL","chartSeriesParams":[{"name":"%s"}]}""".formatted(series));
+                {"strategy":"DAY","timeFrame":"ALL",\
+                "chartSeriesParams":[{"name":"%s"}]}""".formatted(series));
     }
 
     private void assertChart(Gateway target, String series, String labels, String values) {
