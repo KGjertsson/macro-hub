@@ -118,17 +118,17 @@ const ResultPanel = ({ summary }: { summary: LocalElectionSummary }) => {
         <h2 className="text-2xl font-bold text-foreground">{summary.name}</h2>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 text-center">
+      <div className="grid grid-cols-3 gap-2 xl:gap-3 text-center">
         <div>
-          <div className="text-xl font-bold text-foreground">{summary.largestParty ?? '–'}</div>
+          <div className="text-lg xl:text-xl font-bold text-foreground">{summary.largestParty ?? '–'}</div>
           <div className="text-xs text-muted-foreground">Största parti</div>
         </div>
         <div>
-          <div className="text-xl font-bold text-foreground">{summary.totalSeats}</div>
+          <div className="text-lg xl:text-xl font-bold text-foreground">{summary.totalSeats}</div>
           <div className="text-xs text-muted-foreground">Mandat</div>
         </div>
         <div>
-          <div className="text-xl font-bold text-foreground">
+          <div className="text-lg xl:text-xl font-bold text-foreground">
             {summary.turnout !== null ? formatPercent(summary.turnout) : '–'}
           </div>
           <div className="text-xs text-muted-foreground">Valdeltagande</div>
@@ -176,7 +176,7 @@ const GovernanceSection = ({ detail, title }: { detail: LocalElectionDetail; tit
   };
 
   return (
-    <div className="mt-12 bg-card rounded-2xl border border-border p-6 shadow-lg">
+    <div className="bg-card rounded-2xl border border-border p-6 shadow-lg">
       <div className="flex items-center gap-3 mb-4">
         <Users className="h-6 w-6 text-primary" />
         <h2 className="text-2xl font-bold text-foreground">{title}</h2>
@@ -218,7 +218,7 @@ const ElectedSection = ({ detail }: { detail: LocalElectionDetail }) => {
   }
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="mt-8 bg-card rounded-2xl border border-border p-6 shadow-lg">
+    <Collapsible open={open} onOpenChange={setOpen} className="bg-card rounded-2xl border border-border p-6 shadow-lg">
       <CollapsibleTrigger asChild>
         <button className="flex w-full items-center justify-between text-left">
           <span className="text-2xl font-bold text-foreground">Valda ledamöter ({total})</span>
