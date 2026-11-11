@@ -1,4 +1,4 @@
-import { lazy, ReactNode, Suspense } from 'react';
+import { lazy, ReactNode, Suspense, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Building2, MapPin, MapPinned, Vote } from 'lucide-react';
@@ -127,8 +127,17 @@ const CONTENT: Record<MapCategory, CategoryContent> = {
 const MapPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const category = parseMapCategory(searchParams.get('k'));
+  const rawCategory = searchParams.get('k');
+  const category = parseMapCategory(rawCategory);
   const content = CONTENT[category];
+
+  useEffect(() => {
+    if (rawCategory !== null && rawCategory !== category) {
+      const params = new URLSearchParams(searchParams);
+      params.delete('k');
+      navigate({ search: params.toString() }, { replace: true });
+    }
+  }, [rawCategory, category, searchParams, navigate]);
 
   // Every other query parameter belongs to the category it was set in, so a switch starts from a clean query
   const selectCategory = (next: string) => {
@@ -157,7 +166,7 @@ const MapPage = () => {
               className='flex-wrap mb-8'
             >
               {MAP_CATEGORIES.map(c => (
-                <ToggleGroupItem key={c} value={c} aria-label={CONTENT[c].label} className='gap-1.5'>
+                <ToggleGroupItem key={c} value={c} className='gap-1.5'>
                   {CONTENT[c].icon('h-4 w-4')}
                   {CONTENT[c].label}
                 </ToggleGroupItem>

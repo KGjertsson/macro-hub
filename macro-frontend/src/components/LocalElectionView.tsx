@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, ChevronDown, ChevronsUpDown, Users } from 'lucide-react';
 import ChoroplethMap from '@/components/ChoroplethMap';
@@ -270,6 +270,12 @@ const LocalElectionView = ({ kind, topoUrl, objectName, icon, labels }: LocalEle
   const [areaParam, setSelectedCode] = useSelectedAreaParam();
   const { data: areas, isLoading, isError } = useLocalElections(kind);
   const selectedCode = areas?.some(a => a.code === areaParam) ? areaParam : null;
+
+  useEffect(() => {
+    if (areas && areaParam !== null && selectedCode === null) {
+      setSelectedCode(null);
+    }
+  }, [areas, areaParam, selectedCode, setSelectedCode]);
   const { data: detail } = useLocalElectionDetail(kind, selectedCode);
 
   const colorByCode = useMemo(
