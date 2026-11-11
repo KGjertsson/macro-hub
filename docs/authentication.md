@@ -170,7 +170,7 @@ To scrape from the command line, `scrape-all.sh` logs in with `MACRO_HUB_ADMIN_E
 `MACRO_HUB_ADMIN_PASSWORD` and sends the JWT as `Authorization: Bearer`:
 
 ```bash
-MACRO_HUB_ADMIN_EMAIL=... MACRO_HUB_ADMIN_PASSWORD=... macro-backend/macro-infra/scripts/scrape-all.sh
+MACRO_HUB_ADMIN_EMAIL=... MACRO_HUB_ADMIN_PASSWORD=... macro-infra/scripts/scrape-all.sh
 ```
 
 ## At the gateway
