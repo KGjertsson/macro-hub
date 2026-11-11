@@ -11,45 +11,47 @@ The components that run, and how they connect. It is what Docker Compose starts
             |
             | http://localhost:8081
             v
-  +--------------------------------------------------------------------------------------------------------------+
-  | macro-frontend container: nginx, host :8081 to container :80                                                 |
-  | serves the React app's files and is the gateway. Routes below are under /macro-analyzer/;                    |
-  | any other path there answers 404.                                                                            |
-  +--------------------------------------------------------------------------------------------------------------+
-    |                      |                               |                      |                    |
-    | series-config        | regional-statistics/          | parliament/          | municipalities/    | auth/
-    | chart-data           | scrape/regional-statistics/   | scrape/parliament/   | regions/           | (10 requests/min
-    | scrape/macro-series/ |                               |                      | constituencies/    |  per address, but
-    |                      |                               |                      | scrape/election/   |  token, logout,
-    |                      |                               |                      |                    |  jwks.json)
-    v                      v                               v                      v                    v
-  +------------------+   +---------------------+         +----------------+     +----------------+   +----------------+
-  | macro-series     |   | regional-statistics |         | parliament     |     | election       |   | auth           |
-  | :8083            |   | :8082               |         | :8084          |<-(1)| :8085          |   | :8086          |
-  | cron, queue      |   | cron, queue         |         | cron, queue    |     | cron, queue    |   | accounts,      |
-  | - - - - - - - -  |   | - - - - - - - - - - |         | - - - - - - -  |     | - - - - - - -  |   | sessions, JWTs |
-  | macro-platform   |   | macro-platform      |         | macro-platform |     | macro-platform |   | - - - - - - -  |
-  +-+-+--------------+   +-+-+-----------------+         +-+-+------------+     +-+-+------------+   | shared only    |
-    | |                    | |                             | |                    | |                +-+-+------------+
-    | v                    | v                             | v                    | v                  | |
-    | Riksbanken           | SCB                           | Riksdagen            | Valmyndigheten     | v
-    | Fed (FRED)           |                               |                      |                    | SMTP provider
-    | Eurostat             |                               |                      |                    | (or its log)
-    |                      |                               |                      |                    |
-    v                      v                               v                      v                    v
-  +--------------------------------------------------------------------------------------------------------------+
-  | postgres container, one instance: host :5432, volume docker_pgdata                                           |
-  | macro_series           regional_statistics             parliament             election             auth      |
-  | Each scraping service's database has its own role, series_configuration and scrape_action_queue.             |
-  | auth's has its own role, the accounts, sessions, mailed-link tokens and the signing key.                     |
-  +--------------------------------------------------------------------------------------------------------------+
+  +--------------------------------------------------------------------------------------------------------+
+  | macro-frontend container: nginx, host :8081 to container :80                                           |
+  | serves the React app's files and is the gateway, with the routes listed below.                         |
+  +--------------------------------------------------------------------------------------------------------+
+    |                   |                        |                      |                   |
+    v                   v                        v                      v                   v
+  +----------------+  +---------------------+  +----------------+     +----------------+  +----------------+
+  | macro-series   |  | regional-statistics |  | parliament     |     | election       |  | auth           |
+  | :8083          |  | :8082               |  | :8084          |<-(1)| :8085          |  | :8086          |
+  | cron, queue    |  | cron, queue         |  | cron, queue    |     | cron, queue    |  | accounts,      |
+  | - - - - - - -  |  | - - - - - - - - - - |  | - - - - - - -  |     | - - - - - - -  |  | sessions, JWTs |
+  | macro-platform |  | macro-platform      |  | macro-platform |     | macro-platform |  | - - - - - - -  |
+  +-+--------------+  +-+-------------------+  +-+--------------+     +-+--------------+  | shared only    |
+    | |                 | |                      | |                    | |               +-+--------------+
+    | |                 | |                      | |                    | |                 | |
+    | v                 | v                      | v                    | v                 | v
+    | Riksbanken        | SCB                    | Riksdagen            | Valmyndigheten    | SMTP provider
+    | Fed (FRED)        |                        |                      |                   | (or its log)
+    | Eurostat          |                        |                      |                   |
+    |                   |                        |                      |                   |
+    v                   v                        v                      v                   v
+  +--------------------------------------------------------------------------------------------------------+
+  | postgres container, one instance: host :5432, volume docker_pgdata                                     |
+  | macro_series        regional_statistics      parliament             election            auth           |
+  | Each scraping service's database has its own role, series_configuration and scrape_action_queue.       |
+  | auth's has its own role, the accounts, sessions, mailed-link tokens and the signing key.               |
+  +--------------------------------------------------------------------------------------------------------+
 
-  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-  . macro-platform: a library, not a running component. It is built into each service's jar, and gives the     .
-  . scraping services the scrape queue, the cron jobs, the scrape/ endpoints, the ScrapeFlow and the JWT check  .
-  . on scrape/. auth uses only its shared code.                                                                 .
-  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  . macro-platform: a library, not a running component. It is built into each service's jar, and          .
+  . gives the scraping services the scrape queue, the cron jobs, the scrape/ endpoints, the ScrapeFlow    .
+  . and the JWT check on scrape/. auth uses only its shared code.                                         .
+  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
+  Routes, all under /macro-analyzer/ (any other path there answers 404):
+    macro-series         series-config, chart-data, scrape/macro-series/
+    regional-statistics  regional-statistics/, scrape/regional-statistics/
+    parliament           parliament/, scrape/parliament/
+    election             municipalities/, regions/, constituencies/, scrape/election/
+    auth                 auth/, at most 10 requests per minute per client address, except token,
+                         logout and jwks.json
   Under a service: the external services it calls, over HTTPS (SMTP with STARTTLS).
   (1) election reads the party colours from parliament directly, at http://parliament:8084:
       GET /macro-analyzer/parliament/parties, cached in memory, refreshed hourly in the background.

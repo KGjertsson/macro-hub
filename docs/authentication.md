@@ -9,11 +9,14 @@ containers is in [`architecture.md`](architecture.md).
 - `auth-service` holds the accounts, password hashes, sessions and the signing key, in its own `auth` database.
 - Logging in gives the browser two things: a **session cookie** (30 days, `HttpOnly`, only sent to
   `/macro-analyzer/auth`) and a **JWT** (10 minutes, ES256), which the page holds in memory only.
-- The browser trades the session cookie for a new JWT whenever it needs one (`POST /auth/token`).
+- The browser trades the session cookie for a new JWT whenever it needs one (`POST /macro-analyzer/auth/token`).
 - The other services never call `auth` per request. They check the JWT's signature with `auth`'s public keys,
-  which they fetch once from `/macro-analyzer/auth/jwks.json`.
+  which they fetch from `/macro-analyzer/auth/jwks.json` at the first token, and again only for a key
+  they don't know.
 - Today only the scrape paths (`/macro-analyzer/scrape/{service}/...`) need a JWT, with the role `ADMIN`.
-  Every other route is public, and has no security filter at all.
+  Every other route is public, and has no security filter chain.
+
+The paths in the diagram leave out the `/macro-analyzer` prefix.
 
 ```mermaid
 sequenceDiagram
@@ -119,7 +122,8 @@ role keeps working until its JWT expires, at most 10 minutes later.
 
 At its first start `auth` generates a P-256 key and stores it in `signing_key` (unencrypted, so a backup of
 the `auth` database is as sensitive as the key). The newest row signs, and every row is published in
-`jwks.json`, so a key can be rotated by adding a row while tokens signed by the old one still verify.
+`jwks.json`. `auth` reads the table only at start-up, so rotating the key means inserting a new row by hand and
+restarting `auth`; tokens signed by the old key still verify.
 
 ## In the browser
 
@@ -214,7 +218,8 @@ Open sign-up on a public address needs an SMTP provider (`AUTH_MAIL_MODE=smtp`),
 
 ## Tests
 
-- `AuthAcceptanceTest` runs the real `auth-service` through the gateway, in `smtp` mode against a mail catcher whose API `Mailbox` reads.
+- `AuthAcceptanceTest` runs the real `auth-service` through the gateway, in `smtp` mode against a mail catcher
+  whose API `Mailbox` reads.
 - The other journeys don't need `auth`: `AdminToken` signs a JWT in the test JVM, and the services read its
   key from the WireMock stub through `AUTH_JWKS_URI`.
 - `ScrapeSecurityConfigurationTest` checks the issuer, audience and expiry rules.
