@@ -1,7 +1,7 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, ChevronDown, ChevronsUpDown, Users } from 'lucide-react';
-import ChoroplethMap from '@/components/ChoroplethMap';
+import ElectionMap, { ElectionAreaLabel, ElectionMapFocus } from '@/components/ElectionMap';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -248,6 +248,16 @@ const ElectedSection = ({ detail }: { detail: LocalElectionDetail }) => {
   );
 };
 
+const areaLabel = (area: LocalElectionSummary): ElectionAreaLabel => {
+  const largest = area.parties.reduce<LocalPartyResult | null>((best, p) => (best && best.votes >= p.votes ? best : p), null);
+  return {
+    name: area.name,
+    detail: largest
+      ? `Största parti: ${largest.abbreviation?.trim() || largest.name} (${formatPercent(largest.voteShare)})`
+      : 'Saknar resultat',
+  };
+};
+
 // The selected area lives in the query (?a=0180) so a view can be shared and reloaded
 const useSelectedAreaParam = (): [string | null, (code: string | null) => void] => {
   const [searchParams] = useSearchParams();
@@ -282,11 +292,27 @@ const LocalElectionView = ({ kind, topoUrl, objectName, icon, labels }: LocalEle
     () => Object.fromEntries((areas ?? []).map(a => [a.code, a.largestPartyColor])),
     [areas],
   );
-  const nameByCode = useMemo(
-    () => Object.fromEntries((areas ?? []).map(a => [a.code, a.name])),
+  const labelByCode = useMemo(
+    () => Object.fromEntries((areas ?? []).map(a => [a.code, areaLabel(a)])),
     [areas],
   );
   const selected = areas?.find(a => a.code === selectedCode);
+
+  const [focus, setFocus] = useState<ElectionMapFocus | null>(null);
+  const focusedFromUrl = useRef(false);
+  useEffect(() => {
+    if (!focusedFromUrl.current && areas) {
+      focusedFromUrl.current = true;
+      if (selectedCode) {
+        setFocus({ code: selectedCode });
+      }
+    }
+  }, [areas, selectedCode]);
+
+  const selectFromSearch = (code: string) => {
+    setSelectedCode(code);
+    setFocus({ code });
+  };
 
   if (isError) {
     return <p className="text-center text-muted-foreground">Valresultaten kunde inte hämtas.</p>;
@@ -299,16 +325,19 @@ const LocalElectionView = ({ kind, topoUrl, objectName, icon, labels }: LocalEle
     <>
       <div className="grid lg:grid-cols-2 gap-8 items-start">
         <div className="bg-card rounded-2xl border border-border p-6 shadow-lg space-y-4">
-          <AreaSearch areas={areas ?? []} selectedCode={selectedCode} onSelect={setSelectedCode} labels={labels} />
-          <ChoroplethMap
-            topoUrl={topoUrl}
-            objectName={objectName}
-            colorByCode={colorByCode}
-            nameByCode={nameByCode}
-            selectedCode={selectedCode}
-            onSelect={setSelectedCode}
-            ariaLabel={`Karta över Sverige färgad efter största parti per ${labels.areaSingular}`}
-          />
+          <AreaSearch areas={areas ?? []} selectedCode={selectedCode} onSelect={selectFromSearch} labels={labels} />
+          <div className="h-[60vh] sm:h-[70vh] min-h-[360px] sm:min-h-[420px]">
+            <ElectionMap
+              topoUrl={topoUrl}
+              objectName={objectName}
+              colorByCode={colorByCode}
+              labelByCode={labelByCode}
+              selectedCode={selectedCode}
+              onSelect={setSelectedCode}
+              focus={focus}
+              ariaLabel={`Karta över Sverige färgad efter största parti per ${labels.areaSingular}`}
+            />
+          </div>
         </div>
 
         <div className="bg-card rounded-2xl border border-border p-6 shadow-lg">

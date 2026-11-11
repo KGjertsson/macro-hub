@@ -4,12 +4,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Building2, MapPin, MapPinned, Vote } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import LocalElectionView from '@/components/LocalElectionView';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { MAP_CATEGORIES, MapCategory, parseMapCategory } from './mapCategories';
 
-// MapLibre is about 1 MB, so it loads only when the area statistics are picked
+// MapLibre is about 1 MB, so every map loads only when the page is visited
 const RegionalStatisticsView = lazy(() => import('@/components/regionalmap/RegionalStatisticsView'));
+const LocalElectionView = lazy(() => import('@/components/LocalElectionView'));
+
+const loadingMap = <div className='min-h-[600px]' />;
 
 type CategoryContent = {
   label: string;
@@ -37,7 +39,7 @@ const CONTENT: Record<MapCategory, CategoryContent> = {
       </>
     ),
     view: (
-      <Suspense fallback={<div className='min-h-[600px]' />}>
+      <Suspense fallback={loadingMap}>
         <RegionalStatisticsView />
       </Suspense>
     ),
@@ -51,19 +53,21 @@ const CONTENT: Record<MapCategory, CategoryContent> = {
     heading: 'Röstningsresultat per kommun',
     intro: 'Resultat i kommunfullmäktigevalet för alla 290 kommuner. Kartan är färgad efter största parti.',
     view: (
-      <LocalElectionView
-        kind='municipalities'
-        topoUrl='/geo/kommuner.topo.json'
-        objectName='kommuner'
-        icon={<Building2 className='h-12 w-12' />}
-        labels={{
-          areaSingular: 'kommun',
-          searchPlaceholder: 'Sök kommun…',
-          pickTitle: 'Välj en kommun',
-          pickHint: 'Klicka på en kommun på kartan eller sök efter den för att se valresultatet i kommunfullmäktigevalet.',
-          governanceTitle: name => `Kommunalt styre i ${name}`,
-        }}
-      />
+      <Suspense fallback={loadingMap}>
+        <LocalElectionView
+          kind='municipalities'
+          topoUrl='/geo/kommuner.topo.json'
+          objectName='kommuner'
+          icon={<Building2 className='h-12 w-12' />}
+          labels={{
+            areaSingular: 'kommun',
+            searchPlaceholder: 'Sök kommun…',
+            pickTitle: 'Välj en kommun',
+            pickHint: 'Klicka på en kommun på kartan eller sök efter den för att se valresultatet i kommunfullmäktigevalet.',
+            governanceTitle: name => `Kommunalt styre i ${name}`,
+          }}
+        />
+      </Suspense>
     ),
   },
   regioner: {
@@ -75,19 +79,21 @@ const CONTENT: Record<MapCategory, CategoryContent> = {
     heading: 'Röstningsresultat per region',
     intro: 'Resultat i regionfullmäktigevalet för Sveriges 20 regioner. Kartan är färgad efter största parti.',
     view: (
-      <LocalElectionView
-        kind='regions'
-        topoUrl='/geo/lan.topo.json'
-        objectName='lan'
-        icon={<MapPin className='h-12 w-12' />}
-        labels={{
-          areaSingular: 'region',
-          searchPlaceholder: 'Sök region…',
-          pickTitle: 'Välj en region',
-          pickHint: 'Klicka på en region på kartan eller sök efter den för att se valresultatet i regionfullmäktigevalet. Gotland har inget regionfullmäktige; kommunen sköter regionens uppgifter.',
-          governanceTitle: name => `Regionalt styre i ${name}`,
-        }}
-      />
+      <Suspense fallback={loadingMap}>
+        <LocalElectionView
+          kind='regions'
+          topoUrl='/geo/lan.topo.json'
+          objectName='lan'
+          icon={<MapPin className='h-12 w-12' />}
+          labels={{
+            areaSingular: 'region',
+            searchPlaceholder: 'Sök region…',
+            pickTitle: 'Välj en region',
+            pickHint: 'Klicka på en region på kartan eller sök efter den för att se valresultatet i regionfullmäktigevalet. Gotland har inget regionfullmäktige; kommunen sköter regionens uppgifter.',
+            governanceTitle: name => `Regionalt styre i ${name}`,
+          }}
+        />
+      </Suspense>
     ),
   },
   valkretsar: {
@@ -107,19 +113,21 @@ const CONTENT: Record<MapCategory, CategoryContent> = {
       </>
     ),
     view: (
-      <LocalElectionView
-        kind='constituencies'
-        topoUrl='/geo/valkretsar.topo.json'
-        objectName='valkretsar'
-        icon={<Vote className='h-12 w-12' />}
-        labels={{
-          areaSingular: 'valkrets',
-          searchPlaceholder: 'Sök valkrets…',
-          pickTitle: 'Välj en valkrets',
-          pickHint: 'Klicka på en valkrets på kartan eller sök efter den för att se valresultatet i riksdagsvalet. Mandaten per valkrets räknar med de utjämningsmandat som valkretsen tilldelats.',
-          governanceTitle: name => `Styre i ${name}`,
-        }}
-      />
+      <Suspense fallback={loadingMap}>
+        <LocalElectionView
+          kind='constituencies'
+          topoUrl='/geo/valkretsar.topo.json'
+          objectName='valkretsar'
+          icon={<Vote className='h-12 w-12' />}
+          labels={{
+            areaSingular: 'valkrets',
+            searchPlaceholder: 'Sök valkrets…',
+            pickTitle: 'Välj en valkrets',
+            pickHint: 'Klicka på en valkrets på kartan eller sök efter den för att se valresultatet i riksdagsvalet. Mandaten per valkrets räknar med de utjämningsmandat som valkretsen tilldelats.',
+            governanceTitle: name => `Styre i ${name}`,
+          }}
+        />
+      </Suspense>
     ),
   },
 };

@@ -42,15 +42,18 @@ export const useRegionalValues = (indicator: string | null, level: AreaLevel, ye
     placeholderData: keepPreviousData,
   });
 
-export interface AreaFeature {
-  feature: Feature<Geometry, AreaProperties>;
+export interface AreaFeature<P = AreaProperties> {
+  feature: Feature<Geometry, P>;
   bbox: BBox;
 }
 
-export interface AreaGeometry {
+export interface AreaCollection<P extends { code: string } = AreaProperties> {
+  collection: FeatureCollection<Geometry, P>;
+  byCode: Map<string, AreaFeature<P>>;
+}
+
+export interface AreaGeometry extends AreaCollection {
   version: GeoVersion;
-  collection: FeatureCollection<Geometry, AreaProperties>;
-  byCode: Map<string, AreaFeature>;
 }
 
 const extendBounds = (bbox: BBox, coordinates: unknown) => {
@@ -73,21 +76,26 @@ const boundsOf = (geometry: Geometry): BBox => {
   return bbox;
 };
 
+export const fetchAreaCollection = async <P extends { code: string }>(url: string, objectName: string): Promise<AreaCollection<P>> => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed with ${response.status}`);
+  }
+  const topology = (await response.json()) as Topology;
+  const object = topology.objects[objectName] as GeometryCollection<P>;
+  const collection = feature(topology, object) as FeatureCollection<Geometry, P>;
+  const byCode = new Map(collection.features.map(f => [f.properties.code, { feature: f, bbox: boundsOf(f.geometry) }]));
+  return { collection, byCode };
+};
+
 // The DeSO files are about 3 MB, so only the version the values refer to is fetched, once per session
 export const useAreaGeometry = (version: GeoVersion | null) =>
   useQuery({
     queryKey: ['regional-statistics', 'geometry', version],
     queryFn: async (): Promise<AreaGeometry> => {
       const name = GEO_FILES[version as GeoVersion];
-      const response = await fetch(`/geo/${name}.topo.json`);
-      if (!response.ok) {
-        throw new Error(`GET /geo/${name}.topo.json failed with ${response.status}`);
-      }
-      const topology = (await response.json()) as Topology;
-      const object = topology.objects[name] as GeometryCollection<AreaProperties>;
-      const collection = feature(topology, object) as FeatureCollection<Geometry, AreaProperties>;
-      const byCode = new Map(collection.features.map(f => [f.properties.code, { feature: f, bbox: boundsOf(f.geometry) }]));
-      return { version: version as GeoVersion, collection, byCode };
+      const areas = await fetchAreaCollection<AreaProperties>(`/geo/${name}.topo.json`, name);
+      return { version: version as GeoVersion, ...areas };
     },
     enabled: version !== null,
     staleTime: Infinity,
