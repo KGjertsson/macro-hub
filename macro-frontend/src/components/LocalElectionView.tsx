@@ -249,7 +249,8 @@ const ElectedSection = ({ detail }: { detail: LocalElectionDetail }) => {
 };
 
 const areaLabel = (area: LocalElectionSummary): ElectionAreaLabel => {
-  const largest = area.parties.reduce<LocalPartyResult | null>((best, p) => (best && best.votes >= p.votes ? best : p), null);
+  // The backend sends the parties by votes, and picks the map colour from the same order
+  const largest = area.parties[0];
   return {
     name: area.name,
     detail: largest

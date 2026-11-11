@@ -153,6 +153,10 @@ const ElectionMap = ({ topoUrl, objectName, colorByCode, labelByCode, selectedCo
       popup.remove();
     });
     map.on('click', FILL_LAYER, (event: MapLayerMouseEvent) => {
+      // The second click of a double-click zooms in rather than deselecting
+      if (event.originalEvent.detail > 1) {
+        return;
+      }
       const code = event.features?.[0]?.properties?.code as string | undefined;
       if (code && colorRef.current[code]) {
         onSelectRef.current(selectedRef.current === code ? null : code);
